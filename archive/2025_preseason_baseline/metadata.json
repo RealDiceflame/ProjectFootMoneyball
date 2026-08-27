@@ -1,0 +1,12 @@
+{
+  "run_id": "2025_preseason_baseline",
+  "description": "Historical baseline from 2024 NFL stats used for 2025 fantasy football ADP/value analysis.",
+  "stat_season": 2024,
+  "projection_season": 2025,
+  "adp_provider": "4for4",
+  "adp_snapshot_date": "2025-08-27",
+  "main_adp_file": "4for4-adp-table8-27.csv",
+  "main_output_file": "fantasy_value_vs_adp.csv",
+  "scoring_formats": ["standard", "half_ppr", "full_ppr"],
+  "notes": "Created before refactoring project for SQL/database storage and 2026 season updates."
+}
