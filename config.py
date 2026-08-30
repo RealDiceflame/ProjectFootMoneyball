@@ -11,13 +11,15 @@ from pathlib import Path
 import sys
 
 
-# During development, files live beside config.py. In the packaged Windows
-# application they live beside the executable so data and output remain easy
-# for the user to find and update.
+# During development, bundled inputs and generated output live in the project.
+# In the packaged app, support data lives in PyInstaller's _internal folder,
+# while user-visible output stays beside the executable.
 if getattr(sys, "frozen", False):
     PROJECT_ROOT = Path(sys.executable).resolve().parent
+    BUNDLE_ROOT = Path(sys._MEIPASS)
 else:
     PROJECT_ROOT = Path(__file__).resolve().parent
+    BUNDLE_ROOT = PROJECT_ROOT
 
 
 # --------------------------------------------------
@@ -55,7 +57,7 @@ TE_RECEPTION_BONUS = 0.5
 # Folder Settings
 # --------------------------------------------------
 
-DATA_DIR = PROJECT_ROOT / "data"
+DATA_DIR = BUNDLE_ROOT / "data"
 STATS_DIR = DATA_DIR / "stats"
 ADP_DIR = DATA_DIR / "ADP"
 
