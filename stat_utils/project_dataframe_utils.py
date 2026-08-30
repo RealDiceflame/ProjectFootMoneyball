@@ -4,6 +4,7 @@ project_dataframe_utils.py - cleaned utilities (ASCII-safe) for ProjectFootMoney
 
 import os
 import re
+from pathlib import Path
 import pandas as pd
 from functools import reduce
 import stat_utils.pandas_helpers as pdh
@@ -25,7 +26,9 @@ def fetch_and_normalize_stat_tables(stat_urls):
     """
     tables = []
     for category, url in stat_urls.items():
-        csv_path = os.path.join("data", "stats", f"{category.lower()}_2024.csv")
+        season_match = re.search(r"/years/(\d{4})/", url)
+        season = season_match.group(1) if season_match else "latest"
+        csv_path = os.path.join("data", "stats", f"{category.lower()}_{season}.csv")
         df = fetch_stat_category(category, url, csv_path)
         if df is None:
             # Skip categories we couldn't fetch
@@ -38,6 +41,56 @@ def fetch_and_normalize_stat_tables(stat_urls):
         df = clean_and_prepare(df, category)
         tables.append((df, category))
     return tables
+
+
+def load_nflverse_stat_tables(csv_path):
+    """Convert nflverse season totals into this project's three stat tables."""
+    source = pd.read_csv(csv_path)
+    if "season_type" in source.columns:
+        source = source[source["season_type"].eq("REG")].copy()
+
+    player = source["player_display_name"]
+    common = {
+        "player": player,
+        "pos": source["position"],
+        "team": source["recent_team"],
+        "age": pd.NA,
+        "g": source["games"],
+        "gs": pd.NA,
+        "fmb": source["fumbles_total"],
+    }
+
+    passing = pd.DataFrame({
+        **common,
+        "cmp": source["completions"],
+        "att": source["attempts"],
+        "yds": source["passing_yards"],
+        "td": source["passing_tds"],
+        "int": source["passing_interceptions"],
+    })
+    passing = passing[pd.to_numeric(passing["att"], errors="coerce").fillna(0).gt(0)]
+
+    rushing = pd.DataFrame({
+        **common,
+        "rushing_att": source["carries"],
+        "rushing_yds": source["rushing_yards"],
+        "rushing_td": source["rushing_tds"],
+    })
+    rushing = rushing[pd.to_numeric(rushing["rushing_att"], errors="coerce").fillna(0).gt(0)]
+
+    receiving = pd.DataFrame({
+        **common,
+        "receiving_tgt": source["targets"],
+        "receiving_rec": source["receptions"],
+        "receiving_yds": source["receiving_yards"],
+        "receiving_td": source["receiving_tds"],
+    })
+    receiving = receiving[
+        pd.to_numeric(receiving["receiving_tgt"], errors="coerce").fillna(0).gt(0)
+    ]
+
+    print(f"[OK] Loaded 2025 regular-season stats from nflverse: {csv_path}")
+    return [(passing, "Passing"), (rushing, "Rushing"), (receiving, "Receiving")]
 
 def save_and_report_merged_stats(df, output_dir, filename="all_stats_merged.csv"):
     """
@@ -198,10 +251,8 @@ def merge_full_adp(stats_path, adp_path, output_path):
     merged.to_csv(output_path, index=False, na_rep='-')
     print(f"[OK] Merged ADP and saved to {output_path}")
 
-def build_final_player_stats():
+def build_final_player_stats(input_path, output_path):
     """Finalize player stats: clean, deduplicate, sort, save to CSV."""
-    input_path = os.path.join("output", "all_stats_merged.csv")
-    output_path = os.path.join("output", "final_player_stats.csv")
     df = pd.read_csv(input_path)
     # Example: keep only relevant columns, drop duplicates, sort, etc.
     df = df.drop_duplicates(subset=["player"], keep="first")
@@ -253,11 +304,10 @@ def clean_all(df):
     df = drop_known_extras(df)
     df = auto_unify_columns(df)
     df = unify_specific_columns(df, ["g", "gs"])
-    # drop_columns_from_file is intended to remove columns listed in columns_to_drop.txt
+    columns_file = Path(__file__).resolve().parents[1] / "resources" / "columns_to_drop.txt"
     try:
-        df = pdh.drop_columns_from_file(df)
-    except Exception:
-        # if helper not available or file missing, continue
+        df = pdh.drop_columns_from_file(df, filepath=columns_file)
+    except FileNotFoundError:
         pass
     df = reorder_core_columns(df)
     df = pdh.fill_nulls(df)
@@ -297,6 +347,16 @@ def fetch_stat_category(label, url, output_path):
     except Exception as e:
         import logging
         logging.error(f"Error while fetching {label} stats: {e}")
+        if os.path.exists(output_path):
+            logging.warning(
+                "Using cached %s stats from %s because the live fetch failed.",
+                label,
+                output_path,
+            )
+            cached_df = pd.read_csv(output_path)
+            if not any("player" in str(col).lower() for col in cached_df.columns):
+                cached_df = pd.read_csv(output_path, header=[0, 1])
+            return cached_df
         return None
 
 def clean_and_prepare(df, source_name):

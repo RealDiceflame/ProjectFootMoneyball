@@ -1,103 +1,69 @@
-# 🏈 Fantasy Football Stat Scraper & Value Analyzer
+# Project Foot Moneyball
 
-This project scrapes and merges NFL player statistics (passing, rushing, receiving) and average draft position (ADP) data to build a full-season fantasy point projection system. It uses linear regression to determine whether a player is **overvalued or undervalued** at their draft position.
+A fantasy-football draft-board application that combines NFL season stats, rookie betting-line projections, and Yahoo/Sleeper/NFL-ESPN ADP. It produces interactive rankings for 8–16 teams, 1QB/2QB, Standard/Half/Full PPR, and optional TE premium scoring.
 
----
+## Run the desktop application
 
-## 📦 Features
-
-- ✅ Scrapes data from [Pro Football Reference](https://www.pro-football-reference.com/)
-- ✅ Merges passing, rushing, and receiving stats
-- ✅ Calculates fantasy points (Standard, Half-PPR, Full-PPR)
-- ✅ Cleans and merges external ADP (e.g. from 4for4)
-- ✅ Performs regression analysis to compare expected value vs ADP
-- ✅ Outputs merged and cleaned CSVs at each stage
-
----
-
-## 🧰 Requirements
-
-Install dependencies:
-
-```bash
-pip install pandas numpy scikit-learn selenium
+```powershell
+python -m app.desktop
 ```
 
-If you're downloading ADP using Selenium:
+The application displays the rankings directly. It supports drafted-player tracking, column filtering, header sorting, live league-format changes, data refreshes, and Excel export.
 
-- Install Chrome
-- Download [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/) and add to your PATH
+## Refresh from the command line
 
----
+Reuse the saved stats and ADP:
 
-## 🚀 How to Run
-
-```bash
-python main.py
+```powershell
+python refresh_draft_board.py --keep-stats
 ```
 
-This will:
+Refresh ADP from a comparison page URL or saved HTML file:
 
-1. Scrape stats from Pro Football Reference
-2. Merge and clean player data
-3. Calculate fantasy points for all scoring formats
-4. Merge with ADP from 4for4
-5. Output:
-   - `output/all_stats_merged.csv`
-   - `output/final_player_stats_with_fantasy.csv`
-   - `output/final_player_stats_with_fantasy_and_full_adp.csv`
-   - `output/fantasy_value_vs_adp.csv`
-
----
-
-## 📂 Project Structure
-
-```
-project_root/
-├── main.py                         # Entry point
-├── output/                         # Contains all generated CSVs
-├── stat_utils/
-│   ├── stat_helpers.py            # Merging + unifying stat logic
-│   ├── dataframe_helpers.py       # Column formatting, null handling
-│   ├── final_stat_builder.py      # Builds final stats from all sources
-│   ├── fantasy_points.py          # Fantasy scoring logic
-│   ├── merge_adp.py               # ADP merging + name normalization
-│   ├── regression_analysis.py     # Regression vs ADP logic
-├── data_fetcher/                  
-│   └── data_fetcher.py            # Universal HTML/CSV fetcher
-├── adp_downloader.py              # Optional Selenium-based ADP scraper
+```powershell
+python refresh_draft_board.py --adp-source "URL-OR-PATH"
 ```
 
----
+The workbook is written to `output/<projection season>_preseason/ProjectFootMoneyball_Draft_Board.xlsx`.
 
-## 🧪 Optional: Use a Local ADP File
+## Build the standalone Windows release
 
-If you prefer not to use Selenium:
-- Manually download the CSV from [4for4 ADP](https://www.4for4.com/adp)
-- Save it as: `output/4for4-adp-table7-28.csv`
+```powershell
+.\scripts\build_windows.ps1
+```
 
----
+The script creates a ZIP under `dist/`. Recipients extract the complete folder and run `ProjectFootMoneyball.exe`; Python is not required on their computer.
 
-## 🛠️ To-Do / Improvements
+## Active project layout
 
-- [ ] Add unit tests
-- [ ] Create CLI options (e.g. `--skip-adp`, `--only-scrape`)
-- [ ] Build a `streamlit` dashboard to visualize regression vs ADP
-- [ ] Support custom scoring formats
+```text
+config.py                         Season, league, and folder settings
+main.py                           Compatibility command-line entry point
+refresh_draft_board.py            Stats/ADP refresh command
+app/                              Desktop UI, board service, workbook export
+pipeline/                         Pipeline orchestration
+data_fetcher/                     Active ADP and rookie projection importers
+resources/                        Column-cleaning configuration
+scripts/                          Windows build tooling
+releases/current/                 Current packaged Windows release
+stat_utils/pipeline_cleaning.py    Final dataset cleaning policy
+stat_utils/data_analytics/         Fantasy scoring, regression, and rankings
+tests/                            Active automated tests
+archive/                          Superseded, recoverable versions
+```
 
----
+## Tests
 
-## 📈 Sample Output
+```powershell
+python -m pytest -q
+```
 
-<table>
-<tr><th>Player</th><th>ADP</th><th>Projected FP (Half-PPR)</th><th>Expected FP</th><th>Value Type</th></tr>
-<tr><td>Amon-Ra St. Brown</td><td>15.3</td><td>268.7</td><td>243.2</td><td>Undervalued ✅</td></tr>
-<tr><td>DK Metcalf</td><td>35.1</td><td>203.1</td><td>220.5</td><td>Overvalued ❌</td></tr>
-</table>
+Pytest is configured to ignore archived copies and generated build folders.
 
----
+## Data sources
 
-## 🙌 Acknowledgments
+- NFL season totals: nflverse player-stat releases
+- ADP: normalized Yahoo, Sleeper, and NFL/ESPN comparison data
+- Rookie projections: betting-line inputs blended with historical position profiles
 
-- [Pro Football Reference](https://www.pro-football-reference.com/) for stat data
-- [4for4.com](https://www.4for4.com/adp) for ADP tables
+Review each provider's usage and redistribution terms before distributing refreshed source data.

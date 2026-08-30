@@ -5,19 +5,42 @@ __pycache__/
 # Virtual environments
 .venv/
 venv/
+.standalone-build-venv/
 
 # PyCharm
 .idea/
 
 # Testing cache
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Standalone application builds
+build/
+.build/
+dist/
+releases/current/ProjectFootMoneyball/
+releases/current/*.zip
+archive/**/generated_builds/
+*.spec
 
 # Environment variables / secrets
 .env
+.env.*
+!.env.example
 
 # Windows junk
 Thumbs.db
+.DS_Store
+
+# Temporary scrape and generated intermediate data
+data/ADP/*.html
+data/ADP/cleaned_adp_*.csv
+data/stats/*Rookie Prediction Stats*.csv
 
 # Generated program output
 output/
 run_output.txt
+*.log
