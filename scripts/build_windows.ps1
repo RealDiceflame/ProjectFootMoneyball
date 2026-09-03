@@ -6,6 +6,7 @@ $ReleaseFolder = Join-Path $ProjectFolder "releases\current"
 $DistFolder = Join-Path $BuildFolder "dist"
 $BundledPython = Join-Path $ProjectFolder ".standalone-build-venv\Scripts\python.exe"
 $Python = if (Test-Path $BundledPython) { $BundledPython } else { "python" }
+New-Item -ItemType Directory -Force -Path $ReleaseFolder | Out-Null
 
 & $Python -m pip install --upgrade pip
 & $Python -m pip install -r requirements.txt
