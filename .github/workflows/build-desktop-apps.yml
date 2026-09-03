@@ -67,10 +67,34 @@ jobs:
           path: releases/current/ProjectFootMoneyball-macOS-${{ matrix.suffix }}.zip
           archive: false
 
+  all-platforms:
+    name: Combine all platform downloads
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download Windows and macOS packages
+        uses: actions/download-artifact@v8
+        with:
+          pattern: ProjectFootMoneyball-*.zip
+          path: all-platforms
+          merge-multiple: true
+      - name: Add the start guide and create one download
+        run: |
+          cp resources/all_platforms_release_readme.txt "all-platforms/START HERE - README.txt"
+          mkdir -p releases/current
+          cd all-platforms
+          zip -0 -j ../releases/current/ProjectFootMoneyball-All-Platforms.zip ./*
+      - name: Upload the combined ZIP
+        uses: actions/upload-artifact@v7
+        with:
+          path: releases/current/ProjectFootMoneyball-All-Platforms.zip
+          archive: false
+
   release:
     name: Attach builds to tagged release
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [windows, macos]
+    needs: [windows, macos, all-platforms]
     runs-on: ubuntu-latest
     permissions:
       contents: write

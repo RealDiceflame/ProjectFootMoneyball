@@ -36,7 +36,9 @@ The script creates `releases/current/ProjectFootMoneyball-Windows.zip`. Recipien
 
 ## Build the standalone macOS release
 
-A real macOS application must be built on macOS. The **Build desktop apps** workflow under GitHub Actions creates separate ZIPs for Apple Silicon and Intel Macs, plus the Windows ZIP. Run it manually for test builds. Pushing a version tag such as `v0.2.0` also creates a pre-release and attaches all three downloads automatically.
+A real macOS application must be built on macOS. The **Build desktop apps** workflow under GitHub Actions creates separate ZIPs for Apple Silicon and Intel Macs, plus the Windows ZIP. Run it manually for test builds. Pushing a version tag such as `v0.2.0` also creates a pre-release and attaches all four downloads automatically.
+
+The workflow also creates `ProjectFootMoneyball-All-Platforms.zip`. This is the easiest download to share: it contains all three applications and a short **START HERE** guide so the recipient can choose after downloading.
 
 On a Mac, the same build can be run locally:
 
