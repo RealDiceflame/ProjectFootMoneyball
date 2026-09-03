@@ -8,15 +8,19 @@ the project is currently preparing.
 """
 
 from pathlib import Path
+import shutil
 import sys
 
 
-# During development, bundled inputs and generated output live in the project.
-# In the packaged app, support data lives in PyInstaller's _internal folder,
-# while user-visible output stays beside the executable.
-if getattr(sys, "frozen", False):
-    PROJECT_ROOT = Path(sys.executable).resolve().parent
+# During development, inputs and output live in the project. A packaged app
+# reads bundled resources but keeps its working data in a writable location.
+IS_FROZEN = getattr(sys, "frozen", False)
+if IS_FROZEN:
     BUNDLE_ROOT = Path(sys._MEIPASS)
+    if sys.platform == "darwin":
+        PROJECT_ROOT = Path.home() / "Documents" / "Project Foot Moneyball"
+    else:
+        PROJECT_ROOT = Path(sys.executable).resolve().parent
 else:
     PROJECT_ROOT = Path(__file__).resolve().parent
     BUNDLE_ROOT = PROJECT_ROOT
@@ -57,11 +61,26 @@ TE_RECEPTION_BONUS = 0.5
 # Folder Settings
 # --------------------------------------------------
 
-DATA_DIR = BUNDLE_ROOT / "data"
+DATA_DIR = PROJECT_ROOT / "data"
 STATS_DIR = DATA_DIR / "stats"
 ADP_DIR = DATA_DIR / "ADP"
+RESOURCE_DIR = BUNDLE_ROOT / "resources"
 
 OUTPUT_DIR = PROJECT_ROOT / "output" / f"{PROJECTION_SEASON}_preseason"
+
+
+def seed_packaged_data():
+    """Copy bundled snapshots to the writable user folder on first launch."""
+    bundled_data = BUNDLE_ROOT / "data"
+    if not IS_FROZEN or bundled_data.resolve() == DATA_DIR.resolve():
+        return
+    for source in bundled_data.rglob("*"):
+        if not source.is_file():
+            continue
+        destination = DATA_DIR / source.relative_to(bundled_data)
+        if not destination.exists():
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, destination)
 
 
 # --------------------------------------------------

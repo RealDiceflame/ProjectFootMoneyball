@@ -1,6 +1,5 @@
-"""Interactive Windows draft board and data updater."""
+"""Interactive desktop draft board and data updater."""
 
-import os
 import queue
 import threading
 import tkinter as tk
@@ -9,6 +8,7 @@ from tkinter import filedialog, messagebox, ttk
 
 from config import ADP_DIR, OUTPUT_DIR, PROJECTION_SEASON, STAT_SEASON
 from app.draft_board_service import DraftedPlayerStore, LeagueSettings, load_rankings, prepare_rankings
+from app.platform_utils import open_file
 from refresh_draft_board import refresh_draft_board
 
 DISPLAY_COLUMNS = (
@@ -23,6 +23,19 @@ DISPLAY_COLUMNS = (
 DECIMAL_COLUMNS = {"projected_points", "vorp", "adp", "value_vs_adp", "Yahoo", "Sleeper", "NFL"}
 
 
+def format_table_value(column, value):
+    """Format one cell while safely handling unavailable numeric data."""
+    if column == "drafted":
+        return "✓" if bool(value) else ""
+    if column not in DECIMAL_COLUMNS:
+        return "" if value is None else value
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return ""
+    return "" if number != number else f"{number:.1f}"
+
+
 class DraftBoardApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -35,6 +48,8 @@ class DraftBoardApp(tk.Tk):
         self.rankings = None
         self.sort_column = "overall_rank"
         self.sort_ascending = True
+        self.active_filter_column = "player"
+        self.active_filter_query = ""
         self.drafted_store = DraftedPlayerStore(OUTPUT_DIR / "drafted_players.json")
         self._configure_styles()
         self._build_header()
@@ -94,13 +109,14 @@ class DraftBoardApp(tk.Tk):
         filter_box = ttk.Combobox(toolbar, textvariable=self.filter_column, values=filter_titles,
                                   state="readonly", width=13)
         filter_box.pack(side="left", padx=(6, 6))
-        filter_box.bind("<<ComboboxSelected>>", lambda _event: self._render_rankings())
+        filter_box.bind("<<ComboboxSelected>>", self._on_filter_column_changed)
         self.filter_text = tk.StringVar()
         filter_entry = ttk.Entry(toolbar, textvariable=self.filter_text, width=24)
         filter_entry.pack(side="left")
-        filter_entry.bind("<KeyRelease>", lambda _event: self._render_rankings())
-        ttk.Button(toolbar, text="Clear Filter", command=self._clear_filter).pack(side="left", padx=6)
-        ttk.Label(toolbar, text="Text, >=20, 10..30, or Drafted: yes/no", style="Card.TLabel").pack(side="left")
+        filter_entry.bind("<Return>", lambda _event: self._apply_filter())
+        ttk.Button(toolbar, text="Apply", command=self._apply_filter).pack(side="left", padx=(6, 0))
+        ttk.Button(toolbar, text="Show All", command=self._clear_filter).pack(side="left", padx=6)
+        ttk.Label(toolbar, text="Press Enter to apply • commas mean OR", style="Card.TLabel").pack(side="left")
         ttk.Button(toolbar, text="Mark/Undo Drafted", command=self._toggle_selected_drafted).pack(side="right")
         ttk.Button(toolbar, text="Reset Draft", command=self._reset_draft).pack(side="right", padx=6)
         keys = [column[0] for column in DISPLAY_COLUMNS]
@@ -136,17 +152,17 @@ class DraftBoardApp(tk.Tk):
             return
         self.sort_column = "overall_rank"
         self.sort_ascending = True
+        self._clear_filter(render=False)
         self._render_rankings()
 
     def _render_rankings(self):
         if self.rankings is None:
             return
-        title_to_key = {title: key for key, title, _width in DISPLAY_COLUMNS}
         rankings = prepare_rankings(
             self.rankings,
             self.drafted_store,
-            filter_column=title_to_key.get(self.filter_column.get(), "player"),
-            query=self.filter_text.get(),
+            filter_column=self.active_filter_column,
+            query=self.active_filter_query,
             sort_column=self.sort_column,
             ascending=self.sort_ascending,
         )
@@ -156,14 +172,16 @@ class DraftBoardApp(tk.Tk):
             drafted = bool(row.get("drafted", False))
             values = []
             for key in keys:
-                value = "✓" if key == "drafted" and drafted else row.get(key, "")
-                if key in DECIMAL_COLUMNS:
-                    value = "" if value != value else f"{float(value):.1f}"
-                values.append(value)
+                values.append(format_table_value(key, row.get(key, "")))
             tag = "DRAFTED" if drafted else str(row.get("draft_tag", "FAIR"))
             self.table.insert("", "end", values=values, tags=(tag,))
         drafted_count = sum(self.drafted_store.contains(row.get("player", ""), row.get("team", "")) for _, row in self.rankings.iterrows())
-        self.status_text.set(f"Showing {len(rankings)} players • {drafted_count} drafted • click a header to sort")
+        total = len(self.rankings)
+        filter_status = " • filter active" if self.active_filter_query else ""
+        self.status_text.set(
+            f"Showing {len(rankings)} of {total} players{filter_status} • "
+            f"{drafted_count} drafted • click a header to sort"
+        )
 
     def _sort_by(self, column):
         if self.sort_column == column:
@@ -172,9 +190,21 @@ class DraftBoardApp(tk.Tk):
             self.sort_column, self.sort_ascending = column, True
         self._render_rankings()
 
-    def _clear_filter(self):
-        self.filter_text.set("")
+    def _on_filter_column_changed(self, _event=None):
+        # A query that made sense for Player should not silently carry over to ADP, Pos, etc.
+        self._clear_filter()
+
+    def _apply_filter(self):
+        title_to_key = {title: key for key, title, _width in DISPLAY_COLUMNS}
+        self.active_filter_column = title_to_key.get(self.filter_column.get(), "player")
+        self.active_filter_query = self.filter_text.get().strip()
         self._render_rankings()
+
+    def _clear_filter(self, render=True):
+        self.filter_text.set("")
+        self.active_filter_query = ""
+        if render:
+            self._render_rankings()
 
     def _toggle_selected_drafted(self):
         selected = self.table.selection()
@@ -192,7 +222,10 @@ class DraftBoardApp(tk.Tk):
             self._render_rankings()
 
     def _choose_adp(self):
-        selected = filedialog.askopenfilename(initialdir=ADP_DIR, filetypes=[("HTML pages", "*.html;*.htm"), ("All files", "*.*")])
+        selected = filedialog.askopenfilename(
+            initialdir=ADP_DIR,
+            filetypes=[("HTML pages", ("*.html", "*.htm")), ("All files", "*.*")],
+        )
         if selected:
             self.adp_source.set(selected)
 
@@ -235,7 +268,7 @@ class DraftBoardApp(tk.Tk):
     def _open_result(self):
         path = self.result_path or OUTPUT_DIR / "ProjectFootMoneyball_Draft_Board.xlsx"
         if Path(path).exists():
-            os.startfile(path)
+            open_file(path)
         else:
             messagebox.showinfo("No spreadsheet yet", "Click Update Data first.")
 

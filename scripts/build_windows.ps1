@@ -3,24 +3,28 @@ $ProjectFolder = Split-Path -Parent $PSScriptRoot
 Set-Location $ProjectFolder
 $BuildFolder = Join-Path $ProjectFolder ".build"
 $ReleaseFolder = Join-Path $ProjectFolder "releases\current"
+$DistFolder = Join-Path $BuildFolder "dist"
+$BundledPython = Join-Path $ProjectFolder ".standalone-build-venv\Scripts\python.exe"
+$Python = if (Test-Path $BundledPython) { $BundledPython } else { "python" }
 
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -m pip install pyinstaller
+& $Python -m pip install --upgrade pip
+& $Python -m pip install -r requirements.txt
+& $Python -m pip install pyinstaller
 
-python -m PyInstaller `
+& $Python -m PyInstaller `
     --noconfirm `
     --clean `
     --onedir `
     --windowed `
     --workpath $BuildFolder `
-    --distpath $ReleaseFolder `
+    --distpath $DistFolder `
     --specpath $BuildFolder `
     --name "Project Foot Moneyball" `
     --add-data "$ProjectFolder\data;data" `
     --add-data "$ProjectFolder\resources;resources" `
     "$ProjectFolder\app\desktop.py"
 
+$AppFolder = Join-Path $DistFolder "Project Foot Moneyball"
 $Readme = @"
 PROJECT FOOT MONEYBALL
 
@@ -32,6 +36,6 @@ PROJECT FOOT MONEYBALL
 Internet access is required when downloading new stats or ADP.
 Do not move the EXE out of this folder. Send the entire folder as a ZIP.
 "@
-Set-Content -Path "$ReleaseFolder\Project Foot Moneyball\START HERE - README.txt" -Value $Readme
-Compress-Archive -Path "$ReleaseFolder\Project Foot Moneyball\*" -DestinationPath "$ReleaseFolder\ProjectFootMoneyball-Windows.zip" -Force
+Set-Content -Path "$AppFolder\START HERE - README.txt" -Value $Readme
+Compress-Archive -Path "$AppFolder\*" -DestinationPath "$ReleaseFolder\ProjectFootMoneyball-Windows.zip" -Force
 Write-Host "Finished: releases\current\ProjectFootMoneyball-Windows.zip"

@@ -4,8 +4,8 @@ from pathlib import Path
 import pandas as pd
 
 from config import (
-    ADP_DIR, ADP_FILENAME, ADP_SNAPSHOT_DATE, DATA_DIR, LEAGUE_TEAMS,
-    OUTPUT_DIR, PROJECTION_SEASON, STAT_SEASON, STATS_DIR,
+    ADP_DIR, ADP_FILENAME, ADP_SNAPSHOT_DATE, LEAGUE_TEAMS,
+    OUTPUT_DIR, PROJECTION_SEASON, RESOURCE_DIR, STAT_SEASON, STATS_DIR,
     TE_RECEPTION_BONUS, get_stat_urls,
 )
 from data_fetcher.rookie_prop_projections import build_rookie_prop_projections
@@ -70,7 +70,7 @@ def _merge_and_clean_adp(paths):
     merged = pd.read_csv(paths["merged_adp"])
     cleaned = prepare_ranking_input(
         merged,
-        columns_file=DATA_DIR.parent / "resources" / "columns_to_drop.txt",
+        columns_file=RESOURCE_DIR / "columns_to_drop.txt",
         audit_path=paths["adp_audit"],
     )
     cleaned.to_csv(paths["merged_adp"], index=False, na_rep="-")

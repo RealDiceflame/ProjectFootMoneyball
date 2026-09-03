@@ -34,6 +34,22 @@ def test_numeric_range_and_comparison_filters():
     rankings = pd.DataFrame({"adp": [5, 15, 25, 35]})
     assert filter_rankings(rankings, "adp", ">=25")["adp"].tolist() == [25, 35]
     assert filter_rankings(rankings, "adp", "10..30")["adp"].tolist() == [15, 25]
+    assert filter_rankings(rankings, "adp", "25")["adp"].tolist() == [25]
+
+
+def test_categorical_filters_support_multiple_exact_values():
+    rankings = pd.DataFrame({
+        "player": ["Player A", "Player B", "Player C"],
+        "pos": ["QB", "RB", "WR"],
+    })
+    result = filter_rankings(rankings, "pos", "QB, WR")
+    assert result["player"].tolist() == ["Player A", "Player C"]
+
+
+def test_invalid_drafted_filter_does_not_hide_players():
+    rankings = pd.DataFrame({"drafted": [True, False]})
+    assert len(filter_rankings(rankings, "drafted", "maybe")) == 2
+    assert len(filter_rankings(rankings, "drafted", ",")) == 2
 
 
 def test_prepare_rankings_filters_and_sorts_drafted_players(tmp_path):
@@ -46,3 +62,18 @@ def test_prepare_rankings_filters_and_sorts_drafted_players(tmp_path):
     result = prepare_rankings(rankings, store, filter_column="drafted", query="yes",
                               sort_column="overall_rank", ascending=True)
     assert result["player"].tolist() == ["Player B"]
+
+
+def test_prepare_rankings_sorts_provider_numbers_and_places_missing_last(tmp_path):
+    store = DraftedPlayerStore(tmp_path / "drafted.json")
+    rankings = pd.DataFrame({
+        "overall_rank": [1, 2, 3],
+        "player": ["Player A", "Player B", "Player C"],
+        "team": ["KC", "BUF", "NYJ"],
+        "Yahoo": ["100", "20", "-"],
+    })
+    result = prepare_rankings(
+        rankings, store, filter_column="player", query="",
+        sort_column="Yahoo", ascending=True,
+    )
+    assert result["player"].tolist() == ["Player B", "Player A", "Player C"]

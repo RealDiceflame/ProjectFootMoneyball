@@ -4,7 +4,10 @@ import argparse
 from pathlib import Path
 from urllib.request import Request, urlopen
 
-from config import ADP_DIR, ADP_FILENAME, OUTPUT_DIR, PROJECTION_SEASON, STAT_SEASON, STATS_DIR
+from config import (
+    ADP_DIR, ADP_FILENAME, OUTPUT_DIR, PROJECTION_SEASON, STAT_SEASON,
+    STATS_DIR, seed_packaged_data,
+)
 from data_fetcher.adp_importer import build_combined_adp
 from app.draft_board_exporter import export_switchable_draft_board
 from pipeline.runner import run_pipeline
@@ -36,6 +39,7 @@ def parse_args():
 
 def refresh_draft_board(adp_source=None, keep_stats=False, workbook=None, status=print):
     """Run the complete refresh for either the CLI or desktop application."""
+    seed_packaged_data()
     workbook = Path(workbook) if workbook else OUTPUT_DIR / "ProjectFootMoneyball_Draft_Board.xlsx"
     stats_path = STATS_DIR / f"nflverse_player_stats_{STAT_SEASON}.csv"
     if keep_stats:

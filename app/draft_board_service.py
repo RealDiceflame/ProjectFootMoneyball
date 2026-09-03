@@ -6,6 +6,11 @@ from pathlib import Path
 import re
 import pandas as pd
 
+NUMERIC_COLUMNS = {
+    "overall_rank", "position_rank", "projected_points", "replacement_points",
+    "vorp", "adp", "value_vs_adp", "Yahoo", "Sleeper", "NFL",
+}
+
 
 @dataclass(frozen=True)
 class LeagueSettings:
@@ -37,10 +42,11 @@ def load_rankings(output_dir, settings):
     if not path.exists():
         raise FileNotFoundError("Rankings have not been generated yet. Click Update Data first.")
     rankings = pd.read_csv(path)
+    value = pd.to_numeric(rankings["value_vs_adp"], errors="coerce")
     rankings["draft_tag"] = "FAIR"
-    rankings.loc[rankings["value_vs_adp"] >= 10, "draft_tag"] = "VALUE"
-    rankings.loc[rankings["value_vs_adp"] >= 25, "draft_tag"] = "TARGET"
-    rankings.loc[rankings["value_vs_adp"] <= -10, "draft_tag"] = "REACH"
+    rankings.loc[value >= 10, "draft_tag"] = "VALUE"
+    rankings.loc[value >= 25, "draft_tag"] = "TARGET"
+    rankings.loc[value <= -10, "draft_tag"] = "REACH"
     return rankings
 
 
@@ -89,15 +95,30 @@ class DraftedPlayerStore:
 
 
 def filter_rankings(rankings, column, query):
-    """Filter text, drafted status, or numeric comparisons/ranges."""
+    """Return a filtered copy without ever changing the loaded ranking data."""
     query = str(query).strip()
     if not query or column not in rankings.columns:
         return rankings.copy()
 
     values = rankings[column]
     if column == "drafted":
-        wanted = query.casefold() in {"yes", "y", "true", "1", "drafted", "✓"}
+        choices = {
+            "yes": True, "y": True, "true": True, "1": True,
+            "drafted": True, "✓": True,
+            "no": False, "n": False, "false": False, "0": False,
+            "available": False, "undrafted": False,
+        }
+        wanted = choices.get(query.casefold())
+        if wanted is None:
+            return rankings.copy()
         return rankings[values.astype(bool) == wanted].copy()
+
+    normalized_query = query.casefold()
+    blank = values.isna() | values.astype(str).str.strip().eq("")
+    if normalized_query in {"blank", "empty"}:
+        return rankings[blank].copy()
+    if normalized_query in {"not blank", "not empty"}:
+        return rankings[~blank].copy()
 
     numeric = pd.to_numeric(values, errors="coerce")
     range_match = re.fullmatch(r"\s*(-?\d+(?:\.\d+)?)\s*\.\.\s*(-?\d+(?:\.\d+)?)\s*", query)
@@ -114,7 +135,21 @@ def filter_rankings(rankings, column, query):
             "=": numeric == number,
         }
         return rankings[masks[operator]].copy()
-    return rankings[values.astype(str).str.contains(query, case=False, na=False, regex=False)].copy()
+    if re.fullmatch(r"-?\d+(?:\.\d+)?", query) and numeric.notna().any():
+        return rankings[numeric == float(query)].copy()
+
+    terms = [term.strip() for term in query.split(",") if term.strip()]
+    if not terms:
+        return rankings.copy()
+    text = values.astype("string")
+    if column in {"team", "pos", "draft_tag"}:
+        wanted = {term.casefold() for term in terms}
+        mask = text.str.strip().str.casefold().isin(wanted)
+    else:
+        mask = pd.Series(False, index=rankings.index)
+        for term in terms:
+            mask |= text.str.contains(term, case=False, na=False, regex=False)
+    return rankings[mask.fillna(False)].copy()
 
 
 def prepare_rankings(rankings, drafted_store, *, filter_column, query, sort_column, ascending):
@@ -127,6 +162,11 @@ def prepare_rankings(rankings, drafted_store, *, filter_column, query, sort_colu
     view = filter_rankings(view, filter_column, query)
     if sort_column == "drafted":
         view = view.sort_values(["drafted", "overall_rank"], ascending=[ascending, True])
+    elif sort_column in NUMERIC_COLUMNS and sort_column in view.columns:
+        numeric_sort = pd.to_numeric(view[sort_column], errors="coerce")
+        view = view.assign(_numeric_sort=numeric_sort).sort_values(
+            "_numeric_sort", ascending=ascending, na_position="last"
+        ).drop(columns="_numeric_sort")
     elif sort_column in view.columns:
         view = view.sort_values(sort_column, ascending=ascending, na_position="last")
     return view
