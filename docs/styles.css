@@ -222,6 +222,7 @@ dialog p:not(.eyebrow) { color: var(--muted); font-size: .82rem; line-height: 1.
 .news-event p { margin: 5px 0 8px !important; font-size: .76rem !important; }
 .news-event a { color: var(--lime); font-size: .68rem; text-underline-offset: 3px; }
 .news-attribution { margin: 13px 0 0; color: #79958a !important; font-size: .66rem !important; }
+.news-attribution a { color: #a8cabc; text-underline-offset: 3px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 @keyframes rotate { to { transform: rotate(360deg); } }
 

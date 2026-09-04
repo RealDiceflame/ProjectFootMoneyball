@@ -17,14 +17,12 @@ import requests
 from app.player_intel import DEFAULT_BOARD, load_ranked_players, player_key
 
 
-ROSTER_RELEASE = "https://github.com/nflverse/nflverse-data/releases/tag/rosters"
-DEPTH_RELEASE = "https://github.com/nflverse/nflverse-data/releases/tag/depth_charts"
-INJURY_RELEASE = "https://github.com/nflverse/nflverse-data/releases/tag/injuries"
 ROSTER_URL = "https://github.com/nflverse/nflverse-data/releases/download/rosters/roster_{season}.csv.gz"
 DEPTH_URL = "https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_{season}.csv.gz"
 INJURY_URL = "https://github.com/nflverse/nflverse-data/releases/download/injuries/injuries_{season}.csv.gz"
 ESPN_NEWS_URL = "https://www.espn.com/espn/rss/nfl/news"
 ESPN_NEWS_SOURCE = "https://www.espn.com/nfl/"
+ESPN_TEAM_CODES = {"LA": "lar", "WAS": "wsh"}
 
 CURRENT_STATUSES = {"ACT", "RES", "DEV", "EXE"}
 STATUS_DETAILS = {
@@ -50,6 +48,12 @@ def normalize_name(value: str) -> str:
     while parts and parts[-1] in NAME_SUFFIXES:
         parts.pop()
     return "".join(parts)
+
+
+def espn_team_url(page: str, team: str) -> str:
+    """Return the exact ESPN team page that lets a reader verify an update."""
+    team_code = ESPN_TEAM_CODES.get(str(team).upper(), str(team).lower())
+    return f"https://www.espn.com/nfl/team/{page}/_/name/{team_code}"
 
 
 def _latest_by_team(depth: pd.DataFrame) -> pd.DataFrame:
@@ -98,7 +102,7 @@ def _roster_event(player: dict, roster: pd.DataFrame, generated_date: str) -> tu
             generated_date,
             f"Current roster data lists {player['player']} with {new_team}",
             f"The draft board still lists {player['team']}. Verify the team and role before drafting.",
-            _source("nflverse current rosters", ROSTER_RELEASE),
+            _source(f"View {new_team} roster at ESPN", espn_team_url("roster", new_team)),
         ), "risk"
 
     if same_team.empty:
@@ -108,7 +112,7 @@ def _roster_event(player: dict, roster: pd.DataFrame, generated_date: str) -> tu
             generated_date,
             "Not matched on the current roster",
             "The player could not be matched to the current team roster. This may be a naming or roster-timing issue.",
-            _source("nflverse current rosters", ROSTER_RELEASE),
+            _source(f"View {player['team']} roster at ESPN", espn_team_url("roster", player["team"])),
         ), "watch"
 
     row = same_team.sort_values(
@@ -128,7 +132,7 @@ def _roster_event(player: dict, roster: pd.DataFrame, generated_date: str) -> tu
         generated_date,
         title,
         detail,
-        _source("nflverse current rosters", ROSTER_RELEASE),
+        _source(f"View {player['team']} roster at ESPN", espn_team_url("roster", player["team"])),
     ), severity
 
 
@@ -142,7 +146,7 @@ def _depth_event(player: dict, depth: pd.DataFrame, generated_date: str) -> tupl
             generated_date,
             "Not listed on the latest depth chart",
             "The newest depth-chart snapshot does not list this player at the board's team and position.",
-            _source("nflverse current depth charts", DEPTH_RELEASE),
+            _source(f"View {player['team']} depth chart at ESPN", espn_team_url("depth", player["team"])),
         ), "risk"
 
     row = matches.sort_values("pos_rank").iloc[0]
@@ -163,7 +167,7 @@ def _depth_event(player: dict, depth: pd.DataFrame, generated_date: str) -> tupl
         snapshot,
         f"Listed as {player['pos']}{rank}",
         detail,
-        _source("nflverse current depth charts", DEPTH_RELEASE),
+        _source(f"View {player['team']} depth chart at ESPN", espn_team_url("depth", player["team"])),
     ), severity
 
 
@@ -217,7 +221,7 @@ def _position_changes(
             f"{current_group['dt'].max().year} offseason" if not current_group.empty else "Current offseason",
             f"New {player['pos']} competition",
             f"New names in the top of the {player['team']} position group: {', '.join(arrivals[:5])}.",
-            _source("nflverse season depth charts", DEPTH_RELEASE),
+            _source(f"View {player['team']} depth chart at ESPN", espn_team_url("depth", player["team"])),
         ))
     if departures:
         events.append(_event(
@@ -226,7 +230,7 @@ def _position_changes(
             f"{current_group['dt'].max().year} offseason" if not current_group.empty else "Current offseason",
             f"Departures from the {player['pos']} room",
             f"Names no longer in the top of the {player['team']} position group: {', '.join(departures[:5])}.",
-            _source("nflverse season depth charts", DEPTH_RELEASE),
+            _source(f"View {player['team']} depth chart at ESPN", espn_team_url("depth", player["team"])),
         ))
     return events
 
@@ -254,7 +258,7 @@ def _injury_event(player: dict, injuries: pd.DataFrame) -> dict | None:
         f"Week {int(row['week'])}",
         f"Injury report: {injury or 'availability update'}",
         "; ".join(str(value) for value in values),
-        _source("nflverse injury reports", INJURY_RELEASE),
+        _source(f"View {player['team']} injuries at ESPN", espn_team_url("injuries", player["team"])),
     )
 
 

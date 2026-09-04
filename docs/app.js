@@ -354,7 +354,18 @@ function appendNewsTimeline(container, news) {
   timeline.append(list);
   const attribution = document.createElement("p");
   attribution.className = "news-attribution";
-  attribution.textContent = `Source feed updated ${formatTimestamp(state.news.generated_at)}. These are factual data signals, not editorial reporting or guarantees of playing time.`;
+  attribution.append(document.createTextNode(
+    `Source feed updated ${formatTimestamp(state.news.generated_at)}. These are factual data signals, not editorial reporting or guarantees of playing time.`
+  ));
+  const attributionHref = safeSourceUrl(state.news.attribution_url);
+  if (attributionHref) {
+    const attributionLink = document.createElement("a");
+    attributionLink.href = attributionHref;
+    attributionLink.target = "_blank";
+    attributionLink.rel = "noopener noreferrer";
+    attributionLink.textContent = "nflverse data source";
+    attribution.append(document.createTextNode(" Data compiled from the "), attributionLink, document.createTextNode("."));
+  }
   timeline.append(attribution);
   container.append(timeline);
 }

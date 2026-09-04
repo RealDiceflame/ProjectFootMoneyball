@@ -3,7 +3,7 @@ import json
 
 import pandas as pd
 
-from app.player_news import build_player_news, match_headlines, normalize_name
+from app.player_news import build_player_news, espn_team_url, match_headlines, normalize_name
 
 
 def _rankings(path):
@@ -19,6 +19,12 @@ def _rankings(path):
 def test_normalize_name_ignores_common_suffixes_and_punctuation():
     assert normalize_name("Brian Thomas Jr.") == normalize_name("Brian Thomas")
     assert normalize_name("Kenneth Walker III") == normalize_name("Kenneth Walker")
+
+
+def test_espn_team_url_handles_team_code_differences():
+    assert espn_team_url("depth", "BUF").endswith("/name/buf")
+    assert espn_team_url("depth", "LA").endswith("/name/lar")
+    assert espn_team_url("roster", "WAS").endswith("/name/wsh")
 
 
 def test_match_headlines_uses_full_name_in_url_and_labels_injury_watch():
@@ -67,6 +73,12 @@ def test_build_player_news_creates_depth_roster_and_position_updates(tmp_path):
     reserve = payload["reports"]["reserve receiver|KC"]
     assert payload["player_count"] == 2
     assert {event["category"] for event in starter["events"]} >= {"Depth chart", "Arrival", "Departure"}
+    depth_event = next(event for event in starter["events"] if event["category"] == "Depth chart")
+    assert depth_event["source"] == {
+        "title": "View BUF depth chart at ESPN",
+        "url": "https://www.espn.com/nfl/team/depth/_/name/buf",
+    }
     assert starter["signal"] == "watch"
     assert reserve["signal"] == "risk"
     assert reserve["events"][0]["title"] == "Reserve-list status"
+    assert reserve["events"][0]["source"]["url"] == "https://www.espn.com/nfl/team/roster/_/name/kc"
