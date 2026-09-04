@@ -280,9 +280,167 @@ def test_current_injury_is_published_as_structured_interface_data(tmp_path):
     assert report["signal"] == "risk"
     assert report["injury"] == {
         "name": "Ankle",
+        "injuries": ["Ankle"],
         "status": "Doubtful",
         "report_status": "Doubtful",
         "practice_status": "Did Not Participate",
         "week": 1,
         "severity": "risk",
     }
+
+
+def test_questionable_player_shows_primary_and_secondary_injuries_without_risk(tmp_path):
+    rankings = tmp_path / "rankings.json"
+    destination = tmp_path / "player_news.json"
+    rankings.write_text(json.dumps({
+        "columns": ["overall_rank", "player", "player_id", "team", "pos"],
+        "boards": {"12team_2qb_te_premium_half_ppr": [[
+            1, "Injured Runner", "00-0099999", "BUF", "RB",
+        ]]},
+    }), encoding="utf-8")
+    roster = pd.DataFrame([{
+        "gsis_id": "00-0099999", "full_name": "Injured Runner", "team": "BUF",
+        "position": "RB", "status": "ACT", "headshot_url": None,
+    }])
+    depth = pd.DataFrame([{
+        "dt": "2026-09-04T12:00:00Z", "team": "BUF",
+        "player_name": "Injured Runner", "pos_abb": "RB", "pos_rank": 1,
+    }])
+    injuries = pd.DataFrame([{
+        "week": 1, "gsis_id": "00-0099999", "full_name": "Injured Runner",
+        "team": "BUF", "position": "RB", "report_primary_injury": "Ankle",
+        "report_secondary_injury": "Knee", "report_status": "Questionable",
+        "practice_primary_injury": "Ankle", "practice_secondary_injury": "Knee",
+        "practice_status": "Limited Participation",
+    }])
+
+    build_player_news(
+        rankings,
+        destination,
+        season=2026,
+        current_roster=roster,
+        current_depth=depth,
+        previous_depth=depth,
+        injuries=injuries,
+        now=datetime(2026, 9, 4, 15, 0, tzinfo=timezone.utc),
+    )
+
+    report = json.loads(destination.read_text(encoding="utf-8"))["reports"]["injured runner|BUF"]
+    assert report["signal"] == "watch"
+    assert report["injury"]["injuries"] == ["Ankle", "Knee"]
+    assert report["injury"]["severity"] == "watch"
+
+
+def test_roster_exemption_is_a_risk(tmp_path):
+    rankings = tmp_path / "rankings.json"
+    destination = tmp_path / "player_news.json"
+    rankings.write_text(json.dumps({
+        "columns": ["overall_rank", "player", "player_id", "team", "pos"],
+        "boards": {"12team_2qb_te_premium_half_ppr": [[
+            1, "Exempt Runner", "00-0099998", "GB", "RB",
+        ]]},
+    }), encoding="utf-8")
+    roster = pd.DataFrame([{
+        "gsis_id": "00-0099998", "full_name": "Exempt Runner", "team": "GB",
+        "position": "RB", "status": "EXE", "status_description_abbr": "E02",
+        "headshot_url": None,
+    }])
+    depth = pd.DataFrame([{
+        "dt": "2026-09-04T12:00:00Z", "team": "GB",
+        "player_name": "Exempt Runner", "pos_abb": "RB", "pos_rank": 1,
+    }])
+
+    build_player_news(
+        rankings,
+        destination,
+        season=2026,
+        current_roster=roster,
+        current_depth=depth,
+        previous_depth=depth,
+        now=datetime(2026, 9, 4, 15, 0, tzinfo=timezone.utc),
+    )
+
+    report = json.loads(destination.read_text(encoding="utf-8"))["reports"]["exempt runner|GB"]
+    assert report["signal"] == "risk"
+    availability = next(event for event in report["events"] if event["category"] == "Availability")
+    assert availability["severity"] == "risk"
+
+
+def test_espn_questionable_injury_is_visible_without_risk(tmp_path):
+    rankings = tmp_path / "rankings.json"
+    destination = tmp_path / "player_news.json"
+    rankings.write_text(json.dumps({
+        "columns": ["overall_rank", "player", "player_id", "team", "pos"],
+        "boards": {"12team_2qb_te_premium_half_ppr": [[
+            1, "Questionable Runner", "00-0099997", "LA", "RB",
+        ]]},
+    }), encoding="utf-8")
+    roster = pd.DataFrame([{
+        "gsis_id": "00-0099997", "full_name": "Questionable Runner", "team": "LA",
+        "position": "RB", "status": "ACT", "headshot_url": None,
+    }])
+    depth = pd.DataFrame([{
+        "dt": "2026-09-04T12:00:00Z", "team": "LA",
+        "player_name": "Questionable Runner", "pos_abb": "RB", "pos_rank": 1,
+    }])
+
+    build_player_news(
+        rankings,
+        destination,
+        season=2026,
+        current_roster=roster,
+        current_depth=depth,
+        previous_depth=depth,
+        espn_injuries=[{
+            "full_name": "Questionable Runner", "team": "LA", "position": "RB",
+            "injuries": ["Ankle"], "status": "Questionable",
+            "date": "2026-09-04T18:00Z", "return_date": "2026-09-13",
+            "source_url": "https://www.espn.com/nfl/player/news/_/id/1/questionable-runner",
+        }],
+        now=datetime(2026, 9, 4, 15, 0, tzinfo=timezone.utc),
+    )
+
+    report = json.loads(destination.read_text(encoding="utf-8"))["reports"]["questionable runner|LA"]
+    assert report["signal"] == "watch"
+    assert report["injury"]["name"] == "Ankle"
+    assert report["injury"]["status"] == "Questionable"
+    assert report["injury"]["severity"] == "watch"
+
+
+def test_espn_out_personal_status_is_a_risk(tmp_path):
+    rankings = tmp_path / "rankings.json"
+    destination = tmp_path / "player_news.json"
+    rankings.write_text(json.dumps({
+        "columns": ["overall_rank", "player", "player_id", "team", "pos"],
+        "boards": {"12team_2qb_te_premium_half_ppr": [[
+            1, "Unavailable Runner", "00-0099996", "GB", "RB",
+        ]]},
+    }), encoding="utf-8")
+    roster = pd.DataFrame([{
+        "gsis_id": "00-0099996", "full_name": "Unavailable Runner", "team": "GB",
+        "position": "RB", "status": "ACT", "headshot_url": None,
+    }])
+    depth = pd.DataFrame([{
+        "dt": "2026-09-04T12:00:00Z", "team": "GB",
+        "player_name": "Unavailable Runner", "pos_abb": "RB", "pos_rank": 1,
+    }])
+
+    build_player_news(
+        rankings,
+        destination,
+        season=2026,
+        current_roster=roster,
+        current_depth=depth,
+        previous_depth=depth,
+        espn_injuries=[{
+            "full_name": "Unavailable Runner", "team": "GB", "position": "RB",
+            "injuries": ["Personal"], "status": "Out",
+            "date": "2026-09-04T18:00Z", "return_date": None, "source_url": None,
+        }],
+        now=datetime(2026, 9, 4, 15, 0, tzinfo=timezone.utc),
+    )
+
+    report = json.loads(destination.read_text(encoding="utf-8"))["reports"]["unavailable runner|GB"]
+    assert report["signal"] == "risk"
+    assert report["injury"]["label"] == "STATUS"
+    assert report["injury"]["severity"] == "risk"

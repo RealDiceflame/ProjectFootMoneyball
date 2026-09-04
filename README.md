@@ -6,7 +6,7 @@ Open <https://outlierbaseline.com/> in any modern browser. The website supports 
 
 ## Update factual player news (no API key)
 
-The factual timeline uses public nflverse roster, depth-chart, and injury releases plus matched ESPN NFL RSS headlines. Players are joined by stable NFL ID when available, with name plus position as the fallback; ambiguous same-name headlines are skipped instead of guessed. It does not copy Rotoworld blurbs or require an AI key.
+The factual timeline uses public nflverse roster, depth-chart, and weekly injury releases plus ESPN's current injury designations and matched NFL headlines. Players are joined by stable NFL ID when available, with name plus position as the fallback; ambiguous same-name headlines are skipped instead of guessed. All current primary and secondary injuries appear in the rankings. Questionable and probable designations remain visible without changing the market-based draft tag, while Out, Doubtful, injured-reserve, suspension, and exempt-list situations become RISK. It does not copy Rotoworld blurbs or require an AI key.
 
 Run it locally:
 

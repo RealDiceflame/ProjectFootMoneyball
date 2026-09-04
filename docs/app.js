@@ -287,9 +287,11 @@ function statusBadge(text, className, description) {
 }
 
 function injuryText(injury) {
-  const name = String(injury?.name || "Injury").trim();
+  const names = Array.isArray(injury?.injuries) ? injury.injuries.filter(Boolean) : [];
+  const name = names.length ? names.join(" / ") : String(injury?.name || "Injury").trim();
   const status = String(injury?.status || "").trim();
-  return status ? `INJ · ${name} · ${status}` : `INJ · ${name}`;
+  const label = injury?.label === "STATUS" ? "STATUS" : "INJ";
+  return status ? `${label} · ${name} · ${status}` : `${label} · ${name}`;
 }
 
 function playerInitials(name) {
@@ -372,11 +374,15 @@ function renderBody(rows) {
           statuses.append(statusBadge("ROOKIE", "status-rookie", `${row.player} is in the ${state.data.projection_season} rookie class`));
         }
         if (row.injury) {
+          const injuryNames = Array.isArray(row.injury.injuries) && row.injury.injuries.length
+            ? row.injury.injuries.join(", ")
+            : row.injury.name || "availability update";
           const description = [
-            `Current injury: ${row.injury.name || "availability update"}`,
+            `Current injuries: ${injuryNames}`,
             row.injury.report_status ? `game status ${row.injury.report_status}` : "",
             row.injury.practice_status ? `practice ${row.injury.practice_status}` : "",
             row.injury.week ? `week ${row.injury.week}` : "",
+            row.injury.return_date ? `listed return ${row.injury.return_date}` : "",
           ].filter(Boolean).join(" · ");
           statuses.append(statusBadge(
             injuryText(row.injury),

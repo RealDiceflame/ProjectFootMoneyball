@@ -21,8 +21,10 @@ ROSTER_URL = "https://github.com/nflverse/nflverse-data/releases/download/roster
 DEPTH_URL = "https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_{season}.csv.gz"
 INJURY_URL = "https://github.com/nflverse/nflverse-data/releases/download/injuries/injuries_{season}.csv.gz"
 ESPN_NEWS_URL = "https://www.espn.com/espn/rss/nfl/news"
+ESPN_INJURIES_URL = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries"
 ESPN_NEWS_SOURCE = "https://www.espn.com/nfl/"
 ESPN_TEAM_CODES = {"LA": "lar", "WAS": "wsh"}
+ESPN_TEAM_ALIASES = {"LAR": "LA", "WSH": "WAS"}
 NFL_HEADSHOT_TRANSFORM = "/image/upload/f_auto,q_auto/"
 NFL_HEADSHOT_COMPACT = "/image/upload/f_auto,q_auto,w_160,c_fill,g_face/"
 
@@ -32,7 +34,7 @@ STATUS_DETAILS = {
     "DEV": ("Practice-squad/developmental status", "risk"),
     "CUT": ("Released or waived", "risk"),
     "RET": ("Retired status", "risk"),
-    "EXE": ("Roster exemption", "watch"),
+    "EXE": ("Roster exemption", "risk"),
     "INA": ("Inactive status", "watch"),
     "TRD": ("Trade status", "watch"),
     "TRC": ("Contract terminated", "risk"),
@@ -305,20 +307,36 @@ def _injury_event(player: dict, injuries: pd.DataFrame) -> tuple[dict | None, di
     if matches.empty:
         return None, None
     row = matches.sort_values("week").iloc[-1]
-    report_injury = row.get("report_primary_injury")
-    practice_injury = row.get("practice_primary_injury")
-    injury = report_injury if pd.notna(report_injury) and str(report_injury).strip() else practice_injury
+    injury_names = []
+    seen_injuries = set()
+    for column in (
+        "report_primary_injury",
+        "report_secondary_injury",
+        "practice_primary_injury",
+        "practice_secondary_injury",
+    ):
+        value = row.get(column)
+        if pd.isna(value) or not str(value).strip():
+            continue
+        clean_value = str(value).strip()
+        normalized_value = clean_value.casefold()
+        if normalized_value not in seen_injuries:
+            injury_names.append(clean_value)
+            seen_injuries.add(normalized_value)
     report = row.get("report_status")
     practice = row.get("practice_status")
-    values = [value for value in (injury, report, practice) if pd.notna(value) and str(value).strip()]
+    values = [*injury_names, *[
+        value for value in (report, practice) if pd.notna(value) and str(value).strip()
+    ]]
     if not values:
         return None, None
     severity = "risk" if str(report).casefold() in {"out", "doubtful"} else "watch"
-    clean_injury = str(injury).strip() if pd.notna(injury) and str(injury).strip() else "Availability"
+    clean_injury = ", ".join(injury_names) if injury_names else "Availability"
     clean_report = str(report).strip() if pd.notna(report) and str(report).strip() else None
     clean_practice = str(practice).strip() if pd.notna(practice) and str(practice).strip() else None
     snapshot = {
         "name": clean_injury,
+        "injuries": injury_names,
         "status": clean_report or clean_practice,
         "report_status": clean_report,
         "practice_status": clean_practice,
@@ -335,9 +353,65 @@ def _injury_event(player: dict, injuries: pd.DataFrame) -> tuple[dict | None, di
     ), snapshot
 
 
+def _espn_injury_event(player: dict, injuries: list[dict]) -> tuple[dict | None, dict | None]:
+    """Return ESPN's current injury or availability designation for one player."""
+    accepted_positions = {"RB", "HB", "FB"} if player["pos"] == "RB" else {player["pos"]}
+    matches = [
+        report for report in injuries
+        if normalize_name(report.get("full_name", "")) == normalize_name(player["player"])
+        and report.get("team") == player["team"]
+        and str(report.get("position") or "").upper() in accepted_positions
+    ]
+    if not matches:
+        return None, None
+
+    report = max(matches, key=lambda item: str(item.get("date") or ""))
+    injury_names = list(dict.fromkeys(report.get("injuries") or []))
+    status = str(report.get("status") or "").strip()
+    severity = "risk" if status.casefold() in {
+        "out", "doubtful", "injured reserve", "suspension",
+    } else "watch"
+    non_injury_reasons = {"personal", "suspension"}
+    label = "STATUS" if injury_names and {
+        name.casefold() for name in injury_names
+    } <= non_injury_reasons else "INJ"
+    injury_name = ", ".join(injury_names) if injury_names else "Availability"
+    date_label = str(report.get("date") or "Recent").split("T", 1)[0]
+    return_date = report.get("return_date")
+    detail_parts = [f"ESPN lists the current status as {status or 'an availability update' }."]
+    if injury_names:
+        detail_parts.append(f"Reported issue: {injury_name}.")
+    if return_date:
+        detail_parts.append(f"Listed return date: {return_date}.")
+    source_url = report.get("source_url") or espn_team_url("injuries", player["team"])
+    snapshot = {
+        "name": injury_name,
+        "injuries": injury_names,
+        "status": status or None,
+        "report_status": status or None,
+        "practice_status": None,
+        "week": None,
+        "severity": severity,
+        "label": label,
+        "date": date_label,
+        "return_date": return_date,
+    }
+    return _event(
+        "Injury" if label == "INJ" else "Availability",
+        severity,
+        date_label,
+        f"{status or 'Availability'}: {injury_name}",
+        " ".join(detail_parts),
+        _source("View the ESPN player update", source_url),
+    ), snapshot
+
+
 def _headline_severity(headline: str) -> str:
     text = headline.casefold()
-    risk_terms = ("out for season", "season-ending", "torn ", "suspended", "released", "waived", "retires")
+    risk_terms = (
+        "out for season", "season-ending", "torn ", "suspended", "released", "waived", "retires",
+        "commissioner's exempt", "commissioner exempt", "exempt list",
+    )
     watch_terms = ("injury", "injured", "surgery", "misses", "miss ", "limited", "questionable", "holdout", "competition")
     if any(term in text for term in risk_terms):
         return "risk"
@@ -389,6 +463,7 @@ def build_player_news(
     current_depth: pd.DataFrame,
     previous_depth: pd.DataFrame,
     injuries: pd.DataFrame | None = None,
+    espn_injuries: list[dict] | None = None,
     headlines: list[dict] | None = None,
     now: datetime | None = None,
 ) -> Path:
@@ -398,6 +473,7 @@ def build_player_news(
     current_depth = _latest_by_team(current_depth)
     previous_depth = _latest_by_team(previous_depth)
     injuries = injuries if injuries is not None else pd.DataFrame()
+    espn_injuries = espn_injuries or []
     players = {}
 
     ranked_players = load_ranked_players(rankings_path, DEFAULT_BOARD)
@@ -422,7 +498,9 @@ def build_player_news(
         position_events = _position_changes(current_player, current_depth, previous_depth, ranked_names)
         events.extend(position_events)
         severities.extend(event["severity"] for event in position_events)
-        injury_event, injury = _injury_event(current_player, injuries)
+        injury_event, injury = _espn_injury_event(current_player, espn_injuries)
+        if not injury_event:
+            injury_event, injury = _injury_event(current_player, injuries)
         if injury_event:
             events.insert(0, injury_event)
             severities.append(injury_event["severity"])
@@ -450,7 +528,7 @@ def build_player_news(
         "season": season,
         "generated_at": now.isoformat(),
         "player_count": len(players),
-        "source": "nflverse roster, depth-chart, and injury data plus ESPN NFL headlines",
+        "source": "nflverse roster, depth-chart, and injury data plus ESPN injuries and NFL headlines",
         "attribution_url": "https://github.com/nflverse/nflverse-data",
         "reports": players,
     }
@@ -488,6 +566,43 @@ def _download_headlines(*, get: Callable = requests.get) -> list[dict]:
     return headlines
 
 
+def _download_espn_injuries(*, get: Callable = requests.get) -> list[dict]:
+    """Load ESPN designations used before official weekly reports are published."""
+    response = get(
+        ESPN_INJURIES_URL,
+        headers={"User-Agent": "curl/8.10.1", "Accept": "application/json"},
+        timeout=60,
+    )
+    response.raise_for_status()
+    reports = []
+    for team in response.json().get("injuries", []):
+        for item in team.get("injuries", []):
+            athlete = item.get("athlete") or {}
+            details = item.get("details") or {}
+            status = str(item.get("status") or "").strip()
+            injury_type = str(details.get("type") or "").strip()
+            if status.casefold() == "active" and not injury_type:
+                continue
+            links = athlete.get("links") or []
+            source_url = next((
+                link.get("href") for link in links
+                if "news" in (link.get("rel") or [])
+                and str(link.get("href") or "").startswith(("https://", "http://"))
+            ), None)
+            team_code = str((athlete.get("team") or {}).get("abbreviation") or "").upper()
+            reports.append({
+                "full_name": athlete.get("displayName"),
+                "team": ESPN_TEAM_ALIASES.get(team_code, team_code),
+                "position": (athlete.get("position") or {}).get("abbreviation"),
+                "injuries": [injury_type] if injury_type else [],
+                "status": status,
+                "date": item.get("date"),
+                "return_date": details.get("returnDate"),
+                "source_url": source_url,
+            })
+    return reports
+
+
 def refresh_player_news(
     rankings_path: str | Path,
     destination: str | Path,
@@ -496,7 +611,7 @@ def refresh_player_news(
     status: Callable[[str], None] = print,
 ) -> Path:
     """Download the public source data and refresh the website timeline."""
-    status(f"[1/5] Loading {season} rosters...")
+    status(f"[1/6] Loading {season} rosters...")
     roster = _download_csv(
         ROSTER_URL.format(season=season),
         [
@@ -504,26 +619,33 @@ def refresh_player_news(
             "status_description_abbr", "headshot_url",
         ],
     )
-    status(f"[2/5] Loading {season} depth charts...")
+    status(f"[2/6] Loading {season} depth charts...")
     current_depth = _download_csv(
         DEPTH_URL.format(season=season),
         ["dt", "team", "player_name", "pos_abb", "pos_rank"],
     )
-    status(f"[3/5] Comparing {season - 1} depth charts...")
+    status(f"[3/6] Comparing {season - 1} depth charts...")
     previous_depth = _download_csv(
         DEPTH_URL.format(season=season - 1),
         ["dt", "team", "player_name", "pos_abb", "pos_rank"],
     )
-    status(f"[4/5] Checking {season} injury reports...")
+    status(f"[4/6] Checking {season} injury reports...")
     injuries = _download_csv(
         INJURY_URL.format(season=season),
         [
-            "team", "week", "gsis_id", "position", "full_name", "report_primary_injury", "report_status",
-            "practice_primary_injury", "practice_status",
+            "team", "week", "gsis_id", "position", "full_name",
+            "report_primary_injury", "report_secondary_injury", "report_status",
+            "practice_primary_injury", "practice_secondary_injury", "practice_status",
         ],
         optional=True,
     )
-    status("[5/5] Loading recent ESPN NFL headlines...")
+    status("[5/6] Loading current ESPN injuries...")
+    try:
+        espn_injuries = _download_espn_injuries()
+    except (requests.RequestException, ValueError) as error:
+        status(f"[WARN] Current ESPN injuries are temporarily unavailable: {error}")
+        espn_injuries = []
+    status("[6/6] Loading recent ESPN NFL headlines...")
     try:
         headlines = _download_headlines()
     except (requests.RequestException, ElementTree.ParseError) as error:
@@ -537,6 +659,7 @@ def refresh_player_news(
         current_depth=current_depth,
         previous_depth=previous_depth,
         injuries=injuries,
+        espn_injuries=espn_injuries,
         headlines=headlines,
     )
     status(f"[OK] Player news ready: {result}")
