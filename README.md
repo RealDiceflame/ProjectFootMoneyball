@@ -2,7 +2,7 @@
 
 ## Use the web draft board
 
-Open <https://realdiceflame.github.io/ProjectFootMoneyball/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, rookie and current-injury labels, and source-linked player intel. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, and matched ESPN headlines. Desktop downloads remain available under GitHub Releases.
+Open <https://outlierbaseline.com/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, rookie and current-injury labels, and source-linked player intel. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, and matched ESPN headlines. Desktop downloads remain available under GitHub Releases.
 
 ## Update factual player news (no API key)
 
