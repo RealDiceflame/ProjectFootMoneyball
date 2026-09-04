@@ -8,7 +8,8 @@ import pandas as pd
 
 NUMERIC_COLUMNS = {
     "overall_rank", "position_rank", "projected_points", "replacement_points",
-    "vorp", "adp", "value_vs_adp", "Yahoo", "Sleeper", "NFL",
+    "vorp", "market_expected_points", "market_value", "adp", "value_vs_adp",
+    "Yahoo", "Sleeper", "NFL",
 }
 
 

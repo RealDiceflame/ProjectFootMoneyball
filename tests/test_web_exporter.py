@@ -15,6 +15,8 @@ def _ranking_row(value):
         "position_rank": "QB1",
         "projected_points": 300.0,
         "vorp": 100.0,
+        "market_expected_points": 280.0,
+        "market_value": 20.0,
         "adp": 5.0,
         "value_vs_adp": value,
         "Yahoo": 4.0,
@@ -46,6 +48,7 @@ def test_export_web_rankings_builds_every_board_and_draft_tag(tmp_path):
     payload = json.loads(result.read_text(encoding="utf-8"))
     assert len(payload["boards"]) == 60
     assert payload["projection_season"] == 2026
+    assert "market_value" in payload["columns"]
     tag_index = payload["columns"].index("draft_tag")
     assert payload["boards"]["8team_format_0"][0][tag_index] == "TARGET"
 

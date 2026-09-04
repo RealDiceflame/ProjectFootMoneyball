@@ -18,6 +18,8 @@ WEB_COLUMNS = (
     "position_rank",
     "projected_points",
     "vorp",
+    "market_expected_points",
+    "market_value",
     "adp",
     "value_vs_adp",
     "Yahoo",

@@ -130,6 +130,9 @@ td { height: 43px; border-bottom: 1px solid rgba(255,255,255,.055); text-align: 
 td.player { min-width: 220px; text-align: left; font-weight: 760; }
 td.rank { font-variant-numeric: tabular-nums; font-weight: 850; }
 td.numeric { font-variant-numeric: tabular-nums; }
+.market-positive { color: #9ceb8a; font-weight: 850; }
+.market-negative { color: #ffaaa2; font-weight: 850; }
+.market-neutral { color: #c4d6ce; }
 .team-cell { font-variant-numeric: tabular-nums; }
 .team-previous { color: #78978b; }
 .team-arrow { margin: 0 5px; color: #78978b; }
@@ -177,6 +180,7 @@ thead th:nth-child(-n+3) { z-index: 7; background: #102f27; }
 .legend .value { background: #f1d56a; }
 .legend .fair { background: #849b91; }
 .legend .reach { background: #ff8d84; }
+.legend .market { background: #8cc8ff; }
 .legend .save-note { margin-left: auto; }
 
 footer { padding: 0 0 30px; display: flex; justify-content: space-between; gap: 20px; color: #769388; font-size: .7rem; }

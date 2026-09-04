@@ -13,6 +13,13 @@ const columns = [
   { key: "position_rank", label: "Pos Rank", width: 78, kind: "positionRank" },
   { key: "projected_points", label: "Projected", width: 88, kind: "number" },
   { key: "vorp", label: "VORP", width: 78, kind: "number" },
+  {
+    key: "market_value",
+    label: "Market +/-",
+    width: 92,
+    kind: "number",
+    description: "Projected points above or below the same-position market expectation at this ADP",
+  },
   { key: "adp", label: "ADP", width: 70, kind: "number" },
   { key: "value_vs_adp", label: "Value", width: 70, kind: "number" },
   { key: "Yahoo", label: "Yahoo", width: 70, kind: "number" },
@@ -220,6 +227,7 @@ function renderHead() {
     heading.scope = "col";
     heading.style.minWidth = `${column.width}px`;
     heading.style.textAlign = column.key === "player" ? "left" : "center";
+    if (column.description) heading.title = column.description;
     const indicator = state.sortColumn === column.key ? (state.sortAscending ? "▲" : "▼") : "";
     heading.innerHTML = `<button class="sort-button" type="button" data-sort="${column.key}"><span>${column.label}</span><span class="sort-indicator">${indicator}</span></button>`;
     headings.append(heading);
@@ -340,6 +348,14 @@ function renderBody(rows) {
           td.append(previous, arrow, current);
         } else {
           td.textContent = row.current_team;
+        }
+      } else if (column.key === "market_value") {
+        const marketValue = numeric(row.market_value);
+        const marketExpected = numeric(row.market_expected_points);
+        td.textContent = marketValue === null ? "—" : `${marketValue > 0 ? "+" : ""}${marketValue.toFixed(1)}`;
+        if (marketValue !== null) td.classList.add(marketValue > 0 ? "market-positive" : marketValue < 0 ? "market-negative" : "market-neutral");
+        if (marketExpected !== null) {
+          td.title = `${Number(row.projected_points).toFixed(1)} projected − ${marketExpected.toFixed(1)} market expected`;
         }
       } else {
         td.textContent = formatValue(column, row[column.key]);

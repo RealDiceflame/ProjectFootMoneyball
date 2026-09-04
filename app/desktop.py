@@ -16,11 +16,15 @@ DISPLAY_COLUMNS = (
     ("overall_rank", "Rank", 55), ("player", "Player", 175), ("team", "Team", 55),
     ("pos", "Pos", 48), ("position_rank", "Pos Rank", 70),
     ("projected_points", "Projected", 82), ("vorp", "VORP", 72),
+    ("market_value", "Market +/-", 82),
     ("adp", "ADP", 65), ("value_vs_adp", "Value", 65),
     ("Yahoo", "Yahoo", 65), ("Sleeper", "Sleeper", 65),
     ("NFL", "NFL/ESPN", 75), ("draft_tag", "Draft Tag", 75),
 )
-DECIMAL_COLUMNS = {"projected_points", "vorp", "adp", "value_vs_adp", "Yahoo", "Sleeper", "NFL"}
+DECIMAL_COLUMNS = {
+    "projected_points", "vorp", "market_value", "adp", "value_vs_adp",
+    "Yahoo", "Sleeper", "NFL",
+}
 
 
 def format_table_value(column, value):

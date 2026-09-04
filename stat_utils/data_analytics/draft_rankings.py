@@ -58,6 +58,24 @@ def _replacement_ranks(teams: int, qb_starters: int) -> dict[str, int]:
     }
 
 
+def calculate_market_expected_points(ranking: pd.DataFrame) -> pd.Series:
+    """Fit a position-specific points-vs-ADP line and return its expectation."""
+    expected = pd.Series(float("nan"), index=ranking.index, dtype=float)
+    for _position, group in ranking.groupby("pos"):
+        adp = pd.to_numeric(group["adp"], errors="coerce")
+        points = pd.to_numeric(group["projected_points"], errors="coerce")
+        valid = adp.notna() & points.notna()
+        if valid.sum() < 2:
+            continue
+        x = adp[valid]
+        y = points[valid]
+        denominator = ((x - x.mean()) ** 2).sum()
+        slope = 0.0 if denominator == 0 else (((x - x.mean()) * (y - y.mean())).sum() / denominator)
+        intercept = y.mean() - slope * x.mean()
+        expected.loc[group.index] = adp * slope + intercept
+    return expected
+
+
 def build_draft_ranking(
     df: pd.DataFrame,
     *,
@@ -86,6 +104,9 @@ def build_draft_ranking(
         base_ppr=base_ppr,
         te_premium=te_premium,
     )
+    ranking["adp"] = pd.to_numeric(ranking.get("ADP"), errors="coerce")
+    ranking["market_expected_points"] = calculate_market_expected_points(ranking)
+    ranking["market_value"] = ranking["projected_points"] - ranking["market_expected_points"]
 
     starter_counts = _replacement_ranks(teams, qb_starters)
     replacement_points: dict[str, float] = {}
@@ -123,7 +144,6 @@ def build_draft_ranking(
         na_position="last",
     ).reset_index(drop=True)
     ranking.insert(0, "overall_rank", ranking.index + 1)
-    ranking["adp"] = pd.to_numeric(ranking.get("ADP"), errors="coerce")
     ranking["value_vs_adp"] = ranking["adp"] - ranking["overall_rank"]
     ranking["format"] = format_name
 
@@ -136,6 +156,8 @@ def build_draft_ranking(
         "projected_points",
         "replacement_points",
         "vorp",
+        "market_expected_points",
+        "market_value",
         "adp",
         "value_vs_adp",
         "Yahoo",
@@ -151,6 +173,8 @@ def build_draft_ranking(
         "projected_points",
         "replacement_points",
         "vorp",
+        "market_expected_points",
+        "market_value",
         "adp",
         "value_vs_adp",
     ]

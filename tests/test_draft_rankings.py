@@ -2,6 +2,7 @@ import pandas as pd
 
 from stat_utils.data_analytics.draft_rankings import (
     build_draft_ranking,
+    calculate_market_expected_points,
     calculate_projected_points,
 )
 
@@ -56,6 +57,19 @@ def test_full_ppr_adds_reception_points_to_all_pass_catchers():
 
     assert (half_ppr - standard).tolist() == [30, 30]
     assert (full_ppr - standard).tolist() == [60, 60]
+
+
+def test_market_value_compares_projection_with_position_regression_at_adp():
+    ranking = pd.DataFrame({
+        "pos": ["QB", "QB", "QB", "QB"],
+        "adp": [10, 20, 30, 20],
+        "projected_points": [400, 350, 300, 400],
+    })
+
+    expected = calculate_market_expected_points(ranking)
+
+    assert expected.round(1).tolist() == [412.5, 362.5, 312.5, 362.5]
+    assert ranking.loc[3, "projected_points"] - expected.loc[3] == 37.5
 
 
 def test_two_qb_replacement_level_uses_twice_as_many_qbs():
