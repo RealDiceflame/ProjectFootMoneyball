@@ -2,7 +2,28 @@
 
 ## Use the web draft board
 
-Open <https://realdiceflame.github.io/ProjectFootMoneyball/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, and CSV export. Desktop downloads remain available under GitHub Releases.
+Open <https://realdiceflame.github.io/ProjectFootMoneyball/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, and source-linked player intel. Click a player name to open the intel report. Desktop downloads remain available under GitHub Releases.
+
+## Update AI player intel
+
+The public website never receives an OpenAI API key. A private GitHub Action researches the latest role changes, arrivals, departures, injuries, and value-changing news, then publishes date-stamped reports to `docs/data/player_intel.json`.
+
+One-time setup:
+
+1. Create an OpenAI API key with API billing enabled.
+2. In this GitHub repository, open **Settings → Secrets and variables → Actions**.
+3. Choose **New repository secret**, name it `OPENAI_API_KEY`, and paste the key there.
+4. Open **Actions → Update player intel → Run workflow**.
+5. Start with 50 players. Run it again for the next stale group, or enter one exact player name for a focused update.
+
+The action commits successful reports back to the website automatically. OpenAI API usage is billed separately from a ChatGPT subscription, and web searches can add tool-call costs. Reports include clickable sources and should be checked before making a draft decision.
+
+To update locally after setting `OPENAI_API_KEY` as an environment variable:
+
+```powershell
+python update_player_intel.py --limit 50
+python update_player_intel.py --player "Josh Allen"
+```
 
 A fantasy-football draft-board application that combines NFL season stats, rookie betting-line projections, and Yahoo/Sleeper/NFL-ESPN ADP. It produces interactive rankings for 8–16 teams, 1QB/2QB, Standard/Half/Full PPR, and optional TE premium scoring.
 
@@ -60,6 +81,7 @@ Generated spreadsheets and saved draft state are stored under `Documents/Project
 config.py                         Season, league, and folder settings
 main.py                           Compatibility command-line entry point
 refresh_draft_board.py            Stats/ADP refresh command
+update_player_intel.py             Source-linked AI player news updater
 app/                              Desktop UI, board service, workbook export
 pipeline/                         Pipeline orchestration
 data_fetcher/                     Active ADP and rookie projection importers

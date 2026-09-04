@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#071d18">
-  <meta name="description" content="Interactive Project Foot Moneyball fantasy football draft board.">
+  <meta name="description" content="Interactive Project Foot Moneyball fantasy football draft board with source-linked player intel.">
   <meta property="og:title" content="Project Foot Moneyball">
   <meta property="og:description" content="Build your board. Track your draft. Find the value.">
   <meta property="og:type" content="website">
@@ -70,7 +70,7 @@
           <button class="position" data-position="WR" type="button">WR</button>
           <button class="position" data-position="TE" type="button">TE</button>
         </div>
-        <p class="filter-tip">Header filters accept text, comma-separated choices, <code>&gt;25</code>, or <code>10..30</code>.</p>
+        <p class="filter-tip">Click a player for AI intel. Header filters accept text, choices, <code>&gt;25</code>, or <code>10..30</code>.</p>
       </div>
 
       <div class="table-shell" id="table-shell" aria-busy="true">
@@ -90,6 +90,20 @@
   </main>
 
   <footer><span>Project Foot Moneyball · 2025 stats for the 2026 season</span><a href="https://github.com/RealDiceflame/ProjectFootMoneyball/releases">Need the desktop app or spreadsheet?</a></footer>
+
+  <dialog id="intel-dialog" class="intel-dialog" aria-labelledby="intel-title">
+    <form method="dialog" class="intel-shell">
+      <header class="intel-header">
+        <div>
+          <p class="eyebrow">AI player intel</p>
+          <h2 id="intel-title">Player report</h2>
+          <p id="intel-meta" class="intel-meta"></p>
+        </div>
+        <button class="dialog-close" value="close" aria-label="Close player report">×</button>
+      </header>
+      <div id="intel-body" class="intel-body"></div>
+    </form>
+  </dialog>
 
   <dialog id="reset-dialog">
     <form method="dialog">

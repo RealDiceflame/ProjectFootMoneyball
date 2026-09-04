@@ -1,0 +1,67 @@
+name: Update player intel
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: Number of stale, highest-ranked players to update
+        required: true
+        default: "50"
+      stale_days:
+        description: Refresh reports at least this many days old
+        required: true
+        default: "7"
+      player:
+        description: Optional exact player name (leave blank for the ranked list)
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      LIMIT: ${{ inputs.limit }}
+      STALE_DAYS: ${{ inputs.stale_days }}
+      PLAYER: ${{ inputs.player }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install updater dependencies
+        run: python -m pip install requests
+      - name: Verify the private API key exists
+        run: test -n "$OPENAI_API_KEY" || (echo "Add OPENAI_API_KEY under Settings > Secrets and variables > Actions." && exit 1)
+      - name: Research player news
+        id: research
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [ -n "$PLAYER" ]; then
+            python update_player_intel.py --player "$PLAYER"
+          else
+            python update_player_intel.py --limit "$LIMIT" --stale-days "$STALE_DAYS"
+          fi
+      - name: Publish reports
+        if: always()
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data/player_intel.json
+          if git diff --cached --quiet; then
+            echo "No player reports needed an update."
+          else
+            git commit -m "Update player intel reports"
+            git push
+          fi
+      - name: Report research failures
+        if: steps.research.outcome == 'failure'
+        run: |
+          echo "Some player reports failed. Successful reports were published; run the action again to retry."
+          exit 1

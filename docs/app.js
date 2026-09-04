@@ -1,4 +1,5 @@
 const DATA_URL = "./data/rankings.json";
+const INTEL_URL = "./data/player_intel.json";
 const DRAFTED_KEY = "project-foot-moneyball:drafted:v1";
 const SETTINGS_KEY = "project-foot-moneyball:settings:v1";
 
@@ -39,11 +40,16 @@ const ui = {
   loadingState: document.querySelector("#loading-state"),
   emptyState: document.querySelector("#empty-state"),
   emptyClear: document.querySelector("#empty-clear"),
+  intelDialog: document.querySelector("#intel-dialog"),
+  intelTitle: document.querySelector("#intel-title"),
+  intelMeta: document.querySelector("#intel-meta"),
+  intelBody: document.querySelector("#intel-body"),
 };
 
 const savedDrafted = loadJson(DRAFTED_KEY, []);
 const state = {
   data: null,
+  intel: { generated_at: null, report_count: 0, reports: {} },
   settings: loadJson(SETTINGS_KEY, { teams: "12", quarterbacks: "2QB", ppr: "Half PPR", tePremium: "+0.5" }),
   drafted: new Set(Array.isArray(savedDrafted) ? savedDrafted : []),
   search: "",
@@ -229,6 +235,21 @@ function renderBody(rows) {
         td.append(button);
       } else if (column.key === "draft_tag") {
         td.append(tagElement(row.draft_tag));
+      } else if (column.key === "player") {
+        const reportAvailable = Boolean(state.intel.reports?.[key]);
+        const button = document.createElement("button");
+        button.className = "player-intel-button";
+        button.type = "button";
+        button.dataset.intelKey = encodeURIComponent(key);
+        button.setAttribute("aria-label", `Open player intel for ${row.player}`);
+        const name = document.createElement("span");
+        name.className = "player-name";
+        name.textContent = row.player;
+        const hint = document.createElement("span");
+        hint.className = reportAvailable ? "intel-hint available" : "intel-hint";
+        hint.textContent = reportAvailable ? "AI report ready" : "Player intel";
+        button.append(name, hint);
+        td.append(button);
       } else {
         td.textContent = formatValue(column, row[column.key]);
       }
@@ -237,6 +258,129 @@ function renderBody(rows) {
     fragment.append(tr);
   }
   ui.tableBody.replaceChildren(fragment);
+}
+
+function addIntelSection(container, title, value) {
+  const section = document.createElement("section");
+  section.className = "intel-section";
+  const heading = document.createElement("h3");
+  heading.textContent = title;
+  section.append(heading);
+  const values = Array.isArray(value) ? value : [value];
+  const useful = values.filter(item => String(item || "").trim());
+  if (useful.length > 1) {
+    const list = document.createElement("ul");
+    useful.forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = item;
+      list.append(li);
+    });
+    section.append(list);
+  } else {
+    const paragraph = document.createElement("p");
+    paragraph.textContent = useful[0] || "No material change found.";
+    section.append(paragraph);
+  }
+  container.append(section);
+}
+
+function safeSourceUrl(value) {
+  try {
+    const url = new URL(value);
+    return ["https:", "http:"].includes(url.protocol) ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+function formatTimestamp(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.valueOf()) ? value : new Intl.DateTimeFormat(undefined, {
+    month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit"
+  }).format(date);
+}
+
+function openIntel(key, row) {
+  const report = state.intel.reports?.[key];
+  ui.intelTitle.textContent = row.player;
+  ui.intelMeta.textContent = `${row.team} · ${row.pos} · Overall rank ${row.overall_rank}`;
+  const fragment = document.createDocumentFragment();
+
+  if (!report) {
+    const empty = document.createElement("div");
+    empty.className = "intel-empty";
+    const title = document.createElement("strong");
+    title.textContent = "This report has not been published yet.";
+    const detail = document.createElement("p");
+    detail.textContent = "Player reports are researched from current web sources during the private intel update. The rankings still work normally.";
+    empty.append(title, detail);
+    fragment.append(empty);
+  } else {
+    const badges = document.createElement("div");
+    badges.className = "intel-badges";
+    const risk = document.createElement("span");
+    risk.className = `intel-badge risk-${report.risk_level || "unknown"}`;
+    risk.textContent = `${report.risk_level || "unknown"} risk`;
+    const job = document.createElement("span");
+    job.className = "intel-badge neutral";
+    job.textContent = `Job: ${String(report.job_status || "uncertain").replaceAll("_", " ")}`;
+    const direction = document.createElement("span");
+    direction.className = `intel-badge value-${report.value_direction || "neutral"}`;
+    direction.textContent = `Value: ${report.value_direction || "neutral"}`;
+    badges.append(risk, job, direction);
+
+    const headline = document.createElement("h3");
+    headline.className = "intel-headline";
+    headline.textContent = report.headline || "Current player outlook";
+    const summary = document.createElement("p");
+    summary.className = "intel-summary";
+    summary.textContent = report.summary || "No summary was provided.";
+    fragment.append(badges, headline, summary);
+
+    const grid = document.createElement("div");
+    grid.className = "intel-grid";
+    addIntelSection(grid, "Role and job status", report.role_change);
+    addIntelSection(grid, "Who came in", report.arrivals);
+    addIntelSection(grid, "Who left", report.departures);
+    addIntelSection(grid, "Injuries and availability", report.injuries);
+    addIntelSection(grid, "Recent news", report.recent_news);
+    addIntelSection(grid, "Fantasy value impact", report.fantasy_impact);
+    fragment.append(grid);
+
+    const sources = document.createElement("section");
+    sources.className = "intel-sources";
+    const sourceHeading = document.createElement("h3");
+    sourceHeading.textContent = "Sources";
+    sources.append(sourceHeading);
+    const sourceList = document.createElement("ul");
+    for (const source of report.sources || []) {
+      const href = safeSourceUrl(source.url);
+      if (!href) continue;
+      const li = document.createElement("li");
+      const link = document.createElement("a");
+      link.href = href;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = source.title || href;
+      li.append(link);
+      sourceList.append(li);
+    }
+    if (sourceList.children.length) sources.append(sourceList);
+    else {
+      const unavailable = document.createElement("p");
+      unavailable.textContent = "No source links were returned. Treat this report as low confidence.";
+      sources.append(unavailable);
+    }
+    fragment.append(sources);
+
+    const note = document.createElement("p");
+    note.className = "intel-note";
+    note.textContent = `Updated ${formatDate(report.updated_at)} · ${report.confidence || "low"} confidence · AI summaries can miss context, so check the linked reporting before drafting.`;
+    fragment.append(note);
+  }
+
+  ui.intelBody.replaceChildren(fragment);
+  ui.intelDialog.showModal();
 }
 
 function formatDate(value) {
@@ -344,6 +488,13 @@ function bindEvents() {
   ui.tableHead.addEventListener("input", updateHeaderFilter);
   ui.tableHead.addEventListener("change", updateHeaderFilter);
   ui.tableBody.addEventListener("click", event => {
+    const intelButton = event.target.closest("[data-intel-key]");
+    if (intelButton) {
+      const key = decodeURIComponent(intelButton.dataset.intelKey);
+      const row = rowsForCurrentBoard().find(item => playerKey(item) === key);
+      if (row) openIntel(key, row);
+      return;
+    }
     const button = event.target.closest("[data-draft-key]");
     if (button) toggleDrafted(decodeURIComponent(button.dataset.draftKey));
   });
@@ -361,12 +512,22 @@ function bindEvents() {
 
 async function loadRankings() {
   try {
-    const response = await fetch(`${DATA_URL}?v=${Date.now()}`, { cache: "no-store" });
+    const [response, intelResponse] = await Promise.all([
+      fetch(`${DATA_URL}?v=${Date.now()}`, { cache: "no-store" }),
+      fetch(`${INTEL_URL}?v=${Date.now()}`, { cache: "no-store" }).catch(() => null),
+    ]);
     if (!response.ok) throw new Error(`Rankings request failed (${response.status})`);
     const data = await response.json();
     if (!data.boards || !data.columns) throw new Error("The rankings file is incomplete");
     state.data = data;
-    ui.sourceStatus.textContent = `${data.projection_season} board · ADP updated ${formatDate(data.adp_updated)}`;
+    if (intelResponse?.ok) {
+      const intel = await intelResponse.json();
+      if (intel.reports) state.intel = intel;
+    }
+    const intelStatus = state.intel.report_count
+      ? `${state.intel.report_count} intel reports updated ${formatTimestamp(state.intel.generated_at)}`
+      : "intel reports awaiting first update";
+    ui.sourceStatus.textContent = `${data.projection_season} board · ADP ${formatDate(data.adp_updated)} · ${intelStatus}`;
     ui.boardHeading.textContent = `${data.projection_season} player rankings`;
     ui.loadingState.classList.add("hidden");
     renderHead();
