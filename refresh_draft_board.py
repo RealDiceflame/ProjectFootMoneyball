@@ -5,11 +5,12 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 
 from config import (
-    ADP_DIR, ADP_FILENAME, OUTPUT_DIR, PROJECTION_SEASON, STAT_SEASON,
-    STATS_DIR, seed_packaged_data,
+    ADP_DIR, ADP_FILENAME, ADP_SNAPSHOT_DATE, IS_FROZEN, OUTPUT_DIR, PROJECT_ROOT,
+    PROJECTION_SEASON, STAT_SEASON, STATS_DIR, seed_packaged_data,
 )
 from data_fetcher.adp_importer import build_combined_adp
 from app.draft_board_exporter import export_switchable_draft_board
+from app.web_exporter import export_web_rankings
 from pipeline.runner import run_pipeline
 
 NFLVERSE_URL = ("https://github.com/nflverse/nflverse-data/releases/download/"
@@ -58,6 +59,15 @@ def refresh_draft_board(adp_source=None, keep_stats=False, workbook=None, status
     run_pipeline()
     status("[4/4] Creating the switchable spreadsheet...")
     result = export_switchable_draft_board(OUTPUT_DIR, workbook)
+    if not IS_FROZEN:
+        status("[WEB] Updating the browser draft board data...")
+        export_web_rankings(
+            OUTPUT_DIR,
+            PROJECT_ROOT / "docs" / "data" / "rankings.json",
+            projection_season=PROJECTION_SEASON,
+            stat_season=STAT_SEASON,
+            adp_updated=ADP_SNAPSHOT_DATE,
+        )
     status(f"[OK] Draft board ready: {result}")
     return result
 

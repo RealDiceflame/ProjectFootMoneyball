@@ -1,8 +1,8 @@
 # Project Foot Moneyball
 
-## Download the app
+## Use the web draft board
 
-Use the device-aware download page at <https://realdiceflame.github.io/ProjectFootMoneyball/>. It detects Windows or macOS and loads the matching files from the newest complete GitHub Release.
+Open <https://realdiceflame.github.io/ProjectFootMoneyball/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, and CSV export. Desktop downloads remain available under GitHub Releases.
 
 A fantasy-football draft-board application that combines NFL season stats, rookie betting-line projections, and Yahoo/Sleeper/NFL-ESPN ADP. It produces interactive rankings for 8–16 teams, 1QB/2QB, Standard/Half/Full PPR, and optional TE premium scoring.
 
@@ -21,6 +21,8 @@ Reuse the saved stats and ADP:
 ```powershell
 python refresh_draft_board.py --keep-stats
 ```
+
+When the refresh runs from the source repository, it also updates `docs/data/rankings.json` for the website. Commit and push that generated file to publish the refreshed rankings.
 
 Refresh ADP from a comparison page URL or saved HTML file:
 
