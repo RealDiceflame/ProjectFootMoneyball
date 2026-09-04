@@ -99,6 +99,13 @@ def test_build_player_news_records_both_listed_and_current_team(tmp_path):
         "full_name": "Moved Player",
         "status_description_abbr": None,
     }])
+    current_depth = pd.DataFrame([{
+        "dt": "2026-09-04T12:00:00Z",
+        "team": "NYG",
+        "player_name": "Moved Player",
+        "pos_abb": "WR",
+        "pos_rank": 2,
+    }])
     depth_columns = ["dt", "team", "player_name", "pos_abb", "pos_rank"]
 
     build_player_news(
@@ -106,7 +113,7 @@ def test_build_player_news_records_both_listed_and_current_team(tmp_path):
         destination,
         season=2026,
         current_roster=roster,
-        current_depth=pd.DataFrame(columns=depth_columns),
+        current_depth=current_depth,
         previous_depth=pd.DataFrame(columns=depth_columns),
         now=datetime(2026, 9, 4, 15, 0, tzinfo=timezone.utc),
     )
@@ -115,3 +122,6 @@ def test_build_player_news_records_both_listed_and_current_team(tmp_path):
     assert report["listed_team"] == "WAS"
     assert report["current_team"] == "NYG"
     assert report["events"][0]["source"]["url"] == "https://www.espn.com/nfl/team/roster/_/name/nyg"
+    depth_event = next(event for event in report["events"] if event["category"] == "Depth chart")
+    assert depth_event["title"] == "Listed as WR2"
+    assert depth_event["source"]["url"] == "https://www.espn.com/nfl/team/depth/_/name/nyg"

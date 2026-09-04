@@ -334,13 +334,14 @@ def build_player_news(
         if roster_event:
             events.append(roster_event)
         severities.append(roster_signal)
-        depth_event, depth_signal = _depth_event(player, current_depth, generated_date)
+        current_player = {**player, "team": current_team or player["team"]}
+        depth_event, depth_signal = _depth_event(current_player, current_depth, generated_date)
         events.append(depth_event)
         severities.append(depth_signal)
-        position_events = _position_changes(player, current_depth, previous_depth, ranked_names)
+        position_events = _position_changes(current_player, current_depth, previous_depth, ranked_names)
         events.extend(position_events)
         severities.extend(event["severity"] for event in position_events)
-        injury_event = _injury_event(player, injuries)
+        injury_event = _injury_event(current_player, injuries)
         if injury_event:
             events.insert(0, injury_event)
             severities.append(injury_event["severity"])
