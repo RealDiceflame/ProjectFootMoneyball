@@ -2,6 +2,9 @@ name: Update factual player news
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "0 0,12 * * *"
+      timezone: "America/New_York"
 
 permissions:
   contents: write
@@ -9,6 +12,7 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

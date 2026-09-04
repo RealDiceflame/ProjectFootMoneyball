@@ -14,7 +14,7 @@ Run it locally:
 python update_player_news.py
 ```
 
-Or open **Actions → Update factual player news → Run workflow** on GitHub. The workflow rebuilds `docs/data/player_news.json`, commits changed data, and publishes it to the website.
+The website refreshes this factual data automatically every day at midnight and noon Eastern time, with daylight-saving changes handled automatically. You can also open **Actions → Update factual player news → Run workflow** on GitHub at any time. The workflow rebuilds `docs/data/player_news.json`, commits changed data, and publishes it to the website.
 
 ## Update AI player intel
 
