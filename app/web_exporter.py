@@ -90,4 +90,3 @@ def export_web_rankings(
     )
     temporary.replace(destination)
     return destination
-

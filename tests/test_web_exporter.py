@@ -59,4 +59,3 @@ def test_export_web_rankings_requires_all_formats(tmp_path):
             stat_season=2025,
             adp_updated="2026-08-29",
         )
-
