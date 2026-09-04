@@ -43,7 +43,7 @@ def load_rankings(output_dir, settings):
     if not path.exists():
         raise FileNotFoundError("Rankings have not been generated yet. Click Update Data first.")
     rankings = pd.read_csv(path)
-    value = pd.to_numeric(rankings["value_vs_adp"], errors="coerce")
+    value = pd.to_numeric(rankings["market_value"], errors="coerce")
     rankings["draft_tag"] = "FAIR"
     rankings.loc[value >= 10, "draft_tag"] = "VALUE"
     rankings.loc[value >= 25, "draft_tag"] = "TARGET"

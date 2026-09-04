@@ -5,14 +5,14 @@ const DRAFTED_KEY = "project-foot-moneyball:drafted:v1";
 const SETTINGS_KEY = "project-foot-moneyball:settings:v1";
 
 const columns = [
-  { key: "drafted", label: "Drafted", width: 62, kind: "drafted" },
-  { key: "overall_rank", label: "Rank", width: 62, kind: "number" },
-  { key: "player", label: "Player", width: 230, kind: "text", className: "player" },
-  { key: "team", label: "Team", width: 96, kind: "category" },
-  { key: "pos", label: "Pos", width: 58, kind: "category" },
-  { key: "position_rank", label: "Pos Rank", width: 78, kind: "positionRank" },
-  { key: "projected_points", label: "Projected", width: 88, kind: "number" },
-  { key: "vorp", label: "VORP", width: 78, kind: "number" },
+  { key: "drafted", label: "Drafted", width: 62, kind: "drafted", description: "Show available players or players already marked as drafted" },
+  { key: "overall_rank", label: "Rank", width: 62, kind: "number", description: "Overall rank for the selected league format; try <25 or 10..30" },
+  { key: "player", label: "Player", width: 230, kind: "text", className: "player", description: "Type any part of a player's name" },
+  { key: "team", label: "Team", width: 96, kind: "category", description: "Choose a current or previous team" },
+  { key: "pos", label: "Pos", width: 58, kind: "category", description: "Filter by QB, RB, WR, or TE; separate choices with commas" },
+  { key: "position_rank", label: "Pos Rank", width: 78, kind: "positionRank", description: "Position-specific rank, such as QB5 or WR12" },
+  { key: "projected_points", label: "Projected", width: 88, kind: "number", description: "Projected 17-game fantasy points under the selected scoring settings" },
+  { key: "vorp", label: "VORP", width: 78, kind: "number", description: "Projected points above the position's replacement player" },
   {
     key: "market_value",
     label: "Market +/-",
@@ -20,12 +20,12 @@ const columns = [
     kind: "number",
     description: "Projected points above or below the same-position market expectation at this ADP",
   },
-  { key: "adp", label: "ADP", width: 70, kind: "number" },
-  { key: "value_vs_adp", label: "Value", width: 70, kind: "number" },
-  { key: "Yahoo", label: "Yahoo", width: 70, kind: "number" },
-  { key: "Sleeper", label: "Sleeper", width: 74, kind: "number" },
-  { key: "NFL", label: "NFL/ESPN", width: 82, kind: "number" },
-  { key: "draft_tag", label: "Draft Tag", width: 82, kind: "category" },
+  { key: "adp", label: "ADP", width: 70, kind: "number", description: "Composite average draft position from Yahoo, Sleeper, and NFL/ESPN" },
+  { key: "value_vs_adp", label: "ADP Value", width: 78, kind: "number", description: "Composite ADP minus this board's rank; positive means the board ranks the player earlier" },
+  { key: "Yahoo", label: "Yahoo", width: 70, kind: "number", description: "Yahoo average draft position" },
+  { key: "Sleeper", label: "Sleeper", width: 74, kind: "number", description: "Sleeper average draft position" },
+  { key: "NFL", label: "NFL/ESPN", width: 82, kind: "number", description: "NFL/ESPN average draft position" },
+  { key: "draft_tag", label: "Draft Tag", width: 82, kind: "category", description: "Market +/- tier: TARGET +25, VALUE +10, FAIR between -10 and +10, or REACH -10" },
 ];
 
 const ui = {
@@ -245,6 +245,8 @@ function renderHead() {
     } else {
       filterCell.innerHTML = `<input data-filter="${column.key}" aria-label="Filter ${column.label}" placeholder="Filter" autocomplete="off">`;
     }
+    const filterControl = filterCell.querySelector("[data-filter]");
+    if (filterControl && column.description) filterControl.title = column.description;
     filters.append(filterCell);
   }
   ui.tableHead.replaceChildren(headings, filters);

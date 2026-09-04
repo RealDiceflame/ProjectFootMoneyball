@@ -30,7 +30,7 @@ WEB_COLUMNS = (
 
 
 def _draft_tags(values: pd.Series) -> pd.Series:
-    """Return the same VALUE/TARGET/REACH labels used by the desktop app."""
+    """Classify projected point advantage over the position's ADP market line."""
     numeric = pd.to_numeric(values, errors="coerce")
     tags = pd.Series("FAIR", index=values.index)
     tags.loc[numeric >= 10] = "VALUE"
@@ -66,7 +66,7 @@ def export_web_rankings(
 
     for path in files:
         frame = pd.read_csv(path)
-        frame["draft_tag"] = _draft_tags(frame["value_vs_adp"])
+        frame["draft_tag"] = _draft_tags(frame["market_value"])
         missing = [column for column in WEB_COLUMNS if column not in frame.columns]
         if missing:
             raise ValueError(f"{path.name} is missing columns: {', '.join(missing)}")

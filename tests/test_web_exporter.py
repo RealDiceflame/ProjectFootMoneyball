@@ -16,7 +16,7 @@ def _ranking_row(value):
         "projected_points": 300.0,
         "vorp": 100.0,
         "market_expected_points": 280.0,
-        "market_value": 20.0,
+        "market_value": value,
         "adp": 5.0,
         "value_vs_adp": value,
         "Yahoo": 4.0,
