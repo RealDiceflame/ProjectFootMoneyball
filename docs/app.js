@@ -8,7 +8,7 @@ const columns = [
   { key: "drafted", label: "Drafted", width: 62, kind: "drafted" },
   { key: "overall_rank", label: "Rank", width: 62, kind: "number" },
   { key: "player", label: "Player", width: 200, kind: "text", className: "player" },
-  { key: "team", label: "Team", width: 65, kind: "category" },
+  { key: "team", label: "Team", width: 96, kind: "category" },
   { key: "pos", label: "Pos", width: 58, kind: "category" },
   { key: "position_rank", label: "Pos Rank", width: 78, kind: "positionRank" },
   { key: "projected_points", label: "Projected", width: 88, kind: "number" },
@@ -94,13 +94,35 @@ function rankingSlug() {
 }
 
 function playerKey(row) {
-  return `${String(row.player).trim().toLocaleLowerCase()}|${String(row.team).trim().toUpperCase()}`;
+  const listedTeam = row.listed_team || row.team;
+  return `${String(row.player).trim().toLocaleLowerCase()}|${String(listedTeam).trim().toUpperCase()}`;
 }
 
 function rowsForCurrentBoard() {
   const arrays = state.data.boards[rankingSlug()];
   if (!arrays) throw new Error(`Rankings are missing for ${rankingSlug()}`);
-  return arrays.map(values => Object.fromEntries(state.data.columns.map((column, index) => [column, values[index]])));
+  return arrays.map(values => {
+    const row = Object.fromEntries(state.data.columns.map((column, index) => [column, values[index]]));
+    row.listed_team = String(row.team || "").toUpperCase();
+    const news = state.news.reports?.[playerKey(row)];
+    row.current_team = String(news?.current_team || row.listed_team).toUpperCase();
+    return row;
+  });
+}
+
+function teamDisplay(row) {
+  return row.current_team !== row.listed_team
+    ? `${row.listed_team} → ${row.current_team}`
+    : row.current_team;
+}
+
+function selectableTeams() {
+  const teams = new Set();
+  for (const row of rowsForCurrentBoard()) {
+    if (row.listed_team) teams.add(row.listed_team);
+    if (row.current_team) teams.add(row.current_team);
+  }
+  return [...teams].sort();
 }
 
 function numeric(value) {
@@ -143,11 +165,15 @@ function filterRows(rows) {
   const search = state.search.trim().toLocaleLowerCase();
   return rows.filter(row => {
     const drafted = state.drafted.has(playerKey(row));
-    if (search && ![row.player, row.team, row.pos].some(value => String(value).toLocaleLowerCase().includes(search))) return false;
+    if (search && ![row.player, row.listed_team, row.current_team, row.pos].some(value => String(value).toLocaleLowerCase().includes(search))) return false;
     if (state.position !== "ALL" && row.pos !== state.position) return false;
     return columns.every(column => {
       const query = state.filters[column.key] || "";
       if (column.key === "drafted") return !query || (query === "yes" ? drafted : !drafted);
+      if (column.key === "team") {
+        const wanted = query.trim().toUpperCase();
+        return !wanted || row.listed_team === wanted || row.current_team === wanted;
+      }
       return matchesFilter(row[column.key], query, column.kind);
     });
   });
@@ -157,8 +183,8 @@ function sortRows(rows) {
   const meta = columns.find(column => column.key === state.sortColumn);
   const direction = state.sortAscending ? 1 : -1;
   return [...rows].sort((left, right) => {
-    let a = meta.key === "drafted" ? state.drafted.has(playerKey(left)) : left[meta.key];
-    let b = meta.key === "drafted" ? state.drafted.has(playerKey(right)) : right[meta.key];
+    let a = meta.key === "drafted" ? state.drafted.has(playerKey(left)) : meta.key === "team" ? left.current_team : left[meta.key];
+    let b = meta.key === "drafted" ? state.drafted.has(playerKey(right)) : meta.key === "team" ? right.current_team : right[meta.key];
     if (meta.kind === "number" || meta.kind === "drafted") {
       a = meta.kind === "drafted" ? Number(a) : numeric(a);
       b = meta.kind === "drafted" ? Number(b) : numeric(b);
@@ -198,9 +224,18 @@ function renderHead() {
     headings.append(heading);
 
     const filterCell = document.createElement("th");
-    filterCell.innerHTML = column.key === "drafted"
-      ? `<select data-filter="drafted" aria-label="Filter Drafted"><option value="">All</option><option value="no">Open</option><option value="yes">Drafted</option></select>`
-      : `<input data-filter="${column.key}" aria-label="Filter ${column.label}" placeholder="Filter" autocomplete="off">`;
+    if (column.key === "drafted") {
+      filterCell.innerHTML = `<select data-filter="drafted" aria-label="Filter Drafted"><option value="">All</option><option value="no">Open</option><option value="yes">Drafted</option></select>`;
+    } else if (column.key === "team") {
+      const select = document.createElement("select");
+      select.dataset.filter = "team";
+      select.setAttribute("aria-label", "Filter current or previous team");
+      select.append(new Option("All teams", ""));
+      selectableTeams().forEach(team => select.append(new Option(team, team)));
+      filterCell.append(select);
+    } else {
+      filterCell.innerHTML = `<input data-filter="${column.key}" aria-label="Filter ${column.label}" placeholder="Filter" autocomplete="off">`;
+    }
     filters.append(filterCell);
   }
   ui.tableHead.replaceChildren(headings, filters);
@@ -253,6 +288,24 @@ function renderBody(rows) {
         hint.textContent = reportAvailable ? "AI report ready" : newsAvailable ? "News ready" : "Player intel";
         button.append(name, hint);
         td.append(button);
+      } else if (column.key === "team") {
+        td.className = "team-cell";
+        if (row.current_team !== row.listed_team) {
+          td.title = `Previously ${row.listed_team}; now ${row.current_team}`;
+          const previous = document.createElement("span");
+          previous.className = "team-previous";
+          previous.textContent = row.listed_team;
+          const arrow = document.createElement("span");
+          arrow.className = "team-arrow";
+          arrow.setAttribute("aria-hidden", "true");
+          arrow.textContent = "→";
+          const current = document.createElement("strong");
+          current.className = "team-current";
+          current.textContent = row.current_team;
+          td.append(previous, arrow, current);
+        } else {
+          td.textContent = row.current_team;
+        }
       } else {
         td.textContent = formatValue(column, row[column.key]);
       }
@@ -374,7 +427,10 @@ function openIntel(key, row) {
   const report = state.intel.reports?.[key];
   const news = state.news.reports?.[key];
   ui.intelTitle.textContent = row.player;
-  ui.intelMeta.textContent = `${row.team} · ${row.pos} · Overall rank ${row.overall_rank}`;
+  const teamLabel = row.current_team !== row.listed_team
+    ? `${row.current_team} · previously ${row.listed_team}`
+    : row.current_team;
+  ui.intelMeta.textContent = `${teamLabel} · ${row.pos} · Overall rank ${row.overall_rank}`;
   const fragment = document.createDocumentFragment();
 
   if (!report && !news?.events?.length) {
@@ -536,7 +592,9 @@ function csvCell(value) {
 function exportVisibleBoard() {
   const exportColumns = columns.filter(column => column.key !== "drafted");
   const lines = [exportColumns.map(column => csvCell(column.label)).join(",")];
-  for (const row of state.visibleRows) lines.push(exportColumns.map(column => csvCell(row[column.key])).join(","));
+  for (const row of state.visibleRows) {
+    lines.push(exportColumns.map(column => csvCell(column.key === "team" ? teamDisplay(row) : row[column.key])).join(","));
+  }
   const blob = new Blob([lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");

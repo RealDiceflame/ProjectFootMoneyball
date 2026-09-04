@@ -72,6 +72,8 @@ def test_build_player_news_creates_depth_roster_and_position_updates(tmp_path):
     starter = payload["reports"]["starter runner|BUF"]
     reserve = payload["reports"]["reserve receiver|KC"]
     assert payload["player_count"] == 2
+    assert starter["listed_team"] == "BUF"
+    assert starter["current_team"] == "BUF"
     assert {event["category"] for event in starter["events"]} >= {"Depth chart", "Arrival", "Departure"}
     depth_event = next(event for event in starter["events"] if event["category"] == "Depth chart")
     assert depth_event["source"] == {
@@ -82,3 +84,34 @@ def test_build_player_news_creates_depth_roster_and_position_updates(tmp_path):
     assert reserve["signal"] == "risk"
     assert reserve["events"][0]["title"] == "Reserve-list status"
     assert reserve["events"][0]["source"]["url"] == "https://www.espn.com/nfl/team/roster/_/name/kc"
+
+
+def test_build_player_news_records_both_listed_and_current_team(tmp_path):
+    rankings = tmp_path / "rankings.json"
+    destination = tmp_path / "player_news.json"
+    rankings.write_text(json.dumps({
+        "columns": ["overall_rank", "player", "team", "pos"],
+        "boards": {"12team_2qb_te_premium_half_ppr": [[1, "Moved Player", "WAS", "WR"]]},
+    }), encoding="utf-8")
+    roster = pd.DataFrame([{
+        "team": "NYG",
+        "status": "ACT",
+        "full_name": "Moved Player",
+        "status_description_abbr": None,
+    }])
+    depth_columns = ["dt", "team", "player_name", "pos_abb", "pos_rank"]
+
+    build_player_news(
+        rankings,
+        destination,
+        season=2026,
+        current_roster=roster,
+        current_depth=pd.DataFrame(columns=depth_columns),
+        previous_depth=pd.DataFrame(columns=depth_columns),
+        now=datetime(2026, 9, 4, 15, 0, tzinfo=timezone.utc),
+    )
+
+    report = json.loads(destination.read_text(encoding="utf-8"))["reports"]["moved player|WAS"]
+    assert report["listed_team"] == "WAS"
+    assert report["current_team"] == "NYG"
+    assert report["events"][0]["source"]["url"] == "https://www.espn.com/nfl/team/roster/_/name/nyg"

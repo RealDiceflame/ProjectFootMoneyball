@@ -87,7 +87,11 @@ def _matching_rows(frame: pd.DataFrame, column: str, name: str) -> pd.DataFrame:
     return frame[normalized == normalize_name(name)].copy()
 
 
-def _roster_event(player: dict, roster: pd.DataFrame, generated_date: str) -> tuple[dict | None, str]:
+def _roster_event(
+    player: dict,
+    roster: pd.DataFrame,
+    generated_date: str,
+) -> tuple[dict | None, str, str | None]:
     matches = _matching_rows(roster, "full_name", player["player"])
     same_team = matches[matches["team"] == player["team"]]
     active_elsewhere = matches[
@@ -95,7 +99,7 @@ def _roster_event(player: dict, roster: pd.DataFrame, generated_date: str) -> tu
     ]
 
     if not active_elsewhere.empty:
-        new_team = active_elsewhere.iloc[0]["team"]
+        new_team = str(active_elsewhere.iloc[0]["team"])
         return _event(
             "Roster",
             "risk",
@@ -103,7 +107,7 @@ def _roster_event(player: dict, roster: pd.DataFrame, generated_date: str) -> tu
             f"Current roster data lists {player['player']} with {new_team}",
             f"The draft board still lists {player['team']}. Verify the team and role before drafting.",
             _source(f"View {new_team} roster at ESPN", espn_team_url("roster", new_team)),
-        ), "risk"
+        ), "risk", new_team
 
     if same_team.empty:
         return _event(
@@ -113,14 +117,14 @@ def _roster_event(player: dict, roster: pd.DataFrame, generated_date: str) -> tu
             "Not matched on the current roster",
             "The player could not be matched to the current team roster. This may be a naming or roster-timing issue.",
             _source(f"View {player['team']} roster at ESPN", espn_team_url("roster", player["team"])),
-        ), "watch"
+        ), "watch", None
 
     row = same_team.sort_values(
         "status", key=lambda values: values.map({"ACT": 0, "RES": 1, "DEV": 2, "EXE": 3}).fillna(9)
     ).iloc[0]
     status = str(row.get("status") or "").upper()
     if status == "ACT":
-        return None, "stable"
+        return None, "stable", player["team"]
     title, severity = STATUS_DETAILS.get(status, (f"Roster status: {status or 'unknown'}", "watch"))
     description = str(row.get("status_description_abbr") or "").strip()
     detail = f"Current roster status is {status}."
@@ -133,7 +137,7 @@ def _roster_event(player: dict, roster: pd.DataFrame, generated_date: str) -> tu
         title,
         detail,
         _source(f"View {player['team']} roster at ESPN", espn_team_url("roster", player["team"])),
-    ), severity
+    ), severity, player["team"]
 
 
 def _depth_event(player: dict, depth: pd.DataFrame, generated_date: str) -> tuple[dict, str]:
@@ -326,7 +330,7 @@ def build_player_news(
         key = player_key(player["player"], player["team"])
         events = list(headline_events.get(key, []))
         severities = [event["severity"] for event in events]
-        roster_event, roster_signal = _roster_event(player, current_roster, generated_date)
+        roster_event, roster_signal, current_team = _roster_event(player, current_roster, generated_date)
         if roster_event:
             events.append(roster_event)
         severities.append(roster_signal)
@@ -344,6 +348,8 @@ def build_player_news(
         players[key] = {
             "player": player["player"],
             "team": player["team"],
+            "listed_team": player["team"],
+            "current_team": current_team,
             "pos": player["pos"],
             "signal": signal,
             "events": events,

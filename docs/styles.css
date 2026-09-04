@@ -130,6 +130,10 @@ td { height: 43px; border-bottom: 1px solid rgba(255,255,255,.055); text-align: 
 td.player { min-width: 190px; text-align: left; font-weight: 760; }
 td.rank { font-variant-numeric: tabular-nums; font-weight: 850; }
 td.numeric { font-variant-numeric: tabular-nums; }
+.team-cell { font-variant-numeric: tabular-nums; }
+.team-previous { color: #78978b; }
+.team-arrow { margin: 0 5px; color: #78978b; }
+.team-current { color: var(--lime); font-weight: 850; }
 
 th:nth-child(1), td:nth-child(1) { position: sticky; left: 0; z-index: 2; background: #0c241e; }
 th:nth-child(2), td:nth-child(2) { position: sticky; left: 62px; z-index: 2; background: #0c241e; }
