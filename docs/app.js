@@ -7,7 +7,7 @@ const SETTINGS_KEY = "project-foot-moneyball:settings:v1";
 const columns = [
   { key: "drafted", label: "Drafted", width: 62, kind: "drafted" },
   { key: "overall_rank", label: "Rank", width: 62, kind: "number" },
-  { key: "player", label: "Player", width: 200, kind: "text", className: "player" },
+  { key: "player", label: "Player", width: 230, kind: "text", className: "player" },
   { key: "team", label: "Team", width: 96, kind: "category" },
   { key: "pos", label: "Pos", width: 58, kind: "category" },
   { key: "position_rank", label: "Pos Rank", width: 78, kind: "positionRank" },
@@ -42,6 +42,7 @@ const ui = {
   emptyState: document.querySelector("#empty-state"),
   emptyClear: document.querySelector("#empty-clear"),
   intelDialog: document.querySelector("#intel-dialog"),
+  intelPhoto: document.querySelector("#intel-photo"),
   intelTitle: document.querySelector("#intel-title"),
   intelMeta: document.querySelector("#intel-meta"),
   intelBody: document.querySelector("#intel-body"),
@@ -249,6 +250,36 @@ function tagElement(tag) {
   return span;
 }
 
+function playerInitials(name) {
+  return String(name || "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0]?.toUpperCase() || "")
+    .join("") || "?";
+}
+
+function createPlayerPhoto(name, rawUrl, size = "small") {
+  const frame = document.createElement("span");
+  frame.className = `player-photo player-photo-${size}`;
+  frame.setAttribute("aria-hidden", "true");
+  const fallback = document.createElement("span");
+  fallback.className = "player-photo-fallback";
+  fallback.textContent = playerInitials(name);
+  frame.append(fallback);
+  const url = safeSourceUrl(rawUrl);
+  if (url) {
+    const image = document.createElement("img");
+    image.src = url;
+    image.alt = "";
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.addEventListener("error", () => image.remove());
+    frame.append(image);
+  }
+  return frame;
+}
+
 function renderBody(rows) {
   const fragment = document.createDocumentFragment();
   for (const row of rows) {
@@ -274,7 +305,8 @@ function renderBody(rows) {
         td.append(tagElement(row.draft_tag));
       } else if (column.key === "player") {
         const reportAvailable = Boolean(state.intel.reports?.[key]);
-        const newsAvailable = Boolean(state.news.reports?.[key]?.events?.length);
+        const playerNews = state.news.reports?.[key];
+        const newsAvailable = Boolean(playerNews?.events?.length);
         const button = document.createElement("button");
         button.className = "player-intel-button";
         button.type = "button";
@@ -286,7 +318,10 @@ function renderBody(rows) {
         const hint = document.createElement("span");
         hint.className = reportAvailable || newsAvailable ? "intel-hint available" : "intel-hint";
         hint.textContent = reportAvailable ? "AI report ready" : newsAvailable ? "News ready" : "Player intel";
-        button.append(name, hint);
+        const labels = document.createElement("span");
+        labels.className = "player-labels";
+        labels.append(name, hint);
+        button.append(createPlayerPhoto(row.player, playerNews?.headshot_url), labels);
         td.append(button);
       } else if (column.key === "team") {
         td.className = "team-cell";
@@ -426,6 +461,7 @@ function appendNewsTimeline(container, news) {
 function openIntel(key, row) {
   const report = state.intel.reports?.[key];
   const news = state.news.reports?.[key];
+  ui.intelPhoto.replaceChildren(createPlayerPhoto(row.player, news?.headshot_url, "large"));
   ui.intelTitle.textContent = row.player;
   const teamLabel = row.current_team !== row.listed_team
     ? `${row.current_team} · previously ${row.listed_team}`

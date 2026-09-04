@@ -23,6 +23,8 @@ INJURY_URL = "https://github.com/nflverse/nflverse-data/releases/download/injuri
 ESPN_NEWS_URL = "https://www.espn.com/espn/rss/nfl/news"
 ESPN_NEWS_SOURCE = "https://www.espn.com/nfl/"
 ESPN_TEAM_CODES = {"LA": "lar", "WAS": "wsh"}
+NFL_HEADSHOT_TRANSFORM = "/image/upload/f_auto,q_auto/"
+NFL_HEADSHOT_COMPACT = "/image/upload/f_auto,q_auto,w_160,c_fill,g_face/"
 
 CURRENT_STATUSES = {"ACT", "RES", "DEV", "EXE"}
 STATUS_DETAILS = {
@@ -85,6 +87,21 @@ def _matching_rows(frame: pd.DataFrame, column: str, name: str) -> pd.DataFrame:
         return frame.copy()
     normalized = frame[column].fillna("").map(normalize_name)
     return frame[normalized == normalize_name(name)].copy()
+
+
+def _headshot_url(player: dict, roster: pd.DataFrame, current_team: str | None) -> str | None:
+    """Prefer the headshot attached to the player's current roster entry."""
+    matches = _matching_rows(roster, "full_name", player["player"])
+    if matches.empty or "headshot_url" not in matches.columns:
+        return None
+    if current_team:
+        current = matches[matches["team"] == current_team]
+        matches = pd.concat([current, matches.drop(index=current.index)])
+    for value in matches["headshot_url"].dropna():
+        url = str(value).strip()
+        if url.startswith(("https://", "http://")):
+            return url.replace(NFL_HEADSHOT_TRANSFORM, NFL_HEADSHOT_COMPACT, 1)
+    return None
 
 
 def _roster_event(
@@ -351,6 +368,7 @@ def build_player_news(
             "team": player["team"],
             "listed_team": player["team"],
             "current_team": current_team,
+            "headshot_url": _headshot_url(player, current_roster, current_team),
             "pos": player["pos"],
             "signal": signal,
             "events": events,
@@ -409,7 +427,7 @@ def refresh_player_news(
     status(f"[1/5] Loading {season} rosters...")
     roster = _download_csv(
         ROSTER_URL.format(season=season),
-        ["team", "status", "full_name", "status_description_abbr"],
+        ["team", "status", "full_name", "status_description_abbr", "headshot_url"],
     )
     status(f"[2/5] Loading {season} depth charts...")
     current_depth = _download_csv(

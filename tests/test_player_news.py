@@ -46,7 +46,13 @@ def test_build_player_news_creates_depth_roster_and_position_updates(tmp_path):
     destination = tmp_path / "player_news.json"
     _rankings(rankings)
     roster = pd.DataFrame([
-        {"team": "BUF", "status": "ACT", "full_name": "Starter Runner", "status_description_abbr": None},
+        {
+            "team": "BUF",
+            "status": "ACT",
+            "full_name": "Starter Runner",
+            "status_description_abbr": None,
+            "headshot_url": "https://static.www.nfl.com/image/upload/f_auto,q_auto/league/starter",
+        },
         {"team": "KC", "status": "RES", "full_name": "Reserve Receiver Jr.", "status_description_abbr": "R/I"},
     ])
     current_depth = pd.DataFrame([
@@ -74,6 +80,10 @@ def test_build_player_news_creates_depth_roster_and_position_updates(tmp_path):
     assert payload["player_count"] == 2
     assert starter["listed_team"] == "BUF"
     assert starter["current_team"] == "BUF"
+    assert starter["headshot_url"] == (
+        "https://static.www.nfl.com/image/upload/"
+        "f_auto,q_auto,w_160,c_fill,g_face/league/starter"
+    )
     assert {event["category"] for event in starter["events"]} >= {"Depth chart", "Arrival", "Departure"}
     depth_event = next(event for event in starter["events"] if event["category"] == "Depth chart")
     assert depth_event["source"] == {
@@ -98,6 +108,7 @@ def test_build_player_news_records_both_listed_and_current_team(tmp_path):
         "status": "ACT",
         "full_name": "Moved Player",
         "status_description_abbr": None,
+        "headshot_url": "https://static.example.com/moved-player.png",
     }])
     current_depth = pd.DataFrame([{
         "dt": "2026-09-04T12:00:00Z",
@@ -121,6 +132,7 @@ def test_build_player_news_records_both_listed_and_current_team(tmp_path):
     report = json.loads(destination.read_text(encoding="utf-8"))["reports"]["moved player|WAS"]
     assert report["listed_team"] == "WAS"
     assert report["current_team"] == "NYG"
+    assert report["headshot_url"] == "https://static.example.com/moved-player.png"
     assert report["events"][0]["source"]["url"] == "https://www.espn.com/nfl/team/roster/_/name/nyg"
     depth_event = next(event for event in report["events"] if event["category"] == "Depth chart")
     assert depth_event["title"] == "Listed as WR2"
