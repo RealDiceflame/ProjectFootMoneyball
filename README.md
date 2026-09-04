@@ -1,5 +1,9 @@
 # Project Foot Moneyball
 
+## Download the app
+
+Use the device-aware download page at <https://realdiceflame.github.io/ProjectFootMoneyball/>. It detects Windows or macOS and loads the matching files from the newest complete GitHub Release.
+
 A fantasy-football draft-board application that combines NFL season stats, rookie betting-line projections, and Yahoo/Sleeper/NFL-ESPN ADP. It produces interactive rankings for 8–16 teams, 1QB/2QB, Standard/Half/Full PPR, and optional TE premium scoring.
 
 ## Run the desktop application
