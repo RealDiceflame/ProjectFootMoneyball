@@ -48,7 +48,7 @@ def export_switchable_draft_board(rankings_dir, workbook_path):
     data.auto_filter.ref = data.dimensions
 
     board.merge_cells("A1:P1")
-    board["A1"] = "Project Foot Moneyball Draft Board"
+    board["A1"] = "OutlierBaseline Fantasy Draft Board"
     board["A1"].fill = PatternFill("solid", fgColor=navy)
     board["A1"].font = Font(color=white, bold=True, size=18)
     board["A1"].alignment = Alignment(horizontal="center")

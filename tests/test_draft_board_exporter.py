@@ -13,6 +13,7 @@ def test_exporter_builds_switchable_workbook(tmp_path):
     export_switchable_draft_board(tmp_path, destination)
     workbook = load_workbook(destination, data_only=False)
     assert workbook.sheetnames == ["Draft Board", "League Settings", "Format Data"]
+    assert workbook["Draft Board"]["A1"].value == "OutlierBaseline Fantasy Draft Board"
     assert workbook["Draft Board"]["R2"].value == 12
     assert workbook["Draft Board"]["V2"].value == "2QB"
     assert workbook["Draft Board"]["R3"].value == "Half PPR"

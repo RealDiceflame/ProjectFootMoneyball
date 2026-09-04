@@ -1,4 +1,4 @@
-# Project Foot Moneyball
+# OutlierBaseline
 
 ## Use the web draft board
 
