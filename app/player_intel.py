@@ -66,6 +66,8 @@ def load_ranked_players(rankings_path: str | Path, board: str = DEFAULT_BOARD) -
         board = next(iter(payload["boards"]))
     columns = payload["columns"]
     indices = {name: columns.index(name) for name in ("player", "team", "pos", "overall_rank")}
+    if "player_id" in columns:
+        indices["player_id"] = columns.index("player_id")
     players = []
     seen = set()
     for row in payload["boards"][board]:

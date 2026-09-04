@@ -28,6 +28,7 @@ def test_load_nflverse_stat_tables_splits_categories(tmp_path):
     source_path = tmp_path / "nflverse.csv"
     pd.DataFrame(
         {
+            "player_id": ["00-0012345"],
             "player_display_name": ["Example Player"],
             "position": ["RB"],
             "recent_team": ["BUF"],
@@ -53,4 +54,5 @@ def test_load_nflverse_stat_tables_splits_categories(tmp_path):
 
     assert passing[0].empty
     assert rushing[0].iloc[0]["rushing_yds"] == 900
+    assert rushing[0].iloc[0]["player_id"] == "00-0012345"
     assert receiving[0].iloc[0]["receiving_rec"] == 40

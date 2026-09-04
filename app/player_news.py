@@ -89,9 +89,50 @@ def _matching_rows(frame: pd.DataFrame, column: str, name: str) -> pd.DataFrame:
     return frame[normalized == normalize_name(name)].copy()
 
 
+def _clean_player_id(value) -> str:
+    if value is None or pd.isna(value):
+        return ""
+    player_id = str(value).strip()
+    return "" if player_id.casefold() in {"", "-", "nan", "none"} else player_id
+
+
+def _matching_roster_rows(roster: pd.DataFrame, player: dict) -> pd.DataFrame:
+    """Match a roster identity by stable ID, falling back to name plus position."""
+    if roster.empty:
+        return roster.copy()
+    player_id = _clean_player_id(player.get("player_id"))
+    if player_id and "gsis_id" in roster.columns:
+        ids = roster["gsis_id"].map(_clean_player_id)
+        id_matches = roster[ids == player_id].copy()
+        if not id_matches.empty:
+            return id_matches
+    matches = _matching_rows(roster, "full_name", player["player"])
+    if matches.empty or "position" not in matches.columns:
+        return matches
+    position = str(player.get("pos") or "").upper()
+    accepted = {"RB", "HB", "FB"} if position == "RB" else {position}
+    return matches[matches["position"].fillna("").astype(str).str.upper().isin(accepted)].copy()
+
+
+def _ambiguous_roster_names(roster: pd.DataFrame) -> set[str]:
+    """Identify names belonging to multiple roster identities so headlines are not guessed."""
+    if roster.empty or "full_name" not in roster.columns:
+        return set()
+    identities = roster.copy()
+    identities["_name"] = identities["full_name"].map(normalize_name)
+    if "gsis_id" in identities.columns:
+        identities["_identity"] = identities["gsis_id"].map(_clean_player_id)
+    else:
+        position = identities.get("position", pd.Series("", index=identities.index)).fillna("").astype(str)
+        team = identities.get("team", pd.Series("", index=identities.index)).fillna("").astype(str)
+        identities["_identity"] = position + "|" + team
+    counts = identities[identities["_identity"] != ""].groupby("_name")["_identity"].nunique()
+    return set(counts[counts > 1].index)
+
+
 def _headshot_url(player: dict, roster: pd.DataFrame, current_team: str | None) -> str | None:
     """Prefer the headshot attached to the player's current roster entry."""
-    matches = _matching_rows(roster, "full_name", player["player"])
+    matches = _matching_roster_rows(roster, player)
     if matches.empty or "headshot_url" not in matches.columns:
         return None
     if current_team:
@@ -109,7 +150,7 @@ def _roster_event(
     roster: pd.DataFrame,
     generated_date: str,
 ) -> tuple[dict | None, str, str | None]:
-    matches = _matching_rows(roster, "full_name", player["player"])
+    matches = _matching_roster_rows(roster, player)
     same_team = matches[matches["team"] == player["team"]]
     active_elsewhere = matches[
         (matches["team"] != player["team"]) & matches["status"].isin(CURRENT_STATUSES)
@@ -294,12 +335,20 @@ def _headline_severity(headline: str) -> str:
     return "info"
 
 
-def match_headlines(players: list[dict], headlines: list[dict]) -> dict[str, list[dict]]:
+def match_headlines(
+    players: list[dict],
+    headlines: list[dict],
+    *,
+    ambiguous_names: set[str] | None = None,
+) -> dict[str, list[dict]]:
     """Match RSS headlines conservatively when the full name appears in title or URL."""
     matched: dict[str, list[dict]] = {}
+    ambiguous_names = ambiguous_names or set()
     for player in players:
         key = player_key(player["player"], player["team"])
         full_name = normalize_name(player["player"])
+        if full_name in ambiguous_names:
+            continue
         for article in headlines:
             headline = str(article.get("title") or "").strip()
             if any(term in headline.casefold() for term in NON_FOOTBALL_HEADLINE_TERMS):
@@ -342,7 +391,11 @@ def build_player_news(
 
     ranked_players = load_ranked_players(rankings_path, DEFAULT_BOARD)
     ranked_names = {normalize_name(player["player"]) for player in ranked_players}
-    headline_events = match_headlines(ranked_players, headlines or [])
+    headline_events = match_headlines(
+        ranked_players,
+        headlines or [],
+        ambiguous_names=_ambiguous_roster_names(current_roster),
+    )
     for player in ranked_players:
         key = player_key(player["player"], player["team"])
         events = list(headline_events.get(key, []))
@@ -365,6 +418,7 @@ def build_player_news(
         signal = "risk" if "risk" in severities else "watch" if "watch" in severities else "stable"
         players[key] = {
             "player": player["player"],
+            "player_id": _clean_player_id(player.get("player_id")) or None,
             "team": player["team"],
             "listed_team": player["team"],
             "current_team": current_team,
@@ -427,7 +481,10 @@ def refresh_player_news(
     status(f"[1/5] Loading {season} rosters...")
     roster = _download_csv(
         ROSTER_URL.format(season=season),
-        ["team", "status", "full_name", "status_description_abbr", "headshot_url"],
+        [
+            "team", "status", "full_name", "position", "gsis_id",
+            "status_description_abbr", "headshot_url",
+        ],
     )
     status(f"[2/5] Loading {season} depth charts...")
     current_depth = _download_csv(

@@ -50,8 +50,10 @@ def load_nflverse_stat_tables(csv_path):
         source = source[source["season_type"].eq("REG")].copy()
 
     player = source["player_display_name"]
+    player_id = source["player_id"] if "player_id" in source.columns else pd.Series(pd.NA, index=source.index)
     common = {
         "player": player,
+        "player_id": player_id,
         "pos": source["position"],
         "team": source["recent_team"],
         "age": pd.NA,
@@ -411,7 +413,7 @@ def clean_and_prepare(df, source_name):
     # If this is the Passing source, create 'passing_' prefixed duplicates for all stat columns
     try:
         if isinstance(source_name, str) and 'pass' in source_name.strip().lower():
-            identity = {'player', 'pos', 'team', 'age', 'g', 'gs', 'rk', 'awards', 'fmb'}
+            identity = {'player', 'player_id', 'pos', 'team', 'age', 'g', 'gs', 'rk', 'awards', 'fmb'}
             for col in list(df.columns):
                 col_l = str(col).strip().lower()
                 if col_l in identity:

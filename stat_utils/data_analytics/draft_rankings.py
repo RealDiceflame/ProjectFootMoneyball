@@ -150,6 +150,7 @@ def build_draft_ranking(
     output_columns = [
         "overall_rank",
         "player",
+        "player_id",
         "team",
         "pos",
         "position_rank",

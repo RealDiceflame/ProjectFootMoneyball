@@ -10,6 +10,7 @@ def _ranking_row(value):
     return {
         "overall_rank": 1,
         "player": "Player One",
+        "player_id": "00-0012345",
         "team": "BUF",
         "pos": "QB",
         "position_rank": "QB1",

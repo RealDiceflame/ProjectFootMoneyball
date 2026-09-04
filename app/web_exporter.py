@@ -13,6 +13,7 @@ TEAM_SIZES = (8, 10, 12, 14, 16)
 WEB_COLUMNS = (
     "overall_rank",
     "player",
+    "player_id",
     "team",
     "pos",
     "position_rank",

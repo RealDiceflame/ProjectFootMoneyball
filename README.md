@@ -6,7 +6,7 @@ Open <https://realdiceflame.github.io/ProjectFootMoneyball/> in any modern brows
 
 ## Update factual player news (no API key)
 
-The factual timeline uses public nflverse roster, depth-chart, and injury releases plus matched ESPN NFL RSS headlines. It does not copy Rotoworld blurbs or require an AI key.
+The factual timeline uses public nflverse roster, depth-chart, and injury releases plus matched ESPN NFL RSS headlines. Players are joined by stable NFL ID when available, with name plus position as the fallback; ambiguous same-name headlines are skipped instead of guessed. It does not copy Rotoworld blurbs or require an AI key.
 
 Run it locally:
 
