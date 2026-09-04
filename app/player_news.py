@@ -160,12 +160,12 @@ def _roster_event(
         new_team = str(active_elsewhere.iloc[0]["team"])
         return _event(
             "Roster",
-            "risk",
+            "watch",
             generated_date,
             f"Current roster data lists {player['player']} with {new_team}",
             f"The draft board still lists {player['team']}. Verify the team and role before drafting.",
             _source(f"View {new_team} roster at ESPN", espn_team_url("roster", new_team)),
-        ), "risk", new_team
+        ), "watch", new_team
 
     if same_team.empty:
         return _event(
@@ -297,13 +297,13 @@ def _position_changes(
     return events
 
 
-def _injury_event(player: dict, injuries: pd.DataFrame) -> dict | None:
+def _injury_event(player: dict, injuries: pd.DataFrame) -> tuple[dict | None, dict | None]:
     if injuries.empty:
-        return None
-    matches = _matching_rows(injuries, "full_name", player["player"])
+        return None, None
+    matches = _matching_roster_rows(injuries, player)
     matches = matches[matches["team"] == player["team"]]
     if matches.empty:
-        return None
+        return None, None
     row = matches.sort_values("week").iloc[-1]
     report_injury = row.get("report_primary_injury")
     practice_injury = row.get("practice_primary_injury")
@@ -312,16 +312,27 @@ def _injury_event(player: dict, injuries: pd.DataFrame) -> dict | None:
     practice = row.get("practice_status")
     values = [value for value in (injury, report, practice) if pd.notna(value) and str(value).strip()]
     if not values:
-        return None
+        return None, None
     severity = "risk" if str(report).casefold() in {"out", "doubtful"} else "watch"
+    clean_injury = str(injury).strip() if pd.notna(injury) and str(injury).strip() else "Availability"
+    clean_report = str(report).strip() if pd.notna(report) and str(report).strip() else None
+    clean_practice = str(practice).strip() if pd.notna(practice) and str(practice).strip() else None
+    snapshot = {
+        "name": clean_injury,
+        "status": clean_report or clean_practice,
+        "report_status": clean_report,
+        "practice_status": clean_practice,
+        "week": int(row["week"]),
+        "severity": severity,
+    }
     return _event(
         "Injury",
         severity,
         f"Week {int(row['week'])}",
-        f"Injury report: {injury or 'availability update'}",
+        f"Injury report: {clean_injury}",
         "; ".join(str(value) for value in values),
         _source(f"View {player['team']} injuries at ESPN", espn_team_url("injuries", player["team"])),
-    )
+    ), snapshot
 
 
 def _headline_severity(headline: str) -> str:
@@ -411,11 +422,15 @@ def build_player_news(
         position_events = _position_changes(current_player, current_depth, previous_depth, ranked_names)
         events.extend(position_events)
         severities.extend(event["severity"] for event in position_events)
-        injury_event = _injury_event(current_player, injuries)
+        injury_event, injury = _injury_event(current_player, injuries)
         if injury_event:
             events.insert(0, injury_event)
             severities.append(injury_event["severity"])
         signal = "risk" if "risk" in severities else "watch" if "watch" in severities else "stable"
+        team_changed = bool(current_team and current_team != player["team"])
+        only_team_change = team_changed and not any(
+            event["category"] not in {"Roster", "Depth chart"} for event in events
+        )
         players[key] = {
             "player": player["player"],
             "player_id": _clean_player_id(player.get("player_id")) or None,
@@ -425,6 +440,9 @@ def build_player_news(
             "headshot_url": _headshot_url(player, current_roster, current_team),
             "pos": player["pos"],
             "signal": signal,
+            "injury": injury,
+            "team_changed": team_changed,
+            "only_team_change": only_team_change,
             "events": events,
         }
 
@@ -500,7 +518,7 @@ def refresh_player_news(
     injuries = _download_csv(
         INJURY_URL.format(season=season),
         [
-            "team", "week", "full_name", "report_primary_injury", "report_status",
+            "team", "week", "gsis_id", "position", "full_name", "report_primary_injury", "report_status",
             "practice_primary_injury", "practice_status",
         ],
         optional=True,

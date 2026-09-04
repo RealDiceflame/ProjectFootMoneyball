@@ -588,8 +588,14 @@ def load_rookie_predictions(file_path):
         else:
             df[col] = 0
 
+    df['is_rookie'] = True
+
     # Keep only canonical columns we care about
-    keep_cols = ['player', 'pos', 'team', 'g', 'cmp', 'att', 'yds', 'td', 'int', 'rushing_att', 'rushing_yds', 'rushing_td', 'receiving_rec', 'receiving_yds', 'receiving_td', 'fmb']
+    keep_cols = [
+        'player', 'pos', 'team', 'is_rookie', 'g', 'cmp', 'att', 'yds', 'td', 'int',
+        'rushing_att', 'rushing_yds', 'rushing_td', 'receiving_rec', 'receiving_yds',
+        'receiving_td', 'fmb',
+    ]
     for c in keep_cols:
         if c not in df.columns:
             df[c] = 0
@@ -610,6 +616,12 @@ def append_rookies_to_stats(stats_df, rookie_file_path):
     # Normalize players in stats_df for matching
     stats_df = stats_df.copy()
     stats_df['player'] = stats_df['player'].astype(str).str.strip().str.lower()
+    if 'is_rookie' not in stats_df.columns:
+        stats_df['is_rookie'] = False
+    else:
+        stats_df['is_rookie'] = (
+            stats_df['is_rookie'].fillna(False).astype(str).str.casefold().isin({'true', '1', 'yes'})
+        )
 
     # Which rookies are new vs present
     stats_players = set(stats_df['player'])
@@ -626,6 +638,7 @@ def append_rookies_to_stats(stats_df, rookie_file_path):
             mask = stats_df['player'] == pname
             if not mask.any():
                 continue
+            stats_df.loc[mask, 'is_rookie'] = True
             for base_col in numeric_base:
                 # build candidate columns to try updating in the stats_df
                 candidates = [base_col]
@@ -672,4 +685,5 @@ def append_rookies_to_stats(stats_df, rookie_file_path):
     if updated:
         print(f"[INFO] Updated {updated} numeric field(s) for existing players from rookie projections.")
 
+    combined['is_rookie'] = combined['is_rookie'].fillna(False).astype(bool)
     return combined

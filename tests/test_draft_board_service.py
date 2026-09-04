@@ -10,9 +10,11 @@ def test_league_settings_select_correct_ranking_files():
 
 def test_load_rankings_adds_draft_tags(tmp_path):
     settings = LeagueSettings(8, "1QB", "Standard", "Off")
-    pd.DataFrame({"market_value": [30, 12, 0, -15]}).to_csv(settings.ranking_path(tmp_path), index=False)
+    pd.DataFrame({"market_value": [50, 25, 24.99, -19.99, -20]}).to_csv(
+        settings.ranking_path(tmp_path), index=False
+    )
     result = load_rankings(tmp_path, settings)
-    assert result["draft_tag"].tolist() == ["TARGET", "VALUE", "FAIR", "REACH"]
+    assert result["draft_tag"].tolist() == ["TARGET", "VALUE", "FAIR", "FAIR", "REACH"]
 
 
 def test_drafted_players_persist_and_toggle(tmp_path):

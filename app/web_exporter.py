@@ -8,12 +8,15 @@ from pathlib import Path
 
 import pandas as pd
 
+from app.draft_tags import market_tags
+
 
 TEAM_SIZES = (8, 10, 12, 14, 16)
 WEB_COLUMNS = (
     "overall_rank",
     "player",
     "player_id",
+    "is_rookie",
     "team",
     "pos",
     "position_rank",
@@ -28,16 +31,6 @@ WEB_COLUMNS = (
     "NFL",
     "draft_tag",
 )
-
-
-def _draft_tags(values: pd.Series) -> pd.Series:
-    """Classify projected point advantage over the position's ADP market line."""
-    numeric = pd.to_numeric(values, errors="coerce")
-    tags = pd.Series("FAIR", index=values.index)
-    tags.loc[numeric >= 10] = "VALUE"
-    tags.loc[numeric >= 25] = "TARGET"
-    tags.loc[numeric <= -10] = "REACH"
-    return tags
 
 
 def _ranking_files(rankings_dir: Path) -> list[Path]:
@@ -67,7 +60,7 @@ def export_web_rankings(
 
     for path in files:
         frame = pd.read_csv(path)
-        frame["draft_tag"] = _draft_tags(frame["market_value"])
+        frame["draft_tag"] = market_tags(frame["market_value"])
         missing = [column for column in WEB_COLUMNS if column not in frame.columns]
         if missing:
             raise ValueError(f"{path.name} is missing columns: {', '.join(missing)}")

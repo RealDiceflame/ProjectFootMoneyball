@@ -6,6 +6,8 @@ from pathlib import Path
 import re
 import pandas as pd
 
+from app.draft_tags import market_tags
+
 NUMERIC_COLUMNS = {
     "overall_rank", "position_rank", "projected_points", "replacement_points",
     "vorp", "market_expected_points", "market_value", "adp", "value_vs_adp",
@@ -43,11 +45,7 @@ def load_rankings(output_dir, settings):
     if not path.exists():
         raise FileNotFoundError("Rankings have not been generated yet. Click Update Data first.")
     rankings = pd.read_csv(path)
-    value = pd.to_numeric(rankings["market_value"], errors="coerce")
-    rankings["draft_tag"] = "FAIR"
-    rankings.loc[value >= 10, "draft_tag"] = "VALUE"
-    rankings.loc[value >= 25, "draft_tag"] = "TARGET"
-    rankings.loc[value <= -10, "draft_tag"] = "REACH"
+    rankings["draft_tag"] = market_tags(rankings["market_value"])
     return rankings
 
 

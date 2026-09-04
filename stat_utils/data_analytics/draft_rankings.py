@@ -151,6 +151,7 @@ def build_draft_ranking(
         "overall_rank",
         "player",
         "player_id",
+        "is_rookie",
         "team",
         "pos",
         "position_rank",

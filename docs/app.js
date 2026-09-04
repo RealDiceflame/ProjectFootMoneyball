@@ -7,7 +7,7 @@ const SETTINGS_KEY = "project-foot-moneyball:settings:v1";
 const columns = [
   { key: "drafted", label: "Drafted", width: 62, kind: "drafted", description: "Show available players or players already marked as drafted" },
   { key: "overall_rank", label: "Rank", width: 62, kind: "number", description: "Overall rank for the selected league format; try <25 or 10..30" },
-  { key: "player", label: "Player", width: 230, kind: "text", className: "player", description: "Type any part of a player's name" },
+  { key: "player", label: "Player", width: 260, kind: "text", className: "player", description: "Type any part of a player's name; rookie and current-injury labels appear beneath it" },
   { key: "team", label: "Team", width: 96, kind: "category", description: "Choose a current or previous team" },
   { key: "pos", label: "Pos", width: 58, kind: "category", description: "Filter by QB, RB, WR, or TE; separate choices with commas" },
   { key: "position_rank", label: "Pos Rank", width: 78, kind: "positionRank", description: "Position-specific rank, such as QB5 or WR12" },
@@ -25,7 +25,7 @@ const columns = [
   { key: "Yahoo", label: "Yahoo", width: 70, kind: "number", description: "Yahoo average draft position" },
   { key: "Sleeper", label: "Sleeper", width: 74, kind: "number", description: "Sleeper average draft position" },
   { key: "NFL", label: "NFL/ESPN", width: 82, kind: "number", description: "NFL/ESPN average draft position" },
-  { key: "draft_tag", label: "Draft Tag", width: 82, kind: "category", description: "Market +/- tier: TARGET +25, VALUE +10, FAIR between -10 and +10, or REACH -10" },
+  { key: "draft_tag", label: "Draft Tag", width: 88, kind: "category", description: "RISK and NEW TEAM come from current news; otherwise TARGET is +50, VALUE +25 to +49.9, FAIR -19.9 to +24.9, and REACH -20 or worse" },
 ];
 
 const ui = {
@@ -106,6 +106,12 @@ function playerKey(row) {
   return `${String(row.player).trim().toLocaleLowerCase()}|${String(listedTeam).trim().toUpperCase()}`;
 }
 
+function effectiveDraftTag(row, news) {
+  if (news?.signal === "risk") return "RISK";
+  if (news?.only_team_change) return "NEW TEAM";
+  return row.draft_tag;
+}
+
 function rowsForCurrentBoard() {
   const arrays = state.data.boards[rankingSlug()];
   if (!arrays) throw new Error(`Rankings are missing for ${rankingSlug()}`);
@@ -114,6 +120,10 @@ function rowsForCurrentBoard() {
     row.listed_team = String(row.team || "").toUpperCase();
     const news = state.news.reports?.[playerKey(row)];
     row.current_team = String(news?.current_team || row.listed_team).toUpperCase();
+    row.market_draft_tag = row.draft_tag;
+    row.draft_tag = effectiveDraftTag(row, news);
+    row.injury = news?.injury || null;
+    row.is_rookie = row.is_rookie === true || String(row.is_rookie).toLocaleLowerCase() === "true";
     return row;
   });
 }
@@ -253,11 +263,33 @@ function renderHead() {
 }
 
 function tagElement(tag) {
-  const safeTag = ["TARGET", "VALUE", "FAIR", "REACH"].includes(tag) ? tag : "FAIR";
+  const safeTag = ["TARGET", "VALUE", "FAIR", "REACH", "RISK", "NEW TEAM"].includes(tag) ? tag : "FAIR";
   const span = document.createElement("span");
-  span.className = `tag tag-${safeTag.toLowerCase()}`;
+  span.className = `tag tag-${safeTag.toLowerCase().replace(" ", "-")}`;
   span.textContent = safeTag;
+  span.title = {
+    "RISK": "Current player news contains a risk signal",
+    "NEW TEAM": "Current roster data shows a team change with no other material update",
+    "TARGET": "Market +/- is at least +50 points",
+    "VALUE": "Market +/- is +25 to +49.9 points",
+    "FAIR": "Market +/- is between -19.9 and +24.9 points",
+    "REACH": "Market +/- is -20 points or worse",
+  }[safeTag];
   return span;
+}
+
+function statusBadge(text, className, description) {
+  const badge = document.createElement("span");
+  badge.className = `player-status ${className}`;
+  badge.textContent = text;
+  if (description) badge.title = description;
+  return badge;
+}
+
+function injuryText(injury) {
+  const name = String(injury?.name || "Injury").trim();
+  const status = String(injury?.status || "").trim();
+  return status ? `INJ · ${name} · ${status}` : `INJ · ${name}`;
 }
 
 function playerInitials(name) {
@@ -330,7 +362,29 @@ function renderBody(rows) {
         hint.textContent = reportAvailable ? "AI report ready" : newsAvailable ? "News ready" : "Player intel";
         const labels = document.createElement("span");
         labels.className = "player-labels";
-        labels.append(name, hint);
+        const nameLine = document.createElement("span");
+        nameLine.className = "player-name-line";
+        nameLine.append(name, hint);
+        labels.append(nameLine);
+        const statuses = document.createElement("span");
+        statuses.className = "player-statuses";
+        if (row.is_rookie) {
+          statuses.append(statusBadge("ROOKIE", "status-rookie", `${row.player} is in the ${state.data.projection_season} rookie class`));
+        }
+        if (row.injury) {
+          const description = [
+            `Current injury: ${row.injury.name || "availability update"}`,
+            row.injury.report_status ? `game status ${row.injury.report_status}` : "",
+            row.injury.practice_status ? `practice ${row.injury.practice_status}` : "",
+            row.injury.week ? `week ${row.injury.week}` : "",
+          ].filter(Boolean).join(" · ");
+          statuses.append(statusBadge(
+            injuryText(row.injury),
+            row.injury.severity === "risk" ? "status-injury-risk" : "status-injury",
+            description,
+          ));
+        }
+        if (statuses.children.length) labels.append(statuses);
         button.append(createPlayerPhoto(row.player, playerNews?.headshot_url), labels);
         td.append(button);
       } else if (column.key === "team") {

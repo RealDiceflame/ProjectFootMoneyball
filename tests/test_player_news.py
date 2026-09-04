@@ -143,6 +143,9 @@ def test_build_player_news_records_both_listed_and_current_team(tmp_path):
     report = json.loads(destination.read_text(encoding="utf-8"))["reports"]["moved player|WAS"]
     assert report["listed_team"] == "WAS"
     assert report["current_team"] == "NYG"
+    assert report["signal"] == "watch"
+    assert report["team_changed"] is True
+    assert report["only_team_change"] is True
     assert report["headshot_url"] == "https://static.example.com/moved-player.png"
     assert report["events"][0]["source"]["url"] == "https://www.espn.com/nfl/team/roster/_/name/nyg"
     depth_event = next(event for event in report["events"] if event["category"] == "Depth chart")
@@ -236,3 +239,50 @@ def test_position_fallback_separates_same_name_players_without_an_id(tmp_path):
     report = json.loads(destination.read_text(encoding="utf-8"))["reports"]["josh allen|BUF"]
     assert report["current_team"] == "BUF"
     assert all(event["category"] != "Roster" for event in report["events"])
+
+
+def test_current_injury_is_published_as_structured_interface_data(tmp_path):
+    rankings = tmp_path / "rankings.json"
+    destination = tmp_path / "player_news.json"
+    rankings.write_text(json.dumps({
+        "columns": ["overall_rank", "player", "player_id", "team", "pos"],
+        "boards": {"12team_2qb_te_premium_half_ppr": [[
+            1, "Injured Runner", "00-0099999", "BUF", "RB",
+        ]]},
+    }), encoding="utf-8")
+    roster = pd.DataFrame([{
+        "gsis_id": "00-0099999", "full_name": "Injured Runner", "team": "BUF",
+        "position": "RB", "status": "ACT", "headshot_url": None,
+    }])
+    depth = pd.DataFrame([{
+        "dt": "2026-09-04T12:00:00Z", "team": "BUF",
+        "player_name": "Injured Runner", "pos_abb": "RB", "pos_rank": 1,
+    }])
+    injuries = pd.DataFrame([{
+        "week": 1, "gsis_id": "00-0099999", "full_name": "Injured Runner",
+        "team": "BUF", "position": "RB", "report_primary_injury": "Ankle",
+        "report_status": "Doubtful", "practice_primary_injury": "Ankle",
+        "practice_status": "Did Not Participate",
+    }])
+
+    build_player_news(
+        rankings,
+        destination,
+        season=2026,
+        current_roster=roster,
+        current_depth=depth,
+        previous_depth=depth,
+        injuries=injuries,
+        now=datetime(2026, 9, 4, 15, 0, tzinfo=timezone.utc),
+    )
+
+    report = json.loads(destination.read_text(encoding="utf-8"))["reports"]["injured runner|BUF"]
+    assert report["signal"] == "risk"
+    assert report["injury"] == {
+        "name": "Ankle",
+        "status": "Doubtful",
+        "report_status": "Doubtful",
+        "practice_status": "Did Not Participate",
+        "week": 1,
+        "severity": "risk",
+    }

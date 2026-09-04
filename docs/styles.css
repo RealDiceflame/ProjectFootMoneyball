@@ -127,7 +127,7 @@ tbody tr { transition: opacity .15s ease, background .15s ease; }
 tbody tr:nth-child(even) { background: rgba(255,255,255,.018); }
 tbody tr:hover { background: rgba(215,255,84,.055); }
 td { height: 43px; border-bottom: 1px solid rgba(255,255,255,.055); text-align: center; }
-td.player { min-width: 220px; text-align: left; font-weight: 760; }
+td.player { min-width: 250px; text-align: left; font-weight: 760; }
 td.rank { font-variant-numeric: tabular-nums; font-weight: 850; }
 td.numeric { font-variant-numeric: tabular-nums; }
 .market-positive { color: #9ceb8a; font-weight: 850; }
@@ -150,7 +150,8 @@ thead th:nth-child(-n+3) { z-index: 7; background: #102f27; }
 .drafted td.player { text-decoration: line-through; }
 .player-intel-button { width: 100%; min-height: 48px; padding: 4px 2px; display: flex; align-items: center; gap: 9px; border: 0; color: inherit; background: transparent; text-align: left; }
 .player-intel-button:hover .player-name { color: var(--lime); text-decoration: underline; text-underline-offset: 3px; }
-.player-labels { min-width: 0; flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.player-labels { min-width: 0; flex: 1; display: flex; align-items: stretch; flex-direction: column; gap: 4px; }
+.player-name-line { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .player-name { overflow: hidden; text-overflow: ellipsis; }
 .player-photo { position: relative; flex: none; overflow: hidden; display: grid; place-items: center; border: 1px solid rgba(215,255,84,.16); border-radius: 50%; background: linear-gradient(145deg, #173b31, #0a211b); }
 .player-photo-small { width: 34px; height: 34px; }
@@ -160,11 +161,18 @@ thead th:nth-child(-n+3) { z-index: 7; background: #102f27; }
 .player-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; background: #102f27; }
 .intel-hint { flex: none; color: #77958a; font-size: .56rem; font-weight: 750; letter-spacing: .035em; text-transform: uppercase; }
 .intel-hint.available { color: var(--lime); }
+.player-statuses { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.player-status { max-width: 205px; padding: 3px 6px; overflow: hidden; border: 1px solid transparent; border-radius: 999px; font-size: .5rem; font-weight: 900; letter-spacing: .045em; line-height: 1; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.status-rookie { color: #d8efff; border-color: rgba(140,200,255,.32); background: rgba(66,139,204,.22); }
+.status-injury { color: #312801; border-color: rgba(241,213,106,.48); background: #f1d56a; }
+.status-injury-risk { color: #350705; border-color: rgba(255,141,132,.55); background: #ff8d84; }
 .tag { display: inline-block; min-width: 62px; padding: 5px 7px; border-radius: 999px; font-size: .6rem; font-weight: 900; letter-spacing: .055em; }
 .tag-target { color: #0b2716; background: #79e995; }
 .tag-value { color: #2e2602; background: #f1d56a; }
 .tag-fair { color: #d5e2dc; background: rgba(255,255,255,.08); }
 .tag-reach { color: #360806; background: #ff8d84; }
+.tag-risk { color: #fff5f4; background: #c93c34; }
+.tag-new-team { color: #302300; background: #ffc857; }
 
 .loading-state, .empty-state { position: absolute; inset: 88px 0 0; display: grid; place-content: center; justify-items: center; gap: 8px; color: var(--muted); background: rgba(6,24,19,.93); text-align: center; }
 .loading-state strong, .empty-state strong { color: var(--ink); font-size: 1rem; }
@@ -180,6 +188,8 @@ thead th:nth-child(-n+3) { z-index: 7; background: #102f27; }
 .legend .value { background: #f1d56a; }
 .legend .fair { background: #849b91; }
 .legend .reach { background: #ff8d84; }
+.legend .risk { background: #c93c34; }
+.legend .new-team { background: #ffc857; }
 .legend .market { background: #8cc8ff; }
 .legend .save-note { margin-left: auto; }
 

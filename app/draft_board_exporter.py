@@ -8,9 +8,11 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
+from app.draft_tags import REACH_MAX, TARGET_MIN, VALUE_MIN
+
 TEAM_SIZES = (8, 10, 12, 14, 16)
 BOARD_COLUMNS = ["overall_rank", "player", "team", "pos", "position_rank",
-                 "projected_points", "replacement_points", "vorp", "adp",
+                 "projected_points", "replacement_points", "vorp", "market_value", "adp",
                  "value_vs_adp", "Yahoo", "Sleeper", "NFL", "format"]
 
 
@@ -45,17 +47,17 @@ def export_switchable_draft_board(rankings_dir, workbook_path):
     data.freeze_panes = "A2"
     data.auto_filter.ref = data.dimensions
 
-    board.merge_cells("A1:O1")
+    board.merge_cells("A1:P1")
     board["A1"] = "Project Foot Moneyball Draft Board"
     board["A1"].fill = PatternFill("solid", fgColor=navy)
     board["A1"].font = Font(color=white, bold=True, size=18)
     board["A1"].alignment = Alignment(horizontal="center")
-    board.merge_cells("A2:O2")
+    board.merge_cells("A2:P2")
     board["A2"] = '=R2&" teams | "&V2&" | "&R3&" | TE premium "&V3'
     board["A2"].alignment = Alignment(horizontal="center")
     headers = ["Rank", "Player", "Team", "Pos", "Pos Rank", "Projected Pts",
-               "Replacement Pts", "VORP", "ADP", "Value vs ADP", "Yahoo",
-               "Sleeper", "NFL/ESPN", "Format", "Draft Tag"]
+               "Replacement Pts", "VORP", "Market +/-", "ADP", "Value vs ADP",
+               "Yahoo", "Sleeper", "NFL/ESPN", "Format", "Draft Tag"]
     for column, header in enumerate(headers, 1):
         cell = board.cell(4, column, header)
         cell.fill = PatternFill("solid", fgColor=blue)
@@ -65,12 +67,17 @@ def export_switchable_draft_board(rankings_dir, workbook_path):
     format_formula = ('$R$2&"-team "&IF($V$2="2QB","2QB ","1QB ")&'
                       'IF($R$3="Standard","standard",IF($R$3="Full PPR","full-PPR","half-PPR"))&'
                       'IF($V$3="+0.5"," + 0.5 TE premium","")')
-    board["A5"] = (f"=SORT(FILTER('Format Data'!A2:N{last_row},"
-                   f"'Format Data'!N2:N{last_row}=({format_formula})),1,TRUE)")
+    board["A5"] = (f"=SORT(FILTER('Format Data'!A2:O{last_row},"
+                   f"'Format Data'!O2:O{last_row}=({format_formula})),1,TRUE)")
     for row in range(5, 205):
-        board.cell(row, 15, f'=IF(A{row}="","",IF(J{row}>=25,"TARGET",IF(J{row}>=10,"VALUE",IF(J{row}<=-10,"REACH","FAIR"))))')
+        board.cell(
+            row,
+            16,
+            f'=IF(A{row}="","",IF(I{row}>={TARGET_MIN:g},"TARGET",'
+            f'IF(I{row}>={VALUE_MIN:g},"VALUE",IF(I{row}<={REACH_MAX:g},"REACH","FAIR"))))',
+        )
         if row % 2 == 0:
-            for column in range(1, 16):
+            for column in range(1, 17):
                 board.cell(row, column).fill = PatternFill("solid", fgColor="F3F6FA")
 
     board.merge_cells("Q1:X1")
@@ -94,14 +101,14 @@ def export_switchable_draft_board(rankings_dir, workbook_path):
         validation.add(board[cell_ref])
 
     for range_ref, operator, formulas, color in (
-        ("J5:J204", "greaterThanOrEqual", ["25"], "C6EFCE"),
-        ("J5:J204", "between", ["10", "24.999"], "FFEB9C"),
-        ("J5:J204", "lessThanOrEqual", ["-10"], "FFC7CE")):
+        ("I5:I204", "greaterThanOrEqual", [f"{TARGET_MIN:g}"], "C6EFCE"),
+        ("I5:I204", "between", [f"{VALUE_MIN:g}", f"{TARGET_MIN - 0.001:g}"], "FFEB9C"),
+        ("I5:I204", "lessThanOrEqual", [f"{REACH_MAX:g}"], "FFC7CE")):
         board.conditional_formatting.add(range_ref, CellIsRule(operator=operator, formula=formulas,
             fill=PatternFill("solid", fgColor=color)))
     board.freeze_panes = "A5"
-    board.auto_filter.ref = "A4:O204"
-    for index, width in enumerate([8, 24, 8, 7, 10, 14, 16, 10, 9, 13, 9, 9, 10, 35, 11], 1):
+    board.auto_filter.ref = "A4:P204"
+    for index, width in enumerate([8, 24, 8, 7, 10, 14, 16, 10, 12, 9, 13, 9, 9, 10, 35, 11], 1):
         board.column_dimensions[get_column_letter(index)].width = width
 
     settings.append(["League Setting", "Selected Value"])

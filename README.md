@@ -2,7 +2,7 @@
 
 ## Use the web draft board
 
-Open <https://realdiceflame.github.io/ProjectFootMoneyball/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, and source-linked player intel. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, and matched ESPN headlines. Desktop downloads remain available under GitHub Releases.
+Open <https://realdiceflame.github.io/ProjectFootMoneyball/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, rookie and current-injury labels, and source-linked player intel. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, and matched ESPN headlines. Desktop downloads remain available under GitHub Releases.
 
 ## Update factual player news (no API key)
 
@@ -37,7 +37,7 @@ python update_player_intel.py --limit 50
 python update_player_intel.py --player "Josh Allen"
 ```
 
-A fantasy-football draft-board application that combines NFL season stats, rookie betting-line projections, and Yahoo/Sleeper/NFL-ESPN ADP. It produces interactive rankings for 8–16 teams, 1QB/2QB, Standard/Half/Full PPR, and optional TE premium scoring. Market +/- shows projected fantasy points above or below the same-position regression expectation at a player's composite ADP; VORP remains the separate comparison with the replacement player. Draft tags use Market +/-: TARGET is +25 points, VALUE is +10, FAIR is within 10 points, and REACH is -10 or worse.
+A fantasy-football draft-board application that combines NFL season stats, rookie betting-line projections, and Yahoo/Sleeper/NFL-ESPN ADP. It produces interactive rankings for 8–16 teams, 1QB/2QB, Standard/Half/Full PPR, and optional TE premium scoring. Market +/- shows projected fantasy points above or below the same-position regression expectation at a player's composite ADP; VORP remains the separate comparison with the replacement player. Draft tags use Market +/-: TARGET is +50 points, VALUE is +25 to +49.9, FAIR is -19.9 to +24.9, and REACH is -20 or worse. A current risk signal overrides the market tier with RISK; a team change with no other material update becomes NEW TEAM.
 
 ## Run the desktop application
 
