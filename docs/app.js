@@ -1,5 +1,6 @@
 const DATA_URL = "./data/rankings.json";
 const INTEL_URL = "./data/player_intel.json";
+const NEWS_URL = "./data/player_news.json";
 const DRAFTED_KEY = "project-foot-moneyball:drafted:v1";
 const SETTINGS_KEY = "project-foot-moneyball:settings:v1";
 
@@ -50,6 +51,7 @@ const savedDrafted = loadJson(DRAFTED_KEY, []);
 const state = {
   data: null,
   intel: { generated_at: null, report_count: 0, reports: {} },
+  news: { generated_at: null, player_count: 0, reports: {} },
   settings: loadJson(SETTINGS_KEY, { teams: "12", quarterbacks: "2QB", ppr: "Half PPR", tePremium: "+0.5" }),
   drafted: new Set(Array.isArray(savedDrafted) ? savedDrafted : []),
   search: "",
@@ -237,6 +239,7 @@ function renderBody(rows) {
         td.append(tagElement(row.draft_tag));
       } else if (column.key === "player") {
         const reportAvailable = Boolean(state.intel.reports?.[key]);
+        const newsAvailable = Boolean(state.news.reports?.[key]?.events?.length);
         const button = document.createElement("button");
         button.className = "player-intel-button";
         button.type = "button";
@@ -246,8 +249,8 @@ function renderBody(rows) {
         name.className = "player-name";
         name.textContent = row.player;
         const hint = document.createElement("span");
-        hint.className = reportAvailable ? "intel-hint available" : "intel-hint";
-        hint.textContent = reportAvailable ? "AI report ready" : "Player intel";
+        hint.className = reportAvailable || newsAvailable ? "intel-hint available" : "intel-hint";
+        hint.textContent = reportAvailable ? "AI report ready" : newsAvailable ? "News ready" : "Player intel";
         button.append(name, hint);
         td.append(button);
       } else {
@@ -300,13 +303,70 @@ function formatTimestamp(value) {
   }).format(date);
 }
 
+function appendNewsTimeline(container, news) {
+  if (!news?.events?.length) return;
+  const timeline = document.createElement("section");
+  timeline.className = "news-timeline";
+  const headingRow = document.createElement("div");
+  headingRow.className = "news-heading";
+  const heading = document.createElement("div");
+  const eyebrow = document.createElement("p");
+  eyebrow.className = "eyebrow";
+  eyebrow.textContent = "No-key news feed";
+  const title = document.createElement("h3");
+  title.textContent = "Latest factual updates";
+  heading.append(eyebrow, title);
+  const signal = document.createElement("span");
+  const safeSignal = ["stable", "watch", "risk"].includes(news.signal) ? news.signal : "watch";
+  signal.className = `news-signal signal-${safeSignal}`;
+  signal.textContent = safeSignal;
+  headingRow.append(heading, signal);
+  timeline.append(headingRow);
+
+  const list = document.createElement("div");
+  list.className = "news-list";
+  for (const event of news.events) {
+    const article = document.createElement("article");
+    article.className = `news-event severity-${["info", "watch", "risk", "stable"].includes(event.severity) ? event.severity : "info"}`;
+    const meta = document.createElement("div");
+    meta.className = "news-meta";
+    const category = document.createElement("span");
+    category.textContent = event.category || "Update";
+    const eventDate = document.createElement("time");
+    eventDate.textContent = event.date || "Current";
+    meta.append(category, eventDate);
+    const eventTitle = document.createElement("h4");
+    eventTitle.textContent = event.title || "Player update";
+    const detail = document.createElement("p");
+    detail.textContent = event.detail || "";
+    article.append(meta, eventTitle, detail);
+    const href = safeSourceUrl(event.source?.url);
+    if (href) {
+      const source = document.createElement("a");
+      source.href = href;
+      source.target = "_blank";
+      source.rel = "noopener noreferrer";
+      source.textContent = event.source?.title || "View source";
+      article.append(source);
+    }
+    list.append(article);
+  }
+  timeline.append(list);
+  const attribution = document.createElement("p");
+  attribution.className = "news-attribution";
+  attribution.textContent = `Source feed updated ${formatTimestamp(state.news.generated_at)}. These are factual data signals, not editorial reporting or guarantees of playing time.`;
+  timeline.append(attribution);
+  container.append(timeline);
+}
+
 function openIntel(key, row) {
   const report = state.intel.reports?.[key];
+  const news = state.news.reports?.[key];
   ui.intelTitle.textContent = row.player;
   ui.intelMeta.textContent = `${row.team} · ${row.pos} · Overall rank ${row.overall_rank}`;
   const fragment = document.createDocumentFragment();
 
-  if (!report) {
+  if (!report && !news?.events?.length) {
     const empty = document.createElement("div");
     empty.className = "intel-empty";
     const title = document.createElement("strong");
@@ -315,6 +375,16 @@ function openIntel(key, row) {
     detail.textContent = "Player reports are researched from current web sources during the private intel update. The rankings still work normally.";
     empty.append(title, detail);
     fragment.append(empty);
+  } else if (!report) {
+    const notice = document.createElement("div");
+    notice.className = "intel-feed-notice";
+    const badge = document.createElement("span");
+    badge.className = "intel-badge neutral";
+    badge.textContent = "Source feed active";
+    const message = document.createElement("p");
+    message.textContent = "The factual timeline is available now. An AI takeaway will appear here after the private AI updater is connected.";
+    notice.append(badge, message);
+    fragment.append(notice);
   } else {
     const badges = document.createElement("div");
     badges.className = "intel-badges";
@@ -378,6 +448,8 @@ function openIntel(key, row) {
     note.textContent = `Updated ${formatDate(report.updated_at)} · ${report.confidence || "low"} confidence · AI summaries can miss context, so check the linked reporting before drafting.`;
     fragment.append(note);
   }
+
+  appendNewsTimeline(fragment, news);
 
   ui.intelBody.replaceChildren(fragment);
   ui.intelDialog.showModal();
@@ -512,9 +584,10 @@ function bindEvents() {
 
 async function loadRankings() {
   try {
-    const [response, intelResponse] = await Promise.all([
+    const [response, intelResponse, newsResponse] = await Promise.all([
       fetch(`${DATA_URL}?v=${Date.now()}`, { cache: "no-store" }),
       fetch(`${INTEL_URL}?v=${Date.now()}`, { cache: "no-store" }).catch(() => null),
+      fetch(`${NEWS_URL}?v=${Date.now()}`, { cache: "no-store" }).catch(() => null),
     ]);
     if (!response.ok) throw new Error(`Rankings request failed (${response.status})`);
     const data = await response.json();
@@ -524,10 +597,17 @@ async function loadRankings() {
       const intel = await intelResponse.json();
       if (intel.reports) state.intel = intel;
     }
+    if (newsResponse?.ok) {
+      const news = await newsResponse.json();
+      if (news.reports) state.news = news;
+    }
     const intelStatus = state.intel.report_count
       ? `${state.intel.report_count} intel reports updated ${formatTimestamp(state.intel.generated_at)}`
       : "intel reports awaiting first update";
-    ui.sourceStatus.textContent = `${data.projection_season} board · ADP ${formatDate(data.adp_updated)} · ${intelStatus}`;
+    const newsStatus = state.news.player_count
+      ? `${state.news.player_count} player news feeds`
+      : "news feed awaiting update";
+    ui.sourceStatus.textContent = `${data.projection_season} board · ADP ${formatDate(data.adp_updated)} · ${newsStatus} · ${intelStatus}`;
     ui.boardHeading.textContent = `${data.projection_season} player rankings`;
     ui.loadingState.classList.add("hidden");
     renderHead();

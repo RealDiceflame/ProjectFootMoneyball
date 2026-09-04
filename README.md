@@ -2,7 +2,19 @@
 
 ## Use the web draft board
 
-Open <https://realdiceflame.github.io/ProjectFootMoneyball/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, and source-linked player intel. Click a player name to open the intel report. Desktop downloads remain available under GitHub Releases.
+Open <https://realdiceflame.github.io/ProjectFootMoneyball/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, and source-linked player intel. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, and matched ESPN headlines. Desktop downloads remain available under GitHub Releases.
+
+## Update factual player news (no API key)
+
+The factual timeline uses public nflverse roster, depth-chart, and injury releases plus matched ESPN NFL RSS headlines. It does not copy Rotoworld blurbs or require an AI key.
+
+Run it locally:
+
+```powershell
+python update_player_news.py
+```
+
+Or open **Actions → Update factual player news → Run workflow** on GitHub. The workflow rebuilds `docs/data/player_news.json`, commits changed data, and publishes it to the website.
 
 ## Update AI player intel
 
@@ -82,6 +94,7 @@ config.py                         Season, league, and folder settings
 main.py                           Compatibility command-line entry point
 refresh_draft_board.py            Stats/ADP refresh command
 update_player_intel.py             Source-linked AI player news updater
+update_player_news.py              No-key roster, depth-chart, injury, and headline updater
 app/                              Desktop UI, board service, workbook export
 pipeline/                         Pipeline orchestration
 data_fetcher/                     Active ADP and rookie projection importers
