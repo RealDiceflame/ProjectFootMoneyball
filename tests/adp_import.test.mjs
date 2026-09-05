@@ -35,7 +35,7 @@ test("supports tab-separated generic ADP files", () => {
   assert.equal(parseDelimitedText("Player,ADP\n\"Smith, John\",22")[1][0], "Smith, John");
 });
 
-test("prefers the overall-pick column in free FFC CSV downloads", () => {
+test("prefers the overall-pick column in round-based ADP exports", () => {
   const csv = [
     "ADP,Overall,Name,Position,Team,Times Drafted",
     "1.01,1.4,Jahmyr Gibbs,RB,DET,1903",
@@ -62,6 +62,7 @@ test("matches imported players by name and position without collapsing names", (
   assert.equal(result.rows[0].Yahoo, 2.5);
   assert.equal(result.rows[0].source_count, 1);
   assert.equal(result.rows[0].adp_spread, null);
+  assert.equal(result.rows[0].adp_stddev, null);
   assert.equal(result.rows[1].adp, 50);
 });
 
@@ -79,4 +80,5 @@ test("recalculates position market expectations and draft tags", () => {
   assert.equal(marketDraftTag(25), "VALUE");
   assert.equal(marketDraftTag(-20), "REACH");
   assert.equal(marketDraftTag(0), "FAIR");
+  assert.equal(marketDraftTag(Number.NaN), "NO MARKET");
 });

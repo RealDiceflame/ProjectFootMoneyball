@@ -42,7 +42,7 @@ PROJECTION_SEASON = 2026
 # ADP Settings
 # --------------------------------------------------
 
-ADP_PROVIDER = "Yahoo + Sleeper + ESPN/NFL"
+ADP_PROVIDER = "Yahoo + Sleeper + ESPN + MyFantasyLeague"
 ADP_SNAPSHOT_DATE = "2026-08-29"
 ADP_FILENAME = "combined_adp_2026.csv"
 

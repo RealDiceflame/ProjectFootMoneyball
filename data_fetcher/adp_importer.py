@@ -15,6 +15,7 @@ import requests
 
 
 SKILL_POSITIONS = {"QB", "RB", "WR", "TE"}
+SPECIAL_TEAM_POSITIONS = {"K", "DST"}
 MIN_PROVIDER_ROWS = 100
 MAX_PUBLISHED_PLAYERS = 350
 SLEEPER_PROJECTIONS_URL = "https://api.sleeper.com/projections/nfl/{season}"
@@ -22,9 +23,8 @@ ESPN_PLAYERS_URL = (
     "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/"
     "{season}/segments/0/leaguedefaults/1?view=kona_player_info"
 )
-FFC_ADP_URL = "https://fantasyfootballcalculator.com/api/v1/adp/half-ppr"
 MFL_EXPORT_URL = "https://api.myfantasyleague.com/{season}/export"
-ADP_PROVIDERS = ("Yahoo", "Sleeper", "NFL", "FFC", "MFL")
+ADP_PROVIDERS = ("Yahoo", "Sleeper", "NFL", "MFL")
 
 TEAM_CODES = {
     "ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE",
@@ -32,7 +32,7 @@ TEAM_CODES = {
     "LAC", "LAR", "LV", "MIA", "MIN", "NE", "NO", "NYG",
     "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS",
 }
-ESPN_POSITIONS = {1: "QB", 2: "RB", 3: "WR", 4: "TE"}
+ESPN_POSITIONS = {1: "QB", 2: "RB", 3: "WR", 4: "TE", 5: "K", 16: "DST"}
 ESPN_TEAMS = {
     1: "ATL", 2: "BUF", 3: "CHI", 4: "CIN", 5: "CLE", 6: "DAL",
     7: "DEN", 8: "DET", 9: "GB", 10: "TEN", 11: "IND", 12: "KC",
@@ -84,6 +84,11 @@ def _normalized_team(value):
     return TEAM_ALIASES.get(team, team) or pd.NA
 
 
+def _canonical_position(value) -> str:
+    position = str(value or "").strip().upper()
+    return {"DEF": "DST", "D/ST": "DST", "PK": "K"}.get(position, position)
+
+
 def _adp_metrics(frame: pd.DataFrame) -> pd.DataFrame:
     """Recalculate the consensus and expose how much evidence supports it."""
     result = frame.copy()
@@ -94,12 +99,15 @@ def _adp_metrics(frame: pd.DataFrame) -> pd.DataFrame:
         result["ADP"] = pd.NA
         result["Source_Count"] = 0
         result["ADP_Spread"] = pd.NA
+        result["ADP_StdDev"] = pd.NA
         return result
     values = result[available]
     result["ADP"] = values.mean(axis=1)
     result["Source_Count"] = values.notna().sum(axis=1)
     result["ADP_Spread"] = values.max(axis=1) - values.min(axis=1)
+    result["ADP_StdDev"] = values.std(axis=1, ddof=1)
     result.loc[result["Source_Count"] < 2, "ADP_Spread"] = pd.NA
+    result.loc[result["Source_Count"] < 2, "ADP_StdDev"] = pd.NA
     return result
 
 
@@ -210,10 +218,11 @@ def update_yahoo_snapshot(
         output = pd.concat([output, additions], ignore_index=True)
 
     output = _adp_metrics(output)
+    output = output.drop(columns=["FFC", "FFC_Source", "FFC_Updated"], errors="ignore")
     output["Yahoo_Updated"] = update_date
     output["Source_Updated"] = update_date
     if "NFL_Source" not in output.columns:
-        output["NFL_Source"] = "ESPN (official fantasy game of NFL)"
+        output["NFL_Source"] = "ESPN fantasy football PPR"
     output = (
         output[
             output["ADP"].notna()
@@ -236,15 +245,15 @@ def update_yahoo_snapshot(
     return output
 
 
-def parse_sleeper_adp(payload) -> pd.DataFrame:
+def parse_sleeper_adp(payload, *, positions=SKILL_POSITIONS) -> pd.DataFrame:
     """Normalize Sleeper half-PPR ADP from its season projection response."""
     rows = []
     for record in payload if isinstance(payload, list) else []:
         player = record.get("player") or {}
         stats = record.get("stats") or {}
-        position = str(player.get("position") or "").upper()
+        position = _canonical_position(player.get("position"))
         adp = _numeric_adp(stats.get("adp_half_ppr"))
-        if position not in SKILL_POSITIONS or pd.isna(adp) or adp > 400:
+        if position not in positions or pd.isna(adp) or adp > 400:
             continue
         name = " ".join(
             part for part in (player.get("first_name"), player.get("last_name")) if part
@@ -263,7 +272,7 @@ def parse_sleeper_adp(payload) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def parse_espn_adp(payload) -> pd.DataFrame:
+def parse_espn_adp(payload, *, positions=SKILL_POSITIONS) -> pd.DataFrame:
     """Normalize ESPN PPR average draft position from its fantasy player response."""
     rows = []
     for record in payload.get("players", []) if isinstance(payload, dict) else []:
@@ -274,7 +283,7 @@ def parse_espn_adp(payload) -> pd.DataFrame:
         ppr_rank = (
             (player.get("draftRanksByRankType") or {}).get("PPR") or {}
         ).get("rank")
-        if position not in SKILL_POSITIONS or pd.isna(adp):
+        if position not in positions or pd.isna(adp):
             continue
         # ESPN assigns near-end-of-draft ADPs to hundreds of effectively unranked
         # players. Its PPR rank keeps those placeholders out of the usable pool.
@@ -295,27 +304,6 @@ def parse_espn_adp(payload) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def parse_ffc_adp(payload) -> pd.DataFrame:
-    """Normalize Fantasy Football Calculator half-PPR mock-draft ADP."""
-    rows = []
-    for player in payload.get("players", []) if isinstance(payload, dict) else []:
-        position = str(player.get("position") or "").upper()
-        adp = _numeric_adp(player.get("adp"))
-        name = str(player.get("name") or "").strip()
-        if position not in SKILL_POSITIONS or pd.isna(adp) or not name:
-            continue
-        rows.append(
-            {
-                "Player": name,
-                "Team": _normalized_team(player.get("team")),
-                "Position": position,
-                "FFC": adp,
-                "FFC_ID": str(player.get("player_id") or ""),
-            }
-        )
-    return pd.DataFrame(rows)
-
-
 def _mfl_display_name(value) -> str:
     name = str(value or "").strip()
     if "," not in name:
@@ -324,7 +312,7 @@ def _mfl_display_name(value) -> str:
     return " ".join(part for part in (first, last) if part)
 
 
-def parse_mfl_adp(adp_payload, players_payload) -> pd.DataFrame:
+def parse_mfl_adp(adp_payload, players_payload, *, positions=SKILL_POSITIONS) -> pd.DataFrame:
     """Normalize recent 12-team PPR redraft ADP from MyFantasyLeague."""
     player_records = (
         players_payload.get("players", {}).get("player", [])
@@ -341,10 +329,10 @@ def parse_mfl_adp(adp_payload, players_payload) -> pd.DataFrame:
     for record in adp_records:
         player_id = str(record.get("id") or "")
         player = players.get(player_id, {})
-        position = str(player.get("position") or "").upper()
+        position = _canonical_position(player.get("position"))
         adp = _numeric_adp(record.get("averagePick"))
         name = _mfl_display_name(player.get("name"))
-        if position not in SKILL_POSITIONS or pd.isna(adp) or not name:
+        if position not in positions or pd.isna(adp) or not name:
             continue
         rows.append(
             {
@@ -358,17 +346,21 @@ def parse_mfl_adp(adp_payload, players_payload) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def fetch_sleeper_adp(season: int, *, http_get=requests.get) -> pd.DataFrame:
+def fetch_sleeper_adp(
+    season: int, *, http_get=requests.get, positions=SKILL_POSITIONS
+) -> pd.DataFrame:
     response = http_get(
         SLEEPER_PROJECTIONS_URL.format(season=season),
         params={"season_type": "regular", "order_by": "adp_half_ppr"},
         timeout=60,
     )
     response.raise_for_status()
-    return parse_sleeper_adp(response.json())
+    return parse_sleeper_adp(response.json(), positions=positions)
 
 
-def fetch_espn_adp(season: int, *, http_get=requests.get) -> pd.DataFrame:
+def fetch_espn_adp(
+    season: int, *, http_get=requests.get, positions=SKILL_POSITIONS
+) -> pd.DataFrame:
     player_filter = {
         "players": {
             "limit": 2000,
@@ -381,20 +373,12 @@ def fetch_espn_adp(season: int, *, http_get=requests.get) -> pd.DataFrame:
         timeout=60,
     )
     response.raise_for_status()
-    return parse_espn_adp(response.json())
+    return parse_espn_adp(response.json(), positions=positions)
 
 
-def fetch_ffc_adp(season: int, *, http_get=requests.get) -> pd.DataFrame:
-    response = http_get(
-        FFC_ADP_URL,
-        params={"position": "all", "teams": 12, "year": season},
-        timeout=60,
-    )
-    response.raise_for_status()
-    return parse_ffc_adp(response.json())
-
-
-def fetch_mfl_adp(season: int, *, http_get=requests.get) -> pd.DataFrame:
+def fetch_mfl_adp(
+    season: int, *, http_get=requests.get, positions=SKILL_POSITIONS
+) -> pd.DataFrame:
     common = {"JSON": 1}
     adp_response = http_get(
         MFL_EXPORT_URL.format(season=season),
@@ -417,7 +401,9 @@ def fetch_mfl_adp(season: int, *, http_get=requests.get) -> pd.DataFrame:
         timeout=60,
     )
     players_response.raise_for_status()
-    return parse_mfl_adp(adp_response.json(), players_response.json())
+    return parse_mfl_adp(
+        adp_response.json(), players_response.json(), positions=positions
+    )
 
 
 def _validate_provider(frame: pd.DataFrame, column: str) -> pd.DataFrame:
@@ -510,7 +496,6 @@ def build_direct_adp(
     source_specs = (
         ("Sleeper", fetch_sleeper_adp, True),
         ("NFL", fetch_espn_adp, True),
-        ("FFC", fetch_ffc_adp, False),
         ("MFL", fetch_mfl_adp, False),
     )
     for column, fetcher, required in source_specs:
@@ -537,9 +522,9 @@ def build_direct_adp(
     merged = reduce(lambda left, right: left.merge(right, on="_key", how="outer"), merged_frames)
     output = pd.DataFrame(
         {
-            "Player": _coalesce(merged, "Player", ("Sleeper", "NFL", "FFC", "MFL", "Yahoo")),
-            "Team": _coalesce(merged, "Team", ("Sleeper", "NFL", "FFC", "MFL", "Yahoo")),
-            "Position": _coalesce(merged, "Position", ("Sleeper", "NFL", "FFC", "MFL", "Yahoo")),
+            "Player": _coalesce(merged, "Player", ("Sleeper", "NFL", "MFL", "Yahoo")),
+            "Team": _coalesce(merged, "Team", ("Sleeper", "NFL", "MFL", "Yahoo")),
+            "Position": _coalesce(merged, "Position", ("Sleeper", "NFL", "MFL", "Yahoo")),
         }
     )
     for column in ADP_PROVIDERS:
@@ -558,8 +543,7 @@ def build_direct_adp(
         .head(MAX_PUBLISHED_PLAYERS)
         .reset_index(drop=True)
     )
-    output["NFL_Source"] = "ESPN (official fantasy game of NFL)"
-    output["FFC_Source"] = "Fantasy Football Calculator half-PPR, 12-team"
+    output["NFL_Source"] = "ESPN fantasy football PPR"
     output["MFL_Source"] = "MyFantasyLeague recent PPR, 12-team redraft"
     output["Source_Updated"] = update_date
     for column in ADP_PROVIDERS:
@@ -575,6 +559,99 @@ def build_direct_adp(
         f"{column} {int(output[column].notna().sum())}" for column in ADP_PROVIDERS
     )
     print(f"[OK] Saved {len(output)} combined ADP rows to {output_path} ({counts})")
+    return output
+
+
+def _special_provider_for_merge(frame: pd.DataFrame, column: str) -> pd.DataFrame:
+    result = frame.copy()
+    result["Position"] = result["Position"].map(_canonical_position)
+    result["Team"] = result["Team"].map(_normalized_team)
+    result[column] = pd.to_numeric(result[column], errors="coerce")
+    result = result[
+        result["Position"].isin(SPECIAL_TEAM_POSITIONS)
+        & result[column].between(1, 400, inclusive="both")
+    ].copy()
+    result["_key"] = [
+        f"dst|{team}" if position == "DST" and not pd.isna(team)
+        else _player_key(name, position)
+        for name, team, position in zip(
+            result["Player"], result["Team"], result["Position"]
+        )
+    ]
+    result = result.sort_values(column).drop_duplicates("_key", keep="first")
+    if len(result) < 20:
+        raise ValueError(
+            f"{column} returned only {len(result)} usable kicker/defense rows."
+        )
+    return _provider_for_merge(result, column)
+
+
+def build_special_teams_adp(
+    output_path,
+    *,
+    season: int,
+    http_get=requests.get,
+    update_date: str | None = None,
+) -> pd.DataFrame:
+    """Build a transparent K/DST market board without inventing projections."""
+    output_path = Path(output_path)
+    update_date = update_date or _today()
+    frames = []
+    errors = []
+    for column, fetcher in (
+        ("Sleeper", fetch_sleeper_adp),
+        ("NFL", fetch_espn_adp),
+        ("MFL", fetch_mfl_adp),
+    ):
+        try:
+            provider = fetcher(
+                season,
+                http_get=http_get,
+                positions=SPECIAL_TEAM_POSITIONS,
+            )
+            frames.append(_special_provider_for_merge(provider, column))
+        except (requests.RequestException, ValueError, TypeError, KeyError) as exc:
+            errors.append(f"{column}: {exc}")
+
+    if len(frames) < 2:
+        detail = "; ".join(errors) or "fewer than two sources returned data"
+        raise RuntimeError(f"K/DST market refresh needs two usable sources: {detail}")
+
+    merged = reduce(lambda left, right: left.merge(right, on="_key", how="outer"), frames)
+    provider_order = ("Sleeper", "NFL", "MFL")
+    output = pd.DataFrame(
+        {
+            "Player": _coalesce(merged, "Player", provider_order),
+            "Team": _coalesce(merged, "Team", provider_order),
+            "Position": _coalesce(merged, "Position", provider_order),
+        }
+    )
+    for column in provider_order:
+        output[column] = (
+            pd.to_numeric(merged[column], errors="coerce")
+            if column in merged
+            else pd.Series(pd.NA, index=merged.index, dtype="Float64")
+        )
+    output = _adp_metrics(output)
+    output = output[output["ADP"].notna()].copy()
+    output["Position_Rank"] = (
+        output.groupby("Position")["ADP"].rank(method="first").astype(int)
+    )
+    output["Position_Rank"] = (
+        output["Position"] + output["Position_Rank"].astype(str)
+    )
+    output = output.sort_values(["Position", "ADP", "Player"], kind="stable")
+    output["Source_Updated"] = update_date
+    for column in provider_order:
+        output[f"{column}_Updated"] = update_date if column in merged else pd.NA
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = output_path.with_suffix(output_path.suffix + ".tmp")
+    output.to_csv(temporary, index=False)
+    temporary.replace(output_path)
+    if errors:
+        print("[WARN] K/DST sources skipped: " + "; ".join(errors))
+    print(f"[OK] Saved {len(output)} K/DST market rows to {output_path}")
     return output
 
 
@@ -620,7 +697,7 @@ def build_combined_adp(source, output_path, *, update_date: str | None = None):
         }
     )
     output = _adp_metrics(output)
-    output["NFL_Source"] = "ESPN (official fantasy game of NFL)"
+    output["NFL_Source"] = "ESPN fantasy football PPR"
     output["Source_Updated"] = update_date
     for column in ("Yahoo", "Sleeper", "NFL"):
         output[f"{column}_Updated"] = update_date

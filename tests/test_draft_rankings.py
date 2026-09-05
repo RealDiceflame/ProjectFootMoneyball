@@ -72,6 +72,32 @@ def test_market_value_compares_projection_with_position_regression_at_adp():
     assert ranking.loc[3, "projected_points"] - expected.loc[3] == 37.5
 
 
+def test_rankings_only_use_adp_sources_matching_the_selected_format():
+    rows = []
+    for number in range(1, 4):
+        row = _player(f"RB {number}", "RB", 300 - number, adp=99)
+        row.update({"Yahoo": number, "Sleeper": number + 2, "NFL": number + 10, "MFL": number + 12})
+        rows.append(row)
+    frame = pd.DataFrame(rows)
+
+    half_ppr = build_draft_ranking(
+        frame, format_name="half", teams=12, qb_starters=1, base_ppr=0.5
+    )
+    full_ppr = build_draft_ranking(
+        frame, format_name="full", teams=12, qb_starters=1, base_ppr=1.0
+    )
+    two_qb = build_draft_ranking(
+        frame, format_name="two", teams=12, qb_starters=2, base_ppr=0.5
+    )
+
+    assert half_ppr.loc[half_ppr["player"] == "RB 1", "adp"].iloc[0] == 2
+    assert pd.isna(half_ppr.loc[half_ppr["player"] == "RB 1", "NFL"].iloc[0])
+    assert full_ppr.loc[full_ppr["player"] == "RB 1", "adp"].iloc[0] == 12
+    assert pd.isna(full_ppr.loc[full_ppr["player"] == "RB 1", "Yahoo"].iloc[0])
+    assert two_qb["adp"].isna().all()
+    assert two_qb["market_value"].isna().all()
+
+
 def test_two_qb_replacement_level_uses_twice_as_many_qbs():
     rows = []
     for number in range(1, 27):

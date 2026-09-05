@@ -27,6 +27,10 @@
         <small>Football intelligence lab</small>
       </span>
     </a>
+    <nav class="topnav" aria-label="Analytics pages">
+      <a class="active" href="./">Player rankings</a>
+      <a href="special-teams.html">Kickers &amp; D/ST</a>
+    </nav>
     <div class="source-status" id="source-status">Loading the latest board...</div>
   </header>
 
@@ -66,12 +70,11 @@
         <div class="adp-mode">
           <span class="adp-mode-label">Market ADP</span>
           <strong id="adp-mode-title">OutlierBaseline default</strong>
-          <span id="adp-mode-detail">Yahoo plus four independent public feeds</span>
-          <span class="source-credit">Free/open sources: <a href="https://fantasyfootballcalculator.com/adp/half-ppr" target="_blank" rel="noopener noreferrer">FFC</a> · <a href="https://api.myfantasyleague.com/2026/api_info?STATE=details" target="_blank" rel="noopener noreferrer">MFL</a> · <a href="https://docs.sleeper.com/" target="_blank" rel="noopener noreferrer">Sleeper</a></span>
+          <span id="adp-mode-detail">Only sources matching these settings are used</span>
+          <span class="source-credit">Automatic feeds: <a href="https://docs.sleeper.com/" target="_blank" rel="noopener noreferrer">Sleeper</a> · <a href="https://fantasy.espn.com/football/" target="_blank" rel="noopener noreferrer">ESPN</a> · <a href="https://api.myfantasyleague.com/2026/api_info?STATE=details" target="_blank" rel="noopener noreferrer">MFL</a> · authorized Yahoo snapshot</span>
         </div>
         <div class="adp-actions">
-          <a class="button secondary link-button" href="https://fantasyfootballcalculator.com/adp/csv/half-ppr.csv?position=all&amp;teams=12" target="_blank" rel="noopener noreferrer">Free ADP CSV</a>
-          <button class="button" id="import-adp" type="button">Import my ADP</button>
+          <button class="button" id="import-adp" type="button">Find &amp; import ADP</button>
           <button class="button secondary hidden" id="reset-adp" type="button">Use default ADP</button>
         </div>
       </div>
@@ -119,14 +122,24 @@
         </div>
         <button class="dialog-close" id="adp-close" type="button" aria-label="Close ADP importer">×</button>
       </header>
-      <p class="adp-intro">Choose a CSV or TSV containing a Player or Name column and at least one numeric ADP column. Fantasy Football Calculator files use <strong>Overall</strong>; multi-site files can use Yahoo, Sleeper, NFL, or another column you trust.</p>
+      <p class="adp-intro">First choose a source that matches your league. Download its CSV when available, or save its Excel export as CSV. Then choose a file containing Player or Name and at least one numeric ADP column.</p>
+      <section class="source-hub" aria-labelledby="source-hub-title">
+        <h3 id="source-hub-title">ADP source library</h3>
+        <div class="source-grid">
+          <a href="https://www.4for4.com/adp/all" target="_blank" rel="noopener noreferrer"><strong>4for4</strong><span>Multi-platform comparison</span></a>
+          <a href="https://www.fantasypros.com/nfl/adp/overall.php?export=xls" target="_blank" rel="noopener noreferrer"><strong>FantasyPros</strong><span>Consensus Excel export</span></a>
+          <a href="https://www.draftsharks.com/adp/superflex" target="_blank" rel="noopener noreferrer"><strong>DraftSharks</strong><span>Superflex market · login may be required</span></a>
+          <a href="https://nfc.shgn.com/adp/football" target="_blank" rel="noopener noreferrer"><strong>NFFC</strong><span>High-stakes ADP download</span></a>
+          <a href="https://football.fantasysports.yahoo.com/f1/draftanalysis" target="_blank" rel="noopener noreferrer"><strong>Yahoo</strong><span>Official draft analysis</span></a>
+        </div>
+      </section>
       <div class="privacy-note"><strong>Your file stays on this device.</strong><span>It is read inside this browser and is never uploaded to OutlierBaseline or GitHub.</span></div>
       <div class="import-grid">
         <label class="file-field"><span>ADP file</span><input id="adp-file" type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values"></label>
         <label><span>ADP column</span><select id="adp-column" disabled><option value="">Choose a file first</option></select></label>
         <label><span>Snapshot date</span><input id="adp-date" type="date"></label>
       </div>
-      <p class="import-status" id="adp-import-status" role="status">Supported examples: the free FFC CSV, a multi-site export, or a simple Player, Team, Position, ADP file.</p>
+      <p class="import-status" id="adp-import-status" role="status">The imported file is attached only to the league format currently selected.</p>
       <div class="dialog-actions"><button class="button secondary" id="adp-cancel" type="button">Cancel</button><button class="button" id="apply-adp" type="submit" disabled>Use this ADP</button></div>
     </form>
   </dialog>

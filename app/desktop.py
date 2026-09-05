@@ -18,14 +18,14 @@ DISPLAY_COLUMNS = (
     ("projected_points", "Projected", 82), ("vorp", "VORP", 72),
     ("market_value", "Market +/-", 82),
     ("adp", "ADP", 65), ("source_count", "Sources", 62),
-    ("adp_spread", "Spread", 65), ("value_vs_adp", "Value", 65),
+    ("adp_stddev", "ADP Std Dev", 82), ("value_vs_adp", "Value", 65),
     ("Yahoo", "Yahoo", 65), ("Sleeper", "Sleeper", 65),
-    ("NFL", "NFL/ESPN", 75), ("FFC", "FFC", 65), ("MFL", "MFL", 65),
+    ("NFL", "ESPN", 70), ("MFL", "MFL", 65),
     ("draft_tag", "Draft Tag", 75),
 )
 DECIMAL_COLUMNS = {
     "projected_points", "vorp", "market_value", "adp", "value_vs_adp",
-    "adp_spread", "Yahoo", "Sleeper", "NFL", "FFC", "MFL",
+    "adp_stddev", "Yahoo", "Sleeper", "NFL", "MFL",
 }
 
 
@@ -50,7 +50,7 @@ def format_table_value(column, value):
 class DraftBoardApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Project Foot Moneyball")
+        self.title("OutlierBaseline")
         self.geometry("1180x760")
         self.minsize(900, 620)
         self.configure(bg="#17233b")

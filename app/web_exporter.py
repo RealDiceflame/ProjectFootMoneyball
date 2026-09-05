@@ -27,13 +27,27 @@ WEB_COLUMNS = (
     "adp",
     "source_count",
     "adp_spread",
+    "adp_stddev",
     "value_vs_adp",
     "Yahoo",
     "Sleeper",
     "NFL",
-    "FFC",
     "MFL",
     "draft_tag",
+)
+
+SPECIAL_TEAMS_COLUMNS = (
+    "overall_rank",
+    "player",
+    "team",
+    "pos",
+    "position_rank",
+    "adp",
+    "source_count",
+    "adp_stddev",
+    "Sleeper",
+    "NFL",
+    "MFL",
 )
 
 
@@ -84,6 +98,61 @@ def export_web_rankings(
         "boards": boards,
     }
 
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_suffix(destination.suffix + ".tmp")
+    temporary.write_text(
+        json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    temporary.replace(destination)
+    return destination
+
+
+def export_special_teams(
+    source: str | Path,
+    destination: str | Path,
+    *,
+    projection_season: int,
+) -> Path:
+    """Export the separate kicker and team-defense ADP market page."""
+    source = Path(source)
+    destination = Path(destination)
+    frame = pd.read_csv(source)
+    frame = frame.sort_values(["ADP", "Player"], kind="stable").reset_index(drop=True)
+    frame.insert(0, "overall_rank", frame.index + 1)
+    frame = frame.rename(
+        columns={
+            "Player": "player",
+            "Team": "team",
+            "Position": "pos",
+            "Position_Rank": "position_rank",
+            "ADP": "adp",
+            "Source_Count": "source_count",
+            "ADP_StdDev": "adp_stddev",
+        }
+    )
+    missing = [column for column in SPECIAL_TEAMS_COLUMNS if column not in frame]
+    if missing:
+        raise ValueError(f"{source.name} is missing columns: {', '.join(missing)}")
+    clean = (
+        frame.loc[:, SPECIAL_TEAMS_COLUMNS]
+        .astype(object)
+        .where(pd.notna(frame.loc[:, SPECIAL_TEAMS_COLUMNS]), None)
+    )
+    source_dates = {}
+    for provider in ("Sleeper", "NFL", "MFL"):
+        date_column = f"{provider}_Updated"
+        if date_column in frame:
+            dates = frame[date_column].dropna().astype(str)
+            if not dates.empty:
+                source_dates[provider] = dates.max()
+    payload = {
+        "projection_season": projection_season,
+        "generated_at": datetime.fromtimestamp(source.stat().st_mtime, timezone.utc).isoformat(),
+        "source_dates": source_dates,
+        "columns": list(SPECIAL_TEAMS_COLUMNS),
+        "rows": clean.values.tolist(),
+    }
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = destination.with_suffix(destination.suffix + ".tmp")
     temporary.write_text(

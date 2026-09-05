@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071d18">
+  <meta name="description" content="Current kicker and team-defense ADP from multiple fantasy football markets.">
+  <link rel="canonical" href="https://outlierbaseline.com/special-teams.html">
+  <title>Kicker &amp; D/ST Market | OutlierBaseline</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="OutlierBaseline home">
+      <span class="brand-mark" aria-hidden="true">OB</span>
+      <span><strong>OutlierBaseline</strong><small>Football intelligence lab</small></span>
+    </a>
+    <nav class="topnav" aria-label="Analytics pages">
+      <a href="./">Player rankings</a>
+      <a class="active" href="special-teams.html">Kickers &amp; D/ST</a>
+    </nav>
+    <div class="source-status" id="special-status">Loading special-teams markets...</div>
+  </header>
+
+  <main>
+    <section class="special-hero">
+      <div>
+        <p class="eyebrow">Special-teams market</p>
+        <h1>Kickers and defenses, without fake precision.</h1>
+      </div>
+      <p>This page compares current draft position across Sleeper, ESPN, and MyFantasyLeague. It is a market board—not an OutlierBaseline projection—until matchup and scoring models are ready.</p>
+    </section>
+
+    <section class="board-panel special-board" aria-labelledby="special-heading">
+      <div class="board-toolbar">
+        <div>
+          <p class="eyebrow">2026 draft market</p>
+          <h2 id="special-heading">Kicker &amp; D/ST consensus</h2>
+          <p class="board-summary" id="special-summary">Preparing the board...</p>
+        </div>
+        <div class="toolbar-actions">
+          <button class="button secondary" id="special-clear" type="button">Clear filters</button>
+          <button class="button secondary" id="special-export" type="button" disabled>Export CSV</button>
+        </div>
+      </div>
+
+      <div class="quick-filters special-filters">
+        <label class="search-field"><span class="sr-only">Search kicker, defense, or team</span><input id="special-search" type="search" placeholder="Search kicker, defense, or team..." autocomplete="off"></label>
+        <div class="position-filters" id="special-positions" aria-label="Filter by position">
+          <button class="position active" data-position="ALL" type="button">All</button>
+          <button class="position" data-position="K" type="button">K</button>
+          <button class="position" data-position="DST" type="button">D/ST</button>
+        </div>
+        <p class="filter-tip">ADP SD is the standard deviation across available sources. Higher numbers mean more disagreement.</p>
+      </div>
+
+      <div class="table-shell special-table-shell" id="special-table-shell" aria-busy="true">
+        <table><thead id="special-head"></thead><tbody id="special-body"></tbody></table>
+        <div class="loading-state" id="special-loading"><div class="football-loader" aria-hidden="true"></div><strong>Loading market data</strong></div>
+        <div class="empty-state hidden" id="special-empty"><strong>No entries match those filters.</strong></div>
+      </div>
+
+      <div class="legend">
+        <span><i class="market"></i> Consensus is the equal-weight average of available sources.</span>
+        <span>Draft markers are shared with the main live board and stay on this device.</span>
+        <span class="save-note">Projections and matchup grades are the next modeling phase.</span>
+      </div>
+    </section>
+  </main>
+
+  <footer><span>OutlierBaseline · Kicker and team-defense market view</span><a href="./">Back to player rankings</a></footer>
+  <script type="module" src="special-teams.js"></script>
+</body>
+</html>

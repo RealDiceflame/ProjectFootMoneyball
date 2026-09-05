@@ -101,7 +101,6 @@ export function providerForColumn(column) {
   if (["y", "yahoo", "yahooadp"].includes(header)) return "Yahoo";
   if (["sleeper", "sleeperadp"].includes(header)) return "Sleeper";
   if (["nfl", "nfladp", "espn", "espnadp", "nflespn"].includes(header)) return "NFL";
-  if (["ffc", "fantasyfootballcalculator", "fantasyfootballcalculatoradp"].includes(header)) return "FFC";
   if (["mfl", "myfantasyleague", "myfantasyleagueadp"].includes(header)) return "MFL";
   return null;
 }
@@ -139,7 +138,11 @@ export function inspectAdpText(text) {
   };
 }
 
-export function buildPersonalAdp(parsed, column, { fileName = "Imported ADP", snapshotDate = "" } = {}) {
+export function buildPersonalAdp(
+  parsed,
+  column,
+  { fileName = "Imported ADP", snapshotDate = "", rankingSlug = "", formatLabel = "" } = {},
+) {
   const candidate = parsed.candidates.find(item => item.header === column);
   if (!candidate) throw new Error("Choose an ADP column from the selected file.");
   const entries = [];
@@ -157,11 +160,13 @@ export function buildPersonalAdp(parsed, column, { fileName = "Imported ADP", sn
   }
   if (!entries.length) throw new Error(`The ${column} column has no usable ADP values.`);
   return {
-    version: 1,
+    version: 2,
     fileName,
     column,
     provider: candidate.provider,
     snapshotDate,
+    rankingSlug,
+    formatLabel,
     importedAt: new Date().toISOString(),
     entries,
   };
@@ -229,6 +234,7 @@ export function applyPersonalAdp(rows, snapshot) {
       adp: entry.adp,
       source_count: 1,
       adp_spread: null,
+      adp_stddev: null,
       value_vs_adp: entry.adp - Number(row.overall_rank),
       _personalAdp: true,
     };
@@ -239,7 +245,7 @@ export function applyPersonalAdp(rows, snapshot) {
 }
 
 export function marketDraftTag(value) {
-  if (!Number.isFinite(value)) return "FAIR";
+  if (!Number.isFinite(value)) return "NO MARKET";
   if (value >= 50) return "TARGET";
   if (value >= 25) return "VALUE";
   if (value <= -20) return "REACH";

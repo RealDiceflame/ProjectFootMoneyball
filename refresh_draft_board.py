@@ -12,11 +12,12 @@ from data_fetcher.adp_importer import (
     adp_source_dates,
     build_combined_adp,
     build_direct_adp,
+    build_special_teams_adp,
     latest_adp_date,
     update_yahoo_snapshot,
 )
 from app.draft_board_exporter import export_switchable_draft_board
-from app.web_exporter import export_web_rankings
+from app.web_exporter import export_special_teams, export_web_rankings
 from pipeline.runner import run_pipeline
 
 NFLVERSE_URL = ("https://github.com/nflverse/nflverse-data/releases/download/"
@@ -74,6 +75,7 @@ def refresh_draft_board(
     seed_packaged_data()
     workbook = Path(workbook) if workbook else OUTPUT_DIR / "ProjectFootMoneyball_Draft_Board.xlsx"
     stats_path = STATS_DIR / f"nflverse_player_stats_{STAT_SEASON}.csv"
+    special_teams_path = ADP_DIR / f"special_teams_adp_{PROJECTION_SEASON}.csv"
     if keep_stats:
         status(f"[1/4] Reusing {stats_path}")
     else:
@@ -88,6 +90,10 @@ def refresh_draft_board(
     elif direct_adp:
         status(f"[2/4] Refreshing independent public ADP feeds...")
         build_direct_adp(ADP_DIR / ADP_FILENAME, season=PROJECTION_SEASON)
+        try:
+            build_special_teams_adp(special_teams_path, season=PROJECTION_SEASON)
+        except RuntimeError as exc:
+            status(f"[WARN] Keeping the last K/DST market snapshot: {exc}")
     elif not (ADP_DIR / ADP_FILENAME).exists():
         raise FileNotFoundError("No ADP snapshot exists. Run without --saved-adp to fetch it.")
     else:
@@ -111,6 +117,12 @@ def refresh_draft_board(
             adp_updated=latest_adp_date(adp_path, ADP_SNAPSHOT_DATE),
             adp_sources=adp_source_dates(adp_path),
         )
+        if special_teams_path.exists():
+            export_special_teams(
+                special_teams_path,
+                PROJECT_ROOT / "docs" / "data" / "special_teams.json",
+                projection_season=PROJECTION_SEASON,
+            )
     status(f"[OK] Draft board ready: {result}")
     return result
 

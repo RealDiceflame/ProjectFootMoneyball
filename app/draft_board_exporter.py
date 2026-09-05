@@ -13,8 +13,8 @@ from app.draft_tags import REACH_MAX, TARGET_MIN, VALUE_MIN
 TEAM_SIZES = (8, 10, 12, 14, 16)
 BOARD_COLUMNS = ["overall_rank", "player", "team", "pos", "position_rank",
                  "projected_points", "replacement_points", "vorp", "market_value", "adp",
-                 "source_count", "adp_spread", "value_vs_adp", "Yahoo", "Sleeper", "NFL",
-                 "FFC", "MFL", "format"]
+                 "source_count", "adp_stddev", "value_vs_adp", "Yahoo", "Sleeper", "NFL",
+                 "MFL", "format"]
 
 
 def export_switchable_draft_board(rankings_dir, workbook_path):
@@ -48,17 +48,17 @@ def export_switchable_draft_board(rankings_dir, workbook_path):
     data.freeze_panes = "A2"
     data.auto_filter.ref = data.dimensions
 
-    board.merge_cells("A1:T1")
+    board.merge_cells("A1:S1")
     board["A1"] = "OutlierBaseline Fantasy Draft Board"
     board["A1"].fill = PatternFill("solid", fgColor=navy)
     board["A1"].font = Font(color=white, bold=True, size=18)
     board["A1"].alignment = Alignment(horizontal="center")
-    board.merge_cells("A2:T2")
+    board.merge_cells("A2:S2")
     board["A2"] = '=V2&" teams | "&Z2&" | "&V3&" | TE premium "&Z3'
     board["A2"].alignment = Alignment(horizontal="center")
     headers = ["Rank", "Player", "Team", "Pos", "Pos Rank", "Projected Pts",
                "Replacement Pts", "VORP", "Market +/-", "ADP", "Sources",
-               "ADP Spread", "Value vs ADP", "Yahoo", "Sleeper", "NFL/ESPN", "FFC",
+               "ADP Std Dev", "Value vs ADP", "Yahoo", "Sleeper", "ESPN",
                "MFL", "Format", "Draft Tag"]
     for column, header in enumerate(headers, 1):
         cell = board.cell(4, column, header)
@@ -69,17 +69,17 @@ def export_switchable_draft_board(rankings_dir, workbook_path):
     format_formula = ('$V$2&"-team "&IF($Z$2="2QB","2QB ","1QB ")&'
                       'IF($V$3="Standard","standard",IF($V$3="Full PPR","full-PPR","half-PPR"))&'
                       'IF($Z$3="+0.5"," + 0.5 TE premium","")')
-    board["A5"] = (f"=SORT(FILTER('Format Data'!A2:S{last_row},"
-                   f"'Format Data'!S2:S{last_row}=({format_formula})),1,TRUE)")
+    board["A5"] = (f"=SORT(FILTER('Format Data'!A2:R{last_row},"
+                   f"'Format Data'!R2:R{last_row}=({format_formula})),1,TRUE)")
     for row in range(5, 205):
         board.cell(
             row,
-            20,
-            f'=IF(A{row}="","",IF(I{row}>={TARGET_MIN:g},"TARGET",'
-            f'IF(I{row}>={VALUE_MIN:g},"VALUE",IF(I{row}<={REACH_MAX:g},"REACH","FAIR"))))',
+            19,
+            f'=IF(A{row}="","",IF(I{row}="","NO MARKET",IF(I{row}>={TARGET_MIN:g},"TARGET",'
+            f'IF(I{row}>={VALUE_MIN:g},"VALUE",IF(I{row}<={REACH_MAX:g},"REACH","FAIR")))))',
         )
         if row % 2 == 0:
-            for column in range(1, 21):
+            for column in range(1, 20):
                 board.cell(row, column).fill = PatternFill("solid", fgColor="F3F6FA")
 
     board.merge_cells("U1:AB1")
@@ -109,8 +109,8 @@ def export_switchable_draft_board(rankings_dir, workbook_path):
         board.conditional_formatting.add(range_ref, CellIsRule(operator=operator, formula=formulas,
             fill=PatternFill("solid", fgColor=color)))
     board.freeze_panes = "A5"
-    board.auto_filter.ref = "A4:T204"
-    for index, width in enumerate([8, 24, 8, 7, 10, 14, 16, 10, 12, 9, 8, 10, 13, 9, 9, 10, 9, 9, 35, 11], 1):
+    board.auto_filter.ref = "A4:S204"
+    for index, width in enumerate([8, 24, 8, 7, 10, 14, 16, 10, 12, 9, 8, 12, 13, 9, 9, 10, 9, 35, 11], 1):
         board.column_dimensions[get_column_letter(index)].width = width
 
     settings.append(["League Setting", "Selected Value"])

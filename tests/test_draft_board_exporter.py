@@ -19,7 +19,8 @@ def test_exporter_builds_switchable_workbook(tmp_path):
     assert workbook["Draft Board"]["V3"].value == "Half PPR"
     assert workbook["Draft Board"]["Z3"].value == "+0.5"
     assert workbook["Draft Board"]["A5"].value.startswith("=SORT(FILTER(")
-    assert 'I5>=50' in workbook["Draft Board"]["T5"].value
-    assert 'I5>=25' in workbook["Draft Board"]["T5"].value
-    assert 'I5<=-20' in workbook["Draft Board"]["T5"].value
+    assert 'I5>=50' in workbook["Draft Board"]["S5"].value
+    assert 'I5="","NO MARKET"' in workbook["Draft Board"]["S5"].value
+    assert 'I5>=25' in workbook["Draft Board"]["S5"].value
+    assert 'I5<=-20' in workbook["Draft Board"]["S5"].value
     assert workbook["Format Data"].max_row == 61
