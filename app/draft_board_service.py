@@ -11,7 +11,7 @@ from app.draft_tags import market_tags
 NUMERIC_COLUMNS = {
     "overall_rank", "position_rank", "projected_points", "replacement_points",
     "vorp", "market_expected_points", "market_value", "adp", "value_vs_adp",
-    "Yahoo", "Sleeper", "NFL",
+    "source_count", "adp_spread", "Yahoo", "Sleeper", "NFL", "FFC", "MFL",
 }
 
 

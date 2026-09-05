@@ -5,6 +5,8 @@ from data_fetcher.adp_importer import (
     build_combined_adp,
     build_direct_adp,
     parse_espn_adp,
+    parse_ffc_adp,
+    parse_mfl_adp,
     parse_sleeper_adp,
     update_yahoo_snapshot,
 )
@@ -82,6 +84,28 @@ def test_provider_parsers_keep_skill_players_and_real_adp():
     ]
 
 
+def test_open_provider_parsers_normalize_names_and_teams():
+    ffc = parse_ffc_adp(
+        {
+            "players": [
+                {"player_id": 1, "name": "A.J. Brown", "position": "WR", "team": "NE", "adp": 16.7},
+                {"player_id": 2, "name": "Edge Rusher", "position": "DE", "team": "JAX", "adp": 40},
+            ]
+        }
+    )
+    mfl = parse_mfl_adp(
+        {"adp": {"player": [{"id": "10", "averagePick": "17.2"}]}},
+        {"players": {"player": [{"id": "10", "name": "Brown, A.J.", "position": "WR", "team": "NEP"}]}},
+    )
+
+    assert ffc[["Player", "Team", "FFC"]].to_dict("records") == [
+        {"Player": "A.J. Brown", "Team": "NE", "FFC": 16.7}
+    ]
+    assert mfl[["Player", "Team", "MFL"]].to_dict("records") == [
+        {"Player": "A.J. Brown", "Team": "NE", "MFL": 17.2}
+    ]
+
+
 class _FakeResponse:
     def __init__(self, payload):
         self.payload = payload
@@ -110,6 +134,9 @@ def test_build_direct_adp_merges_live_feeds_and_preserves_yahoo(tmp_path):
 
     sleeper_payload = []
     espn_payload = {"players": []}
+    ffc_payload = {"players": []}
+    mfl_adp_payload = {"adp": {"player": []}}
+    mfl_players_payload = {"players": {"player": []}}
     positions = (("QB", 1), ("RB", 2), ("WR", 3), ("TE", 4))
     for number in range(1, 121):
         position, position_id = positions[(number - 1) % len(positions)]
@@ -133,9 +160,31 @@ def test_build_direct_adp_merges_live_feeds_and_preserves_yahoo(tmp_path):
                 }
             }
         )
+        ffc_payload["players"].append(
+            {
+                "player_id": number,
+                "name": f"Player {number}",
+                "position": position,
+                "team": "BUF",
+                "adp": float(number + 4),
+            }
+        )
+        mfl_adp_payload["adp"]["player"].append(
+            {"id": str(number), "averagePick": float(number + 6)}
+        )
+        mfl_players_payload["players"]["player"].append(
+            {"id": str(number), "name": f"{number}, Player", "position": position, "team": "BUF"}
+        )
 
-    def fake_get(url, **_kwargs):
-        return _FakeResponse(espn_payload if "espn.com" in url else sleeper_payload)
+    def fake_get(url, **kwargs):
+        if "espn.com" in url:
+            return _FakeResponse(espn_payload)
+        if "fantasyfootballcalculator.com" in url:
+            return _FakeResponse(ffc_payload)
+        if "myfantasyleague.com" in url:
+            payload = mfl_players_payload if kwargs.get("params", {}).get("TYPE") == "players" else mfl_adp_payload
+            return _FakeResponse(payload)
+        return _FakeResponse(sleeper_payload)
 
     result = build_direct_adp(
         output,
@@ -148,11 +197,17 @@ def test_build_direct_adp_merges_live_feeds_and_preserves_yahoo(tmp_path):
     assert player["Yahoo"] == 9.0
     assert player["Sleeper"] == 1.0
     assert player["NFL"] == 3.0
-    assert round(player["ADP"], 2) == 4.33
+    assert player["FFC"] == 5.0
+    assert player["MFL"] == 7.0
+    assert player["ADP"] == 5.0
+    assert player["Source_Count"] == 5
+    assert player["ADP_Spread"] == 8.0
     assert adp_source_dates(output) == {
         "Yahoo": "2026-08-29",
         "Sleeper": "2026-09-04",
         "NFL": "2026-09-04",
+        "FFC": "2026-09-04",
+        "MFL": "2026-09-04",
     }
 
 

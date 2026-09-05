@@ -29,11 +29,15 @@ const columns = [
     kind: "number",
     description: "Projected points above or below the same-position market expectation at this ADP",
   },
-  { key: "adp", label: "ADP", width: 70, kind: "number", description: "Composite average draft position from Yahoo, Sleeper, and NFL/ESPN" },
+  { key: "adp", label: "ADP", width: 70, kind: "number", description: "Equal-weight consensus ADP across every available source" },
+  { key: "source_count", label: "Sources", width: 68, kind: "number", description: "Number of independent ADP sources available for this player" },
+  { key: "adp_spread", label: "Spread", width: 72, kind: "number", description: "Difference between the earliest and latest source ADP; larger means more market disagreement" },
   { key: "value_vs_adp", label: "ADP Value", width: 78, kind: "number", description: "Composite ADP minus this board's rank; positive means the board ranks the player earlier" },
   { key: "Yahoo", label: "Yahoo", width: 70, kind: "number", description: "Yahoo ADP from the last authorized snapshot; its date is shown above the board" },
   { key: "Sleeper", label: "Sleeper", width: 74, kind: "number", description: "Half-PPR ADP pulled directly from Sleeper" },
   { key: "NFL", label: "NFL/ESPN", width: 82, kind: "number", description: "PPR ADP pulled directly from ESPN, the NFL's official fantasy game" },
+  { key: "FFC", label: "FFC", width: 68, kind: "number", description: "12-team half-PPR mock-draft ADP from Fantasy Football Calculator" },
+  { key: "MFL", label: "MFL", width: 68, kind: "number", description: "Recent 12-team PPR redraft ADP from MyFantasyLeague" },
   { key: "draft_tag", label: "Draft Tag", width: 88, kind: "category", description: "RISK and NEW TEAM come from current news; otherwise TARGET is +50, VALUE +25 to +49.9, FAIR -19.9 to +24.9, and REACH -20 or worse" },
 ];
 
@@ -260,6 +264,7 @@ function sortRows(rows) {
 
 function formatValue(column, value) {
   if (value === null || value === undefined || value === "-") return "—";
+  if (column.key === "source_count") return String(Math.trunc(Number(value)));
   if (column.kind === "number" && column.key !== "overall_rank") return Number(value).toFixed(1);
   return String(value);
 }
@@ -702,7 +707,7 @@ function resetImportForm() {
   ui.adpColumn.replaceChildren(new Option("Choose a file first", ""));
   ui.adpColumn.disabled = true;
   ui.applyAdp.disabled = true;
-  setImportStatus("Supported examples: 4for4 multi-site exports or a simple Player, Team, Position, ADP file.");
+  setImportStatus("Supported examples: the free FFC CSV, a multi-site export, or a simple Player, Team, Position, ADP file.");
 }
 
 function openAdpImporter() {
@@ -780,7 +785,7 @@ function updateAdpMode() {
     ui.sourceStatus.textContent = `Personal ${state.personalAdp.column} snapshot · ${state.defaultSourceStatus}`;
   } else {
     ui.adpModeTitle.textContent = "OutlierBaseline default";
-    ui.adpModeDetail.textContent = "Yahoo, Sleeper, and NFL/ESPN blend";
+    ui.adpModeDetail.textContent = "Yahoo plus four independent public feeds";
     ui.importAdp.textContent = "Import my ADP";
     ui.resetAdp.classList.add("hidden");
     ui.sourceStatus.textContent = state.defaultSourceStatus;
@@ -791,7 +796,7 @@ function formatAdpStatus(data) {
   const dates = data.adp_sources || {};
   const current = data.adp_updated;
   if (!Object.keys(dates).length) return `ADP ${formatDate(current)}`;
-  const label = key => key === "NFL" ? "NFL/ESPN" : key;
+  const label = key => ({ NFL: "NFL/ESPN", FFC: "Fantasy Football Calculator", MFL: "MyFantasyLeague" })[key] || key;
   const fresh = Object.entries(dates).filter(([, date]) => date === current).map(([key]) => label(key));
   const older = Object.entries(dates).filter(([, date]) => date !== current);
   const liveText = fresh.length ? `${fresh.join(" + ")} direct` : "direct feeds";

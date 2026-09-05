@@ -47,7 +47,7 @@ def parse_args():
     parser.add_argument(
         "--saved-adp",
         action="store_true",
-        help="Reuse the saved ADP instead of checking the direct Sleeper and ESPN feeds.",
+        help="Reuse the saved ADP instead of checking the direct public feeds.",
     )
     parser.add_argument("--keep-stats", action="store_true", help="Reuse the existing stats CSV.")
     parser.add_argument(
@@ -86,7 +86,7 @@ def refresh_draft_board(
         status(f"[2/4] Refreshing {PROJECTION_SEASON} ADP...")
         build_combined_adp(adp_source, ADP_DIR / ADP_FILENAME)
     elif direct_adp:
-        status(f"[2/4] Refreshing direct Sleeper and ESPN ADP...")
+        status(f"[2/4] Refreshing independent public ADP feeds...")
         build_direct_adp(ADP_DIR / ADP_FILENAME, season=PROJECTION_SEASON)
     elif not (ADP_DIR / ADP_FILENAME).exists():
         raise FileNotFoundError("No ADP snapshot exists. Run without --saved-adp to fetch it.")

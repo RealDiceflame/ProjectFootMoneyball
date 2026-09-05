@@ -20,10 +20,14 @@ def _ranking_row(value):
         "market_expected_points": 280.0,
         "market_value": value,
         "adp": 5.0,
+        "source_count": 5,
+        "adp_spread": 4.0,
         "value_vs_adp": value,
         "Yahoo": 4.0,
         "Sleeper": 5.0,
         "NFL": 6.0,
+        "FFC": 7.0,
+        "MFL": 3.0,
         "format": "test",
     }
 
@@ -45,7 +49,10 @@ def test_export_web_rankings_builds_every_board_and_draft_tag(tmp_path):
         projection_season=2026,
         stat_season=2025,
         adp_updated="2026-08-29",
-        adp_sources={"Yahoo": "2026-08-28", "Sleeper": "2026-08-29", "NFL": "2026-08-29"},
+        adp_sources={
+            "Yahoo": "2026-08-28", "Sleeper": "2026-08-29", "NFL": "2026-08-29",
+            "FFC": "2026-08-29", "MFL": "2026-08-29",
+        },
     )
 
     payload = json.loads(result.read_text(encoding="utf-8"))
@@ -53,6 +60,7 @@ def test_export_web_rankings_builds_every_board_and_draft_tag(tmp_path):
     assert payload["projection_season"] == 2026
     assert payload["adp_sources"]["Yahoo"] == "2026-08-28"
     assert "market_value" in payload["columns"]
+    assert "adp_spread" in payload["columns"]
     assert "is_rookie" in payload["columns"]
     tag_index = payload["columns"].index("draft_tag")
     assert payload["boards"]["8team_format_0"][0][tag_index] == "TARGET"

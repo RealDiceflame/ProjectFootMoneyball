@@ -101,6 +101,8 @@ export function providerForColumn(column) {
   if (["y", "yahoo", "yahooadp"].includes(header)) return "Yahoo";
   if (["sleeper", "sleeperadp"].includes(header)) return "Sleeper";
   if (["nfl", "nfladp", "espn", "espnadp", "nflespn"].includes(header)) return "NFL";
+  if (["ffc", "fantasyfootballcalculator", "fantasyfootballcalculatoradp"].includes(header)) return "FFC";
+  if (["mfl", "myfantasyleague", "myfantasyleagueadp"].includes(header)) return "MFL";
   return null;
 }
 
@@ -122,6 +124,7 @@ export function inspectAdpText(text) {
   if (!candidates.length) throw new Error("No numeric ADP column was found.");
 
   const preferred = candidates.find(candidate => candidate.provider === "Yahoo")
+    || candidates.find(candidate => normalizedHeader(candidate.header) === "overall")
     || candidates.find(candidate => normalizedHeader(candidate.header) === "adp")
     || candidates[0];
   return {
@@ -221,7 +224,14 @@ export function applyPersonalAdp(rows, snapshot) {
       || (baseNameCounts.get(name) === 1 && byName.get(name));
     if (!entry) return { ...row };
     matched += 1;
-    const next = { ...row, adp: entry.adp, value_vs_adp: entry.adp - Number(row.overall_rank), _personalAdp: true };
+    const next = {
+      ...row,
+      adp: entry.adp,
+      source_count: 1,
+      adp_spread: null,
+      value_vs_adp: entry.adp - Number(row.overall_rank),
+      _personalAdp: true,
+    };
     if (snapshot.provider) next[snapshot.provider] = entry.adp;
     return next;
   });

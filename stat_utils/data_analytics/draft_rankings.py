@@ -105,6 +105,8 @@ def build_draft_ranking(
         te_premium=te_premium,
     )
     ranking["adp"] = pd.to_numeric(ranking.get("ADP"), errors="coerce")
+    ranking["source_count"] = pd.to_numeric(ranking.get("Source_Count"), errors="coerce")
+    ranking["adp_spread"] = pd.to_numeric(ranking.get("ADP_Spread"), errors="coerce")
     ranking["market_expected_points"] = calculate_market_expected_points(ranking)
     ranking["market_value"] = ranking["projected_points"] - ranking["market_expected_points"]
 
@@ -161,10 +163,14 @@ def build_draft_ranking(
         "market_expected_points",
         "market_value",
         "adp",
+        "source_count",
+        "adp_spread",
         "value_vs_adp",
         "Yahoo",
         "Sleeper",
         "NFL",
+        "FFC",
+        "MFL",
         "format",
     ]
     for column in output_columns:
@@ -178,6 +184,8 @@ def build_draft_ranking(
         "market_expected_points",
         "market_value",
         "adp",
+        "source_count",
+        "adp_spread",
         "value_vs_adp",
     ]
     ranking[numeric_columns] = ranking[numeric_columns].round(2)

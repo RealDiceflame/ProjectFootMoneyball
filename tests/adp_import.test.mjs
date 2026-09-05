@@ -35,6 +35,18 @@ test("supports tab-separated generic ADP files", () => {
   assert.equal(parseDelimitedText("Player,ADP\n\"Smith, John\",22")[1][0], "Smith, John");
 });
 
+test("prefers the overall-pick column in free FFC CSV downloads", () => {
+  const csv = [
+    "ADP,Overall,Name,Position,Team,Times Drafted",
+    "1.01,1.4,Jahmyr Gibbs,RB,DET,1903",
+    "1.03,2.8,Puka Nacua,WR,LAR,321",
+  ].join("\n");
+  const parsed = inspectAdpText(csv);
+  assert.equal(parsed.preferredColumn, "Overall");
+  const snapshot = buildPersonalAdp(parsed, parsed.preferredColumn, { fileName: "half-ppr.csv" });
+  assert.deepEqual(snapshot.entries.map(entry => entry.adp), [1.4, 2.8]);
+});
+
 test("matches imported players by name and position without collapsing names", () => {
   const rows = [
     { player: "Josh Allen", player_id: "qb-1", pos: "QB", team: "BUF", listed_team: "BUF", current_team: "BUF", overall_rank: 4, adp: 8 },
@@ -48,6 +60,8 @@ test("matches imported players by name and position without collapsing names", (
   assert.equal(result.matched, 1);
   assert.equal(result.rows[0].adp, 2.5);
   assert.equal(result.rows[0].Yahoo, 2.5);
+  assert.equal(result.rows[0].source_count, 1);
+  assert.equal(result.rows[0].adp_spread, null);
   assert.equal(result.rows[1].adp, 50);
 });
 

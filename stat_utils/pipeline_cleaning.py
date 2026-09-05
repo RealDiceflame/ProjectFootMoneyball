@@ -12,7 +12,8 @@ KEEP_COLUMNS = (
     "passing_att", "passing_cmp", "passing_yds", "passing_td", "passing_int",
     "rushing_att", "rushing_yds", "rushing_td",
     "receiving_tgt", "receiving_rec", "receiving_yds", "receiving_td", "receiving_tds",
-    "Yahoo", "Sleeper", "NFL", "ADP", "NFL_Source", "Source_Updated",
+    "Yahoo", "Sleeper", "NFL", "FFC", "MFL", "ADP", "Source_Count", "ADP_Spread",
+    "NFL_Source", "FFC_Source", "MFL_Source", "Source_Updated",
 )
 ALLOWED_PREFIX_COLUMNS = {
     "passing": {"passing_att", "passing_cmp", "passing_yds", "passing_td", "passing_int"},

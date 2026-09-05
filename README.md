@@ -2,13 +2,13 @@
 
 ## Use the web draft board
 
-Open <https://outlierbaseline.com/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, rookie and current-injury labels, and source-linked player intel. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, and matched ESPN headlines. Use **Import my ADP** to select a private CSV or TSV and choose any numeric ADP column; 4for4 exports automatically expose their `Y!`, Sleeper, ESPN, NFL, and composite columns. Imported data stays in that browser and is never uploaded. Desktop downloads remain available under GitHub Releases.
+Open <https://outlierbaseline.com/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, rookie and current-injury labels, and source-linked player intel. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, and matched ESPN headlines. Consensus ADP blends Yahoo, Sleeper, NFL/ESPN, Fantasy Football Calculator, and MyFantasyLeague, while Sources and Spread show evidence count and market disagreement. Use **Import my ADP** to select a private CSV or TSV and choose any numeric ADP column. Imported data stays in that browser and is never uploaded. Desktop downloads remain available under GitHub Releases.
 
 ## Automatic site updates (no API key)
 
 The factual timeline uses public nflverse roster, depth-chart, and weekly injury releases plus ESPN's current injury designations and matched NFL headlines. Players are joined by stable NFL ID when available, with name plus position as the fallback; ambiguous same-name headlines are skipped instead of guessed. All current primary and secondary injuries appear in the rankings. Questionable and probable designations remain visible without changing the market-based draft tag, while Out, Doubtful, injured-reserve, suspension, and exempt-list situations become RISK. It does not copy Rotoworld blurbs or require an AI key.
 
-The website refreshes direct Sleeper half-PPR ADP, direct ESPN PPR ADP, all 60 rankings, and the factual player-news timeline every day at midnight and noon Eastern time. Yahoo's official developer access requires OAuth, so the updater keeps the last authorized Yahoo snapshot instead of scraping a protected page or erasing that column. The freshness line above the board shows the date for each source.
+The website refreshes direct Sleeper half-PPR, ESPN PPR, Fantasy Football Calculator half-PPR, and MyFantasyLeague recent-redraft ADP, all 60 rankings, and the factual player-news timeline every day at midnight and noon Eastern time. Yahoo's official developer access requires approval and OAuth, so the updater keeps the last authorized Yahoo snapshot instead of scraping a protected page or erasing that column. The freshness line above the board shows the date for each source. Fantasy Football Calculator explicitly permits free personal and commercial API use with attribution; MyFantasyLeague publishes an open developer API for third-party tools.
 
 Run the complete update locally:
 
@@ -39,7 +39,7 @@ python update_player_intel.py --limit 50
 python update_player_intel.py --player "Josh Allen"
 ```
 
-A fantasy-football draft-board application that combines NFL season stats, rookie betting-line projections, and Yahoo/Sleeper/NFL-ESPN ADP. It produces interactive rankings for 8–16 teams, 1QB/2QB, Standard/Half/Full PPR, and optional TE premium scoring. Market +/- shows projected fantasy points above or below the same-position regression expectation at a player's composite ADP; VORP remains the separate comparison with the replacement player. Draft tags use Market +/-: TARGET is +50 points, VALUE is +25 to +49.9, FAIR is -19.9 to +24.9, and REACH is -20 or worse. A current risk signal overrides the market tier with RISK; a team change with no other material update becomes NEW TEAM.
+A football-intelligence application that combines NFL season stats, rookie betting-line projections, and five-source market ADP. It produces interactive rankings for 8–16 teams, 1QB/2QB, Standard/Half/Full PPR, and optional TE premium scoring. Market +/- shows projected fantasy points above or below the same-position regression expectation at a player's consensus ADP; VORP remains the separate comparison with the replacement player. Sources counts the available ADP feeds and Spread measures their disagreement. Draft tags use Market +/-: TARGET is +50 points, VALUE is +25 to +49.9, FAIR is -19.9 to +24.9, and REACH is -20 or worse. A current risk signal overrides the market tier with RISK; a team change with no other material update becomes NEW TEAM.
 
 ## Run the desktop application
 
@@ -51,7 +51,7 @@ The application displays the rankings directly. It supports drafted-player track
 
 ## Refresh from the command line
 
-Reuse the saved stats while refreshing direct Sleeper and ESPN ADP:
+Reuse the saved stats while refreshing the four direct ADP feeds:
 
 ```powershell
 python refresh_draft_board.py --keep-stats
@@ -65,7 +65,7 @@ The legacy manual-table importer remains available for a page or saved HTML file
 python refresh_draft_board.py --adp-source "URL-OR-PATH"
 ```
 
-To promote a user-downloaded Yahoo snapshot into the site-wide default, use a CSV containing `Player` or `Name`, `Position` or `Pos`, and `Yahoo` or `Y!`. The updater replaces only Yahoo, preserves the direct Sleeper and ESPN feeds, rebuilds every board, and writes the new source date:
+To promote a user-downloaded Yahoo snapshot into the site-wide default, use a CSV containing `Player` or `Name`, `Position` or `Pos`, and `Yahoo` or `Y!`. The updater replaces only Yahoo, preserves the direct public feeds, rebuilds every board, and writes the new source date:
 
 ```powershell
 python refresh_draft_board.py --yahoo-snapshot "PATH-TO-FILE.csv" --keep-stats --skip-workbook
@@ -128,7 +128,7 @@ Pytest is configured to ignore archived copies and generated build folders.
 ## Data sources
 
 - NFL season totals: nflverse player-stat releases
-- ADP: direct Sleeper half-PPR and ESPN PPR feeds, plus the last authorized Yahoo snapshot
+- ADP: direct Sleeper, ESPN, Fantasy Football Calculator, and MyFantasyLeague feeds, plus the last authorized Yahoo snapshot
 - Rookie projections: betting-line inputs blended with historical position profiles
 
 Review each provider's usage and redistribution terms before distributing refreshed source data.

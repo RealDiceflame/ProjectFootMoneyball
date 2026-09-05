@@ -25,10 +25,14 @@ WEB_COLUMNS = (
     "market_expected_points",
     "market_value",
     "adp",
+    "source_count",
+    "adp_spread",
     "value_vs_adp",
     "Yahoo",
     "Sleeper",
     "NFL",
+    "FFC",
+    "MFL",
     "draft_tag",
 )
 
