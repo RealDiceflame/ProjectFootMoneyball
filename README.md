@@ -4,17 +4,19 @@
 
 Open <https://outlierbaseline.com/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, rookie and current-injury labels, and source-linked player intel. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, and matched ESPN headlines. Desktop downloads remain available under GitHub Releases.
 
-## Update factual player news (no API key)
+## Automatic site updates (no API key)
 
 The factual timeline uses public nflverse roster, depth-chart, and weekly injury releases plus ESPN's current injury designations and matched NFL headlines. Players are joined by stable NFL ID when available, with name plus position as the fallback; ambiguous same-name headlines are skipped instead of guessed. All current primary and secondary injuries appear in the rankings. Questionable and probable designations remain visible without changing the market-based draft tag, while Out, Doubtful, injured-reserve, suspension, and exempt-list situations become RISK. It does not copy Rotoworld blurbs or require an AI key.
 
-Run it locally:
+The website refreshes direct Sleeper half-PPR ADP, direct ESPN PPR ADP, all 60 rankings, and the factual player-news timeline every day at midnight and noon Eastern time. Yahoo's official developer access requires OAuth, so the updater keeps the last authorized Yahoo snapshot instead of scraping a protected page or erasing that column. The freshness line above the board shows the date for each source.
+
+Run the complete update locally:
 
 ```powershell
-python update_player_news.py
+python refresh_draft_board.py --keep-stats
 ```
 
-The website refreshes this factual data automatically every day at midnight and noon Eastern time, with daylight-saving changes handled automatically. You can also open **Actions → Update factual player news → Run workflow** on GitHub at any time. The workflow rebuilds `docs/data/player_news.json`, commits changed data, and publishes it to the website.
+You can also open **Actions → Update site data → Run workflow** on GitHub at any time. The scheduled workflow handles daylight-saving changes automatically and publishes changed ADP, rankings, and news files to the website.
 
 ## Update AI player intel
 
@@ -49,15 +51,15 @@ The application displays the rankings directly. It supports drafted-player track
 
 ## Refresh from the command line
 
-Reuse the saved stats and ADP:
+Reuse the saved stats while refreshing direct Sleeper and ESPN ADP:
 
 ```powershell
 python refresh_draft_board.py --keep-stats
 ```
 
-When the refresh runs from the source repository, it also updates `docs/data/rankings.json` for the website. Commit and push that generated file to publish the refreshed rankings.
+When the refresh runs from the source repository, it also updates `docs/data/rankings.json` for the website. Pass `--saved-adp` only when you are offline and want to reuse every saved ADP value. Pass `--skip-workbook` for a faster website-only refresh.
 
-Refresh ADP from a comparison page URL or saved HTML file:
+The legacy manual-table importer remains available for a page or saved HTML file you are authorized to use:
 
 ```powershell
 python refresh_draft_board.py --adp-source "URL-OR-PATH"
@@ -120,7 +122,7 @@ Pytest is configured to ignore archived copies and generated build folders.
 ## Data sources
 
 - NFL season totals: nflverse player-stat releases
-- ADP: normalized Yahoo, Sleeper, and NFL/ESPN comparison data
+- ADP: direct Sleeper half-PPR and ESPN PPR feeds, plus the last authorized Yahoo snapshot
 - Rookie projections: betting-line inputs blended with historical position profiles
 
 Review each provider's usage and redistribution terms before distributing refreshed source data.

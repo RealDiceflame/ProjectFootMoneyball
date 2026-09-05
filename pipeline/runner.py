@@ -8,6 +8,7 @@ from config import (
     OUTPUT_DIR, PROJECTION_SEASON, RESOURCE_DIR, STAT_SEASON, STATS_DIR,
     TE_RECEPTION_BONUS, get_stat_urls,
 )
+from data_fetcher.adp_importer import latest_adp_date
 from data_fetcher.rookie_prop_projections import build_rookie_prop_projections
 from stat_utils.data_analytics.draft_rankings import save_default_draft_rankings
 from stat_utils.data_analytics.fantasy_points import calculate_and_save_fantasy_points
@@ -81,8 +82,10 @@ def run_pipeline():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     paths = _pipeline_paths()
     _build_stat_outputs(paths)
-    if not ADP_SNAPSHOT_DATE.startswith(str(PROJECTION_SEASON)):
-        print(f"[WARN] ADP snapshot {ADP_SNAPSHOT_DATE} does not match {PROJECTION_SEASON}; rankings skipped.")
+    adp_path = ADP_DIR / ADP_FILENAME
+    snapshot_date = latest_adp_date(adp_path, ADP_SNAPSHOT_DATE) or ""
+    if not snapshot_date.startswith(str(PROJECTION_SEASON)):
+        print(f"[WARN] ADP snapshot {snapshot_date} does not match {PROJECTION_SEASON}; rankings skipped.")
         return
     _merge_and_clean_adp(paths)
     calculate_fantasy_value_vs_adp(paths["merged_adp"], paths["regression"])

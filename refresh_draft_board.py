@@ -8,7 +8,12 @@ from config import (
     ADP_DIR, ADP_FILENAME, ADP_SNAPSHOT_DATE, IS_FROZEN, OUTPUT_DIR, PROJECT_ROOT,
     PROJECTION_SEASON, STAT_SEASON, STATS_DIR, seed_packaged_data,
 )
-from data_fetcher.adp_importer import build_combined_adp
+from data_fetcher.adp_importer import (
+    adp_source_dates,
+    build_combined_adp,
+    build_direct_adp,
+    latest_adp_date,
+)
 from app.draft_board_exporter import export_switchable_draft_board
 from app.web_exporter import export_web_rankings
 from pipeline.runner import run_pipeline
@@ -32,13 +37,31 @@ def download_file(url, destination):
 def parse_args():
     parser = argparse.ArgumentParser(description="Refresh data and export the switchable draft board.")
     parser.add_argument("--adp-source", help="Current ADP comparison page URL or saved HTML file.")
+    parser.add_argument(
+        "--saved-adp",
+        action="store_true",
+        help="Reuse the saved ADP instead of checking the direct Sleeper and ESPN feeds.",
+    )
     parser.add_argument("--keep-stats", action="store_true", help="Reuse the existing stats CSV.")
+    parser.add_argument(
+        "--skip-workbook",
+        action="store_true",
+        help="Update website rankings without creating the Excel workbook.",
+    )
     parser.add_argument("--workbook", type=Path,
                         default=OUTPUT_DIR / "ProjectFootMoneyball_Draft_Board.xlsx")
     return parser.parse_args()
 
 
-def refresh_draft_board(adp_source=None, keep_stats=False, workbook=None, status=print):
+def refresh_draft_board(
+    adp_source=None,
+    keep_stats=False,
+    workbook=None,
+    *,
+    direct_adp=True,
+    skip_workbook=False,
+    status=print,
+):
     """Run the complete refresh for either the CLI or desktop application."""
     seed_packaged_data()
     workbook = Path(workbook) if workbook else OUTPUT_DIR / "ProjectFootMoneyball_Draft_Board.xlsx"
@@ -51,22 +74,31 @@ def refresh_draft_board(adp_source=None, keep_stats=False, workbook=None, status
     if adp_source:
         status(f"[2/4] Refreshing {PROJECTION_SEASON} ADP...")
         build_combined_adp(adp_source, ADP_DIR / ADP_FILENAME)
+    elif direct_adp:
+        status(f"[2/4] Refreshing direct Sleeper and ESPN ADP...")
+        build_direct_adp(ADP_DIR / ADP_FILENAME, season=PROJECTION_SEASON)
     elif not (ADP_DIR / ADP_FILENAME).exists():
-        raise FileNotFoundError("No ADP snapshot exists. Pass --adp-source with a URL or saved HTML file.")
+        raise FileNotFoundError("No ADP snapshot exists. Run without --saved-adp to fetch it.")
     else:
         status(f"[2/4] Reusing {ADP_DIR / ADP_FILENAME}")
     status("[3/4] Rebuilding projections and all 60 ranking formats...")
     run_pipeline()
-    status("[4/4] Creating the switchable spreadsheet...")
-    result = export_switchable_draft_board(OUTPUT_DIR, workbook)
+    if skip_workbook:
+        status("[4/4] Skipping the spreadsheet for this website-only refresh.")
+        result = workbook
+    else:
+        status("[4/4] Creating the switchable spreadsheet...")
+        result = export_switchable_draft_board(OUTPUT_DIR, workbook)
     if not IS_FROZEN:
         status("[WEB] Updating the browser draft board data...")
+        adp_path = ADP_DIR / ADP_FILENAME
         export_web_rankings(
             OUTPUT_DIR,
             PROJECT_ROOT / "docs" / "data" / "rankings.json",
             projection_season=PROJECTION_SEASON,
             stat_season=STAT_SEASON,
-            adp_updated=ADP_SNAPSHOT_DATE,
+            adp_updated=latest_adp_date(adp_path, ADP_SNAPSHOT_DATE),
+            adp_sources=adp_source_dates(adp_path),
         )
     status(f"[OK] Draft board ready: {result}")
     return result
@@ -78,6 +110,8 @@ def main():
         adp_source=args.adp_source,
         keep_stats=args.keep_stats,
         workbook=args.workbook,
+        direct_adp=not args.saved_adp,
+        skip_workbook=args.skip_workbook,
     )
 
 

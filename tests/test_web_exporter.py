@@ -45,11 +45,13 @@ def test_export_web_rankings_builds_every_board_and_draft_tag(tmp_path):
         projection_season=2026,
         stat_season=2025,
         adp_updated="2026-08-29",
+        adp_sources={"Yahoo": "2026-08-28", "Sleeper": "2026-08-29", "NFL": "2026-08-29"},
     )
 
     payload = json.loads(result.read_text(encoding="utf-8"))
     assert len(payload["boards"]) == 60
     assert payload["projection_season"] == 2026
+    assert payload["adp_sources"]["Yahoo"] == "2026-08-28"
     assert "market_value" in payload["columns"]
     assert "is_rookie" in payload["columns"]
     tag_index = payload["columns"].index("draft_tag")

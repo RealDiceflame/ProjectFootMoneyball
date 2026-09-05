@@ -22,9 +22,9 @@ const columns = [
   },
   { key: "adp", label: "ADP", width: 70, kind: "number", description: "Composite average draft position from Yahoo, Sleeper, and NFL/ESPN" },
   { key: "value_vs_adp", label: "ADP Value", width: 78, kind: "number", description: "Composite ADP minus this board's rank; positive means the board ranks the player earlier" },
-  { key: "Yahoo", label: "Yahoo", width: 70, kind: "number", description: "Yahoo average draft position" },
-  { key: "Sleeper", label: "Sleeper", width: 74, kind: "number", description: "Sleeper average draft position" },
-  { key: "NFL", label: "NFL/ESPN", width: 82, kind: "number", description: "NFL/ESPN average draft position" },
+  { key: "Yahoo", label: "Yahoo", width: 70, kind: "number", description: "Yahoo ADP from the last authorized snapshot; its date is shown above the board" },
+  { key: "Sleeper", label: "Sleeper", width: 74, kind: "number", description: "Half-PPR ADP pulled directly from Sleeper" },
+  { key: "NFL", label: "NFL/ESPN", width: 82, kind: "number", description: "PPR ADP pulled directly from ESPN, the NFL's official fantasy game" },
   { key: "draft_tag", label: "Draft Tag", width: 88, kind: "category", description: "RISK and NEW TEAM come from current news; otherwise TARGET is +50, VALUE +25 to +49.9, FAIR -19.9 to +24.9, and REACH -20 or worse" },
 ];
 
@@ -641,6 +641,20 @@ function formatDate(value) {
   return Number.isNaN(date.valueOf()) ? value : new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(date);
 }
 
+function formatAdpStatus(data) {
+  const dates = data.adp_sources || {};
+  const current = data.adp_updated;
+  if (!Object.keys(dates).length) return `ADP ${formatDate(current)}`;
+  const label = key => key === "NFL" ? "NFL/ESPN" : key;
+  const fresh = Object.entries(dates).filter(([, date]) => date === current).map(([key]) => label(key));
+  const older = Object.entries(dates).filter(([, date]) => date !== current);
+  const liveText = fresh.length ? `${fresh.join(" + ")} direct` : "direct feeds";
+  const olderText = older.length
+    ? `; ${older.map(([key, date]) => `${label(key)} ${formatDate(date)}`).join(", ")}`
+    : "";
+  return `ADP ${formatDate(current)} (${liveText}${olderText})`;
+}
+
 function restoreFilterInputs() {
   ui.tableHead.querySelectorAll("[data-filter]").forEach(control => { control.value = state.filters[control.dataset.filter] || ""; });
 }
@@ -790,7 +804,7 @@ async function loadRankings() {
     const newsStatus = state.news.player_count
       ? `${state.news.player_count} player news feeds`
       : "news feed awaiting update";
-    ui.sourceStatus.textContent = `${data.projection_season} board · ADP ${formatDate(data.adp_updated)} · ${newsStatus} · ${intelStatus}`;
+    ui.sourceStatus.textContent = `${data.projection_season} board · ${formatAdpStatus(data)} · ${newsStatus} · ${intelStatus}`;
     ui.boardHeading.textContent = `${data.projection_season} player rankings`;
     ui.loadingState.classList.add("hidden");
     renderHead();

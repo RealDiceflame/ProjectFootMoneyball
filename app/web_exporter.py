@@ -51,6 +51,7 @@ def export_web_rankings(
     projection_season: int,
     stat_season: int,
     adp_updated: str,
+    adp_sources: dict[str, str] | None = None,
 ) -> Path:
     """Write an atomic, compact JSON bundle containing every selectable board."""
     rankings_dir = Path(rankings_dir)
@@ -73,6 +74,7 @@ def export_web_rankings(
         "projection_season": projection_season,
         "stat_season": stat_season,
         "adp_updated": adp_updated,
+        "adp_sources": adp_sources or {},
         "generated_at": datetime.fromtimestamp(newest_file, timezone.utc).isoformat(),
         "columns": list(WEB_COLUMNS),
         "boards": boards,
