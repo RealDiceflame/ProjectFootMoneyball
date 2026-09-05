@@ -13,6 +13,7 @@ from data_fetcher.adp_importer import (
     build_combined_adp,
     build_direct_adp,
     latest_adp_date,
+    update_yahoo_snapshot,
 )
 from app.draft_board_exporter import export_switchable_draft_board
 from app.web_exporter import export_web_rankings
@@ -36,7 +37,13 @@ def download_file(url, destination):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Refresh data and export the switchable draft board.")
-    parser.add_argument("--adp-source", help="Current ADP comparison page URL or saved HTML file.")
+    source_group = parser.add_mutually_exclusive_group()
+    source_group.add_argument("--adp-source", help="Current ADP comparison page URL or saved HTML file.")
+    source_group.add_argument(
+        "--yahoo-snapshot",
+        type=Path,
+        help="User-downloaded CSV containing Player, Position, and Yahoo or Y! ADP.",
+    )
     parser.add_argument(
         "--saved-adp",
         action="store_true",
@@ -60,6 +67,7 @@ def refresh_draft_board(
     *,
     direct_adp=True,
     skip_workbook=False,
+    yahoo_snapshot=None,
     status=print,
 ):
     """Run the complete refresh for either the CLI or desktop application."""
@@ -71,6 +79,9 @@ def refresh_draft_board(
     else:
         status(f"[1/4] Downloading {STAT_SEASON} season stats...")
         download_file(NFLVERSE_URL.format(season=STAT_SEASON), stats_path)
+    if yahoo_snapshot:
+        status(f"[2/4] Loading the Yahoo snapshot from {yahoo_snapshot}...")
+        update_yahoo_snapshot(yahoo_snapshot, ADP_DIR / ADP_FILENAME)
     if adp_source:
         status(f"[2/4] Refreshing {PROJECTION_SEASON} ADP...")
         build_combined_adp(adp_source, ADP_DIR / ADP_FILENAME)
@@ -112,6 +123,7 @@ def main():
         workbook=args.workbook,
         direct_adp=not args.saved_adp,
         skip_workbook=args.skip_workbook,
+        yahoo_snapshot=args.yahoo_snapshot,
     )
 
 

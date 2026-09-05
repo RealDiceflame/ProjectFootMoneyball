@@ -2,7 +2,7 @@
 
 ## Use the web draft board
 
-Open <https://outlierbaseline.com/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, rookie and current-injury labels, and source-linked player intel. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, and matched ESPN headlines. Desktop downloads remain available under GitHub Releases.
+Open <https://outlierbaseline.com/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, rookie and current-injury labels, and source-linked player intel. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, and matched ESPN headlines. Use **Import my ADP** to select a private CSV or TSV and choose any numeric ADP column; 4for4 exports automatically expose their `Y!`, Sleeper, ESPN, NFL, and composite columns. Imported data stays in that browser and is never uploaded. Desktop downloads remain available under GitHub Releases.
 
 ## Automatic site updates (no API key)
 
@@ -63,6 +63,12 @@ The legacy manual-table importer remains available for a page or saved HTML file
 
 ```powershell
 python refresh_draft_board.py --adp-source "URL-OR-PATH"
+```
+
+To promote a user-downloaded Yahoo snapshot into the site-wide default, use a CSV containing `Player` or `Name`, `Position` or `Pos`, and `Yahoo` or `Y!`. The updater replaces only Yahoo, preserves the direct Sleeper and ESPN feeds, rebuilds every board, and writes the new source date:
+
+```powershell
+python refresh_draft_board.py --yahoo-snapshot "PATH-TO-FILE.csv" --keep-stats --skip-workbook
 ```
 
 The workbook is written to `output/<projection season>_preseason/ProjectFootMoneyball_Draft_Board.xlsx`.

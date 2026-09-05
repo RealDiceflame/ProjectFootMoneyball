@@ -6,6 +6,7 @@ from data_fetcher.adp_importer import (
     build_direct_adp,
     parse_espn_adp,
     parse_sleeper_adp,
+    update_yahoo_snapshot,
 )
 
 
@@ -153,3 +154,50 @@ def test_build_direct_adp_merges_live_feeds_and_preserves_yahoo(tmp_path):
         "Sleeper": "2026-09-04",
         "NFL": "2026-09-04",
     }
+
+
+def test_update_yahoo_snapshot_replaces_provider_without_name_collisions(tmp_path):
+    output = tmp_path / "combined.csv"
+    source = tmp_path / "4for4.csv"
+    pd.DataFrame(
+        {
+            "Player": ["Josh Allen", "Josh Allen"],
+            "Team": ["BUF", "JAX"],
+            "Position": ["QB", "WR"],
+            "Yahoo": [9.0, 45.0],
+            "Sleeper": [10.0, 50.0],
+            "NFL": [11.0, 55.0],
+            "ADP": [10.0, 50.0],
+            "Source_Updated": ["2026-08-29", "2026-08-29"],
+            "Yahoo_Updated": ["2026-08-29", "2026-08-29"],
+            "Sleeper_Updated": ["2026-09-03", "2026-09-03"],
+            "NFL_Updated": ["2026-09-03", "2026-09-03"],
+        }
+    ).to_csv(output, index=False)
+    pd.DataFrame(
+        {
+            "ADP": [1, 2],
+            "Position": ["QB-01", "RB-01"],
+            "Player": ["Josh Allen", "New Runner"],
+            "Team": ["BUF", "DAL"],
+            "Y!": [3.0, 14.0],
+        }
+    ).to_csv(source, index=False)
+
+    result = update_yahoo_snapshot(
+        source,
+        output,
+        update_date="2026-09-04",
+        minimum_rows=1,
+    )
+
+    quarterback = result[(result["Player"] == "Josh Allen") & (result["Position"] == "QB")].iloc[0]
+    receiver = result[(result["Player"] == "Josh Allen") & (result["Position"] == "WR")].iloc[0]
+    rookie = result[result["Player"] == "New Runner"].iloc[0]
+    assert quarterback["Yahoo"] == 3.0
+    assert quarterback["ADP"] == 8.0
+    assert pd.isna(receiver["Yahoo"])
+    assert receiver["ADP"] == 52.5
+    assert rookie["Yahoo"] == 14.0
+    assert rookie["ADP"] == 14.0
+    assert adp_source_dates(output)["Yahoo"] == "2026-09-04"

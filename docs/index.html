@@ -62,6 +62,19 @@
         </div>
       </div>
 
+      <div class="adp-tools" aria-live="polite">
+        <div class="adp-mode">
+          <span class="adp-mode-label">Market ADP</span>
+          <strong id="adp-mode-title">OutlierBaseline default</strong>
+          <span id="adp-mode-detail">Yahoo, Sleeper, and NFL/ESPN blend</span>
+        </div>
+        <div class="adp-actions">
+          <a class="button secondary link-button" href="https://www.4for4.com/adp/all" target="_blank" rel="noopener noreferrer">Open 4for4 ADP</a>
+          <button class="button" id="import-adp" type="button">Import my ADP</button>
+          <button class="button secondary hidden" id="reset-adp" type="button">Use default ADP</button>
+        </div>
+      </div>
+
       <div class="quick-filters">
         <label class="search-field"><span class="sr-only">Search players or teams</span><input id="search" type="search" placeholder="Search player, team, or position..." autocomplete="off"></label>
         <div class="position-filters" id="position-filters" aria-label="Filter by position">
@@ -95,6 +108,27 @@
   </main>
 
   <footer><span>OutlierBaseline · 2025 stats for the 2026 season</span><a href="https://github.com/RealDiceflame/ProjectFootMoneyball/releases">Need the desktop app or spreadsheet?</a></footer>
+
+  <dialog id="adp-dialog" class="adp-dialog" aria-labelledby="adp-dialog-title">
+    <form id="adp-form">
+      <header class="dialog-heading">
+        <div>
+          <p class="eyebrow">Private market data</p>
+          <h2 id="adp-dialog-title">Import your own ADP</h2>
+        </div>
+        <button class="dialog-close" id="adp-close" type="button" aria-label="Close ADP importer">×</button>
+      </header>
+      <p class="adp-intro">Choose a CSV or TSV containing a Player or Name column and at least one numeric ADP column. For a 4for4 export, select <strong>Y!</strong> to use Yahoo ADP.</p>
+      <div class="privacy-note"><strong>Your file stays on this device.</strong><span>It is read inside this browser and is never uploaded to OutlierBaseline or GitHub.</span></div>
+      <div class="import-grid">
+        <label class="file-field"><span>ADP file</span><input id="adp-file" type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values"></label>
+        <label><span>ADP column</span><select id="adp-column" disabled><option value="">Choose a file first</option></select></label>
+        <label><span>Snapshot date</span><input id="adp-date" type="date"></label>
+      </div>
+      <p class="import-status" id="adp-import-status" role="status">Supported examples: 4for4 multi-site exports or a simple Player, Team, Position, ADP file.</p>
+      <div class="dialog-actions"><button class="button secondary" id="adp-cancel" type="button">Cancel</button><button class="button" id="apply-adp" type="submit" disabled>Use this ADP</button></div>
+    </form>
+  </dialog>
 
   <dialog id="intel-dialog" class="intel-dialog" aria-labelledby="intel-title">
     <form method="dialog" class="intel-shell">

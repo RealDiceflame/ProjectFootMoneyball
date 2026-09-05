@@ -1,8 +1,17 @@
+import {
+  applyPersonalAdp,
+  buildPersonalAdp,
+  inspectAdpText,
+  recalculateMarketMetrics,
+} from "./adp-import.mjs";
+
 const DATA_URL = "./data/rankings.json";
 const INTEL_URL = "./data/player_intel.json";
 const NEWS_URL = "./data/player_news.json";
 const DRAFTED_KEY = "project-foot-moneyball:drafted:v1";
 const SETTINGS_KEY = "project-foot-moneyball:settings:v1";
+const PERSONAL_ADP_KEY = "outlierbaseline:personal-adp:v1";
+const MAX_ADP_FILE_BYTES = 5 * 1024 * 1024;
 
 const columns = [
   { key: "drafted", label: "Drafted", width: 62, kind: "drafted", description: "Show available players or players already marked as drafted" },
@@ -36,6 +45,19 @@ const ui = {
   sourceStatus: document.querySelector("#source-status"),
   boardHeading: document.querySelector("#board-heading"),
   boardSummary: document.querySelector("#board-summary"),
+  adpModeTitle: document.querySelector("#adp-mode-title"),
+  adpModeDetail: document.querySelector("#adp-mode-detail"),
+  importAdp: document.querySelector("#import-adp"),
+  resetAdp: document.querySelector("#reset-adp"),
+  adpDialog: document.querySelector("#adp-dialog"),
+  adpForm: document.querySelector("#adp-form"),
+  adpClose: document.querySelector("#adp-close"),
+  adpCancel: document.querySelector("#adp-cancel"),
+  adpFile: document.querySelector("#adp-file"),
+  adpColumn: document.querySelector("#adp-column"),
+  adpDate: document.querySelector("#adp-date"),
+  adpImportStatus: document.querySelector("#adp-import-status"),
+  applyAdp: document.querySelector("#apply-adp"),
   search: document.querySelector("#search"),
   positionFilters: document.querySelector("#position-filters"),
   clearFilters: document.querySelector("#clear-filters"),
@@ -68,6 +90,10 @@ const state = {
   sortColumn: "overall_rank",
   sortAscending: true,
   visibleRows: [],
+  personalAdp: loadJson(PERSONAL_ADP_KEY, null),
+  personalAdpMatches: 0,
+  pendingAdp: null,
+  defaultSourceStatus: "",
 };
 
 function loadJson(key, fallback) {
@@ -115,15 +141,26 @@ function effectiveDraftTag(row, news) {
 function rowsForCurrentBoard() {
   const arrays = state.data.boards[rankingSlug()];
   if (!arrays) throw new Error(`Rankings are missing for ${rankingSlug()}`);
-  return arrays.map(values => {
+  let rows = arrays.map(values => {
     const row = Object.fromEntries(state.data.columns.map((column, index) => [column, values[index]]));
     row.listed_team = String(row.team || "").toUpperCase();
     const news = state.news.reports?.[playerKey(row)];
     row.current_team = String(news?.current_team || row.listed_team).toUpperCase();
-    row.market_draft_tag = row.draft_tag;
-    row.draft_tag = effectiveDraftTag(row, news);
     row.injury = news?.injury || null;
     row.is_rookie = row.is_rookie === true || String(row.is_rookie).toLocaleLowerCase() === "true";
+    return row;
+  });
+  if (state.personalAdp?.entries?.length) {
+    const applied = applyPersonalAdp(rows, state.personalAdp);
+    rows = recalculateMarketMetrics(applied.rows);
+    state.personalAdpMatches = applied.matched;
+  } else {
+    state.personalAdpMatches = 0;
+  }
+  return rows.map(row => {
+    const news = state.news.reports?.[playerKey(row)];
+    row.market_draft_tag = row.market_draft_tag || row.draft_tag;
+    row.draft_tag = effectiveDraftTag(row, news);
     return row;
   });
 }
@@ -421,6 +458,10 @@ function renderBody(rows) {
         }
       } else {
         td.textContent = formatValue(column, row[column.key]);
+        if (row._personalAdp && (column.key === "adp" || column.key === state.personalAdp?.provider)) {
+          td.classList.add("personal-adp-value");
+          td.title = `${state.personalAdp.column} from ${state.personalAdp.fileName}`;
+        }
       }
       tr.append(td);
     }
@@ -637,8 +678,113 @@ function openIntel(key, row) {
 }
 
 function formatDate(value) {
+  if (!value) return "date unavailable";
   const date = new Date(`${value}T00:00:00`);
   return Number.isNaN(date.valueOf()) ? value : new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(date);
+}
+
+function localIsoDate() {
+  const now = new Date();
+  const local = new Date(now.valueOf() - (now.getTimezoneOffset() * 60_000));
+  return local.toISOString().slice(0, 10);
+}
+
+function setImportStatus(message, tone = "") {
+  ui.adpImportStatus.textContent = message;
+  ui.adpImportStatus.classList.toggle("error", tone === "error");
+  ui.adpImportStatus.classList.toggle("success", tone === "success");
+}
+
+function resetImportForm() {
+  state.pendingAdp = null;
+  ui.adpForm.reset();
+  ui.adpDate.value = localIsoDate();
+  ui.adpColumn.replaceChildren(new Option("Choose a file first", ""));
+  ui.adpColumn.disabled = true;
+  ui.applyAdp.disabled = true;
+  setImportStatus("Supported examples: 4for4 multi-site exports or a simple Player, Team, Position, ADP file.");
+}
+
+function openAdpImporter() {
+  resetImportForm();
+  ui.adpDialog.showModal();
+}
+
+async function readAdpFile(file) {
+  if (!file) return;
+  if (file.size > MAX_ADP_FILE_BYTES) {
+    setImportStatus("That file is larger than 5 MB. Choose the smaller ADP export instead.", "error");
+    return;
+  }
+  try {
+    const parsed = inspectAdpText(await file.text());
+    state.pendingAdp = { parsed, fileName: file.name };
+    ui.adpColumn.replaceChildren();
+    parsed.candidates.forEach(candidate => {
+      ui.adpColumn.append(new Option(`${candidate.header} · ${candidate.numericCount} values`, candidate.header));
+    });
+    ui.adpColumn.value = parsed.preferredColumn;
+    ui.adpColumn.disabled = false;
+    ui.applyAdp.disabled = false;
+    setImportStatus(`Found ${parsed.rows.length} player rows. ${parsed.preferredColumn} is selected; you can choose another column.`, "success");
+  } catch (error) {
+    state.pendingAdp = null;
+    ui.adpColumn.replaceChildren(new Option("No usable columns found", ""));
+    ui.adpColumn.disabled = true;
+    ui.applyAdp.disabled = true;
+    setImportStatus(error.message, "error");
+  }
+}
+
+function applyAdpImport(event) {
+  event.preventDefault();
+  if (!state.pendingAdp || !ui.adpColumn.value) return;
+  try {
+    const snapshot = buildPersonalAdp(state.pendingAdp.parsed, ui.adpColumn.value, {
+      fileName: state.pendingAdp.fileName,
+      snapshotDate: ui.adpDate.value || localIsoDate(),
+    });
+    const previous = state.personalAdp;
+    state.personalAdp = snapshot;
+    rowsForCurrentBoard();
+    if (!state.personalAdpMatches) {
+      state.personalAdp = previous;
+      throw new Error("No players in this file matched the current board. Include Position when names could be ambiguous.");
+    }
+    saveJson(PERSONAL_ADP_KEY, snapshot);
+    ui.adpDialog.close();
+    render();
+  } catch (error) {
+    setImportStatus(error.message, "error");
+  }
+}
+
+function resetPersonalAdp() {
+  state.personalAdp = null;
+  state.personalAdpMatches = 0;
+  try {
+    localStorage.removeItem(PERSONAL_ADP_KEY);
+  } catch {
+    // The in-memory reset still works when private browsing blocks storage.
+  }
+  render();
+}
+
+function updateAdpMode() {
+  if (state.personalAdp?.entries?.length) {
+    const provider = state.personalAdp.provider ? ` (${state.personalAdp.provider})` : "";
+    ui.adpModeTitle.textContent = `${state.personalAdp.column}${provider}`;
+    ui.adpModeDetail.textContent = `${state.personalAdpMatches} players matched · ${formatDate(state.personalAdp.snapshotDate)} · private to this device`;
+    ui.importAdp.textContent = "Replace my ADP";
+    ui.resetAdp.classList.remove("hidden");
+    ui.sourceStatus.textContent = `Personal ${state.personalAdp.column} snapshot · ${state.defaultSourceStatus}`;
+  } else {
+    ui.adpModeTitle.textContent = "OutlierBaseline default";
+    ui.adpModeDetail.textContent = "Yahoo, Sleeper, and NFL/ESPN blend";
+    ui.importAdp.textContent = "Import my ADP";
+    ui.resetAdp.classList.add("hidden");
+    ui.sourceStatus.textContent = state.defaultSourceStatus;
+  }
 }
 
 function formatAdpStatus(data) {
@@ -673,7 +819,9 @@ function render() {
   updateSortIndicators();
   renderBody(state.visibleRows);
   const draftedCount = allRows.filter(row => state.drafted.has(playerKey(row))).length;
-  ui.boardSummary.textContent = `Showing ${state.visibleRows.length} of ${allRows.length} players · ${draftedCount} drafted · click any heading to sort`;
+  const importText = state.personalAdp ? ` · ${state.personalAdpMatches} personal ADP matches` : "";
+  ui.boardSummary.textContent = `Showing ${state.visibleRows.length} of ${allRows.length} players · ${draftedCount} drafted${importText} · click any heading to sort`;
+  updateAdpMode();
   ui.emptyState.classList.toggle("hidden", state.visibleRows.length !== 0);
   ui.tableShell.setAttribute("aria-busy", "false");
   ui.exportBoard.disabled = false;
@@ -770,6 +918,12 @@ function bindEvents() {
   ui.clearFilters.addEventListener("click", clearFilters);
   ui.emptyClear.addEventListener("click", clearFilters);
   ui.exportBoard.addEventListener("click", exportVisibleBoard);
+  ui.importAdp.addEventListener("click", openAdpImporter);
+  ui.resetAdp.addEventListener("click", resetPersonalAdp);
+  ui.adpFile.addEventListener("change", event => readAdpFile(event.target.files?.[0]));
+  ui.adpForm.addEventListener("submit", applyAdpImport);
+  ui.adpClose.addEventListener("click", () => ui.adpDialog.close());
+  ui.adpCancel.addEventListener("click", () => ui.adpDialog.close());
   ui.resetDraft.addEventListener("click", () => ui.resetDialog.showModal());
   ui.resetDialog.addEventListener("close", () => {
     if (ui.resetDialog.returnValue !== "confirm") return;
@@ -804,7 +958,8 @@ async function loadRankings() {
     const newsStatus = state.news.player_count
       ? `${state.news.player_count} player news feeds`
       : "news feed awaiting update";
-    ui.sourceStatus.textContent = `${data.projection_season} board · ${formatAdpStatus(data)} · ${newsStatus} · ${intelStatus}`;
+    state.defaultSourceStatus = `${data.projection_season} board · ${formatAdpStatus(data)} · ${newsStatus} · ${intelStatus}`;
+    ui.sourceStatus.textContent = state.defaultSourceStatus;
     ui.boardHeading.textContent = `${data.projection_season} player rankings`;
     ui.loadingState.classList.add("hidden");
     renderHead();

@@ -70,6 +70,141 @@ def _numeric_adp(value):
     return float(number)
 
 
+def _normalized_header(value) -> str:
+    return re.sub(r"[^a-z0-9]+", "", str(value).strip().casefold())
+
+
+def _find_snapshot_column(columns, aliases, *, startswith=()):
+    normalized = {column: _normalized_header(column) for column in columns}
+    for column, key in normalized.items():
+        if key in aliases or any(key.startswith(prefix) for prefix in startswith):
+            return column
+    return None
+
+
+def update_yahoo_snapshot(
+    source,
+    output_path,
+    *,
+    update_date: str | None = None,
+    minimum_rows: int = MIN_PROVIDER_ROWS,
+) -> pd.DataFrame:
+    """Replace Yahoo ADP with a user-supplied CSV snapshot.
+
+    The file must contain Player/Name, Position/Pos, and Yahoo/Y! columns. The
+    existing direct Sleeper and ESPN values remain intact, and Yahoo-only
+    players are appended before the normal top-player cap is applied.
+    """
+    update_date = update_date or _today()
+    snapshot = pd.read_csv(source, sep=None, engine="python", encoding="utf-8-sig")
+    player_column = _find_snapshot_column(
+        snapshot.columns, {"player", "playername", "name", "fullname"}
+    )
+    position_column = _find_snapshot_column(snapshot.columns, {"position", "pos"})
+    team_column = _find_snapshot_column(snapshot.columns, {"team", "nflteam", "proteam"})
+    yahoo_column = _find_snapshot_column(
+        snapshot.columns,
+        {"y", "yahoo", "yahooadp"},
+        startswith=("yahoo",),
+    )
+    missing = [
+        label
+        for label, column in (
+            ("Player or Name", player_column),
+            ("Position or Pos", position_column),
+            ("Yahoo or Y!", yahoo_column),
+        )
+        if column is None
+    ]
+    if missing:
+        raise ValueError("Yahoo snapshot is missing: " + ", ".join(missing))
+
+    provider = pd.DataFrame(
+        {
+            "Player": snapshot[player_column].astype(str).str.strip(),
+            "Team": (
+                snapshot[team_column].astype(str).str.strip().str.upper()
+                if team_column is not None
+                else pd.Series(pd.NA, index=snapshot.index)
+            ),
+            "Position": (
+                snapshot[position_column]
+                .astype(str)
+                .str.upper()
+                .str.extract(r"(?:^|[^A-Z])(QB|RB|WR|TE)(?:[^A-Z]|$)", expand=False)
+            ),
+            "Yahoo": pd.to_numeric(snapshot[yahoo_column], errors="coerce"),
+        }
+    )
+    provider = provider[
+        provider["Player"].ne("")
+        & provider["Position"].isin(SKILL_POSITIONS)
+        & provider["Yahoo"].between(1, 400, inclusive="both")
+    ].copy()
+    provider["_key"] = [
+        _player_key(name, position)
+        for name, position in zip(provider["Player"], provider["Position"])
+    ]
+    provider = provider.sort_values("Yahoo").drop_duplicates("_key", keep="first")
+    if len(provider) < minimum_rows:
+        raise ValueError(
+            f"Yahoo snapshot contains only {len(provider)} usable players; "
+            f"at least {minimum_rows} are required."
+        )
+
+    output_path = Path(output_path)
+    if not output_path.exists():
+        raise FileNotFoundError(f"The combined ADP file does not exist: {output_path}")
+    output = pd.read_csv(output_path)
+    required = {"Player", "Team", "Position", "Sleeper", "NFL"}
+    missing_output = required.difference(output.columns)
+    if missing_output:
+        raise ValueError(
+            "Combined ADP file is missing: " + ", ".join(sorted(missing_output))
+        )
+    output["_key"] = [
+        _player_key(name, position)
+        for name, position in zip(output["Player"], output["Position"])
+    ]
+    yahoo_values = provider.set_index("_key")["Yahoo"]
+    output["Yahoo"] = output["_key"].map(yahoo_values)
+
+    new_provider_rows = provider[~provider["_key"].isin(output["_key"])].copy()
+    if not new_provider_rows.empty:
+        additions = pd.DataFrame(index=new_provider_rows.index, columns=output.columns)
+        for column in ("_key", "Player", "Team", "Position", "Yahoo"):
+            additions[column] = new_provider_rows[column]
+        output = pd.concat([output, additions], ignore_index=True)
+
+    for column in ("Yahoo", "Sleeper", "NFL"):
+        output[column] = pd.to_numeric(output[column], errors="coerce")
+    output["ADP"] = output[["Yahoo", "Sleeper", "NFL"]].mean(axis=1)
+    output["Yahoo_Updated"] = update_date
+    output["Source_Updated"] = update_date
+    if "NFL_Source" not in output.columns:
+        output["NFL_Source"] = "ESPN (official fantasy game of NFL)"
+    output = (
+        output[
+            output["ADP"].notna()
+            & output["Position"].astype(str).str.upper().isin(SKILL_POSITIONS)
+        ]
+        .sort_values(["ADP", "Player"], kind="stable")
+        .head(MAX_PUBLISHED_PLAYERS)
+        .reset_index(drop=True)
+    )
+    output = output.drop(columns="_key", errors="ignore")
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = output_path.with_suffix(output_path.suffix + ".tmp")
+    output.to_csv(temporary, index=False)
+    temporary.replace(output_path)
+    print(
+        f"[OK] Updated Yahoo ADP from {source}: "
+        f"{int(output['Yahoo'].notna().sum())} matched players ({update_date})"
+    )
+    return output
+
+
 def parse_sleeper_adp(payload) -> pd.DataFrame:
     """Normalize Sleeper half-PPR ADP from its season projection response."""
     rows = []
