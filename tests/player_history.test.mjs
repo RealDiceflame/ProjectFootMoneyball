@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { fantasyPoints, historyKey, historyRows } from "../docs/player-history.mjs";
+import {
+  fantasyPoints,
+  historyAnalytics,
+  historyKey,
+  historyRows,
+  sampleStandardDeviation,
+  volatilityLabel,
+} from "../docs/player-history.mjs";
 
 test("uses stable player IDs and name-position fallback keys", () => {
   assert.equal(historyKey({ player: "Josh Allen", player_id: "00-0034857", pos: "QB" }), "id:00-0034857");
@@ -24,4 +31,37 @@ test("recalculates historical points for PPR and TE premium settings", () => {
   };
   assert.equal(fantasyPoints(stats, { ppr: "Standard", tePremium: "Off" }), 95);
   assert.equal(fantasyPoints(stats, { ppr: "Half PPR", tePremium: "+0.5" }), 145);
+});
+
+test("measures season scoring variation and combines it with ADP disagreement", () => {
+  const rows = [
+    { season: 2024, games: 10, receiving_yards: 1000 },
+    { season: 2025, games: 10, receiving_yards: 2000 },
+  ];
+  const analytics = historyAnalytics(
+    rows,
+    { pos: "WR", adp: 50, adp_stddev: 10, source_count: 3 },
+    { ppr: "Standard", tePremium: "Off" },
+  );
+  assert.equal(analytics.seasons[0].fantasy_points, 100);
+  assert.equal(analytics.mean_per_game, 15);
+  assert.ok(Math.abs(analytics.player_stddev - Math.sqrt(50)) < 0.0001);
+  assert.equal(analytics.market_cv, 0.2);
+  assert.equal(analytics.volatility_score, 39);
+  assert.equal(analytics.volatility_label, "Moderate");
+  assert.deepEqual(analytics.basis, ["history", "market"]);
+  assert.equal(analytics.expected_points, 255);
+});
+
+test("handles limited history without inventing a player standard deviation", () => {
+  assert.equal(sampleStandardDeviation([10]), null);
+  const analytics = historyAnalytics(
+    [{ season: 2025, games: 10, receiving_yards: 1000 }],
+    { pos: "WR", adp: 50, adp_stddev: 10, source_count: 2 },
+    { ppr: "Standard", tePremium: "Off" },
+  );
+  assert.equal(analytics.player_stddev, null);
+  assert.equal(analytics.volatility_score, 20);
+  assert.deepEqual(analytics.basis, ["market"]);
+  assert.equal(volatilityLabel(null), "Not rated");
 });

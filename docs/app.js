@@ -4,7 +4,7 @@ import {
   inspectAdpText,
   recalculateMarketMetrics,
 } from "./adp-import.mjs";
-import { fantasyPoints, historyRows } from "./player-history.mjs";
+import { historyAnalytics, historyRows } from "./player-history.mjs?v=20260906-volatility1";
 import { mergeSpecialTeams, specialTeamRows } from "./live-board.mjs";
 
 const DATA_URL = "./data/rankings.json";
@@ -36,6 +36,7 @@ const columns = [
   { key: "adp", label: "ADP", width: 70, kind: "number", description: "Equal-weight consensus of every available Yahoo, Sleeper, and MFL value for this player" },
   { key: "source_count", label: "Sources", width: 68, kind: "number", description: "Number of ADP sources that have a value for this player" },
   { key: "adp_stddev", label: "ADP SD", width: 76, kind: "number", description: "Standard deviation across available ADP sources; higher means more disagreement" },
+  { key: "volatility", label: "Volatility", width: 84, kind: "number", description: "0–100 index combining season-to-season fantasy scoring variation (70%) and relative ADP disagreement (30%)" },
   { key: "value_vs_adp", label: "ADP Value", width: 78, kind: "number", description: "Composite ADP minus this board's rank; positive means the board ranks the player earlier" },
   { key: "Yahoo", label: "Yahoo", width: 70, kind: "number", description: "Yahoo ADP from the last authorized snapshot; its date is shown above the board" },
   { key: "Sleeper", label: "Sleeper", width: 74, kind: "number", description: "Half-PPR ADP pulled directly from Sleeper" },
@@ -176,6 +177,7 @@ function rowsForCurrentBoard() {
     const news = state.news.reports?.[playerKey(row)];
     row.market_draft_tag = row.market_draft_tag || row.draft_tag;
     row.draft_tag = effectiveDraftTag(row, news);
+    row.volatility = historyAnalytics(historyRows(state.history, row), row, state.settings).volatility_score;
     return row;
   });
   return mergeSpecialTeams(players, specialTeamRows(state.specialTeams, state.settings));
@@ -276,7 +278,7 @@ function sortRows(rows) {
 
 function formatValue(column, value) {
   if (value === null || value === undefined || value === "-") return "—";
-  if (column.key === "source_count") return String(Math.trunc(Number(value)));
+  if (["source_count", "volatility"].includes(column.key)) return String(Math.round(Number(value)));
   if (column.kind === "number" && column.key !== "overall_rank") return Number(value).toFixed(1);
   return String(value);
 }
@@ -622,16 +624,185 @@ function appendNewsTimeline(container, news) {
   container.append(timeline);
 }
 
-function appendPlayerHistory(container, player) {
-  const rows = historyRows(state.history, player).map(row => {
-    const score = fantasyPoints({ ...row, pos: player.pos }, state.settings);
-    const games = Number(row.games) || 0;
-    return {
-      ...row,
-      fantasy_points: score,
-      fantasy_points_per_game: games ? score / games : null,
-    };
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+
+function svgNode(name, attributes = {}, text = null) {
+  const node = document.createElementNS(SVG_NAMESPACE, name);
+  Object.entries(attributes).forEach(([key, value]) => node.setAttribute(key, String(value)));
+  if (text !== null) node.textContent = text;
+  return node;
+}
+
+function chartTooltip(node, text) {
+  node.append(svgNode("title", {}, text));
+  return node;
+}
+
+function formatMetric(value, suffix = "") {
+  return Number.isFinite(value) ? `${Number(value).toFixed(1)}${suffix}` : "—";
+}
+
+function volatilityMetric(label, value, detail, className = "") {
+  const card = document.createElement("div");
+  card.className = `volatility-metric ${className}`.trim();
+  const name = document.createElement("span");
+  name.textContent = label;
+  const number = document.createElement("strong");
+  number.textContent = value;
+  const context = document.createElement("small");
+  context.textContent = detail;
+  card.append(name, number, context);
+  return card;
+}
+
+function renderVolatilitySummary(analytics, player) {
+  const panel = document.createElement("section");
+  panel.className = "volatility-panel";
+  const heading = document.createElement("div");
+  heading.className = "volatility-heading";
+  const title = document.createElement("h4");
+  title.textContent = "Volatility snapshot";
+  const basis = document.createElement("span");
+  basis.textContent = analytics.basis.length === 2
+    ? "History + market"
+    : analytics.basis[0] === "history" ? "History only" : analytics.basis[0] === "market" ? "Market only" : "Insufficient data";
+  heading.append(title, basis);
+
+  const metrics = document.createElement("div");
+  metrics.className = "volatility-metrics";
+  const score = Number.isFinite(analytics.volatility_score) ? `${analytics.volatility_score}` : "—";
+  metrics.append(
+    volatilityMetric("Volatility index", score, Number.isFinite(analytics.volatility_score) ? `${analytics.volatility_label} · out of 100` : "Not enough data", "primary"),
+    volatilityMetric(
+      "Player scoring SD",
+      formatMetric(analytics.player_stddev, " FPTS/G"),
+      analytics.player_cv === null
+        ? "Needs at least two NFL seasons"
+        : `${formatMetric(analytics.player_cv * 100, "%")} of historical scoring average`,
+    ),
+    volatilityMetric(
+      "Market ADP SD",
+      formatMetric(analytics.market_stddev, " picks"),
+      analytics.market_cv === null
+        ? "Needs at least two ADP sources"
+        : `${Number(player.source_count)} sources · ${formatMetric(analytics.market_cv * 100, "%")} of consensus ADP`,
+    ),
+  );
+  const note = document.createElement("p");
+  note.textContent = "The index is 70% season-to-season scoring variation and 30% relative ADP disagreement. If one component is unavailable, the available component sets the score.";
+  panel.append(heading, metrics, note);
+  return panel;
+}
+
+function renderSeasonScoringChart(analytics, player) {
+  const projection = numeric(player.projected_points);
+  const data = [...analytics.seasons]
+    .sort((left, right) => Number(left.season) - Number(right.season))
+    .map(row => ({ label: String(row.season), value: row.fantasy_points, games: row.games, projection: false }));
+  if (projection !== null) {
+    data.push({ label: `${state.data.projection_season} proj.`, value: projection, games: 17, projection: true });
+  }
+  const width = 720;
+  const height = 245;
+  const margin = { top: 24, right: 24, bottom: 42, left: 52 };
+  const plotWidth = width - margin.left - margin.right;
+  const plotHeight = height - margin.top - margin.bottom;
+  const maximum = Math.max(1, ...data.map(item => Number(item.value) || 0)) * 1.12;
+  const svg = svgNode("svg", {
+    class: "history-chart",
+    viewBox: `0 0 ${width} ${height}`,
+    role: "img",
+    "aria-label": `${player.player} fantasy points by season in ${state.settings.ppr}${player.pos === "TE" && state.settings.tePremium === "+0.5" ? " with tight end premium" : ""}`,
   });
+  [0, 0.5, 1].forEach(ratio => {
+    const y = margin.top + plotHeight - (ratio * plotHeight);
+    svg.append(
+      svgNode("line", { class: "chart-grid-line", x1: margin.left, x2: width - margin.right, y1: y, y2: y }),
+      svgNode("text", { class: "chart-axis-label", x: margin.left - 9, y: y + 4, "text-anchor": "end" }, String(Math.round(maximum * ratio))),
+    );
+  });
+  const step = plotWidth / Math.max(1, data.length);
+  const barWidth = Math.min(68, step * 0.58);
+  data.forEach((item, index) => {
+    const value = Number(item.value) || 0;
+    const x = margin.left + (index * step) + ((step - barWidth) / 2);
+    const y = margin.top + plotHeight - ((value / maximum) * plotHeight);
+    const bar = chartTooltip(svgNode("rect", {
+      class: `history-bar${item.projection ? " projection" : ""}`,
+      x, y, width: barWidth, height: Math.max(1, margin.top + plotHeight - y), rx: 6,
+    }), item.projection
+      ? `${item.label}: ${value.toFixed(1)} projected fantasy points`
+      : `${item.label}: ${value.toFixed(1)} fantasy points in ${item.games} games`);
+    svg.append(
+      bar,
+      svgNode("text", { class: "chart-value-label", x: x + (barWidth / 2), y: Math.max(14, y - 7), "text-anchor": "middle" }, value.toFixed(1)),
+      svgNode("text", { class: `chart-season-label${item.projection ? " projection" : ""}`, x: x + (barWidth / 2), y: height - 15, "text-anchor": "middle" }, item.label),
+    );
+  });
+  const shell = document.createElement("div");
+  shell.className = "history-chart-shell";
+  shell.append(svg);
+  const figure = document.createElement("figure");
+  const caption = document.createElement("figcaption");
+  caption.textContent = "Actual regular-season scoring by year, plus the current 17-game projection.";
+  figure.append(shell, caption);
+  return figure;
+}
+
+function renderExpectedRangeChart(analytics, player) {
+  if (analytics.player_stddev === null || analytics.expected_points === null) return null;
+  const projection = numeric(player.projected_points);
+  const seasonPaces = analytics.seasons.map(row => ({ season: row.season, value: row.full_season_pace })).filter(item => Number.isFinite(item.value));
+  const width = 720;
+  const height = 155;
+  const margin = { left: 52, right: 26 };
+  const maximum = Math.max(1, analytics.expected_high, projection || 0, ...seasonPaces.map(item => item.value)) * 1.1;
+  const start = margin.left;
+  const end = width - margin.right;
+  const scale = value => start + ((Math.max(0, value) / maximum) * (end - start));
+  const baseline = 80;
+  const svg = svgNode("svg", {
+    class: "history-chart range-chart",
+    viewBox: `0 0 ${width} ${height}`,
+    role: "img",
+    "aria-label": `${player.player} expected 17-game scoring range from ${analytics.expected_low.toFixed(1)} to ${analytics.expected_high.toFixed(1)} points, centered at ${analytics.expected_points.toFixed(1)}`,
+  });
+  svg.append(
+    svgNode("line", { class: "range-axis", x1: start, x2: end, y1: baseline, y2: baseline }),
+    svgNode("rect", { class: "range-band", x: scale(analytics.expected_low), y: baseline - 18, width: Math.max(2, scale(analytics.expected_high) - scale(analytics.expected_low)), height: 36, rx: 8 }),
+    svgNode("line", { class: "range-mean", x1: scale(analytics.expected_points), x2: scale(analytics.expected_points), y1: baseline - 29, y2: baseline + 29 }),
+  );
+  seasonPaces.forEach((item, index) => {
+    const point = chartTooltip(svgNode("circle", {
+      class: "range-season-point",
+      cx: scale(item.value), cy: baseline + (((index % 3) - 1) * 11), r: 5,
+    }), `${item.season}: ${item.value.toFixed(1)} points at a 17-game pace`);
+    svg.append(point);
+  });
+  if (projection !== null) {
+    const projectionLine = chartTooltip(svgNode("line", {
+      class: "range-projection", x1: scale(projection), x2: scale(projection), y1: baseline - 38, y2: baseline + 38,
+    }), `${state.data.projection_season} projection: ${projection.toFixed(1)} points`);
+    svg.append(projectionLine, svgNode("text", { class: "range-projection-label", x: scale(projection), y: 25, "text-anchor": "middle" }, "Projection"));
+  }
+  [
+    [analytics.expected_low, `Low ${analytics.expected_low.toFixed(1)}`],
+    [analytics.expected_points, `Average ${analytics.expected_points.toFixed(1)}`],
+    [analytics.expected_high, `High ${analytics.expected_high.toFixed(1)}`],
+  ].forEach(([value, label]) => svg.append(svgNode("text", { class: "range-label", x: scale(value), y: 132, "text-anchor": "middle" }, label)));
+  const shell = document.createElement("div");
+  shell.className = "history-chart-shell";
+  shell.append(svg);
+  const figure = document.createElement("figure");
+  const caption = document.createElement("figcaption");
+  caption.textContent = "Each dot is a season normalized to a 17-game pace. The shaded range is the historical average ± one sample standard deviation.";
+  figure.append(shell, caption);
+  return figure;
+}
+
+function appendPlayerHistory(container, player) {
+  const analytics = historyAnalytics(historyRows(state.history, player), player, state.settings);
+  const rows = analytics.seasons;
   const section = document.createElement("section");
   section.className = "history-section";
 
@@ -650,6 +821,7 @@ function appendPlayerHistory(container, player) {
   settings.textContent = `${state.settings.ppr}${premium}`;
   headingRow.append(heading, settings);
   section.append(headingRow);
+  section.append(renderVolatilitySummary(analytics, player));
 
   if (!rows.length) {
     const empty = document.createElement("p");
@@ -661,6 +833,13 @@ function appendPlayerHistory(container, player) {
     container.append(section);
     return;
   }
+
+  const charts = document.createElement("div");
+  charts.className = "history-charts";
+  charts.append(renderSeasonScoringChart(analytics, player));
+  const expectedRange = renderExpectedRangeChart(analytics, player);
+  if (expectedRange) charts.append(expectedRange);
+  section.append(charts);
 
   const columns = player.pos === "QB"
     ? [

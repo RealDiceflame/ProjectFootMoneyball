@@ -337,7 +337,7 @@ dialog p:not(.eyebrow) { color: var(--muted); font-size: .82rem; line-height: 1.
 .import-status { min-height: 38px; margin: 13px 0 0; padding: 10px 12px; border-radius: 8px; background: rgba(0,0,0,.14); font-size: .7rem !important; }
 .import-status.error { color: #ffaaa2 !important; border: 1px solid rgba(255,120,108,.25); }
 .import-status.success { color: #bff4b4 !important; border: 1px solid rgba(121,233,149,.2); }
-.intel-dialog { width: min(820px, calc(100% - 28px)); max-height: min(88vh, 920px); overflow: auto; }
+.intel-dialog { width: min(980px, calc(100% - 28px)); max-height: min(88vh, 920px); overflow: auto; }
 .intel-dialog .intel-shell { padding: 0; }
 .intel-header { position: sticky; top: 0; z-index: 2; padding: 19px 26px; display: flex; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); background: rgba(11, 36, 29, .97); backdrop-filter: blur(12px); }
 .intel-player-heading { display: flex; align-items: center; gap: 14px; }
@@ -373,6 +373,35 @@ dialog p:not(.eyebrow) { color: var(--muted); font-size: .82rem; line-height: 1.
 .history-heading .eyebrow { margin: 0 0 4px; }
 .history-heading h3 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 1.2rem; font-weight: 500; letter-spacing: -.02em; }
 .history-scoring { padding: 5px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--lime); font-size: .61rem; font-weight: 800; white-space: nowrap; }
+.volatility-panel { margin-bottom: 15px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: linear-gradient(145deg, rgba(14,48,39,.78), rgba(6,25,20,.72)); }
+.volatility-heading { margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.volatility-heading h4 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: .98rem; font-weight: 500; }
+.volatility-heading > span { padding: 4px 7px; border: 1px solid rgba(215,255,84,.22); border-radius: 999px; color: var(--lime); font-size: .54rem; font-weight: 850; text-transform: uppercase; }
+.volatility-metrics { display: grid; grid-template-columns: .8fr 1.1fr 1.1fr; gap: 8px; }
+.volatility-metric { min-width: 0; padding: 11px 12px; display: grid; gap: 4px; border: 1px solid rgba(130,174,155,.16); border-radius: 9px; background: rgba(0,0,0,.13); }
+.volatility-metric > span { color: #79968a; font-size: .55rem; font-weight: 900; letter-spacing: .055em; text-transform: uppercase; }
+.volatility-metric > strong { color: #eaf6f0; font-size: 1rem; font-variant-numeric: tabular-nums; }
+.volatility-metric > small { overflow: hidden; color: #9db5aa; font-size: .59rem; line-height: 1.35; text-overflow: ellipsis; }
+.volatility-metric.primary { border-color: rgba(215,255,84,.27); background: rgba(215,255,84,.055); }
+.volatility-metric.primary > strong { color: var(--lime); font-size: 1.42rem; }
+.volatility-panel > p { margin: 10px 1px 0 !important; color: #7f9c90 !important; font-size: .6rem !important; line-height: 1.45 !important; }
+.history-charts { margin-bottom: 14px; display: grid; gap: 10px; }
+.history-charts figure { margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 11px; background: rgba(0,0,0,.12); }
+.history-chart-shell { max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; }
+.history-chart { width: 100%; min-width: 560px; display: block; }
+.history-charts figcaption { padding: 8px 11px; color: #7f9c90; border-top: 1px solid var(--line); font-size: .59rem; line-height: 1.4; }
+.chart-grid-line { stroke: rgba(130,174,155,.14); stroke-width: 1; }
+.chart-axis-label, .chart-season-label, .range-label { fill: #78958a; font-family: Inter, system-ui, sans-serif; font-size: 10px; }
+.chart-value-label { fill: #d8e9e1; font-family: Inter, system-ui, sans-serif; font-size: 10px; font-weight: 800; }
+.history-bar { fill: #4ebf92; }
+.history-bar.projection { fill: var(--lime); fill-opacity: .82; }
+.chart-season-label.projection { fill: var(--lime); font-weight: 800; }
+.range-axis { stroke: #5c796e; stroke-width: 2; }
+.range-band { fill: rgba(78,191,146,.28); stroke: rgba(78,191,146,.6); stroke-width: 1; }
+.range-mean { stroke: #c3ead9; stroke-width: 2; }
+.range-season-point { fill: #d9ebe3; stroke: #0b241d; stroke-width: 2; }
+.range-projection { stroke: var(--lime); stroke-width: 3; stroke-dasharray: 5 4; }
+.range-projection-label { fill: var(--lime); font-family: Inter, system-ui, sans-serif; font-size: 10px; font-weight: 850; }
 .history-table-shell { overflow-x: auto; border: 1px solid var(--line); border-radius: 11px; background: rgba(0,0,0,.12); }
 .history-table-shell table { width: 100%; min-width: 710px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .history-table-shell th, .history-table-shell td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
@@ -490,5 +519,8 @@ dialog p:not(.eyebrow) { color: var(--muted); font-size: .82rem; line-height: 1.
   .intel-section { min-height: 0; }
   .intel-feed-notice { align-items: flex-start; flex-direction: column; }
   .history-heading { align-items: start; flex-direction: column; gap: 8px; }
+  .volatility-heading { align-items: flex-start; flex-direction: column; }
+  .volatility-metrics { grid-template-columns: 1fr; }
+  .history-chart { min-width: 520px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
