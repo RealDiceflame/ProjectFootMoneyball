@@ -48,3 +48,33 @@ export function filterOddsRows(rows, { week, market = "ALL", provider = "ALL", s
       .some(value => String(value || "").toLocaleLowerCase().includes(query));
   });
 }
+
+export function filterOddsGames(games, { week, market = "ALL", provider = "ALL", search = "" }) {
+  const query = String(search).trim().toLocaleLowerCase();
+  return (games || []).flatMap(game => {
+    if (week !== null && Number(game.week) !== Number(week)) return [];
+    const gameMatches = [game.away, game.home, game.away_name, game.home_name, game.stadium, game.roof, game.surface]
+      .some(value => String(value || "").toLocaleLowerCase().includes(query));
+    const rows = (game.rows || []).filter(row => {
+      if (market !== "ALL" && row.market !== market) return false;
+      if (provider !== "ALL" && row.provider_key !== provider) return false;
+      if (!query || gameMatches) return true;
+      return [row.selection, row.provider, row.market]
+        .some(value => String(value || "").toLocaleLowerCase().includes(query));
+    });
+    if ((market !== "ALL" || provider !== "ALL") && !rows.length) return [];
+    if (query && !gameMatches && !rows.length) return [];
+    return [{ ...game, rows }];
+  });
+}
+
+export function formatWeather(weather) {
+  if (!weather) return "Weather pending";
+  const pieces = [weather.summary || "Weather pending"];
+  if (weather.temperature !== null && weather.temperature !== "" && Number.isFinite(Number(weather.temperature))) {
+    pieces.push(`${Math.round(Number(weather.temperature))}°F`);
+  }
+  const wind = [weather.wind_direction, weather.wind_speed].filter(Boolean).join(" ");
+  if (wind) pieces.push(`Wind ${wind}`);
+  return pieces.join(" · ");
+}

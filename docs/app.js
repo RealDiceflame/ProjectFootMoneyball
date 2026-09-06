@@ -5,11 +5,13 @@ import {
   recalculateMarketMetrics,
 } from "./adp-import.mjs";
 import { fantasyPoints, historyRows } from "./player-history.mjs";
+import { mergeSpecialTeams, specialTeamRows } from "./live-board.mjs";
 
 const DATA_URL = "./data/rankings.json";
 const INTEL_URL = "./data/player_intel.json";
 const NEWS_URL = "./data/player_news.json";
 const HISTORY_URL = "./data/player_history.json";
+const SPECIAL_TEAMS_URL = "./data/special_teams.json";
 const DRAFTED_KEY = "project-foot-moneyball:drafted:v1";
 const SETTINGS_KEY = "project-foot-moneyball:settings:v1";
 const PERSONAL_ADP_KEY = "outlierbaseline:personal-adp:v1";
@@ -20,7 +22,7 @@ const columns = [
   { key: "overall_rank", label: "Rank", width: 62, kind: "number", description: "Overall rank for the selected league format; try <25 or 10..30" },
   { key: "player", label: "Player", width: 260, kind: "text", className: "player", description: "Type any part of a player's name; rookie and current-injury labels appear beneath it" },
   { key: "team", label: "Team", width: 96, kind: "category", description: "Choose a current or previous team" },
-  { key: "pos", label: "Pos", width: 58, kind: "category", description: "Filter by QB, RB, WR, or TE; separate choices with commas" },
+  { key: "pos", label: "Pos", width: 58, kind: "category", description: "Filter by QB, RB, WR, TE, K, or DST; separate choices with commas" },
   { key: "position_rank", label: "Pos Rank", width: 78, kind: "positionRank", description: "Position-specific rank, such as QB5 or WR12" },
   { key: "projected_points", label: "Projected", width: 88, kind: "number", description: "Projected 17-game fantasy points under the selected scoring settings" },
   { key: "vorp", label: "VORP", width: 78, kind: "number", description: "Projected points above the position's replacement player" },
@@ -46,6 +48,8 @@ const ui = {
   quarterbacks: document.querySelector("#quarterbacks"),
   ppr: document.querySelector("#ppr"),
   tePremium: document.querySelector("#te-premium"),
+  kickers: document.querySelector("#kickers"),
+  defenses: document.querySelector("#defenses"),
   sourceStatus: document.querySelector("#source-status"),
   boardHeading: document.querySelector("#board-heading"),
   boardSummary: document.querySelector("#board-summary"),
@@ -82,12 +86,14 @@ const ui = {
 };
 
 const savedDrafted = loadJson(DRAFTED_KEY, []);
+const defaultSettings = { teams: "12", quarterbacks: "2QB", ppr: "Half PPR", tePremium: "+0.5", kickers: "Off", defenses: "Off" };
 const state = {
   data: null,
   intel: { generated_at: null, report_count: 0, reports: {} },
   news: { generated_at: null, player_count: 0, reports: {} },
   history: { generated_at: null, player_count: 0, columns: [], players: {} },
-  settings: loadJson(SETTINGS_KEY, { teams: "12", quarterbacks: "2QB", ppr: "Half PPR", tePremium: "+0.5" }),
+  specialTeams: { columns: [], rows: [] },
+  settings: { ...defaultSettings, ...loadJson(SETTINGS_KEY, {}) },
   drafted: new Set(Array.isArray(savedDrafted) ? savedDrafted : []),
   search: "",
   position: "ALL",
@@ -166,12 +172,13 @@ function rowsForCurrentBoard() {
   } else {
     state.personalAdpMatches = 0;
   }
-  return rows.map(row => {
+  const players = rows.map(row => {
     const news = state.news.reports?.[playerKey(row)];
     row.market_draft_tag = row.market_draft_tag || row.draft_tag;
     row.draft_tag = effectiveDraftTag(row, news);
     return row;
   });
+  return mergeSpecialTeams(players, specialTeamRows(state.specialTeams, state.settings));
 }
 
 function teamDisplay(row) {
@@ -310,7 +317,7 @@ function renderHead() {
 }
 
 function tagElement(tag) {
-  const safeTag = ["TARGET", "VALUE", "FAIR", "REACH", "RISK", "NEW TEAM", "NO MARKET"].includes(tag) ? tag : "NO MARKET";
+  const safeTag = ["TARGET", "VALUE", "FAIR", "REACH", "RISK", "NEW TEAM", "MARKET", "NO MARKET"].includes(tag) ? tag : "NO MARKET";
   const span = document.createElement("span");
   span.className = `tag tag-${safeTag.toLowerCase().replace(" ", "-")}`;
   span.textContent = safeTag;
@@ -321,6 +328,7 @@ function tagElement(tag) {
     "VALUE": "Market +/- is +25 to +49.9 points",
     "FAIR": "Market +/- is between -19.9 and +24.9 points",
     "REACH": "Market +/- is -20 points or worse",
+    "MARKET": "Kicker or D/ST is placed by current market ADP until a projection model is available",
     "NO MARKET": "No ADP source matching these league settings is loaded",
   }[safeTag];
   return span;
@@ -396,6 +404,22 @@ function renderBody(rows) {
       } else if (column.key === "draft_tag") {
         td.append(tagElement(row.draft_tag));
       } else if (column.key === "player") {
+        if (row.is_special_teams) {
+          const entry = document.createElement("span");
+          entry.className = "special-team-entry";
+          const labels = document.createElement("span");
+          labels.className = "player-labels";
+          const name = document.createElement("strong");
+          name.className = "player-name";
+          name.textContent = row.player;
+          const hint = document.createElement("small");
+          hint.textContent = "Market ADP · projections coming later";
+          labels.append(name, hint);
+          entry.append(createPlayerPhoto(row.player, null), labels);
+          td.append(entry);
+          tr.append(td);
+          continue;
+        }
         const reportAvailable = Boolean(state.intel.reports?.[key]);
         const playerNews = state.news.reports?.[key];
         const newsAvailable = Boolean(playerNews?.events?.length);
@@ -949,7 +973,7 @@ function render() {
   renderBody(state.visibleRows);
   const draftedCount = allRows.filter(row => state.drafted.has(playerKey(row))).length;
   const importText = personalAdpIsActive() ? ` · ${state.personalAdpMatches} personal ADP matches` : "";
-  ui.boardSummary.textContent = `Showing ${state.visibleRows.length} of ${allRows.length} players · ${draftedCount} drafted${importText} · click any heading to sort`;
+  ui.boardSummary.textContent = `Showing ${state.visibleRows.length} of ${allRows.length} entries · ${draftedCount} drafted${importText} · click any heading to sort`;
   updateAdpMode();
   ui.emptyState.classList.toggle("hidden", state.visibleRows.length !== 0);
   ui.tableShell.setAttribute("aria-busy", "false");
@@ -962,10 +986,12 @@ function applySettingsToControls() {
   ui.quarterbacks.value = state.settings.quarterbacks;
   ui.ppr.value = state.settings.ppr;
   ui.tePremium.value = state.settings.tePremium;
+  ui.kickers.value = state.settings.kickers;
+  ui.defenses.value = state.settings.defenses;
 }
 
 function updateSettings() {
-  state.settings = { teams: ui.teams.value, quarterbacks: ui.quarterbacks.value, ppr: ui.ppr.value, tePremium: ui.tePremium.value };
+  state.settings = { teams: ui.teams.value, quarterbacks: ui.quarterbacks.value, ppr: ui.ppr.value, tePremium: ui.tePremium.value, kickers: ui.kickers.value, defenses: ui.defenses.value };
   state.sortColumn = "overall_rank";
   state.sortAscending = true;
   saveJson(SETTINGS_KEY, state.settings);
@@ -1010,7 +1036,7 @@ function exportVisibleBoard() {
 }
 
 function bindEvents() {
-  [ui.teams, ui.quarterbacks, ui.ppr, ui.tePremium].forEach(control => control.addEventListener("change", updateSettings));
+  [ui.teams, ui.quarterbacks, ui.ppr, ui.tePremium, ui.kickers, ui.defenses].forEach(control => control.addEventListener("change", updateSettings));
   ui.search.addEventListener("input", event => { state.search = event.target.value; render(); });
   ui.positionFilters.addEventListener("click", event => {
     const button = event.target.closest("[data-position]");
@@ -1064,11 +1090,12 @@ function bindEvents() {
 
 async function loadRankings() {
   try {
-    const [response, intelResponse, newsResponse, historyResponse] = await Promise.all([
+    const [response, intelResponse, newsResponse, historyResponse, specialTeamsResponse] = await Promise.all([
       fetch(`${DATA_URL}?v=${Date.now()}`, { cache: "no-store" }),
       fetch(`${INTEL_URL}?v=${Date.now()}`, { cache: "no-store" }).catch(() => null),
       fetch(`${NEWS_URL}?v=${Date.now()}`, { cache: "no-store" }).catch(() => null),
       fetch(`${HISTORY_URL}?v=${Date.now()}`, { cache: "no-store" }).catch(() => null),
+      fetch(`${SPECIAL_TEAMS_URL}?v=${Date.now()}`, { cache: "no-store" }).catch(() => null),
     ]);
     if (!response.ok) throw new Error(`Rankings request failed (${response.status})`);
     const data = await response.json();
@@ -1085,6 +1112,10 @@ async function loadRankings() {
     if (historyResponse?.ok) {
       const history = await historyResponse.json();
       if (history.players && history.columns) state.history = history;
+    }
+    if (specialTeamsResponse?.ok) {
+      const specialTeams = await specialTeamsResponse.json();
+      if (specialTeams.rows && specialTeams.columns) state.specialTeams = specialTeams;
     }
     const intelStatus = state.intel.report_count
       ? `${state.intel.report_count} intel reports updated ${formatTimestamp(state.intel.generated_at)}`

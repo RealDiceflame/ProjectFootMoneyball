@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
-from app.odds_board import build_odds_board, probability_to_american
+from app.odds_board import add_nws_weather, build_odds_board, probability_to_american
 
 
 def _schedule():
@@ -23,6 +23,12 @@ def _schedule():
         "total_line": 44.5,
         "under_odds": -115,
         "over_odds": -105,
+        "stadium_id": "SEA00",
+        "stadium": "Lumen Field",
+        "roof": "outdoors",
+        "surface": "fieldturf",
+        "temp": None,
+        "wind": None,
     }])
 
 
@@ -52,6 +58,9 @@ def test_build_odds_board_maps_reference_lines_and_kalshi_contracts():
     assert game["away"] == "NE"
     assert game["home"] == "SEA"
     assert game["kickoff"] == "2026-09-10T00:20:00+00:00"
+    assert game["stadium"] == "Lumen Field"
+    assert game["surface"] == "fieldturf"
+    assert game["weather"]["status"] == "pending"
     assert any(
         row["market"] == "Spread" and row["selection"] == "NE" and row["line"] == 3.5
         for row in game["rows"]
@@ -132,3 +141,76 @@ def test_past_games_are_left_off_the_upcoming_board():
         now=datetime(2026, 9, 11, tzinfo=timezone.utc),
     )
     assert payload["games"] == []
+
+
+def test_indoor_games_are_labeled_without_requesting_a_forecast():
+    schedule = _schedule()
+    schedule.loc[0, "roof"] = "dome"
+    game = build_odds_board(
+        schedule,
+        season=2026,
+        now=datetime(2026, 9, 6, tzinfo=timezone.utc),
+    )["games"][0]
+    assert game["weather"]["status"] == "indoor"
+    assert "weather impact limited" in game["weather"]["summary"]
+    assert game["weather"]["source_url"] is None
+
+
+def test_international_venue_uses_its_own_field_details():
+    schedule = _schedule()
+    schedule.loc[0, "stadium_id"] = "MEL00"
+    schedule.loc[0, "stadium"] = "Melbourne Cricket Ground"
+    schedule.loc[0, "roof"] = "dome"
+    schedule.loc[0, "surface"] = "matrixturf"
+    game = build_odds_board(
+        schedule,
+        season=2026,
+        now=datetime(2026, 9, 6, tzinfo=timezone.utc),
+    )["games"][0]
+    assert game["roof"] == "outdoors"
+    assert game["surface"] == "grass"
+    assert game["weather"]["status"] == "unavailable"
+
+
+def test_nws_hourly_forecast_is_added_near_kickoff():
+    game = build_odds_board(
+        _schedule(),
+        season=2026,
+        now=datetime(2026, 9, 6, tzinfo=timezone.utc),
+    )["games"][0]
+
+    class Response:
+        def __init__(self, payload):
+            self.payload = payload
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return self.payload
+
+    def fake_get(url, **_kwargs):
+        if "/points/" in url:
+            return Response({"properties": {"forecastHourly": "https://api.weather.gov/gridpoints/SEW/1,1/forecast/hourly"}})
+        return Response({"properties": {"periods": [{
+            "startTime": "2026-09-09T17:00:00-07:00",
+            "temperature": 68,
+            "windSpeed": "8 mph",
+            "windDirection": "NW",
+            "shortForecast": "Mostly Sunny",
+        }]}})
+
+    updated = add_nws_weather(
+        [game],
+        now=datetime(2026, 9, 6, tzinfo=timezone.utc),
+        get=fake_get,
+    )
+    assert updated == 1
+    assert game["weather"] == {
+        "status": "forecast",
+        "summary": "Mostly Sunny",
+        "temperature": 68,
+        "wind_speed": "8 mph",
+        "wind_direction": "NW",
+        "source_url": "https://www.weather.gov/documentation/services-web-api",
+    }

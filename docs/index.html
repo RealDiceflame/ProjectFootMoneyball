@@ -50,6 +50,8 @@
         <label><span>Quarterbacks</span><select id="quarterbacks"><option value="1QB">1QB</option><option value="2QB" selected>2QB</option></select></label>
         <label><span>Reception scoring</span><select id="ppr"><option value="Standard">Standard</option><option value="Half PPR" selected>Half PPR</option><option value="Full PPR">Full PPR</option></select></label>
         <label><span>TE premium</span><select id="te-premium"><option value="Off">Off</option><option value="+0.5" selected>+0.5 PPR</option></select></label>
+        <label><span>Kickers</span><select id="kickers"><option value="Off" selected>Off</option><option value="Include">Include on board</option></select></label>
+        <label><span>Team defenses</span><select id="defenses"><option value="Off" selected>Off</option><option value="Include">Include on board</option></select></label>
       </div>
     </section>
 
@@ -88,6 +90,8 @@
           <button class="position" data-position="RB" type="button">RB</button>
           <button class="position" data-position="WR" type="button">WR</button>
           <button class="position" data-position="TE" type="button">TE</button>
+          <button class="position" data-position="K" type="button">K</button>
+          <button class="position" data-position="DST" type="button">D/ST</button>
         </div>
         <p class="filter-tip">Click a player for current news, year-by-year stats, and AI intel. Header filters accept text, choices, <code>&gt;25</code>, or <code>10..30</code>.</p>
       </div>
@@ -109,6 +113,7 @@
         <span><i class="fair"></i> Fair: Market -19.9 to +24.9 pts</span>
         <span><i class="reach"></i> Reach: Market -20 pts or worse</span>
         <span><i class="market"></i> Market +/-: projected points above or below the same-position expectation at that ADP</span>
+        <span><i class="market-only"></i> Market: Kicker or D/ST ranked by current ADP until projections are added</span>
         <span class="save-note">Draft selections save automatically on this device.</span>
       </div>
     </section>

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from io import StringIO
 import json
 import os
@@ -20,6 +20,39 @@ KALSHI_API = "https://external-api.kalshi.com/trade-api/v2"
 KALSHI_SOURCE_URL = "https://kalshi.com/markets"
 ODDS_API_URL = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds"
 ODDS_API_SOURCE_URL = "https://the-odds-api.com/sports/nfl-odds.html"
+NWS_API = "https://api.weather.gov"
+NWS_SOURCE_URL = "https://www.weather.gov/documentation/services-web-api"
+
+STADIUM_COORDINATES = {
+    "ATL97": (33.7554, -84.4008), "BAL00": (39.2780, -76.6238),
+    "BOS00": (42.0913, -71.2645), "BUF00": (42.7737, -78.7869),
+    "CAR00": (35.2257, -80.8537), "CHI98": (41.8625, -87.6167),
+    "CIN00": (39.0955, -84.5160), "CLE00": (41.5061, -81.6997),
+    "DAL00": (32.7479, -97.0928), "DEN00": (39.7440, -105.0192),
+    "DET00": (42.3400, -83.0456), "GNB00": (44.5010, -88.0610),
+    "HOU00": (29.6849, -95.4108), "IND00": (39.7601, -86.1637),
+    "JAX00": (30.3240, -81.6373), "KAN00": (39.0489, -94.4850),
+    "LAX01": (33.9535, -118.3388), "MIA00": (25.9579, -80.2388),
+    "MIN01": (44.9750, -93.2599), "NAS00": (36.1665, -86.7713),
+    "NOR00": (29.9510, -90.0823), "NYC01": (40.8135, -74.0734),
+    "PHI00": (39.9009, -75.1675), "PHO00": (33.5277, -112.2626),
+    "PIT00": (40.4467, -80.0158), "SEA00": (47.5953, -122.3316),
+    "SFO01": (37.4030, -121.9697), "TAM00": (27.9760, -82.5042),
+    "VEG00": (36.0908, -115.1825), "WAS00": (38.9077, -76.8633),
+}
+
+# International schedule rows can retain the home club's usual roof/surface values.
+# These overrides describe the actual host venue so the public game card stays honest.
+VENUE_OVERRIDES = {
+    "MEL00": {"roof": "outdoors", "surface": "grass"},
+    "RIO00": {"roof": "outdoors", "surface": "grass"},
+    "LON02": {"roof": "outdoors", "surface": "artificial"},
+    "LON00": {"roof": "outdoors", "surface": "grass"},
+    "PAR00": {"roof": "outdoors", "surface": "grass"},
+    "MAD01": {"roof": "retractable", "surface": "grass"},
+    "MUN01": {"roof": "outdoors", "surface": "grass"},
+    "MEX00": {"roof": "outdoors", "surface": "grass"},
+}
 
 TEAM_NAMES = {
     "ARI": "Arizona Cardinals", "ATL": "Atlanta Falcons", "BAL": "Baltimore Ravens",
@@ -102,6 +135,52 @@ def _kickoff(row: pd.Series) -> str:
     return local.replace(tzinfo=ZoneInfo("America/New_York")).astimezone(timezone.utc).isoformat()
 
 
+def _text(value) -> str | None:
+    if value is None or pd.isna(value):
+        return None
+    clean = str(value).strip()
+    return None if not clean or clean.casefold() in {"nan", "none"} else clean
+
+
+def _weather_status(row: pd.Series, kickoff: str, now: datetime) -> dict:
+    roof = (_text(row.get("roof")) or "unknown").casefold()
+    if roof in {"dome", "closed"}:
+        return {
+            "status": "indoor",
+            "summary": "Indoor venue — weather impact limited",
+            "temperature": None,
+            "wind_speed": None,
+            "wind_direction": None,
+            "source_url": None,
+        }
+    scheduled_temp = _number(row.get("temp"))
+    scheduled_wind = _number(row.get("wind"))
+    if scheduled_temp is not None or scheduled_wind is not None:
+        return {
+            "status": "schedule",
+            "summary": "Schedule weather snapshot",
+            "temperature": int(round(scheduled_temp)) if scheduled_temp is not None else None,
+            "wind_speed": f"{int(round(scheduled_wind))} mph" if scheduled_wind is not None else None,
+            "wind_direction": None,
+            "source_url": NFLVERSE_SOURCE_URL,
+        }
+    kickoff_dt = datetime.fromisoformat(kickoff)
+    if kickoff_dt > now.astimezone(timezone.utc) + timedelta(days=7):
+        status, summary = "pending", "Forecast available within seven days of kickoff"
+    elif _text(row.get("stadium_id")) not in STADIUM_COORDINATES:
+        status, summary = "unavailable", "Forecast not available for this venue"
+    else:
+        status, summary = "pending", "Forecast is being updated"
+    return {
+        "status": status,
+        "summary": summary,
+        "temperature": None,
+        "wind_speed": None,
+        "wind_direction": None,
+        "source_url": NWS_SOURCE_URL,
+    }
+
+
 def _row(
     *,
     provider: str,
@@ -173,6 +252,10 @@ def _schedule_games(schedule: pd.DataFrame, *, season: int, now: datetime) -> li
         if datetime.fromisoformat(kickoff) < now.astimezone(timezone.utc):
             continue
         away, home = str(row["away_team"]), str(row["home_team"])
+        stadium_id = _text(row.get("stadium_id"))
+        venue = row.copy()
+        for key, value in VENUE_OVERRIDES.get(stadium_id, {}).items():
+            venue[key] = value
         games.append({
             "game_id": str(row["game_id"]),
             "week": int(row["week"]),
@@ -181,6 +264,11 @@ def _schedule_games(schedule: pd.DataFrame, *, season: int, now: datetime) -> li
             "home": home,
             "away_name": TEAM_NAMES.get(away, away),
             "home_name": TEAM_NAMES.get(home, home),
+            "stadium_id": stadium_id,
+            "stadium": _text(row.get("stadium")) or "Venue to be announced",
+            "roof": _text(venue.get("roof")) or "unknown",
+            "surface": _text(venue.get("surface")),
+            "weather": _weather_status(venue, kickoff, now),
             "rows": [],
         })
     return games
@@ -303,6 +391,82 @@ def mark_best_sportsbook_rows(games: list[dict]) -> None:
                 row["is_best"] = row["price"] == best_price
 
 
+def _nws_forecast(game: dict, *, get: Callable = requests.get) -> dict | None:
+    coordinates = STADIUM_COORDINATES.get(game.get("stadium_id"))
+    if not coordinates:
+        return None
+    headers = {
+        "User-Agent": "OutlierBaseline.com (https://outlierbaseline.com)",
+        "Accept": "application/geo+json",
+    }
+    latitude, longitude = coordinates
+    point = get(
+        f"{NWS_API}/points/{latitude:.4f},{longitude:.4f}",
+        headers=headers,
+        timeout=60,
+    )
+    point.raise_for_status()
+    forecast_url = point.json().get("properties", {}).get("forecastHourly")
+    if not forecast_url:
+        return None
+    forecast = get(forecast_url, headers=headers, timeout=60)
+    forecast.raise_for_status()
+    periods = forecast.json().get("properties", {}).get("periods", [])
+    kickoff = datetime.fromisoformat(game["kickoff"])
+    eligible = []
+    for period in periods:
+        try:
+            start = datetime.fromisoformat(str(period.get("startTime")))
+        except (TypeError, ValueError):
+            continue
+        eligible.append((abs((start.astimezone(timezone.utc) - kickoff).total_seconds()), period))
+    if not eligible:
+        return None
+    distance, period = min(eligible, key=lambda item: item[0])
+    if distance > 2 * 60 * 60:
+        return None
+    temperature = _number(period.get("temperature"))
+    return {
+        "status": "forecast",
+        "summary": _text(period.get("shortForecast")) or "Forecast available",
+        "temperature": int(round(temperature)) if temperature is not None else None,
+        "wind_speed": _text(period.get("windSpeed")),
+        "wind_direction": _text(period.get("windDirection")),
+        "source_url": NWS_SOURCE_URL,
+    }
+
+
+def add_nws_weather(
+    games: list[dict],
+    *,
+    now: datetime | None = None,
+    get: Callable = requests.get,
+) -> int:
+    """Attach kickoff-hour NWS forecasts to outdoor US games inside its seven-day window."""
+    now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    updated = 0
+    cache: dict[tuple[str, str], dict | None] = {}
+    for game in games:
+        if game.get("weather", {}).get("status") != "pending":
+            continue
+        kickoff = datetime.fromisoformat(game["kickoff"])
+        if kickoff > now + timedelta(days=7) or game.get("stadium_id") not in STADIUM_COORDINATES:
+            continue
+        cache_key = (str(game.get("stadium_id")), game["kickoff"][:13])
+        if cache_key not in cache:
+            try:
+                cache[cache_key] = _nws_forecast(game, get=get)
+            except (requests.RequestException, ValueError, TypeError):
+                cache[cache_key] = None
+        if cache[cache_key]:
+            game["weather"] = cache[cache_key]
+            updated += 1
+        else:
+            game["weather"]["status"] = "unavailable"
+            game["weather"]["summary"] = "Forecast temporarily unavailable"
+    return updated
+
+
 def build_odds_board(
     schedule: pd.DataFrame,
     *,
@@ -332,6 +496,7 @@ def build_odds_board(
             "schedule": {"name": "nflverse", "url": NFLVERSE_SOURCE_URL},
             "exchange": {"name": "Kalshi public market API", "url": KALSHI_SOURCE_URL},
             "sportsbooks": {"name": "The Odds API", "url": ODDS_API_SOURCE_URL},
+            "weather": {"name": "National Weather Service", "url": NWS_SOURCE_URL},
         },
         "games": games,
     }
@@ -352,12 +517,12 @@ def refresh_odds_board(
     get: Callable = requests.get,
 ) -> Path:
     """Download current documented sources and atomically refresh the public board."""
-    status(f"[1/3] Loading the {season} NFL schedule and market consensus...")
+    status(f"[1/4] Loading the {season} NFL schedule and market consensus...")
     response = get(SCHEDULE_URL, headers={"User-Agent": "OutlierBaseline/0.2"}, timeout=180)
     response.raise_for_status()
     schedule = pd.read_csv(StringIO(response.text), low_memory=False)
 
-    status("[2/3] Loading public Kalshi NFL winner markets...")
+    status("[2/4] Loading public Kalshi NFL winner markets...")
     try:
         kalshi = _get_json(
             f"{KALSHI_API}/events",
@@ -376,7 +541,7 @@ def refresh_odds_board(
     key = odds_api_key or os.getenv("ODDS_API_KEY")
     sportsbooks = []
     if key:
-        status("[3/3] Loading licensed US sportsbook comparisons...")
+        status("[3/4] Loading licensed US sportsbook comparisons...")
         try:
             sportsbooks = _get_json(
                 ODDS_API_URL,
@@ -392,7 +557,7 @@ def refresh_odds_board(
         except (requests.RequestException, ValueError) as error:
             status(f"[WARN] Sportsbook comparisons are temporarily unavailable: {error}")
     else:
-        status("[3/3] ODDS_API_KEY is not set; publishing schedule, consensus, and Kalshi only.")
+        status("[3/4] ODDS_API_KEY is not set; publishing schedule, consensus, and Kalshi only.")
 
     payload = build_odds_board(
         schedule,
@@ -400,6 +565,9 @@ def refresh_odds_board(
         kalshi_events=kalshi,
         sportsbook_events=sportsbooks,
     )
+    status("[4/4] Loading kickoff weather for upcoming outdoor games...")
+    weather_count = add_nws_weather(payload["games"], get=get)
+    status(f"[OK] Added {weather_count} National Weather Service forecasts.")
     destination = Path(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = destination.with_suffix(destination.suffix + ".tmp")

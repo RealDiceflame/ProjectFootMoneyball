@@ -1,6 +1,14 @@
-import { defaultWeek, filterOddsRows, flattenGames, formatLine, formatPrice } from "./odds-board.mjs";
+import {
+  defaultWeek,
+  filterOddsGames,
+  flattenGames,
+  formatLine,
+  formatPrice,
+  formatWeather,
+} from "./odds-board.mjs";
 
 const DATA_URL = "./data/nfl_odds.json";
+const MARKET_ORDER = ["Moneyline", "Spread", "Total"];
 
 const ui = {
   status: document.querySelector("#odds-status"),
@@ -10,10 +18,10 @@ const ui = {
   search: document.querySelector("#odds-search"),
   markets: document.querySelector("#odds-markets"),
   clear: document.querySelector("#odds-clear"),
-  body: document.querySelector("#odds-body"),
+  games: document.querySelector("#odds-games"),
   loading: document.querySelector("#odds-loading"),
   empty: document.querySelector("#odds-empty"),
-  shell: document.querySelector("#odds-table-shell"),
+  shell: document.querySelector("#odds-games-shell"),
   connection: document.querySelector("#sportsbook-connection"),
 };
 
@@ -21,7 +29,7 @@ const state = { payload: null, rows: [], week: null, market: "ALL", provider: "A
 
 function formatKickoff(value) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "TBD";
+  if (Number.isNaN(date.getTime())) return "Time to be announced";
   return new Intl.DateTimeFormat(undefined, {
     weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
     timeZoneName: "short",
@@ -32,86 +40,141 @@ function providerKind(row) {
   return { sportsbook: "Sportsbook", exchange: "Exchange", reference: "Consensus" }[row.provider_kind] || "Source";
 }
 
-function selectionName(row) {
-  if (row.selection === row.away) return row.away_name;
-  if (row.selection === row.home) return row.home_name;
+function selectionName(game, row) {
+  if (row.selection === game.away) return game.away_name;
+  if (row.selection === game.home) return game.home_name;
   return row.selection;
 }
 
-function createCell(text, className = "") {
-  const cell = document.createElement("td");
-  cell.textContent = text;
-  if (className) cell.className = className;
-  return cell;
+function detail(label, value, className = "") {
+  const item = document.createElement("div");
+  item.className = `odds-game-detail ${className}`.trim();
+  const title = document.createElement("span");
+  title.textContent = label;
+  const text = document.createElement("strong");
+  text.textContent = value;
+  item.append(title, text);
+  return item;
 }
 
-function renderRows(rows) {
-  const fragment = document.createDocumentFragment();
-  rows.forEach(row => {
-    const tr = document.createElement("tr");
-    tr.className = `odds-row source-${row.provider_kind}${row.is_best ? " best-odds" : ""}`;
-    tr.append(createCell(formatKickoff(row.kickoff), "odds-kickoff"));
+function renderOffer(game, row) {
+  const offer = document.createElement("div");
+  offer.className = `odds-offer source-${row.provider_kind}${row.is_best ? " best-odds" : ""}`;
 
-    const matchup = document.createElement("td");
-    matchup.className = "odds-matchup";
-    const teams = document.createElement("strong");
-    teams.textContent = row.matchup;
-    const full = document.createElement("span");
-    full.textContent = `${row.away_name} at ${row.home_name}`;
-    matchup.append(teams, full);
-    tr.append(matchup);
+  const selection = document.createElement("strong");
+  selection.className = "odds-offer-selection";
+  selection.textContent = selectionName(game, row);
 
-    tr.append(createCell(row.market, "odds-market"));
-    tr.append(createCell(selectionName(row), "odds-selection"));
-    tr.append(createCell(formatLine(row), "numeric odds-number"));
+  const line = document.createElement("span");
+  line.className = "odds-offer-line";
+  line.textContent = row.market === "Moneyline" ? "Win" : formatLine(row);
 
-    const price = document.createElement("td");
-    price.className = "numeric odds-price";
-    const value = document.createElement("strong");
-    value.textContent = formatPrice(row);
-    price.append(value);
-    if (row.is_best) {
-      const badge = document.createElement("span");
-      badge.className = "best-badge";
-      badge.textContent = "Best";
-      price.append(badge);
-    }
-    tr.append(price);
+  const price = document.createElement("strong");
+  price.className = "odds-offer-price";
+  price.textContent = formatPrice(row);
 
-    const provider = document.createElement("td");
-    provider.className = "odds-provider";
+  const provider = document.createElement("a");
+  provider.className = "odds-offer-provider";
+  provider.href = row.provider_url;
+  provider.target = "_blank";
+  provider.rel = "noopener noreferrer";
+  provider.textContent = row.provider;
+  provider.title = `${providerKind(row)} — open source`;
+
+  offer.append(selection, line, price, provider);
+  if (row.is_best) {
+    const badge = document.createElement("span");
+    badge.className = "best-badge";
+    badge.textContent = "Best";
+    offer.append(badge);
+  }
+  return offer;
+}
+
+function renderMarket(game, market, rows) {
+  const section = document.createElement("section");
+  section.className = "odds-market-block";
+  const heading = document.createElement("h3");
+  heading.textContent = market;
+  const offers = document.createElement("div");
+  offers.className = "odds-offers";
+  rows
+    .sort((left, right) => Number(right.is_best) - Number(left.is_best) || left.selection.localeCompare(right.selection) || left.provider.localeCompare(right.provider))
+    .forEach(row => offers.append(renderOffer(game, row)));
+  section.append(heading, offers);
+  return section;
+}
+
+function renderGame(game) {
+  const card = document.createElement("article");
+  card.className = "odds-game-card";
+
+  const header = document.createElement("header");
+  header.className = "odds-game-header";
+  const matchup = document.createElement("div");
+  const code = document.createElement("p");
+  code.className = "eyebrow";
+  code.textContent = `${game.away} @ ${game.home}`;
+  const title = document.createElement("h2");
+  title.textContent = `${game.away_name} at ${game.home_name}`;
+  matchup.append(code, title);
+  const week = document.createElement("span");
+  week.className = "odds-week-badge";
+  week.textContent = `Week ${game.week}`;
+  header.append(matchup, week);
+
+  const metadata = document.createElement("div");
+  metadata.className = "odds-game-details";
+  metadata.append(
+    detail("Kickoff", formatKickoff(game.kickoff)),
+    detail("Stadium", game.stadium || "Venue to be announced"),
+    detail("Field", [game.surface, game.roof].filter(Boolean).join(" · ") || "Details pending"),
+  );
+  const weather = detail("Weather", formatWeather(game.weather), `weather-${game.weather?.status || "pending"}`);
+  if (game.weather?.source_url) {
+    const value = weather.querySelector("strong");
     const link = document.createElement("a");
-    link.href = row.provider_url;
+    link.href = game.weather.source_url;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
-    link.textContent = row.provider;
-    const kind = document.createElement("span");
-    kind.textContent = providerKind(row);
-    provider.append(link, kind);
-    tr.append(provider);
-    fragment.append(tr);
+    link.textContent = value.textContent;
+    value.replaceWith(link);
+  }
+  metadata.append(weather);
+
+  const markets = document.createElement("div");
+  markets.className = "odds-market-grid";
+  const grouped = new Map(MARKET_ORDER.map(market => [market, []]));
+  game.rows.forEach(row => {
+    if (!grouped.has(row.market)) grouped.set(row.market, []);
+    grouped.get(row.market).push(row);
   });
-  ui.body.replaceChildren(fragment);
+  [...grouped.entries()].filter(([, rows]) => rows.length).forEach(([market, rows]) => markets.append(renderMarket(game, market, rows)));
+  if (!markets.children.length) {
+    const pending = document.createElement("p");
+    pending.className = "odds-lines-pending";
+    pending.textContent = "Lines have not been posted for this matchup yet.";
+    markets.append(pending);
+  }
+
+  card.append(header, metadata, markets);
+  return card;
 }
 
-function currentRows() {
-  return filterOddsRows(state.rows, state);
+function currentGames() {
+  return filterOddsGames(state.payload?.games, state)
+    .sort((left, right) => String(left.kickoff).localeCompare(String(right.kickoff)) || left.game_id.localeCompare(right.game_id));
 }
 
 function render() {
-  const rows = currentRows().sort((left, right) =>
-    String(left.kickoff).localeCompare(String(right.kickoff))
-    || left.matchup.localeCompare(right.matchup)
-    || left.market.localeCompare(right.market)
-    || left.selection.localeCompare(right.selection)
-    || Number(right.is_best) - Number(left.is_best)
-    || left.provider.localeCompare(right.provider)
-  );
-  renderRows(rows);
-  const games = new Set(rows.map(row => row.game_id)).size;
+  const games = currentGames();
+  const fragment = document.createDocumentFragment();
+  games.forEach(game => fragment.append(renderGame(game)));
+  ui.games.replaceChildren(fragment);
+  const rows = games.flatMap(game => game.rows);
   const providers = new Set(rows.map(row => row.provider_key)).size;
-  ui.summary.textContent = `${games} games · ${rows.length} available lines · ${providers} sources`;
-  ui.empty.classList.toggle("hidden", rows.length !== 0);
+  ui.summary.textContent = `${games.length} games · ${rows.length} available lines · ${providers} sources`;
+  ui.empty.classList.toggle("hidden", games.length !== 0);
 }
 
 function populateControls() {
@@ -149,7 +212,7 @@ async function load() {
     ui.connection.querySelector("strong").textContent = state.payload.has_sportsbooks
       ? "Live sportsbook comparison connected"
       : "Sportsbook comparison awaiting a licensed feed";
-    ui.connection.querySelector("span").textContent = state.payload.has_sportsbooks
+    ui.connection.querySelector("div > span").textContent = state.payload.has_sportsbooks
       ? "Best-line badges compare the licensed sportsbook prices currently available."
       : "The schedule, consensus reference, and public Kalshi contracts are live. Direct sportsbook pages are not scraped.";
     ui.loading.classList.add("hidden");

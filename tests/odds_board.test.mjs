@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { defaultWeek, filterOddsRows, flattenGames, formatAmerican, formatLine, formatPrice } from "../docs/odds-board.mjs";
+import { defaultWeek, filterOddsGames, filterOddsRows, flattenGames, formatAmerican, formatLine, formatPrice, formatWeather } from "../docs/odds-board.mjs";
 
 const games = [{
   game_id: "2026_01_NE_SEA",
@@ -11,6 +11,10 @@ const games = [{
   home: "SEA",
   away_name: "New England Patriots",
   home_name: "Seattle Seahawks",
+  stadium: "Lumen Field",
+  roof: "outdoors",
+  surface: "fieldturf",
+  weather: { summary: "Mostly sunny", temperature: 68, wind_speed: "8 mph", wind_direction: "NW" },
   rows: [
     { provider: "DraftKings", provider_key: "draftkings", provider_kind: "sportsbook", market: "Spread", selection: "NE", line: 3.5, price: -110 },
     { provider: "Kalshi", provider_key: "kalshi", provider_kind: "exchange", market: "Moneyline", selection: "SEA", line: null, price: -170, contract_price: 63 },
@@ -35,4 +39,18 @@ test("flattens games and filters by week, market, provider, and search", () => {
 test("chooses the first upcoming week", () => {
   assert.equal(defaultWeek([4, 2, 3]), 2);
   assert.equal(defaultWeek([]), null);
+});
+
+test("filters complete game blocks while preserving matching lines", () => {
+  assert.equal(filterOddsGames(games, { week: 1, market: "ALL", provider: "ALL", search: "Lumen" }).length, 1);
+  const kalshi = filterOddsGames(games, { week: 1, market: "ALL", provider: "kalshi", search: "" });
+  assert.equal(kalshi.length, 1);
+  assert.deepEqual(kalshi[0].rows.map(row => row.provider_key), ["kalshi"]);
+  assert.equal(filterOddsGames(games, { week: 1, market: "Total", provider: "ALL", search: "" }).length, 0);
+});
+
+test("formats kickoff weather as a compact game detail", () => {
+  assert.equal(formatWeather(games[0].weather), "Mostly sunny · 68°F · Wind NW 8 mph");
+  assert.equal(formatWeather({ summary: "Indoor venue", temperature: null }), "Indoor venue");
+  assert.equal(formatWeather(null), "Weather pending");
 });

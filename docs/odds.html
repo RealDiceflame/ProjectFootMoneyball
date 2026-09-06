@@ -55,7 +55,7 @@
       <div class="odds-controls">
         <label><span>Week</span><select id="odds-week" aria-label="NFL week"></select></label>
         <label><span>Provider</span><select id="odds-provider" aria-label="Odds provider"><option value="ALL">All sources</option></select></label>
-        <label class="search-field"><span>Search</span><input id="odds-search" type="search" placeholder="Team, market, or source..." autocomplete="off"></label>
+        <label class="search-field"><span>Search</span><input id="odds-search" type="search" placeholder="Team, venue, market, or source..." autocomplete="off"></label>
         <div class="position-filters odds-market-filter" id="odds-markets" aria-label="Filter by market">
           <button class="position active" data-market="ALL" type="button">All</button>
           <button class="position" data-market="Moneyline" type="button">Moneyline</button>
@@ -64,21 +64,17 @@
         </div>
       </div>
 
-      <p class="mobile-scroll-hint" role="note"><span aria-hidden="true">↔</span> Swipe across the table to compare every line, price, and provider.</p>
-
-      <div class="table-shell odds-table-shell" id="odds-table-shell" aria-busy="true">
-        <table>
-          <thead><tr><th>Kickoff</th><th>Matchup</th><th>Market</th><th>Selection</th><th>Line</th><th>Odds / price</th><th>Provider</th></tr></thead>
-          <tbody id="odds-body"></tbody>
-        </table>
+      <div class="odds-games-shell" id="odds-games-shell" aria-busy="true">
+        <div class="odds-game-grid" id="odds-games"></div>
         <div class="loading-state" id="odds-loading"><div class="football-loader" aria-hidden="true"></div><strong>Loading the weekly board</strong></div>
-        <div class="empty-state hidden" id="odds-empty"><strong>No available lines match those filters.</strong></div>
+        <div class="empty-state hidden" id="odds-empty"><strong>No games or available lines match those filters.</strong></div>
       </div>
 
       <div class="legend odds-legend">
         <span><i class="best-line"></i> Best: most favorable sportsbook line, then price, for the same selection</span>
         <span>Kalshi values are contract ask prices with approximate American-odds equivalents; exchange fees are not included.</span>
         <span>Market consensus is a reference snapshot from nflverse, not an individual sportsbook offer.</span>
+        <span>Outdoor forecasts are added near kickoff; indoor games are labeled separately.</span>
         <span class="save-note">Odds change quickly. Open the linked provider and verify the current number before acting.</span>
       </div>
     </section>
