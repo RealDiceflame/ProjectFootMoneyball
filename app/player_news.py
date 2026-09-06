@@ -145,6 +145,21 @@ def _headshot_url(player: dict, roster: pd.DataFrame, current_team: str | None) 
     return None
 
 
+def _birth_date(player: dict, roster: pd.DataFrame, current_team: str | None) -> str | None:
+    """Return a stable ISO birth date from the player's current roster identity."""
+    matches = _matching_roster_rows(roster, player)
+    if matches.empty or "birth_date" not in matches.columns:
+        return None
+    if current_team:
+        current = matches[matches["team"] == current_team]
+        matches = pd.concat([current, matches.drop(index=current.index)])
+    for value in matches["birth_date"].dropna():
+        parsed = pd.to_datetime(value, errors="coerce")
+        if not pd.isna(parsed):
+            return parsed.date().isoformat()
+    return None
+
+
 def _roster_event(
     player: dict,
     roster: pd.DataFrame,
@@ -457,6 +472,7 @@ def build_player_news(
             "listed_team": player["team"],
             "current_team": current_team,
             "headshot_url": _headshot_url(player, current_roster, current_team),
+            "birth_date": _birth_date(player, current_roster, current_team),
             "pos": player["pos"],
             "signal": signal,
             "injury": injury,
@@ -521,7 +537,7 @@ def refresh_player_news(
         ROSTER_URL.format(season=season),
         [
             "team", "status", "full_name", "position", "gsis_id",
-            "status_description_abbr", "headshot_url",
+            "status_description_abbr", "headshot_url", "birth_date",
         ],
     )
     status(f"[2/5] Loading {season} depth charts...")

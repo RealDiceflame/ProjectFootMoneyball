@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071d18">
+  <meta name="description" content="Explore OutlierBaseline fantasy football age curves, player season projections, positional variance, and draft-round scoring expectations.">
+  <link rel="canonical" href="https://outlierbaseline.com/projection.html">
+  <title>Projection Lab | OutlierBaseline</title>
+  <link rel="stylesheet" href="styles.css?v=20260906-projection1">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="OutlierBaseline home">
+      <span class="brand-mark" aria-hidden="true">OB</span>
+      <span><strong>OutlierBaseline</strong><small>Football intelligence lab</small></span>
+    </a>
+    <nav class="topnav" aria-label="Analytics pages">
+      <a href="./">Player rankings</a>
+      <a class="active" href="projection.html">Projection Lab</a>
+      <a href="special-teams.html">Kickers &amp; D/ST</a>
+      <a href="odds.html">Weekly odds</a>
+    </nav>
+    <div class="source-status" id="projection-status">Building the position curves...</div>
+  </header>
+
+  <main>
+    <section class="projection-hero">
+      <div>
+        <p class="eyebrow">OutlierBaseline Projection Lab</p>
+        <h1>Project the next season—not the last one again.</h1>
+        <p>Compare a player with every same-position season in the five-year sample. Recent production sets the baseline, position-specific aging adjusts the scoring rate, and expected games turns it into a season projection.</p>
+      </div>
+      <div class="model-version" aria-label="Model version">
+        <span>Current model</span>
+        <strong>Age Curve v1</strong>
+        <small>Explainable · format-aware · season-level</small>
+      </div>
+    </section>
+
+    <section class="model-controls" aria-labelledby="model-controls-heading">
+      <div>
+        <p class="eyebrow">Model inputs</p>
+        <h2 id="model-controls-heading">Choose the league and player</h2>
+      </div>
+      <div class="model-control-grid">
+        <label><span>Teams</span><select id="model-teams"><option>8</option><option>10</option><option selected>12</option><option>14</option><option>16</option></select></label>
+        <label><span>Quarterbacks</span><select id="model-quarterbacks"><option>1QB</option><option selected>2QB</option></select></label>
+        <label><span>Reception scoring</span><select id="model-ppr"><option>Standard</option><option selected>Half PPR</option><option>Full PPR</option></select></label>
+        <label><span>TE premium</span><select id="model-te-premium"><option>Off</option><option selected>+0.5</option></select></label>
+        <label><span>Position</span><select id="model-position"><option>QB</option><option selected>RB</option><option>WR</option><option>TE</option></select></label>
+        <label class="model-player-control"><span>Player</span><select id="model-player" aria-label="Player to overlay on the age curve"></select></label>
+      </div>
+    </section>
+
+    <div id="projection-loading" class="model-loading"><div class="football-loader" aria-hidden="true"></div><strong>Learning from five seasons</strong></div>
+    <div id="projection-content" class="projection-content hidden">
+      <section class="model-panel age-curve-panel" aria-labelledby="age-curve-heading">
+        <div class="model-panel-heading">
+          <div>
+            <p class="eyebrow">Position age curve</p>
+            <h2 id="age-curve-heading">RB production by age</h2>
+            <p id="age-curve-summary">Preparing the selected player's comparison...</p>
+          </div>
+          <div class="chart-legend" aria-label="Chart legend">
+            <span><i class="cohort-dot"></i> Player-season</span>
+            <span><i class="curve-line"></i> Position average</span>
+            <span><i class="selected-dot"></i> Selected player</span>
+          </div>
+        </div>
+        <div class="age-chart-shell" id="age-chart"></div>
+        <div class="projection-card-grid" id="player-projection-cards"></div>
+      </section>
+
+      <section class="model-panel" aria-labelledby="position-variance-heading">
+        <div class="model-panel-heading">
+          <div>
+            <p class="eyebrow">Position distribution</p>
+            <h2 id="position-variance-heading">Expected scoring and standard deviation</h2>
+            <p>Current draftable-player projections under this scoring format. The spread shows how much season scoring varies inside each position.</p>
+          </div>
+        </div>
+        <div class="position-variance-grid" id="position-variance"></div>
+      </section>
+
+      <section class="model-panel" aria-labelledby="round-map-heading">
+        <div class="model-panel-heading">
+          <div>
+            <p class="eyebrow">Draft capital map</p>
+            <h2 id="round-map-heading">Expected season points by position and round</h2>
+            <p>Players are assigned to a round from consensus ADP and the selected number of teams. Each cell shows average projected points, ± one standard deviation, and the number of players available in that slice.</p>
+          </div>
+        </div>
+        <div class="round-map-shell" id="round-map"></div>
+      </section>
+
+      <section class="model-methodology" aria-labelledby="method-heading">
+        <p class="eyebrow">How Age Curve v1 works</p>
+        <h2 id="method-heading">A transparent baseline we can improve</h2>
+        <div class="method-steps">
+          <article><strong>1</strong><h3>Recent form</h3><p>The latest three seasons receive 5:3:2 weights, with partial seasons contributing less.</p></article>
+          <article><strong>2</strong><h3>Position aging</h3><p>Year-over-year changes from the same player and position estimate improvement or decline at the next age.</p></article>
+          <article><strong>3</strong><h3>Expected games</h3><p>Recent availability is blended with a healthy-season baseline instead of assuming everyone plays all 17 games.</p></article>
+          <article><strong>4</strong><h3>Uncertainty</h3><p>Player history and the same-position age group create the displayed one-standard-deviation range.</p></article>
+        </div>
+        <p class="model-caveat">This first version intentionally does not guess coaching changes, depth-chart usage, offensive efficiency, or strength of schedule. Those become separate, visible model inputs rather than hidden adjustments.</p>
+      </section>
+    </div>
+
+    <div id="projection-error" class="empty-state hidden"><strong>The projection data could not load.</strong><span>Please try again shortly.</span></div>
+  </main>
+
+  <footer><span>OutlierBaseline · Age Curve v1</span><a href="./">Use these projections on the live rankings board</a></footer>
+  <script type="module" src="projection.js?v=20260906-projection1"></script>
+</body>
+</html>

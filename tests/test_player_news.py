@@ -63,6 +63,7 @@ def test_build_player_news_creates_depth_roster_and_position_updates(tmp_path):
             "full_name": "Starter Runner",
             "status_description_abbr": None,
             "headshot_url": "https://static.www.nfl.com/image/upload/f_auto,q_auto/league/starter",
+            "birth_date": "1998-02-14",
         },
         {"team": "KC", "status": "RES", "full_name": "Reserve Receiver Jr.", "status_description_abbr": "R/I"},
     ])
@@ -95,6 +96,8 @@ def test_build_player_news_creates_depth_roster_and_position_updates(tmp_path):
         "https://static.www.nfl.com/image/upload/"
         "f_auto,q_auto,w_160,c_fill,g_face/league/starter"
     )
+    assert starter["birth_date"] == "1998-02-14"
+    assert reserve["birth_date"] is None
     assert {event["category"] for event in starter["events"]} >= {"Depth chart", "Arrival", "Departure"}
     depth_event = next(event for event in starter["events"] if event["category"] == "Depth chart")
     assert depth_event["source"] == {

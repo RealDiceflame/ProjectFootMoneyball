@@ -4,8 +4,9 @@ import {
   inspectAdpText,
   recalculateMarketMetrics,
 } from "./adp-import.mjs";
-import { historyAnalytics, historyRows } from "./player-history.mjs?v=20260906-volatility1";
+import { historyAnalytics, historyRows } from "./player-history.mjs?v=20260906-projection1";
 import { mergeSpecialTeams, specialTeamRows } from "./live-board.mjs";
+import { applyProjectionModel } from "./projection-model.mjs?v=20260906-projection1";
 
 const DATA_URL = "./data/rankings.json";
 const INTEL_URL = "./data/player_intel.json";
@@ -23,8 +24,10 @@ const columns = [
   { key: "player", label: "Player", width: 260, kind: "text", className: "player", description: "Type any part of a player's name; rookie and current-injury labels appear beneath it" },
   { key: "team", label: "Team", width: 96, kind: "category", description: "Choose a current or previous team" },
   { key: "pos", label: "Pos", width: 58, kind: "category", description: "Filter by QB, RB, WR, TE, K, or DST; separate choices with commas" },
+  { key: "age", label: "Age", width: 58, kind: "number", description: "Player age on September 1 of the projection season" },
   { key: "position_rank", label: "Pos Rank", width: 78, kind: "positionRank", description: "Position-specific rank, such as QB5 or WR12" },
-  { key: "projected_points", label: "Projected", width: 88, kind: "number", description: "Projected 17-game fantasy points under the selected scoring settings" },
+  { key: "projected_ppg", label: "Proj PPG", width: 82, kind: "number", description: "Age-adjusted fantasy points per game from the OutlierBaseline season model" },
+  { key: "projected_points", label: "Season Proj.", width: 94, kind: "number", description: "Projected fantasy points using age-adjusted scoring and expected games played" },
   { key: "vorp", label: "VORP", width: 78, kind: "number", description: "Projected points above the position's replacement player" },
   {
     key: "market_value",
@@ -173,7 +176,14 @@ function rowsForCurrentBoard() {
   } else {
     state.personalAdpMatches = 0;
   }
-  const players = rows.map(row => {
+  const modeled = applyProjectionModel(
+    rows,
+    state.history,
+    state.news,
+    state.settings,
+    state.data.projection_season,
+  ).rows;
+  const players = modeled.map(row => {
     const news = state.news.reports?.[playerKey(row)];
     row.market_draft_tag = row.market_draft_tag || row.draft_tag;
     row.draft_tag = effectiveDraftTag(row, news);
@@ -278,7 +288,7 @@ function sortRows(rows) {
 
 function formatValue(column, value) {
   if (value === null || value === undefined || value === "-") return "—";
-  if (["source_count", "volatility"].includes(column.key)) return String(Math.round(Number(value)));
+  if (["age", "source_count", "volatility"].includes(column.key)) return String(Math.round(Number(value)));
   if (column.kind === "number" && column.key !== "overall_rank") return Number(value).toFixed(1);
   return String(value);
 }
@@ -694,13 +704,69 @@ function renderVolatilitySummary(analytics, player) {
   return panel;
 }
 
+function renderProjectionSummary(player) {
+  const projectedPpg = numeric(player.projected_ppg);
+  const projectedPoints = numeric(player.projected_points);
+  if (projectedPpg === null || projectedPoints === null) return null;
+  const panel = document.createElement("section");
+  panel.className = "projection-summary-panel";
+  const heading = document.createElement("div");
+  heading.className = "volatility-heading";
+  const title = document.createElement("h4");
+  title.textContent = "OutlierBaseline season projection";
+  const badge = document.createElement("span");
+  badge.textContent = player.projection_source === "age_curve" ? "Age Curve v1" : player.is_rookie ? "Rookie market" : "Recent form";
+  heading.append(title, badge);
+
+  const metrics = document.createElement("div");
+  metrics.className = "projection-summary-metrics";
+  const ageAdjustment = numeric(player.age_adjustment_pct);
+  const expectedGames = numeric(player.projection_expected_games);
+  const projectionRange = numeric(player.projection_low) !== null && numeric(player.projection_high) !== null
+    ? `${Number(player.projection_low).toFixed(0)}–${Number(player.projection_high).toFixed(0)}`
+    : "—";
+  metrics.append(
+    volatilityMetric("Projected PPG", projectedPpg.toFixed(1), "Age-adjusted scoring rate", "primary"),
+    volatilityMetric("Season points", projectedPoints.toFixed(1), expectedGames === null ? "Full-season estimate" : `${expectedGames.toFixed(1)} expected games`),
+    volatilityMetric("Projection range", projectionRange, "Model estimate ± one standard deviation"),
+    volatilityMetric("Age", numeric(player.age) === null ? "—" : String(Math.round(player.age)), ageAdjustment === null ? "Age unavailable" : `${ageAdjustment >= 0 ? "+" : ""}${ageAdjustment.toFixed(1)}% position-age adjustment`),
+  );
+  const footer = document.createElement("div");
+  footer.className = "projection-summary-footer";
+  const explanation = document.createElement("p");
+  explanation.textContent = player.projection_source === "age_curve"
+    ? "Recent seasons establish the player's scoring level. Same-position year-over-year results adjust it for age, then expected games convert the rate into a season total."
+    : player.is_rookie
+      ? "No NFL season history is available, so the current rookie market projection remains the baseline."
+      : "Age data is unavailable, so this estimate uses recent scoring form and expected games without an age adjustment.";
+  const link = document.createElement("a");
+  const query = new URLSearchParams({
+    player: player.player,
+    pos: player.pos,
+    teams: state.settings.teams,
+    quarterbacks: state.settings.quarterbacks,
+    ppr: state.settings.ppr,
+    tePremium: state.settings.tePremium,
+  });
+  link.href = `projection.html?${query}`;
+  link.textContent = "Open in Projection Lab";
+  footer.append(explanation, link);
+  panel.append(heading, metrics, footer);
+  return panel;
+}
+
 function renderSeasonScoringChart(analytics, player) {
   const projection = numeric(player.projected_points);
   const data = [...analytics.seasons]
     .sort((left, right) => Number(left.season) - Number(right.season))
     .map(row => ({ label: String(row.season), value: row.fantasy_points, games: row.games, projection: false }));
   if (projection !== null) {
-    data.push({ label: `${state.data.projection_season} proj.`, value: projection, games: 17, projection: true });
+    data.push({
+      label: `${state.data.projection_season} proj.`,
+      value: projection,
+      games: numeric(player.projection_expected_games) ?? 17,
+      projection: true,
+    });
   }
   const width = 720;
   const height = 245;
@@ -731,7 +797,7 @@ function renderSeasonScoringChart(analytics, player) {
       class: `history-bar${item.projection ? " projection" : ""}`,
       x, y, width: barWidth, height: Math.max(1, margin.top + plotHeight - y), rx: 6,
     }), item.projection
-      ? `${item.label}: ${value.toFixed(1)} projected fantasy points`
+      ? `${item.label}: ${value.toFixed(1)} projected fantasy points in ${Number(item.games).toFixed(1)} expected games`
       : `${item.label}: ${value.toFixed(1)} fantasy points in ${item.games} games`);
     svg.append(
       bar,
@@ -744,19 +810,24 @@ function renderSeasonScoringChart(analytics, player) {
   shell.append(svg);
   const figure = document.createElement("figure");
   const caption = document.createElement("figcaption");
-  caption.textContent = "Actual regular-season scoring by year, plus the current 17-game projection.";
+  caption.textContent = "Actual regular-season scoring by year, plus the age-adjusted season projection using expected games.";
   figure.append(shell, caption);
   return figure;
 }
 
 function renderExpectedRangeChart(analytics, player) {
-  if (analytics.player_stddev === null || analytics.expected_points === null) return null;
   const projection = numeric(player.projected_points);
-  const seasonPaces = analytics.seasons.map(row => ({ season: row.season, value: row.full_season_pace })).filter(item => Number.isFinite(item.value));
+  const modeledLow = numeric(player.projection_low);
+  const modeledHigh = numeric(player.projection_high);
+  const center = projection ?? analytics.expected_points;
+  const expectedLow = modeledLow ?? analytics.expected_low;
+  const expectedHigh = modeledHigh ?? analytics.expected_high;
+  if (center === null || expectedLow === null || expectedHigh === null) return null;
+  const seasonPoints = analytics.seasons.map(row => ({ season: row.season, value: row.fantasy_points })).filter(item => Number.isFinite(item.value));
   const width = 720;
   const height = 155;
   const margin = { left: 52, right: 26 };
-  const maximum = Math.max(1, analytics.expected_high, projection || 0, ...seasonPaces.map(item => item.value)) * 1.1;
+  const maximum = Math.max(1, expectedHigh, center, ...seasonPoints.map(item => item.value)) * 1.1;
   const start = margin.left;
   const end = width - margin.right;
   const scale = value => start + ((Math.max(0, value) / maximum) * (end - start));
@@ -765,18 +836,18 @@ function renderExpectedRangeChart(analytics, player) {
     class: "history-chart range-chart",
     viewBox: `0 0 ${width} ${height}`,
     role: "img",
-    "aria-label": `${player.player} expected 17-game scoring range from ${analytics.expected_low.toFixed(1)} to ${analytics.expected_high.toFixed(1)} points, centered at ${analytics.expected_points.toFixed(1)}`,
+    "aria-label": `${player.player} expected season scoring range from ${expectedLow.toFixed(1)} to ${expectedHigh.toFixed(1)} points, centered at ${center.toFixed(1)}`,
   });
   svg.append(
     svgNode("line", { class: "range-axis", x1: start, x2: end, y1: baseline, y2: baseline }),
-    svgNode("rect", { class: "range-band", x: scale(analytics.expected_low), y: baseline - 18, width: Math.max(2, scale(analytics.expected_high) - scale(analytics.expected_low)), height: 36, rx: 8 }),
-    svgNode("line", { class: "range-mean", x1: scale(analytics.expected_points), x2: scale(analytics.expected_points), y1: baseline - 29, y2: baseline + 29 }),
+    svgNode("rect", { class: "range-band", x: scale(expectedLow), y: baseline - 18, width: Math.max(2, scale(expectedHigh) - scale(expectedLow)), height: 36, rx: 8 }),
+    svgNode("line", { class: "range-mean", x1: scale(center), x2: scale(center), y1: baseline - 29, y2: baseline + 29 }),
   );
-  seasonPaces.forEach((item, index) => {
+  seasonPoints.forEach((item, index) => {
     const point = chartTooltip(svgNode("circle", {
       class: "range-season-point",
       cx: scale(item.value), cy: baseline + (((index % 3) - 1) * 11), r: 5,
-    }), `${item.season}: ${item.value.toFixed(1)} points at a 17-game pace`);
+    }), `${item.season}: ${item.value.toFixed(1)} actual fantasy points`);
     svg.append(point);
   });
   if (projection !== null) {
@@ -786,16 +857,16 @@ function renderExpectedRangeChart(analytics, player) {
     svg.append(projectionLine, svgNode("text", { class: "range-projection-label", x: scale(projection), y: 25, "text-anchor": "middle" }, "Projection"));
   }
   [
-    [analytics.expected_low, `Low ${analytics.expected_low.toFixed(1)}`],
-    [analytics.expected_points, `Average ${analytics.expected_points.toFixed(1)}`],
-    [analytics.expected_high, `High ${analytics.expected_high.toFixed(1)}`],
+    [expectedLow, `Low ${expectedLow.toFixed(1)}`],
+    [center, `Projection ${center.toFixed(1)}`],
+    [expectedHigh, `High ${expectedHigh.toFixed(1)}`],
   ].forEach(([value, label]) => svg.append(svgNode("text", { class: "range-label", x: scale(value), y: 132, "text-anchor": "middle" }, label)));
   const shell = document.createElement("div");
   shell.className = "history-chart-shell";
   shell.append(svg);
   const figure = document.createElement("figure");
   const caption = document.createElement("figcaption");
-  caption.textContent = "Each dot is a season normalized to a 17-game pace. The shaded range is the historical average ± one sample standard deviation.";
+  caption.textContent = "Each dot is an actual season total. The shaded range is the model's season projection ± one standard deviation.";
   figure.append(shell, caption);
   return figure;
 }
@@ -821,6 +892,8 @@ function appendPlayerHistory(container, player) {
   settings.textContent = `${state.settings.ppr}${premium}`;
   headingRow.append(heading, settings);
   section.append(headingRow);
+  const projectionSummary = renderProjectionSummary(player);
+  if (projectionSummary) section.append(projectionSummary);
   section.append(renderVolatilitySummary(analytics, player));
 
   if (!rows.length) {
@@ -915,7 +988,8 @@ function openIntel(key, row) {
   const teamLabel = row.current_team !== row.listed_team
     ? `${row.current_team} · previously ${row.listed_team}`
     : row.current_team;
-  ui.intelMeta.textContent = `${teamLabel} · ${row.pos} · Overall rank ${row.overall_rank}`;
+  const ageLabel = numeric(row.age) === null ? "" : ` · Age ${Math.round(row.age)}`;
+  ui.intelMeta.textContent = `${teamLabel} · ${row.pos}${ageLabel} · Overall rank ${row.overall_rank}`;
   const fragment = document.createDocumentFragment();
 
   if (!report && !news?.events?.length) {
@@ -1152,7 +1226,7 @@ function render() {
   renderBody(state.visibleRows);
   const draftedCount = allRows.filter(row => state.drafted.has(playerKey(row))).length;
   const importText = personalAdpIsActive() ? ` · ${state.personalAdpMatches} personal ADP matches` : "";
-  ui.boardSummary.textContent = `Showing ${state.visibleRows.length} of ${allRows.length} entries · ${draftedCount} drafted${importText} · click any heading to sort`;
+  ui.boardSummary.textContent = `Age Curve v1 · showing ${state.visibleRows.length} of ${allRows.length} entries · ${draftedCount} drafted${importText} · click any heading to sort`;
   updateAdpMode();
   ui.emptyState.classList.toggle("hidden", state.visibleRows.length !== 0);
   ui.tableShell.setAttribute("aria-busy", "false");
@@ -1305,7 +1379,7 @@ async function loadRankings() {
     const historyStatus = state.history.player_count
       ? `${state.history.player_count} player stat histories`
       : "stat history awaiting update";
-    state.defaultSourceStatus = `${data.projection_season} board · ${formatAdpStatus(data)} · ${newsStatus} · ${historyStatus} · ${intelStatus}`;
+    state.defaultSourceStatus = `${data.projection_season} Age Curve v1 · ${formatAdpStatus(data)} · ${newsStatus} · ${historyStatus} · ${intelStatus}`;
     ui.sourceStatus.textContent = state.defaultSourceStatus;
     ui.boardHeading.textContent = `${data.projection_season} player rankings`;
     ui.loadingState.classList.add("hidden");
