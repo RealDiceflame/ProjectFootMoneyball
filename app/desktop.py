@@ -20,12 +20,12 @@ DISPLAY_COLUMNS = (
     ("adp", "ADP", 65), ("source_count", "Sources", 62),
     ("adp_stddev", "ADP Std Dev", 82), ("value_vs_adp", "Value", 65),
     ("Yahoo", "Yahoo", 65), ("Sleeper", "Sleeper", 65),
-    ("NFL", "ESPN", 70), ("MFL", "MFL", 65),
+    ("MFL", "MFL", 65),
     ("draft_tag", "Draft Tag", 75),
 )
 DECIMAL_COLUMNS = {
     "projected_points", "vorp", "market_value", "adp", "value_vs_adp",
-    "adp_stddev", "Yahoo", "Sleeper", "NFL", "MFL",
+    "adp_stddev", "Yahoo", "Sleeper", "MFL",
 }
 
 

@@ -76,7 +76,7 @@ def test_rankings_keep_each_available_adp_source_across_league_formats():
     rows = []
     for number in range(1, 4):
         row = _player(f"RB {number}", "RB", 300 - number, adp=99)
-        row.update({"Yahoo": number, "Sleeper": number + 2, "NFL": number + 10, "MFL": number + 12})
+        row.update({"Yahoo": number, "Sleeper": number + 2, "NFL": 300, "MFL": number + 12})
         rows.append(row)
     rows[1]["MFL"] = None
     frame = pd.DataFrame(rows)
@@ -92,14 +92,15 @@ def test_rankings_keep_each_available_adp_source_across_league_formats():
     )
 
     for ranking in (half_ppr, full_ppr, two_qb):
+        assert "NFL" not in ranking.columns
         rb1 = ranking.loc[ranking["player"] == "RB 1"].iloc[0]
-        assert rb1["adp"] == 7
-        assert rb1["source_count"] == 4
-        assert rb1[["Yahoo", "Sleeper", "NFL", "MFL"]].tolist() == [1, 3, 11, 13]
+        assert round(rb1["adp"], 2) == 5.67
+        assert rb1["source_count"] == 3
+        assert rb1[["Yahoo", "Sleeper", "MFL"]].tolist() == [1, 3, 13]
         rb2 = ranking.loc[ranking["player"] == "RB 2"].iloc[0]
-        assert rb2["source_count"] == 3
+        assert rb2["source_count"] == 2
         assert pd.isna(rb2["MFL"])
-        assert rb2[["Yahoo", "Sleeper", "NFL"]].notna().all()
+        assert rb2[["Yahoo", "Sleeper"]].notna().all()
         assert pd.notna(rb2["adp"])
         assert ranking["market_value"].notna().all()
 

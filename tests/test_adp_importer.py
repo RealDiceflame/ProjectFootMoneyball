@@ -4,7 +4,6 @@ from data_fetcher.adp_importer import (
     adp_source_dates,
     build_combined_adp,
     build_direct_adp,
-    parse_espn_adp,
     parse_mfl_adp,
     parse_sleeper_adp,
     update_yahoo_snapshot,
@@ -28,7 +27,8 @@ def test_build_combined_adp_keeps_platform_values(tmp_path):
 
     assert result.loc[0, "Player"] == "Example Player"
     assert result.loc[0, "Team"] == "BUF"
-    assert result.loc[0, "ADP"] == 12.0
+    assert result.loc[0, "ADP"] == 11.0
+    assert "NFL" not in result.columns
 
 
 def test_provider_parsers_keep_skill_players_and_real_adp():
@@ -48,38 +48,8 @@ def test_provider_parsers_keep_skill_players_and_real_adp():
             },
         ]
     )
-    espn = parse_espn_adp(
-        {
-            "players": [
-                {
-                    "player": {
-                        "id": 1,
-                        "fullName": "Josh Allen",
-                        "defaultPositionId": 1,
-                        "proTeamId": 2,
-                        "ownership": {"averageDraftPosition": 19.2},
-                        "draftRanksByRankType": {"PPR": {"rank": 25}},
-                    }
-                },
-                {
-                    "player": {
-                        "id": 2,
-                        "fullName": "Unranked Player",
-                        "defaultPositionId": 3,
-                        "proTeamId": 2,
-                        "ownership": {"averageDraftPosition": 169.99},
-                        "draftRanksByRankType": {"PPR": {"rank": 2000}},
-                    }
-                },
-            ]
-        }
-    )
-
     assert sleeper[["Player", "Position", "Sleeper"]].to_dict("records") == [
         {"Player": "Josh Allen", "Position": "QB", "Sleeper": 20.5}
-    ]
-    assert espn[["Player", "Team", "NFL"]].to_dict("records") == [
-        {"Player": "Josh Allen", "Team": "BUF", "NFL": 19.2}
     ]
 
 
@@ -104,17 +74,6 @@ def test_provider_parsers_support_kickers_and_team_defenses():
         }],
         positions={"K", "DST"},
     )
-    espn = parse_espn_adp(
-        {"players": [{"player": {
-            "id": 1,
-            "fullName": "Brandon Aubrey",
-            "defaultPositionId": 5,
-            "proTeamId": 6,
-            "ownership": {"averageDraftPosition": 84.1},
-            "draftRanksByRankType": {"PPR": {"rank": 119}},
-        }}]},
-        positions={"K", "DST"},
-    )
     mfl = parse_mfl_adp(
         {"adp": {"player": [{"id": "0532", "averagePick": "106.9"}]}},
         {"players": {"player": [{"id": "0532", "name": "Texans, Houston", "position": "Def", "team": "HOU"}]}},
@@ -122,7 +81,6 @@ def test_provider_parsers_support_kickers_and_team_defenses():
     )
 
     assert sleeper.iloc[0]["Position"] == "DST"
-    assert espn.iloc[0]["Position"] == "K"
     assert mfl.iloc[0]["Position"] == "DST"
 
 
@@ -147,36 +105,24 @@ def test_build_direct_adp_merges_live_feeds_and_preserves_yahoo(tmp_path):
             "Yahoo": [9.0],
             "Sleeper": [8.0],
             "NFL": [10.0],
+            "MFL": [11.0],
             "ADP": [9.0],
             "Source_Updated": ["2026-08-29"],
         }
     ).to_csv(output, index=False)
 
     sleeper_payload = []
-    espn_payload = {"players": []}
     mfl_adp_payload = {"adp": {"player": []}}
     mfl_players_payload = {"players": {"player": []}}
-    positions = (("QB", 1), ("RB", 2), ("WR", 3), ("TE", 4))
+    positions = ("QB", "RB", "WR", "TE")
     for number in range(1, 121):
-        position, position_id = positions[(number - 1) % len(positions)]
+        position = positions[(number - 1) % len(positions)]
         sleeper_payload.append(
             {
                 "player_id": str(number),
                 "team": "BUF",
                 "player": {"first_name": "Player", "last_name": str(number), "position": position},
                 "stats": {"adp_half_ppr": float(number)},
-            }
-        )
-        espn_payload["players"].append(
-            {
-                "player": {
-                    "id": number,
-                    "fullName": f"Player {number}",
-                    "defaultPositionId": position_id,
-                    "proTeamId": 2,
-                    "ownership": {"averageDraftPosition": float(number + 2)},
-                    "draftRanksByRankType": {"PPR": {"rank": number}},
-                }
             }
         )
         mfl_adp_payload["adp"]["player"].append(
@@ -187,8 +133,6 @@ def test_build_direct_adp_merges_live_feeds_and_preserves_yahoo(tmp_path):
         )
 
     def fake_get(url, **kwargs):
-        if "espn.com" in url:
-            return _FakeResponse(espn_payload)
         if "myfantasyleague.com" in url:
             payload = mfl_players_payload if kwargs.get("params", {}).get("TYPE") == "players" else mfl_adp_payload
             return _FakeResponse(payload)
@@ -204,16 +148,15 @@ def test_build_direct_adp_merges_live_feeds_and_preserves_yahoo(tmp_path):
     player = result.loc[result["Player"] == "Player 1"].iloc[0]
     assert player["Yahoo"] == 9.0
     assert player["Sleeper"] == 1.0
-    assert player["NFL"] == 3.0
     assert player["MFL"] == 7.0
-    assert player["ADP"] == 5.0
-    assert player["Source_Count"] == 4
+    assert round(player["ADP"], 2) == 5.67
+    assert player["Source_Count"] == 3
     assert player["ADP_Spread"] == 8.0
-    assert round(player["ADP_StdDev"], 2) == 3.65
+    assert round(player["ADP_StdDev"], 2) == 4.16
+    assert "NFL" not in result.columns
     assert adp_source_dates(output) == {
         "Yahoo": "2026-08-29",
         "Sleeper": "2026-09-04",
-        "NFL": "2026-09-04",
         "MFL": "2026-09-04",
     }
 
@@ -229,11 +172,13 @@ def test_update_yahoo_snapshot_replaces_provider_without_name_collisions(tmp_pat
             "Yahoo": [9.0, 45.0],
             "Sleeper": [10.0, 50.0],
             "NFL": [11.0, 55.0],
+            "MFL": [12.0, 60.0],
             "ADP": [10.0, 50.0],
             "Source_Updated": ["2026-08-29", "2026-08-29"],
             "Yahoo_Updated": ["2026-08-29", "2026-08-29"],
             "Sleeper_Updated": ["2026-09-03", "2026-09-03"],
             "NFL_Updated": ["2026-09-03", "2026-09-03"],
+            "MFL_Updated": ["2026-09-03", "2026-09-03"],
         }
     ).to_csv(output, index=False)
     pd.DataFrame(
@@ -257,9 +202,10 @@ def test_update_yahoo_snapshot_replaces_provider_without_name_collisions(tmp_pat
     receiver = result[(result["Player"] == "Josh Allen") & (result["Position"] == "WR")].iloc[0]
     rookie = result[result["Player"] == "New Runner"].iloc[0]
     assert quarterback["Yahoo"] == 3.0
-    assert quarterback["ADP"] == 8.0
+    assert round(quarterback["ADP"], 2) == 8.33
     assert pd.isna(receiver["Yahoo"])
-    assert receiver["ADP"] == 52.5
+    assert receiver["ADP"] == 55.0
     assert rookie["Yahoo"] == 14.0
     assert rookie["ADP"] == 14.0
+    assert "NFL" not in result.columns
     assert adp_source_dates(output)["Yahoo"] == "2026-09-04"

@@ -12,7 +12,6 @@ const columns = [
   { key: "adp_stddev", label: "ADP SD", width: 82, kind: "number" },
   { key: "source_count", label: "Sources", width: 74, kind: "number" },
   { key: "Sleeper", label: "Sleeper", width: 80, kind: "number" },
-  { key: "NFL", label: "ESPN", width: 80, kind: "number" },
   { key: "MFL", label: "MFL", width: 78, kind: "number" },
 ];
 
@@ -245,7 +244,7 @@ async function load() {
     if (!response.ok) throw new Error(`K/DST request failed (${response.status})`);
     state.data = await response.json();
     state.rows = state.data.rows.map(values => Object.fromEntries(state.data.columns.map((column, index) => [column, values[index]])));
-    const dates = Object.entries(state.data.source_dates || {}).map(([source, date]) => `${source === "NFL" ? "ESPN" : source} ${date}`);
+    const dates = Object.entries(state.data.source_dates || {}).map(([source, date]) => `${source} ${date}`);
     ui.status.textContent = dates.length ? dates.join(" · ") : "K/DST market loaded";
     renderHead();
     render();

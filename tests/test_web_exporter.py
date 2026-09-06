@@ -20,13 +20,12 @@ def _ranking_row(value):
         "market_expected_points": 280.0,
         "market_value": value,
         "adp": 5.0,
-        "source_count": 5,
+        "source_count": 3,
         "adp_spread": 4.0,
         "adp_stddev": 1.6,
         "value_vs_adp": value,
         "Yahoo": 4.0,
         "Sleeper": 5.0,
-        "NFL": 6.0,
         "MFL": 3.0,
         "format": "test",
     }
@@ -50,8 +49,7 @@ def test_export_web_rankings_builds_every_board_and_draft_tag(tmp_path):
         stat_season=2025,
         adp_updated="2026-08-29",
         adp_sources={
-            "Yahoo": "2026-08-28", "Sleeper": "2026-08-29", "NFL": "2026-08-29",
-            "MFL": "2026-08-29",
+            "Yahoo": "2026-08-28", "Sleeper": "2026-08-29", "MFL": "2026-08-29",
         },
     )
 
@@ -87,10 +85,10 @@ def test_export_special_teams_builds_compact_market_payload(tmp_path):
         "Position": "DST",
         "Position_Rank": "DST1",
         "ADP": 101.2,
-        "Source_Count": 3,
+        "Source_Count": 2,
         "ADP_StdDev": 4.3,
         "Sleeper": 99.0,
-        "NFL": 100.0,
+        "NFL": 5.0,
         "MFL": 104.6,
         "Sleeper_Updated": "2026-09-04",
         "NFL_Updated": "2026-09-04",
@@ -105,4 +103,6 @@ def test_export_special_teams_builds_compact_market_payload(tmp_path):
     payload = json.loads(destination.read_text(encoding="utf-8"))
 
     assert payload["rows"][0][payload["columns"].index("position_rank")] == "DST1"
-    assert payload["source_dates"]["NFL"] == "2026-09-04"
+    assert payload["rows"][0][payload["columns"].index("adp")] == 101.8
+    assert payload["source_dates"] == {"Sleeper": "2026-09-04", "MFL": "2026-09-04"}
+    assert "NFL" not in payload["columns"]

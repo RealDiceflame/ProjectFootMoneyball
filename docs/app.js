@@ -29,13 +29,12 @@ const columns = [
     kind: "number",
     description: "Projected points above or below the same-position market expectation at this ADP",
   },
-  { key: "adp", label: "ADP", width: 70, kind: "number", description: "Equal-weight consensus of every available Yahoo, Sleeper, ESPN, and MFL value for this player" },
+  { key: "adp", label: "ADP", width: 70, kind: "number", description: "Equal-weight consensus of every available Yahoo, Sleeper, and MFL value for this player" },
   { key: "source_count", label: "Sources", width: 68, kind: "number", description: "Number of ADP sources that have a value for this player" },
   { key: "adp_stddev", label: "ADP SD", width: 76, kind: "number", description: "Standard deviation across available ADP sources; higher means more disagreement" },
   { key: "value_vs_adp", label: "ADP Value", width: 78, kind: "number", description: "Composite ADP minus this board's rank; positive means the board ranks the player earlier" },
   { key: "Yahoo", label: "Yahoo", width: 70, kind: "number", description: "Yahoo ADP from the last authorized snapshot; its date is shown above the board" },
   { key: "Sleeper", label: "Sleeper", width: 74, kind: "number", description: "Half-PPR ADP pulled directly from Sleeper" },
-  { key: "NFL", label: "ESPN", width: 76, kind: "number", description: "12-team 1QB PPR ADP pulled directly from ESPN" },
   { key: "MFL", label: "MFL", width: 68, kind: "number", description: "Recent 12-team PPR redraft ADP from MyFantasyLeague" },
   { key: "draft_tag", label: "Draft Tag", width: 94, kind: "category", description: "RISK and NEW TEAM come from current news; market tags appear when at least one ADP source has a value" },
 ];
@@ -789,7 +788,7 @@ function updateAdpMode() {
     ui.sourceStatus.textContent = `Personal ${state.personalAdp.column} snapshot · ${state.defaultSourceStatus}`;
   } else {
     ui.adpModeTitle.textContent = "Available-source consensus";
-    ui.adpModeDetail.textContent = "Yahoo + Sleeper + ESPN + MFL when that player has a value; source scoring formats may differ";
+    ui.adpModeDetail.textContent = "Yahoo + Sleeper + MFL when that player has a value; source scoring formats may differ";
     ui.importAdp.textContent = "Import my ADP";
     ui.resetAdp.classList.add("hidden");
     ui.sourceStatus.textContent = state.defaultSourceStatus;
@@ -800,7 +799,7 @@ function formatAdpStatus(data) {
   const dates = data.adp_sources || {};
   const current = data.adp_updated;
   if (!Object.keys(dates).length) return `ADP ${formatDate(current)}`;
-  const label = key => ({ NFL: "ESPN", MFL: "MyFantasyLeague" })[key] || key;
+  const label = key => ({ MFL: "MyFantasyLeague" })[key] || key;
   const fresh = Object.entries(dates).filter(([, date]) => date === current).map(([key]) => label(key));
   const older = Object.entries(dates).filter(([, date]) => date !== current);
   const liveText = fresh.length ? `${fresh.join(" + ")} direct` : "direct feeds";

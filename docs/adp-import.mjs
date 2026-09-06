@@ -100,7 +100,6 @@ export function providerForColumn(column) {
   const header = normalizedHeader(column);
   if (["y", "yahoo", "yahooadp"].includes(header)) return "Yahoo";
   if (["sleeper", "sleeperadp"].includes(header)) return "Sleeper";
-  if (["nfl", "nfladp", "espn", "espnadp", "nflespn"].includes(header)) return "NFL";
   if (["mfl", "myfantasyleague", "myfantasyleagueadp"].includes(header)) return "MFL";
   return null;
 }

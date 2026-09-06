@@ -31,7 +31,6 @@ WEB_COLUMNS = (
     "value_vs_adp",
     "Yahoo",
     "Sleeper",
-    "NFL",
     "MFL",
     "draft_tag",
 )
@@ -46,7 +45,6 @@ SPECIAL_TEAMS_COLUMNS = (
     "source_count",
     "adp_stddev",
     "Sleeper",
-    "NFL",
     "MFL",
 )
 
@@ -118,6 +116,11 @@ def export_special_teams(
     source = Path(source)
     destination = Path(destination)
     frame = pd.read_csv(source)
+    market = frame.loc[:, ["Sleeper", "MFL"]].apply(pd.to_numeric, errors="coerce")
+    frame["ADP"] = market.mean(axis=1)
+    frame["Source_Count"] = market.notna().sum(axis=1)
+    frame["ADP_StdDev"] = market.std(axis=1, ddof=1)
+    frame.loc[frame["Source_Count"] < 2, "ADP_StdDev"] = pd.NA
     frame = frame.sort_values(["ADP", "Player"], kind="stable").reset_index(drop=True)
     frame.insert(0, "overall_rank", frame.index + 1)
     frame = frame.rename(
@@ -140,7 +143,7 @@ def export_special_teams(
         .where(pd.notna(frame.loc[:, SPECIAL_TEAMS_COLUMNS]), None)
     )
     source_dates = {}
-    for provider in ("Sleeper", "NFL", "MFL"):
+    for provider in ("Sleeper", "MFL"):
         date_column = f"{provider}_Updated"
         if date_column in frame:
             dates = frame[date_column].dropna().astype(str)

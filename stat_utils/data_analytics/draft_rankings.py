@@ -13,7 +13,7 @@ import pandas as pd
 
 
 SKILL_POSITIONS = ("QB", "RB", "WR", "TE")
-ADP_PROVIDERS = ("Yahoo", "Sleeper", "NFL", "MFL")
+ADP_PROVIDERS = ("Yahoo", "Sleeper", "MFL")
 
 
 def _numeric(df: pd.DataFrame, column: str) -> pd.Series:
@@ -177,7 +177,6 @@ def build_draft_ranking(
         "value_vs_adp",
         "Yahoo",
         "Sleeper",
-        "NFL",
         "MFL",
         "format",
     ]
