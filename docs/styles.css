@@ -273,6 +273,22 @@ dialog p:not(.eyebrow) { color: var(--muted); font-size: .82rem; line-height: 1.
 .intel-empty p { max-width: 520px; margin: 8px 0 0; }
 .intel-feed-notice { padding: 14px 15px; display: flex; align-items: center; gap: 12px; border: 1px solid rgba(215,255,84,.18); border-radius: 11px; background: rgba(215,255,84,.045); }
 .intel-feed-notice p { margin: 0; }
+.history-section { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); }
+.history-heading { margin-bottom: 12px; display: flex; align-items: end; justify-content: space-between; gap: 16px; }
+.history-heading .eyebrow { margin: 0 0 4px; }
+.history-heading h3 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 1.2rem; font-weight: 500; letter-spacing: -.02em; }
+.history-scoring { padding: 5px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--lime); font-size: .61rem; font-weight: 800; white-space: nowrap; }
+.history-table-shell { overflow-x: auto; border: 1px solid var(--line); border-radius: 11px; background: rgba(0,0,0,.12); }
+.history-table-shell table { width: 100%; min-width: 710px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.history-table-shell th, .history-table-shell td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.history-table-shell th { color: #8ca69c; background: rgba(255,255,255,.025); font-size: .55rem; letter-spacing: .045em; text-transform: uppercase; }
+.history-table-shell td { color: #d7e4de; font-size: .68rem; }
+.history-table-shell th:first-child, .history-table-shell td:first-child { text-align: left; }
+.history-table-shell tbody tr:last-child td { border-bottom: 0; }
+.history-table-shell tbody tr:hover td { background: rgba(215,255,84,.035); }
+.history-empty { margin: 0; padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.02); }
+.history-note { margin: 9px 2px 0 !important; color: #819e92 !important; font-size: .65rem !important; }
+.history-note a { color: #bcd1c7; text-underline-offset: 2px; }
 .news-timeline { margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--line); }
 .news-heading { margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .news-heading h3 { margin: 0; font-size: 1.05rem; }
@@ -333,5 +349,6 @@ dialog p:not(.eyebrow) { color: var(--muted); font-size: .82rem; line-height: 1.
   .source-grid { grid-template-columns: 1fr; }
   .intel-section { min-height: 0; }
   .intel-feed-notice { align-items: flex-start; flex-direction: column; }
+  .history-heading { align-items: start; flex-direction: column; gap: 8px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }

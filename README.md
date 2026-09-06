@@ -2,18 +2,21 @@
 
 ## Use the web draft board
 
-Open <https://outlierbaseline.com/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, rookie and current-injury labels, and source-linked player intel. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, and matched ESPN headlines. Public ADP is limited to the supported Sleeper and MyFantasyLeague feeds plus the manually maintained Yahoo snapshot. Every available provider value remains visible on every board; only a provider that lacks a player is blank. Sources and ADP SD show evidence count and standard deviation. Imported data stays in that browser, works across league settings, and is never uploaded. A separate Kicker & D/ST page compares Sleeper and MyFantasyLeague. Desktop downloads remain available under GitHub Releases.
+Open <https://outlierbaseline.com/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, rookie and current-injury labels, source-linked player intel, and five seasons of year-by-year player stats. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, matched ESPN headlines, and historical performance. Historical fantasy points recalculate for the selected PPR and TE-premium settings. Public ADP is limited to the supported Sleeper and MyFantasyLeague feeds plus the manually maintained Yahoo snapshot. Every available provider value remains visible on every board; only a provider that lacks a player is blank. Sources and ADP SD show evidence count and standard deviation. Imported data stays in that browser, works across league settings, and is never uploaded. A separate Kicker & D/ST page compares Sleeper and MyFantasyLeague. Desktop downloads remain available under GitHub Releases.
 
 ## Automatic site updates (no API key)
 
 The factual timeline uses public nflverse roster, depth-chart, and weekly injury releases plus ESPN's current injury designations and matched NFL headlines. Players are joined by stable NFL ID when available, with name plus position as the fallback; ambiguous same-name headlines are skipped instead of guessed. All current primary and secondary injuries appear in the rankings. Questionable and probable designations remain visible without changing the market-based draft tag, while Out, Doubtful, injured-reserve, suspension, and exempt-list situations become RISK. It does not copy Rotoworld blurbs or require an AI key.
 
-The website refreshes Sleeper half-PPR and MyFantasyLeague recent-redraft ADP, the separate Kicker & D/ST market, all 60 rankings, and the factual player-news timeline every day at midnight and noon Eastern time. Yahoo's official developer access requires approval and OAuth, so the updater keeps the manually maintained Yahoo snapshot instead of scraping a protected page or erasing that column. ESPN ADP is not published until explicit API access is in place. The freshness line above the board shows the date for each source.
+Rotoworld/NBC does not publish a documented public API for third-party republication. Yahoo documents RotoWire—not Rotoworld—as a fantasy data partner. RotoWire has a licensed API for news and injuries, but its key must stay in a private server or GitHub Actions secret and must never be embedded in this public GitHub Pages site. The current feed therefore keeps using source-linked public factual data unless an authorized content license is added.
+
+The website refreshes Sleeper half-PPR and MyFantasyLeague recent-redraft ADP, the separate Kicker & D/ST market, all 60 rankings, the factual player-news timeline, and five-season player history every day at midnight and noon Eastern time. Yahoo's official developer access requires approval and OAuth, so the updater keeps the manually maintained Yahoo snapshot instead of scraping a protected page or erasing that column. ESPN ADP is not published until explicit API access is in place. The freshness line above the board shows the date for each source.
 
 Run the complete update locally:
 
 ```powershell
 python refresh_draft_board.py --keep-stats
+python update_player_history.py
 ```
 
 You can also open **Actions → Update site data → Run workflow** on GitHub at any time. The scheduled workflow handles daylight-saving changes automatically and publishes changed ADP, rankings, and news files to the website.

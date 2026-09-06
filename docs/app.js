@@ -4,10 +4,12 @@ import {
   inspectAdpText,
   recalculateMarketMetrics,
 } from "./adp-import.mjs";
+import { fantasyPoints, historyRows } from "./player-history.mjs";
 
 const DATA_URL = "./data/rankings.json";
 const INTEL_URL = "./data/player_intel.json";
 const NEWS_URL = "./data/player_news.json";
+const HISTORY_URL = "./data/player_history.json";
 const DRAFTED_KEY = "project-foot-moneyball:drafted:v1";
 const SETTINGS_KEY = "project-foot-moneyball:settings:v1";
 const PERSONAL_ADP_KEY = "outlierbaseline:personal-adp:v1";
@@ -84,6 +86,7 @@ const state = {
   data: null,
   intel: { generated_at: null, report_count: 0, reports: {} },
   news: { generated_at: null, player_count: 0, reports: {} },
+  history: { generated_at: null, player_count: 0, columns: [], players: {} },
   settings: loadJson(SETTINGS_KEY, { teams: "12", quarterbacks: "2QB", ppr: "Half PPR", tePremium: "+0.5" }),
   drafted: new Set(Array.isArray(savedDrafted) ? savedDrafted : []),
   search: "",
@@ -396,17 +399,18 @@ function renderBody(rows) {
         const reportAvailable = Boolean(state.intel.reports?.[key]);
         const playerNews = state.news.reports?.[key];
         const newsAvailable = Boolean(playerNews?.events?.length);
+        const historyAvailable = historyRows(state.history, row).length > 0;
         const button = document.createElement("button");
         button.className = "player-intel-button";
         button.type = "button";
         button.dataset.intelKey = encodeURIComponent(key);
-        button.setAttribute("aria-label", `Open player intel for ${row.player}`);
+        button.setAttribute("aria-label", `Open player profile for ${row.player}`);
         const name = document.createElement("span");
         name.className = "player-name";
         name.textContent = row.player;
         const hint = document.createElement("span");
-        hint.className = reportAvailable || newsAvailable ? "intel-hint available" : "intel-hint";
-        hint.textContent = reportAvailable ? "AI report ready" : newsAvailable ? "News ready" : "Player intel";
+        hint.className = reportAvailable || newsAvailable || historyAvailable ? "intel-hint available" : "intel-hint";
+        hint.textContent = reportAvailable ? "AI report ready" : newsAvailable ? "News ready" : historyAvailable ? "Stats ready" : "Player intel";
         const labels = document.createElement("span");
         labels.className = "player-labels";
         const nameLine = document.createElement("span");
@@ -585,6 +589,112 @@ function appendNewsTimeline(container, news) {
   container.append(timeline);
 }
 
+function appendPlayerHistory(container, player) {
+  const rows = historyRows(state.history, player).map(row => {
+    const score = fantasyPoints({ ...row, pos: player.pos }, state.settings);
+    const games = Number(row.games) || 0;
+    return {
+      ...row,
+      fantasy_points: score,
+      fantasy_points_per_game: games ? score / games : null,
+    };
+  });
+  const section = document.createElement("section");
+  section.className = "history-section";
+
+  const headingRow = document.createElement("div");
+  headingRow.className = "history-heading";
+  const heading = document.createElement("div");
+  const eyebrow = document.createElement("p");
+  eyebrow.className = "eyebrow";
+  eyebrow.textContent = "Season history";
+  const title = document.createElement("h3");
+  title.textContent = "Year-by-year performance";
+  heading.append(eyebrow, title);
+  const settings = document.createElement("span");
+  settings.className = "history-scoring";
+  const premium = player.pos === "TE" && state.settings.tePremium === "+0.5" ? " + TE premium" : "";
+  settings.textContent = `${state.settings.ppr}${premium}`;
+  headingRow.append(heading, settings);
+  section.append(headingRow);
+
+  if (!rows.length) {
+    const empty = document.createElement("p");
+    empty.className = "history-empty";
+    empty.textContent = player.is_rookie
+      ? "No NFL regular-season history yet. Rookie projections remain on the draft board."
+      : "No matching regular-season history was found in the five-season data window.";
+    section.append(empty);
+    container.append(section);
+    return;
+  }
+
+  const columns = player.pos === "QB"
+    ? [
+        ["season", "Season"], ["team", "Team"], ["games", "GP"],
+        ["completions", "Cmp"], ["attempts", "Att"], ["passing_yards", "Pass Yds"],
+        ["passing_tds", "Pass TD"], ["passing_interceptions", "INT"],
+        ["rushing_yards", "Rush Yds"], ["rushing_tds", "Rush TD"],
+        ["fantasy_points", "FPTS"], ["fantasy_points_per_game", "FPTS/G"],
+      ]
+    : [
+        ["season", "Season"], ["team", "Team"], ["games", "GP"],
+        ["carries", "Rush Att"], ["rushing_yards", "Rush Yds"], ["rushing_tds", "Rush TD"],
+        ["targets", "Tgt"], ["receptions", "Rec"], ["receiving_yards", "Rec Yds"],
+        ["receiving_tds", "Rec TD"], ["fantasy_points", "FPTS"],
+        ["fantasy_points_per_game", "FPTS/G"],
+      ];
+  const wrapper = document.createElement("div");
+  wrapper.className = "history-table-shell";
+  const table = document.createElement("table");
+  const head = document.createElement("thead");
+  const headingCells = document.createElement("tr");
+  columns.forEach(([, label]) => {
+    const cell = document.createElement("th");
+    cell.scope = "col";
+    cell.textContent = label;
+    headingCells.append(cell);
+  });
+  head.append(headingCells);
+  const body = document.createElement("tbody");
+  rows.forEach(row => {
+    const tr = document.createElement("tr");
+    columns.forEach(([key]) => {
+      const cell = document.createElement("td");
+      const value = row[key];
+      cell.textContent = value === null || value === undefined
+        ? "—"
+        : ["fantasy_points", "fantasy_points_per_game"].includes(key)
+          ? Number(value).toFixed(1)
+          : String(value);
+      tr.append(cell);
+    });
+    body.append(tr);
+  });
+  table.append(head, body);
+  wrapper.append(table);
+  section.append(wrapper);
+
+  const note = document.createElement("p");
+  note.className = "history-note";
+  note.append(document.createTextNode(
+    "Regular-season totals. Fantasy points recalculate with the league settings selected above. Data: "
+  ));
+  const href = safeSourceUrl(state.history.attribution_url);
+  if (href) {
+    const link = document.createElement("a");
+    link.href = href;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "nflverse";
+    note.append(link, document.createTextNode("."));
+  } else {
+    note.append(document.createTextNode("nflverse."));
+  }
+  section.append(note);
+  container.append(section);
+}
+
 function openIntel(key, row) {
   const report = state.intel.reports?.[key];
   const news = state.news.reports?.[key];
@@ -597,14 +707,15 @@ function openIntel(key, row) {
   const fragment = document.createDocumentFragment();
 
   if (!report && !news?.events?.length) {
-    const empty = document.createElement("div");
-    empty.className = "intel-empty";
-    const title = document.createElement("strong");
-    title.textContent = "This report has not been published yet.";
-    const detail = document.createElement("p");
-    detail.textContent = "Player reports are researched from current web sources during the private intel update. The rankings still work normally.";
-    empty.append(title, detail);
-    fragment.append(empty);
+    const notice = document.createElement("div");
+    notice.className = "intel-feed-notice";
+    const badge = document.createElement("span");
+    badge.className = "intel-badge neutral";
+    badge.textContent = "History ready";
+    const message = document.createElement("p");
+    message.textContent = "A current report has not been published yet. Historical regular-season performance appears below.";
+    notice.append(badge, message);
+    fragment.append(notice);
   } else if (!report) {
     const notice = document.createElement("div");
     notice.className = "intel-feed-notice";
@@ -679,6 +790,7 @@ function openIntel(key, row) {
     fragment.append(note);
   }
 
+  appendPlayerHistory(fragment, row);
   appendNewsTimeline(fragment, news);
 
   ui.intelBody.replaceChildren(fragment);
@@ -943,10 +1055,11 @@ function bindEvents() {
 
 async function loadRankings() {
   try {
-    const [response, intelResponse, newsResponse] = await Promise.all([
+    const [response, intelResponse, newsResponse, historyResponse] = await Promise.all([
       fetch(`${DATA_URL}?v=${Date.now()}`, { cache: "no-store" }),
       fetch(`${INTEL_URL}?v=${Date.now()}`, { cache: "no-store" }).catch(() => null),
       fetch(`${NEWS_URL}?v=${Date.now()}`, { cache: "no-store" }).catch(() => null),
+      fetch(`${HISTORY_URL}?v=${Date.now()}`, { cache: "no-store" }).catch(() => null),
     ]);
     if (!response.ok) throw new Error(`Rankings request failed (${response.status})`);
     const data = await response.json();
@@ -960,13 +1073,20 @@ async function loadRankings() {
       const news = await newsResponse.json();
       if (news.reports) state.news = news;
     }
+    if (historyResponse?.ok) {
+      const history = await historyResponse.json();
+      if (history.players && history.columns) state.history = history;
+    }
     const intelStatus = state.intel.report_count
       ? `${state.intel.report_count} intel reports updated ${formatTimestamp(state.intel.generated_at)}`
       : "intel reports awaiting first update";
     const newsStatus = state.news.player_count
       ? `${state.news.player_count} player news feeds`
       : "news feed awaiting update";
-    state.defaultSourceStatus = `${data.projection_season} board · ${formatAdpStatus(data)} · ${newsStatus} · ${intelStatus}`;
+    const historyStatus = state.history.player_count
+      ? `${state.history.player_count} player stat histories`
+      : "stat history awaiting update";
+    state.defaultSourceStatus = `${data.projection_season} board · ${formatAdpStatus(data)} · ${newsStatus} · ${historyStatus} · ${intelStatus}`;
     ui.sourceStatus.textContent = state.defaultSourceStatus;
     ui.boardHeading.textContent = `${data.projection_season} player rankings`;
     ui.loadingState.classList.add("hidden");

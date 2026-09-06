@@ -29,11 +29,13 @@ jobs:
         run: python refresh_draft_board.py --keep-stats --skip-workbook
       - name: Build the player-news timeline
         run: python update_player_news.py
+      - name: Build five-season player history
+        run: python update_player_history.py
       - name: Publish updated site data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/ADP/combined_adp_2026.csv data/ADP/special_teams_adp_2026.csv docs/data/rankings.json docs/data/special_teams.json docs/data/player_news.json
+          git add data/ADP/combined_adp_2026.csv data/ADP/special_teams_adp_2026.csv docs/data/rankings.json docs/data/special_teams.json docs/data/player_news.json docs/data/player_history.json
           if git diff --cached --quiet; then
             echo "The published site data is already current."
           else
