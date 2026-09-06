@@ -5,7 +5,7 @@ import {
   formatLine,
   formatPrice,
   formatWeather,
-} from "./odds-board.mjs";
+} from "./odds-board.mjs?v=20260906-odds2";
 
 const DATA_URL = "./data/nfl_odds.json";
 const MARKET_ORDER = ["Moneyline", "Spread", "Total"];
@@ -197,7 +197,7 @@ function clearFilters() {
 
 async function load() {
   try {
-    const response = await fetch(`${DATA_URL}?v=${Date.now()}`, { cache: "no-store" });
+    const response = await fetch(DATA_URL);
     if (!response.ok) throw new Error(`Odds request failed (${response.status})`);
     state.payload = await response.json();
     state.rows = flattenGames(state.payload.games);
@@ -218,6 +218,9 @@ async function load() {
     ui.loading.classList.add("hidden");
     ui.shell.setAttribute("aria-busy", "false");
   } catch (error) {
+    ui.connection.classList.remove("connected");
+    ui.connection.querySelector("strong").textContent = "Weekly data could not load";
+    ui.connection.querySelector("div > span").textContent = "Refresh once to retry the saved site data. No sportsbook API is called from this page.";
     ui.loading.innerHTML = `<strong>Could not load weekly odds.</strong><span>${error.message}</span>`;
   }
 }
