@@ -185,6 +185,7 @@ select:focus, input:focus { border-color: var(--lime); box-shadow: 0 0 0 3px rgb
 .position.active { color: var(--lime-ink); border-color: var(--lime); background: var(--lime); }
 .filter-tip { margin: 0; color: #829f93; font-size: .68rem; text-align: right; }
 .filter-tip code { color: #c9ddd4; }
+.mobile-scroll-hint { display: none; }
 
 .table-shell { position: relative; min-height: 360px; max-height: calc(100vh - 355px); overflow: auto; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); scrollbar-color: #355e51 #081b16; }
 table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .75rem; }
@@ -381,9 +382,11 @@ dialog p:not(.eyebrow) { color: var(--muted); font-size: .82rem; line-height: 1.
 }
 @media (max-width: 720px) {
   .topbar, main, footer { width: min(100% - 20px, 1540px); }
-  .topbar { min-height: 68px; }
+  .topbar { min-height: 68px; padding-block: 10px; flex-wrap: wrap; gap: 8px 12px; }
   .source-status { display: none; }
-  .topnav a { padding-inline: 7px; font-size: .64rem; }
+  .topnav { width: 100%; order: 3; overflow-x: auto; scrollbar-width: none; }
+  .topnav::-webkit-scrollbar { display: none; }
+  .topnav a { flex: none; padding: 8px 9px; font-size: .64rem; }
   main { padding-top: 18px; }
   .control-panel { padding: 21px 18px; gap: 22px; }
   .special-hero { padding: 21px 18px; }
@@ -403,7 +406,21 @@ dialog p:not(.eyebrow) { color: var(--muted); font-size: .82rem; line-height: 1.
   .odds-market-filter { justify-content: flex-start; }
   .odds-table-shell { max-height: 62vh; }
   .filter-tip { display: none; }
-  .table-shell { max-height: 58vh; }
+  .mobile-scroll-hint { margin: 0; padding: 9px 18px 11px; display: flex; align-items: center; gap: 8px; color: #b9cec4; border-top: 1px solid var(--line); background: rgba(215,255,84,.035); font-size: .66rem; line-height: 1.4; }
+  .mobile-scroll-hint span { flex: none; color: var(--lime); font-size: 1rem; font-weight: 900; }
+  .table-shell { max-width: 100%; max-height: 58vh; overflow-x: scroll; overscroll-behavior-inline: contain; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y; }
+  .table-shell table { width: max-content; min-width: 100%; }
+  #table-shell th:nth-child(2), #table-shell td:nth-child(2),
+  #table-shell th:nth-child(3), #table-shell td:nth-child(3),
+  #special-table-shell th:nth-child(2), #special-table-shell td:nth-child(2),
+  #special-table-shell th:nth-child(3), #special-table-shell td:nth-child(3) { position: static; left: auto; z-index: auto; box-shadow: none; }
+  #table-shell td:nth-child(2), #table-shell td:nth-child(3),
+  #special-table-shell td:nth-child(2), #special-table-shell td:nth-child(3) { background: transparent; }
+  #table-shell thead th:nth-child(2), #table-shell thead th:nth-child(3),
+  #special-table-shell thead th:nth-child(2), #special-table-shell thead th:nth-child(3) { background: #102f27; }
+  #table-shell .filter-row th:nth-child(2), #table-shell .filter-row th:nth-child(3),
+  #special-table-shell .filter-row th:nth-child(2), #special-table-shell .filter-row th:nth-child(3) { background: #0a211b; }
+  #table-shell td.player { min-width: 220px; }
   .legend .save-note { width: 100%; margin-left: 0; }
   footer { flex-direction: column; }
   .intel-header { padding: 20px 18px 16px; }
