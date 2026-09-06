@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071d18">
+  <meta name="description" content="Compare upcoming NFL moneylines, spreads, totals, and public exchange prices week by week.">
+  <link rel="canonical" href="https://outlierbaseline.com/odds.html">
+  <title>Weekly NFL Odds | OutlierBaseline</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="OutlierBaseline home">
+      <span class="brand-mark" aria-hidden="true">OB</span>
+      <span><strong>OutlierBaseline</strong><small>Football intelligence lab</small></span>
+    </a>
+    <nav class="topnav" aria-label="Analytics pages">
+      <a href="./">Player rankings</a>
+      <a href="special-teams.html">Kickers &amp; D/ST</a>
+      <a class="active" href="odds.html">Weekly odds</a>
+    </nav>
+    <div class="source-status" id="odds-status">Loading weekly markets...</div>
+  </header>
+
+  <main>
+    <section class="odds-hero">
+      <div>
+        <p class="eyebrow">Weekly NFL markets</p>
+        <h1>Shop the number, not the logo.</h1>
+        <p>Compare the next NFL games by week, market, and provider. Best-line badges appear only on licensed sportsbook data.</p>
+      </div>
+      <div class="odds-principles" aria-label="Data policy">
+        <span>Documented APIs</span>
+        <span>Source-linked prices</span>
+        <span>No sportsbook scraping</span>
+      </div>
+    </section>
+
+    <section class="sportsbook-connection" id="sportsbook-connection" aria-live="polite">
+      <span class="connection-light" aria-hidden="true"></span>
+      <div><strong>Checking sportsbook connection...</strong><span>Loading source status.</span></div>
+    </section>
+
+    <section class="board-panel odds-board" aria-labelledby="odds-heading">
+      <div class="board-toolbar">
+        <div>
+          <p class="eyebrow">Game lines</p>
+          <h2 id="odds-heading">2026 weekly odds board</h2>
+          <p class="board-summary" id="odds-summary">Preparing upcoming games...</p>
+        </div>
+        <button class="button secondary" id="odds-clear" type="button">Clear filters</button>
+      </div>
+
+      <div class="odds-controls">
+        <label><span>Week</span><select id="odds-week" aria-label="NFL week"></select></label>
+        <label><span>Provider</span><select id="odds-provider" aria-label="Odds provider"><option value="ALL">All sources</option></select></label>
+        <label class="search-field"><span>Search</span><input id="odds-search" type="search" placeholder="Team, market, or source..." autocomplete="off"></label>
+        <div class="position-filters odds-market-filter" id="odds-markets" aria-label="Filter by market">
+          <button class="position active" data-market="ALL" type="button">All</button>
+          <button class="position" data-market="Moneyline" type="button">Moneyline</button>
+          <button class="position" data-market="Spread" type="button">Spread</button>
+          <button class="position" data-market="Total" type="button">Total</button>
+        </div>
+      </div>
+
+      <div class="table-shell odds-table-shell" id="odds-table-shell" aria-busy="true">
+        <table>
+          <thead><tr><th>Kickoff</th><th>Matchup</th><th>Market</th><th>Selection</th><th>Line</th><th>Odds / price</th><th>Provider</th></tr></thead>
+          <tbody id="odds-body"></tbody>
+        </table>
+        <div class="loading-state" id="odds-loading"><div class="football-loader" aria-hidden="true"></div><strong>Loading the weekly board</strong></div>
+        <div class="empty-state hidden" id="odds-empty"><strong>No available lines match those filters.</strong></div>
+      </div>
+
+      <div class="legend odds-legend">
+        <span><i class="best-line"></i> Best: most favorable sportsbook line, then price, for the same selection</span>
+        <span>Kalshi values are contract ask prices with approximate American-odds equivalents; exchange fees are not included.</span>
+        <span>Market consensus is a reference snapshot from nflverse, not an individual sportsbook offer.</span>
+        <span class="save-note">Odds change quickly. Open the linked provider and verify the current number before acting.</span>
+      </div>
+    </section>
+  </main>
+
+  <footer><span>OutlierBaseline · Weekly NFL market comparison</span><a href="https://www.ncpgambling.org/help-treatment/about-the-national-problem-gambling-helpline/" target="_blank" rel="noopener noreferrer">Bet responsibly · Help is available</a></footer>
+  <script type="module" src="odds.js"></script>
+</body>
+</html>

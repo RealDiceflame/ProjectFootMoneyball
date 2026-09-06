@@ -2,15 +2,15 @@
 
 ## Use the web draft board
 
-Open <https://outlierbaseline.com/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, rookie and current-injury labels, source-linked player intel, and five seasons of year-by-year player stats. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, matched ESPN headlines, and historical performance. Historical fantasy points recalculate for the selected PPR and TE-premium settings. Public ADP is limited to the supported Sleeper and MyFantasyLeague feeds plus the manually maintained Yahoo snapshot. Every available provider value remains visible on every board; only a provider that lacks a player is blank. Sources and ADP SD show evidence count and standard deviation. Imported data stays in that browser, works across league settings, and is never uploaded. A separate Kicker & D/ST page compares Sleeper and MyFantasyLeague. Desktop downloads remain available under GitHub Releases.
+Open <https://outlierbaseline.com/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, rookie and current-injury labels, source-linked player intel, and five seasons of year-by-year player stats. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, matched ESPN RSS headlines, and historical performance. Historical fantasy points recalculate for the selected PPR and TE-premium settings. Public ADP is limited to the supported Sleeper and MyFantasyLeague feeds plus the manually maintained Yahoo snapshot. Every available provider value remains visible on every board; only a provider that lacks a player is blank. Sources and ADP SD show evidence count and standard deviation. Imported data stays in that browser, works across league settings, and is never uploaded. Separate Kicker & D/ST and Weekly Odds pages cover special-teams ADP and upcoming NFL game markets. Desktop downloads remain available under GitHub Releases.
 
 ## Automatic site updates (no API key)
 
-The factual timeline uses public nflverse roster, depth-chart, and weekly injury releases plus ESPN's current injury designations and matched NFL headlines. Players are joined by stable NFL ID when available, with name plus position as the fallback; ambiguous same-name headlines are skipped instead of guessed. All current primary and secondary injuries appear in the rankings. Questionable and probable designations remain visible without changing the market-based draft tag, while Out, Doubtful, injured-reserve, suspension, and exempt-list situations become RISK. It does not copy Rotoworld blurbs or require an AI key.
+The factual timeline uses public nflverse roster, depth-chart, and weekly injury releases plus matched headlines from ESPN's official NFL RSS feed. Players are joined by stable NFL ID when available, with name plus position as the fallback; ambiguous same-name headlines are skipped instead of guessed. All current primary and secondary injuries appear in the rankings. Questionable and probable designations remain visible without changing the market-based draft tag, while Out, Doubtful, injured-reserve, suspension, and exempt-list situations become RISK. It does not call ESPN's undocumented injury endpoint, copy Rotoworld blurbs, or require an AI key.
 
 Rotoworld/NBC does not publish a documented public API for third-party republication. Yahoo documents RotoWire—not Rotoworld—as a fantasy data partner. RotoWire has a licensed API for news and injuries, but its key must stay in a private server or GitHub Actions secret and must never be embedded in this public GitHub Pages site. The current feed therefore keeps using source-linked public factual data unless an authorized content license is added.
 
-The website refreshes Sleeper half-PPR and MyFantasyLeague recent-redraft ADP, the separate Kicker & D/ST market, all 60 rankings, the factual player-news timeline, and five-season player history every day at midnight and noon Eastern time. Yahoo's official developer access requires approval and OAuth, so the updater keeps the manually maintained Yahoo snapshot instead of scraping a protected page or erasing that column. ESPN ADP is not published until explicit API access is in place. The freshness line above the board shows the date for each source.
+The website refreshes Sleeper half-PPR and MyFantasyLeague recent-redraft ADP, the separate Kicker & D/ST market, all 60 rankings, the factual player-news timeline, five-season player history, and the weekly NFL odds board every day at midnight and noon Eastern time. Yahoo's official developer access requires approval and OAuth, so the updater keeps the manually maintained Yahoo snapshot instead of scraping a protected page or erasing that column. ESPN ADP is not published until explicit API access is in place. The freshness line above the board shows the date for each source.
 
 Run the complete update locally:
 
@@ -20,6 +20,25 @@ python update_player_history.py
 ```
 
 You can also open **Actions → Update site data → Run workflow** on GitHub at any time. The scheduled workflow handles daylight-saving changes automatically and publishes changed ADP, rankings, and news files to the website.
+
+## Weekly odds board
+
+`odds.html` starts with upcoming nflverse schedules and consensus reference lines plus public NFL winner contracts from Kalshi's documented market-data API. It does not scrape DraftKings, FanDuel, or another sportsbook website.
+
+To add licensed comparisons from DraftKings, FanDuel, BetMGM, Caesars, and other supported books:
+
+1. Create a key at <https://the-odds-api.com/>.
+2. In GitHub, open **Settings → Secrets and variables → Actions**.
+3. Create a repository secret named `ODDS_API_KEY`.
+4. Open **Actions → Update site data → Run workflow**.
+
+The key stays in GitHub Actions and is never published to the browser. Best-line badges compare only the licensed sportsbook rows. Kalshi contracts and nflverse consensus remain clearly labeled as different product types. Do not resell the raw feed, and keep the responsible-gambling notice on the page.
+
+To refresh locally after setting `ODDS_API_KEY` as an environment variable:
+
+```powershell
+python update_odds_board.py
+```
 
 ## Update AI player intel
 
@@ -86,7 +105,7 @@ The script creates `releases/current/ProjectFootMoneyball-Windows.zip`. Recipien
 
 ## Build the standalone macOS release
 
-A real macOS application must be built on macOS. The **Build desktop apps** workflow under GitHub Actions creates separate ZIPs for Apple Silicon and Intel Macs, plus the Windows ZIP. Run it manually for test builds. Pushing a version tag such as `v0.2.0` also creates a pre-release and attaches all four downloads automatically.
+A real macOS application must be built on macOS. The **Build desktop apps** workflow under GitHub Actions creates separate ZIPs for Apple Silicon and Intel Macs, plus the Windows ZIP. Run it manually for test builds. Pushing a test tag such as `v0.2.0-beta.2` creates a pre-release. Pushing a final tag such as `v0.2.0` creates a normal release. Both attach all four downloads automatically.
 
 The workflow also creates `ProjectFootMoneyball-All-Platforms.zip`. This is the easiest download to share: it contains all three applications and a short **START HERE** guide so the recipient can choose after downloading.
 
@@ -106,6 +125,7 @@ main.py                           Compatibility command-line entry point
 refresh_draft_board.py            Stats/ADP refresh command
 update_player_intel.py             Source-linked AI player news updater
 update_player_news.py              No-key roster, depth-chart, injury, and headline updater
+update_odds_board.py               Weekly schedule, exchange, and licensed sportsbook updater
 app/                              Desktop UI, board service, workbook export
 pipeline/                         Pipeline orchestration
 data_fetcher/                     Active ADP and rookie projection importers

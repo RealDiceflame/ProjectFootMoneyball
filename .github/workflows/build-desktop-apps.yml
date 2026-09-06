@@ -105,9 +105,15 @@ jobs:
           pattern: ProjectFootMoneyball-*.zip
           path: release-assets
           merge-multiple: true
-      - name: Create pre-release and attach apps
+      - name: Create release and attach apps
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --generate-notes --prerelease
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+              gh release create "$GITHUB_REF_NAME" --generate-notes --prerelease
+            else
+              gh release create "$GITHUB_REF_NAME" --generate-notes
+            fi
+          fi
           gh release upload "$GITHUB_REF_NAME" release-assets/*.zip --clobber

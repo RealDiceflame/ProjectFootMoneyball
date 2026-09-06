@@ -531,9 +531,9 @@ function appendNewsTimeline(container, news) {
   const heading = document.createElement("div");
   const eyebrow = document.createElement("p");
   eyebrow.className = "eyebrow";
-  eyebrow.textContent = "No-key news feed";
+  eyebrow.textContent = "Source-linked player feed";
   const title = document.createElement("h3");
-  title.textContent = "Latest factual updates";
+  title.textContent = "Recent articles and factual updates";
   heading.append(eyebrow, title);
   const signal = document.createElement("span");
   const safeSignal = ["stable", "watch", "risk"].includes(news.signal) ? news.signal : "watch";
@@ -584,6 +584,15 @@ function appendNewsTimeline(container, news) {
     attributionLink.rel = "noopener noreferrer";
     attributionLink.textContent = "nflverse data source";
     attribution.append(document.createTextNode(" Data compiled from the "), attributionLink, document.createTextNode("."));
+  }
+  const newsHref = safeSourceUrl(state.news.news_attribution_url);
+  if (newsHref) {
+    const newsLink = document.createElement("a");
+    newsLink.href = newsHref;
+    newsLink.target = "_blank";
+    newsLink.rel = "noopener noreferrer";
+    newsLink.textContent = "ESPN NFL News";
+    attribution.append(document.createTextNode(" Matched headlines are attributed to and link back to "), newsLink, document.createTextNode("."));
   }
   timeline.append(attribution);
   container.append(timeline);

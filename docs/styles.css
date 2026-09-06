@@ -78,6 +78,60 @@ main { padding: 30px 0 24px; }
 .special-filters { grid-template-columns: minmax(260px, 430px) auto 1fr; padding-top: 4px; }
 .special-table-shell { max-height: calc(100vh - 320px); }
 
+.odds-hero {
+  padding: 28px 28px 26px;
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) auto;
+  align-items: end;
+  gap: 30px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: linear-gradient(115deg, rgba(8,31,25,.94), rgba(16,56,45,.88));
+  box-shadow: var(--shadow);
+}
+.odds-hero h1 { max-width: 740px; }
+.odds-hero p:not(.eyebrow) { max-width: 690px; margin: 13px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.55; }
+.odds-principles { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 7px; }
+.odds-principles span { padding: 7px 9px; border: 1px solid rgba(215,255,84,.2); border-radius: 999px; color: #c8ddd3; background: rgba(215,255,84,.04); font-size: .62rem; font-weight: 800; }
+.sportsbook-connection { padding: 12px 24px; display: flex; align-items: center; gap: 11px; border-inline: 1px solid var(--line); background: rgba(255,191,90,.055); }
+.sportsbook-connection > div { display: flex; align-items: baseline; flex-wrap: wrap; gap: 5px 10px; }
+.sportsbook-connection strong { font-size: .74rem; }
+.sportsbook-connection span { color: var(--muted); font-size: .69rem; }
+.connection-light { width: 9px; height: 9px; flex: none; border-radius: 50%; background: #f1d56a; box-shadow: 0 0 0 4px rgba(241,213,106,.09); }
+.sportsbook-connection.connected { background: rgba(121,233,149,.055); }
+.sportsbook-connection.connected .connection-light { background: #79e995; box-shadow: 0 0 0 4px rgba(121,233,149,.09); }
+.odds-board { border-radius: 0 0 var(--radius) var(--radius); }
+.odds-controls { padding: 0 24px 16px; display: grid; grid-template-columns: 150px 210px minmax(220px, 1fr) auto; gap: 12px; align-items: end; }
+.odds-controls label > span { display: block; margin: 0 0 7px 2px; color: var(--muted); font-size: .66rem; font-weight: 760; }
+.odds-market-filter { justify-content: flex-end; }
+.odds-market-filter .position { padding-inline: 11px; }
+.odds-table-shell { min-height: 420px; max-height: calc(100vh - 410px); }
+.odds-table-shell table { min-width: 990px; }
+.odds-table-shell thead { position: sticky; top: 0; z-index: 7; }
+.odds-table-shell th { height: 43px; color: #cde0d7; background: #102f27; border-bottom: 1px solid var(--line-strong); font-size: .65rem; letter-spacing: .035em; text-transform: uppercase; }
+.odds-table-shell th:nth-child(-n+3), .odds-table-shell td:nth-child(-n+3) { position: static; left: auto; z-index: auto; box-shadow: none; }
+.odds-table-shell td { height: 56px; text-align: left; }
+.odds-table-shell td.numeric { text-align: right; }
+.odds-table-shell th:nth-child(5), .odds-table-shell th:nth-child(6) { text-align: right; }
+.odds-kickoff { min-width: 178px; color: #b7cbc2; font-variant-numeric: tabular-nums; }
+.odds-matchup { min-width: 180px; }
+.odds-matchup strong, .odds-matchup span, .odds-provider a, .odds-provider span { display: block; }
+.odds-matchup span { margin-top: 3px; color: #78978b; font-size: .62rem; }
+.odds-market { color: #9eb8ad; font-size: .68rem; font-weight: 800; text-transform: uppercase; }
+.odds-selection { min-width: 160px; font-weight: 760; }
+.odds-number { min-width: 74px; }
+.odds-price { min-width: 126px; }
+.odds-price strong { color: #e8f5ee; font-size: .78rem; }
+.odds-provider { min-width: 150px; }
+.odds-provider a { color: var(--lime); font-weight: 790; text-underline-offset: 3px; }
+.odds-provider span { margin-top: 3px; color: #78978b; font-size: .6rem; font-weight: 800; letter-spacing: .055em; text-transform: uppercase; }
+.source-reference { opacity: .76; }
+.source-exchange .odds-price strong { color: #a9dfce; }
+.best-odds { background: rgba(215,255,84,.055) !important; }
+.best-badge { margin-left: 7px; padding: 3px 5px; border-radius: 5px; color: var(--lime-ink); background: var(--lime); font-size: .53rem; font-weight: 950; letter-spacing: .055em; text-transform: uppercase; }
+.best-line { background: var(--lime); }
+.odds-legend { align-items: center; }
+
 .control-panel {
   padding: 24px 26px;
   border-radius: var(--radius) var(--radius) 0 0;
@@ -320,6 +374,10 @@ dialog p:not(.eyebrow) { color: var(--muted); font-size: .82rem; line-height: 1.
   .special-hero { grid-template-columns: 1fr; gap: 16px; }
   .special-filters { grid-template-columns: minmax(260px, 1fr) auto; }
   .special-filters .filter-tip { grid-column: 1 / -1; }
+  .odds-hero { grid-template-columns: 1fr; gap: 18px; }
+  .odds-principles { justify-content: flex-start; }
+  .odds-controls { grid-template-columns: 1fr 1fr; }
+  .odds-market-filter { justify-content: flex-start; }
 }
 @media (max-width: 720px) {
   .topbar, main, footer { width: min(100% - 20px, 1540px); }
@@ -329,6 +387,9 @@ dialog p:not(.eyebrow) { color: var(--muted); font-size: .82rem; line-height: 1.
   main { padding-top: 18px; }
   .control-panel { padding: 21px 18px; gap: 22px; }
   .special-hero { padding: 21px 18px; }
+  .odds-hero { padding: 22px 18px; }
+  .sportsbook-connection { padding-inline: 18px; align-items: flex-start; }
+  .sportsbook-connection > div { align-items: flex-start; flex-direction: column; }
   .control-heading > p { display: none; }
   .league-controls { grid-template-columns: 1fr 1fr; }
   .board-toolbar { align-items: start; flex-direction: column; }
@@ -338,6 +399,9 @@ dialog p:not(.eyebrow) { color: var(--muted); font-size: .82rem; line-height: 1.
   .adp-actions .button { flex: 1; }
   .quick-filters { grid-template-columns: 1fr; }
   .position-filters { overflow-x: auto; }
+  .odds-controls { grid-template-columns: 1fr; padding-inline: 18px; }
+  .odds-market-filter { justify-content: flex-start; }
+  .odds-table-shell { max-height: 62vh; }
   .filter-tip { display: none; }
   .table-shell { max-height: 58vh; }
   .legend .save-note { width: 100%; margin-left: 0; }

@@ -1,0 +1,50 @@
+export function formatAmerican(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "—";
+  return number > 0 ? `+${Math.round(number)}` : String(Math.round(number));
+}
+
+export function formatLine(row) {
+  const number = Number(row.line);
+  if (!Number.isFinite(number) || row.line === null || row.line === "") return "—";
+  if (row.market === "Spread") return number > 0 ? `+${number}` : String(number);
+  return String(number);
+}
+
+export function formatPrice(row) {
+  if (row.provider_kind === "exchange" && Number.isFinite(Number(row.contract_price))) {
+    return `${Math.round(Number(row.contract_price))}¢ (≈ ${formatAmerican(row.price)})`;
+  }
+  return formatAmerican(row.price);
+}
+
+export function flattenGames(games) {
+  return (games || []).flatMap(game => (game.rows || []).map(row => ({
+    ...row,
+    game_id: game.game_id,
+    week: game.week,
+    kickoff: game.kickoff,
+    away: game.away,
+    home: game.home,
+    away_name: game.away_name,
+    home_name: game.home_name,
+    matchup: `${game.away} @ ${game.home}`,
+  })));
+}
+
+export function defaultWeek(weeks) {
+  const values = (weeks || []).map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+  return values.length ? values[0] : null;
+}
+
+export function filterOddsRows(rows, { week, market = "ALL", provider = "ALL", search = "" }) {
+  const query = String(search).trim().toLocaleLowerCase();
+  return rows.filter(row => {
+    if (week !== null && Number(row.week) !== Number(week)) return false;
+    if (market !== "ALL" && row.market !== market) return false;
+    if (provider !== "ALL" && row.provider_key !== provider) return false;
+    if (!query) return true;
+    return [row.matchup, row.away_name, row.home_name, row.selection, row.provider, row.market]
+      .some(value => String(value || "").toLocaleLowerCase().includes(query));
+  });
+}
