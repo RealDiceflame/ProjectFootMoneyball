@@ -34,6 +34,7 @@ jobs:
       - name: Build the weekly NFL odds board
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          SPORTSGAMEODDS_API_KEY: ${{ secrets.SPORTSGAMEODDS_API_KEY }}
         run: python update_odds_board.py
       - name: Publish updated site data
         run: |

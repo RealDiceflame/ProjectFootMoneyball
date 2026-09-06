@@ -18,6 +18,57 @@ export function formatPrice(row) {
   return formatAmerican(row.price);
 }
 
+export function formatProbability(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "—";
+  const percentage = number * 100;
+  return `${percentage < 1 && percentage > 0 ? percentage.toFixed(1) : Math.round(percentage)}%`;
+}
+
+export function formatMarketVolume(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return "Volume unavailable";
+  return `${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 }).format(number)} volume`;
+}
+
+export function comparisonColumns(game, market) {
+  return market === "Total"
+    ? [{ selection: "Over", label: "Over" }, { selection: "Under", label: "Under" }]
+    : [
+      { selection: game.away, label: game.away_name || game.away },
+      { selection: game.home, label: game.home_name || game.home },
+    ];
+}
+
+export function groupMarketRows(game, market, rows) {
+  const columns = comparisonColumns(game, market);
+  const providerOrder = { sportsbook: 0, exchange: 1, reference: 2 };
+  const providers = new Map();
+  [...(rows || [])]
+    .sort((left, right) => Number(right.is_best) - Number(left.is_best))
+    .forEach(row => {
+      if (!providers.has(row.provider_key)) {
+        providers.set(row.provider_key, {
+          provider: row.provider,
+          provider_key: row.provider_key,
+          provider_kind: row.provider_kind,
+          provider_url: row.provider_url,
+          cells: Object.fromEntries(columns.map(column => [column.selection, null])),
+        });
+      }
+      const provider = providers.get(row.provider_key);
+      if (Object.hasOwn(provider.cells, row.selection) && provider.cells[row.selection] === null) {
+        provider.cells[row.selection] = row;
+      }
+    });
+  return {
+    columns,
+    providers: [...providers.values()].sort((left, right) =>
+      (providerOrder[left.provider_kind] ?? 9) - (providerOrder[right.provider_kind] ?? 9)
+      || left.provider.localeCompare(right.provider)),
+  };
+}
+
 export function flattenGames(games) {
   return (games || []).flatMap(game => (game.rows || []).map(row => ({
     ...row,

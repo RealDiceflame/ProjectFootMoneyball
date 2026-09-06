@@ -1,7 +1,20 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { defaultWeek, filterOddsGames, filterOddsRows, flattenGames, formatAmerican, formatLine, formatPrice, formatWeather } from "../docs/odds-board.mjs";
+import {
+  comparisonColumns,
+  defaultWeek,
+  filterOddsGames,
+  filterOddsRows,
+  flattenGames,
+  formatAmerican,
+  formatLine,
+  formatMarketVolume,
+  formatPrice,
+  formatProbability,
+  formatWeather,
+  groupMarketRows,
+} from "../docs/odds-board.mjs";
 
 const games = [{
   game_id: "2026_01_NE_SEA",
@@ -53,4 +66,25 @@ test("formats kickoff weather as a compact game detail", () => {
   assert.equal(formatWeather(games[0].weather), "Mostly sunny · 68°F · Wind NW 8 mph");
   assert.equal(formatWeather({ summary: "Indoor venue", temperature: null }), "Indoor venue");
   assert.equal(formatWeather(null), "Weather pending");
+});
+
+test("groups each provider into horizontal away and home comparison cells", () => {
+  const moneylineRows = [
+    { provider: "DraftKings", provider_key: "draftkings", provider_kind: "sportsbook", market: "Moneyline", selection: "SEA", price: -170 },
+    { provider: "DraftKings", provider_key: "draftkings", provider_kind: "sportsbook", market: "Moneyline", selection: "NE", price: 150 },
+    { provider: "Market consensus", provider_key: "nflverse", provider_kind: "reference", market: "Moneyline", selection: "SEA", price: -180 },
+  ];
+  const grouped = groupMarketRows(games[0], "Moneyline", moneylineRows);
+  assert.deepEqual(grouped.columns, comparisonColumns(games[0], "Moneyline"));
+  assert.deepEqual(grouped.columns.map(column => column.selection), ["NE", "SEA"]);
+  assert.equal(grouped.providers[0].provider, "DraftKings");
+  assert.equal(grouped.providers[0].cells.NE.price, 150);
+  assert.equal(grouped.providers[0].cells.SEA.price, -170);
+  assert.equal(grouped.providers[1].cells.NE, null);
+});
+
+test("formats prediction-market probabilities and volume", () => {
+  assert.equal(formatProbability(0.647), "65%");
+  assert.equal(formatProbability(0.0035), "0.4%");
+  assert.equal(formatMarketVolume(415785), "$415.8K volume");
 });

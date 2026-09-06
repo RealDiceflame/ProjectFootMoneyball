@@ -2,7 +2,12 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
-from app.odds_board import add_nws_weather, build_odds_board, probability_to_american
+from app.odds_board import (
+    add_nws_weather,
+    build_odds_board,
+    build_polymarket_markets,
+    probability_to_american,
+)
 
 
 def _schedule():
@@ -57,6 +62,8 @@ def test_build_odds_board_maps_reference_lines_and_kalshi_contracts():
     game = payload["games"][0]
     assert game["away"] == "NE"
     assert game["home"] == "SEA"
+    assert game["away_logo_url"].endswith("/ne.png")
+    assert game["home_logo_url"].endswith("/sea.png")
     assert game["kickoff"] == "2026-09-10T00:20:00+00:00"
     assert game["stadium"] == "Lumen Field"
     assert game["surface"] == "fieldturf"
@@ -132,6 +139,105 @@ def test_sportsbook_comparison_marks_best_line_then_best_price():
     assert ("FanDuel", "Total", "Over", 44.0) in best
     assert ("DraftKings", "Total", "Under", 44.5) in best
     assert payload["has_sportsbooks"] is True
+
+
+def test_sportsgameodds_backup_maps_bookmakers_into_matching_columns():
+    event = {
+        "teams": {
+            "away": {"names": {"long": "New England Patriots"}},
+            "home": {"names": {"long": "Seattle Seahawks"}},
+        },
+        "links": {"bookmakers": {"draftkings": "https://sportsbook.draftkings.com/"}},
+        "updatedAt": "2026-09-06T12:00:00Z",
+        "odds": {
+            "points-away-game-ml-away": {
+                "betTypeID": "ml", "sideID": "away",
+                "byBookmaker": {"draftkings": {"odds": 150, "available": True}},
+            },
+            "points-home-game-ml-home": {
+                "betTypeID": "ml", "sideID": "home",
+                "byBookmaker": {"draftkings": {"odds": -170, "available": True}},
+            },
+            "points-all-game-ou-over": {
+                "betTypeID": "ou", "sideID": "over", "bookOverUnder": 44.5,
+                "byBookmaker": {"draftkings": {"odds": -105, "available": True}},
+            },
+        },
+    }
+    payload = build_odds_board(
+        _schedule(),
+        season=2026,
+        sportsgameodds_events=[event],
+        now=datetime(2026, 9, 6, tzinfo=timezone.utc),
+    )
+    rows = [row for row in payload["games"][0]["rows"] if row["provider_kind"] == "sportsbook"]
+    assert {(row["market"], row["selection"], row["line"], row["price"]) for row in rows} == {
+        ("Moneyline", "NE", None, 150),
+        ("Moneyline", "SEA", None, -170),
+        ("Total", "Over", 44.5, -105),
+    }
+    assert all(row["provider"] == "DraftKings" for row in rows)
+    assert payload["sources"]["sportsbooks"]["name"] == "SportsGameOdds"
+
+
+def test_polymarket_events_become_compact_ranked_prediction_cards():
+    cards = build_polymarket_markets([
+        {
+            "id": "87239",
+            "title": "Tush Push banned for 2026 NFL Season?",
+            "slug": "tush-push-banned-for-2026-nfl-season",
+            "active": True,
+            "closed": False,
+            "endDate": "2026-09-10T00:00:00Z",
+            "volume": 415785.14,
+            "liquidity": 623.53,
+            "markets": [{
+                "active": True,
+                "closed": False,
+                "question": "Tush Push banned for 2026 NFL Season?",
+                "outcomes": '["Yes", "No"]',
+                "outcomePrices": '["0.0035", "0.9965"]',
+            }],
+        },
+    ])
+    assert len(cards) == 1
+    assert cards[0]["url"].endswith("/event/tush-push-banned-for-2026-nfl-season")
+    assert cards[0]["contracts"] == [
+        {"label": "No", "probability": 0.9965},
+        {"label": "Yes", "probability": 0.0035},
+    ]
+
+
+def test_polymarket_game_adds_only_main_lines_to_the_comparison_table():
+    event = {
+        "id": "772173",
+        "title": "Patriots vs. Seahawks",
+        "slug": "nfl-ne-sea-2026-09-10",
+        "active": True,
+        "closed": False,
+        "markets": [
+            {"active": True, "sportsMarketType": "moneyline", "outcomes": '["Patriots", "Seahawks"]', "outcomePrices": '["0.375", "0.625"]'},
+            {"active": True, "sportsMarketType": "spreads", "line": -1.5, "outcomes": '["Seahawks", "Patriots"]', "outcomePrices": '["0.59", "0.41"]'},
+            {"active": True, "sportsMarketType": "spreads", "line": -3.5, "outcomes": '["Seahawks", "Patriots"]', "outcomePrices": '["0.475", "0.525"]'},
+            {"active": True, "sportsMarketType": "totals", "line": 43.5, "outcomes": '["Over", "Under"]', "outcomePrices": '["0.525", "0.475"]'},
+            {"active": True, "sportsMarketType": "totals", "line": 44.5, "outcomes": '["Over", "Under"]', "outcomePrices": '["0.485", "0.515"]'},
+        ],
+    }
+    payload = build_odds_board(
+        _schedule(),
+        season=2026,
+        polymarket_events=[event],
+        now=datetime(2026, 9, 6, tzinfo=timezone.utc),
+    )
+    rows = [row for row in payload["games"][0]["rows"] if row["provider_key"] == "polymarket"]
+    assert {(row["market"], row["selection"], row["line"], row["contract_price"]) for row in rows} == {
+        ("Moneyline", "NE", None, 38),
+        ("Moneyline", "SEA", None, 63),
+        ("Spread", "NE", 3.5, 53),
+        ("Spread", "SEA", -3.5, 48),
+        ("Total", "Over", 44.5, 49),
+        ("Total", "Under", 44.5, 52),
+    }
 
 
 def test_past_games_are_left_off_the_upcoming_board():

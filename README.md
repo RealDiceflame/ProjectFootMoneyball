@@ -10,7 +10,7 @@ The factual timeline uses public nflverse roster, depth-chart, and weekly injury
 
 Rotoworld/NBC does not publish a documented public API for third-party republication. Yahoo documents RotoWire—not Rotoworld—as a fantasy data partner. RotoWire has a licensed API for news and injuries, but its key must stay in a private server or GitHub Actions secret and must never be embedded in this public GitHub Pages site. The current feed therefore keeps using source-linked public factual data unless an authorized content license is added.
 
-The website refreshes Sleeper half-PPR and MyFantasyLeague recent-redraft ADP, the separate Kicker & D/ST market, all 60 rankings, the factual player-news timeline, five-season player history, and the weekly NFL odds board every day at midnight and noon Eastern time. Yahoo's official developer access requires approval and OAuth, so the updater keeps the manually maintained Yahoo snapshot instead of scraping a protected page or erasing that column. ESPN ADP is not published until explicit API access is in place. The freshness line above the board shows the date for each source.
+The website refreshes Sleeper half-PPR and MyFantasyLeague recent-redraft ADP, the separate Kicker & D/ST market, all 60 rankings, the factual player-news timeline, five-season player history, and the weekly NFL odds board every day at midnight, 6 a.m., noon, and 6 p.m. Eastern time. Yahoo's official developer access requires approval and OAuth, so the updater keeps the manually maintained Yahoo snapshot instead of scraping a protected page or erasing that column. ESPN ADP is not published until explicit API access is in place. The freshness line above the board shows the date for each source.
 
 Run the complete update locally:
 
@@ -23,7 +23,7 @@ You can also open **Actions → Update site data → Run workflow** on GitHub at
 
 ## Weekly odds board
 
-`odds.html` starts with upcoming nflverse schedules and consensus reference lines plus public NFL winner contracts from Kalshi's documented market-data API. It does not scrape DraftKings, FanDuel, or another sportsbook website.
+`odds.html` starts with upcoming nflverse schedules and consensus reference lines, public NFL contracts from Kalshi and Polymarket, and source-linked team logos. Polymarket's public Gamma API supplies the prediction-market panel and each matchup's main moneyline, spread, and total. It does not scrape DraftKings, FanDuel, or another sportsbook website.
 
 To add licensed comparisons from DraftKings, FanDuel, BetMGM, Caesars, and other supported books:
 
@@ -32,7 +32,9 @@ To add licensed comparisons from DraftKings, FanDuel, BetMGM, Caesars, and other
 3. Create a repository secret named `ODDS_API_KEY`.
 4. Open **Actions → Update site data → Run workflow**.
 
-The key stays in GitHub Actions and is never published to the browser. Best-line badges compare only the licensed sportsbook rows. Kalshi contracts and nflverse consensus remain clearly labeled as different product types. Do not resell the raw feed, and keep the responsible-gambling notice on the page.
+The Odds API is the primary licensed feed. For automatic backup coverage, create a SportsGameOdds key at <https://sportsgameodds.com/> and add it as a second repository secret named `SPORTSGAMEODDS_API_KEY`. The updater calls the backup only when the primary key is absent, the primary request fails, or it returns no events.
+
+Both keys stay in GitHub Actions and are never published to the browser. Best-line badges compare only the licensed sportsbook rows. Kalshi, Polymarket, and nflverse consensus remain clearly labeled as different product types. Do not resell the raw feeds, and keep the responsible-gambling notice on the page.
 
 To refresh locally after setting `ODDS_API_KEY` as an environment variable:
 

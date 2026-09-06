@@ -7,7 +7,7 @@
   <meta name="description" content="Compare upcoming NFL moneylines, spreads, totals, and public exchange prices week by week.">
   <link rel="canonical" href="https://outlierbaseline.com/odds.html">
   <title>Weekly NFL Odds | OutlierBaseline</title>
-  <link rel="stylesheet" href="styles.css?v=20260906-odds2">
+  <link rel="stylesheet" href="styles.css?v=20260906-odds3">
 </head>
 <body>
   <header class="topbar">
@@ -42,6 +42,20 @@
       <div><strong>Checking sportsbook connection...</strong><span>Loading source status.</span></div>
     </section>
 
+    <section class="prediction-panel" aria-labelledby="prediction-heading">
+      <div class="prediction-heading">
+        <div>
+          <p class="eyebrow">Prediction market pulse</p>
+          <h2 id="prediction-heading">Polymarket NFL markets</h2>
+          <p id="prediction-summary">Loading active NFL prediction markets...</p>
+        </div>
+        <a href="https://polymarket.com/sports/nfl" target="_blank" rel="noopener noreferrer">View all on Polymarket ↗</a>
+      </div>
+      <div class="prediction-market-grid" id="prediction-markets"></div>
+      <div class="empty-state hidden" id="prediction-empty"><strong>No active Polymarket NFL markets were returned in the latest update.</strong></div>
+      <p class="prediction-note">Probabilities are derived from contract prices and can move quickly. They are not sportsbook odds.</p>
+    </section>
+
     <section class="board-panel odds-board" aria-labelledby="odds-heading">
       <div class="board-toolbar">
         <div>
@@ -72,7 +86,7 @@
 
       <div class="legend odds-legend">
         <span><i class="best-line"></i> Best: most favorable sportsbook line, then price, for the same selection</span>
-        <span>Kalshi values are contract ask prices with approximate American-odds equivalents; exchange fees are not included.</span>
+        <span>Kalshi and Polymarket values are contract prices with approximate American-odds equivalents; exchange fees are not included.</span>
         <span>Market consensus is a reference snapshot from nflverse, not an individual sportsbook offer.</span>
         <span>Outdoor forecasts are added near kickoff; indoor games are labeled separately.</span>
         <span class="save-note">Odds change quickly. Open the linked provider and verify the current number before acting.</span>
@@ -81,6 +95,6 @@
   </main>
 
   <footer><span>OutlierBaseline · Weekly NFL market comparison</span><a href="https://www.ncpgambling.org/help-treatment/about-the-national-problem-gambling-helpline/" target="_blank" rel="noopener noreferrer">Bet responsibly · Help is available</a></footer>
-  <script type="module" src="odds.js?v=20260906-odds2"></script>
+  <script type="module" src="odds.js?v=20260906-odds3"></script>
 </body>
 </html>
