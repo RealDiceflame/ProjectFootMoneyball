@@ -29,15 +29,15 @@ const columns = [
     kind: "number",
     description: "Projected points above or below the same-position market expectation at this ADP",
   },
-  { key: "adp", label: "ADP", width: 70, kind: "number", description: "Equal-weight consensus of only the sources matching the selected league format" },
-  { key: "source_count", label: "Sources", width: 68, kind: "number", description: "Number of format-matched ADP sources available for this player" },
-  { key: "adp_stddev", label: "ADP SD", width: 76, kind: "number", description: "Standard deviation across matching ADP sources; higher means more disagreement" },
+  { key: "adp", label: "ADP", width: 70, kind: "number", description: "Equal-weight consensus of every available Yahoo, Sleeper, ESPN, and MFL value for this player" },
+  { key: "source_count", label: "Sources", width: 68, kind: "number", description: "Number of ADP sources that have a value for this player" },
+  { key: "adp_stddev", label: "ADP SD", width: 76, kind: "number", description: "Standard deviation across available ADP sources; higher means more disagreement" },
   { key: "value_vs_adp", label: "ADP Value", width: 78, kind: "number", description: "Composite ADP minus this board's rank; positive means the board ranks the player earlier" },
   { key: "Yahoo", label: "Yahoo", width: 70, kind: "number", description: "Yahoo ADP from the last authorized snapshot; its date is shown above the board" },
   { key: "Sleeper", label: "Sleeper", width: 74, kind: "number", description: "Half-PPR ADP pulled directly from Sleeper" },
   { key: "NFL", label: "ESPN", width: 76, kind: "number", description: "12-team 1QB PPR ADP pulled directly from ESPN" },
   { key: "MFL", label: "MFL", width: 68, kind: "number", description: "Recent 12-team PPR redraft ADP from MyFantasyLeague" },
-  { key: "draft_tag", label: "Draft Tag", width: 94, kind: "category", description: "RISK and NEW TEAM come from current news; market tags appear only when matching ADP exists" },
+  { key: "draft_tag", label: "Draft Tag", width: 94, kind: "category", description: "RISK and NEW TEAM come from current news; market tags appear when at least one ADP source has a value" },
 ];
 
 const ui = {
@@ -130,20 +130,8 @@ function rankingSlug() {
   return `${state.settings.teams}team_${format}`;
 }
 
-function formatLabel() {
-  const premium = state.settings.tePremium === "+0.5" ? " · TE +0.5" : "";
-  return `${state.settings.teams}-team · ${state.settings.quarterbacks} · ${state.settings.ppr}${premium}`;
-}
-
-function defaultMarketDescription() {
-  if (state.settings.teams !== "12" || state.settings.quarterbacks !== "1QB" || state.settings.tePremium !== "Off") return null;
-  if (state.settings.ppr === "Half PPR") return "Yahoo + Sleeper · 12-team 1QB half-PPR";
-  if (state.settings.ppr === "Full PPR") return "ESPN + MyFantasyLeague · 12-team 1QB PPR";
-  return null;
-}
-
-function personalAdpMatchesFormat() {
-  return Boolean(state.personalAdp?.entries?.length && state.personalAdp.rankingSlug === rankingSlug());
+function personalAdpIsActive() {
+  return Boolean(state.personalAdp?.entries?.length);
 }
 
 function playerKey(row) {
@@ -169,7 +157,7 @@ function rowsForCurrentBoard() {
     row.is_rookie = row.is_rookie === true || String(row.is_rookie).toLocaleLowerCase() === "true";
     return row;
   });
-  if (personalAdpMatchesFormat()) {
+  if (personalAdpIsActive()) {
     const applied = applyPersonalAdp(rows, state.personalAdp);
     rows = recalculateMarketMetrics(applied.rows);
     state.personalAdpMatches = applied.matched;
@@ -723,7 +711,7 @@ function resetImportForm() {
   ui.adpColumn.replaceChildren(new Option("Choose a file first", ""));
   ui.adpColumn.disabled = true;
   ui.applyAdp.disabled = true;
-  setImportStatus(`This import will be saved for ${formatLabel()} only.`);
+  setImportStatus("This snapshot will be used across league settings. Players missing from the file keep the default market values.");
 }
 
 function openAdpImporter() {
@@ -764,8 +752,6 @@ function applyAdpImport(event) {
     const snapshot = buildPersonalAdp(state.pendingAdp.parsed, ui.adpColumn.value, {
       fileName: state.pendingAdp.fileName,
       snapshotDate: ui.adpDate.value || localIsoDate(),
-      rankingSlug: rankingSlug(),
-      formatLabel: formatLabel(),
     });
     const previous = state.personalAdp;
     state.personalAdp = snapshot;
@@ -794,23 +780,18 @@ function resetPersonalAdp() {
 }
 
 function updateAdpMode() {
-  const matchesFormat = personalAdpMatchesFormat();
-  const defaultMarket = defaultMarketDescription();
-  if (matchesFormat) {
+  if (personalAdpIsActive()) {
     const provider = state.personalAdp.provider ? ` (${state.personalAdp.provider})` : "";
     ui.adpModeTitle.textContent = `${state.personalAdp.column}${provider}`;
-    ui.adpModeDetail.textContent = `${state.personalAdpMatches} players matched · ${formatDate(state.personalAdp.snapshotDate)} · ${state.personalAdp.formatLabel} · private to this device`;
+    ui.adpModeDetail.textContent = `${state.personalAdpMatches} players matched · ${formatDate(state.personalAdp.snapshotDate)} · used across league settings · private to this device`;
     ui.importAdp.textContent = "Replace my ADP";
     ui.resetAdp.classList.remove("hidden");
     ui.sourceStatus.textContent = `Personal ${state.personalAdp.column} snapshot · ${state.defaultSourceStatus}`;
   } else {
-    ui.adpModeTitle.textContent = defaultMarket ? "Format-matched default" : "No matching market source";
-    const savedElsewhere = state.personalAdp?.formatLabel
-      ? ` Saved personal ADP: ${state.personalAdp.formatLabel}.`
-      : "";
-    ui.adpModeDetail.textContent = defaultMarket || `Import ADP specifically for ${formatLabel()}.${savedElsewhere}`;
-    ui.importAdp.textContent = state.personalAdp ? "Import for this format" : "Find & import ADP";
-    ui.resetAdp.classList.toggle("hidden", !state.personalAdp);
+    ui.adpModeTitle.textContent = "Available-source consensus";
+    ui.adpModeDetail.textContent = "Yahoo + Sleeper + ESPN + MFL when that player has a value; source scoring formats may differ";
+    ui.importAdp.textContent = "Import my ADP";
+    ui.resetAdp.classList.add("hidden");
     ui.sourceStatus.textContent = state.defaultSourceStatus;
   }
 }
@@ -847,7 +828,7 @@ function render() {
   updateSortIndicators();
   renderBody(state.visibleRows);
   const draftedCount = allRows.filter(row => state.drafted.has(playerKey(row))).length;
-  const importText = personalAdpMatchesFormat() ? ` · ${state.personalAdpMatches} personal ADP matches` : "";
+  const importText = personalAdpIsActive() ? ` · ${state.personalAdpMatches} personal ADP matches` : "";
   ui.boardSummary.textContent = `Showing ${state.visibleRows.length} of ${allRows.length} players · ${draftedCount} drafted${importText} · click any heading to sort`;
   updateAdpMode();
   ui.emptyState.classList.toggle("hidden", state.visibleRows.length !== 0);

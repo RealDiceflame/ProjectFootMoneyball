@@ -77,19 +77,6 @@ def calculate_market_expected_points(ranking: pd.DataFrame) -> pd.Series:
     return expected
 
 
-def matching_adp_providers(
-    *, teams: int, qb_starters: int, base_ppr: float, te_premium: float
-) -> tuple[str, ...]:
-    """Return only sources that match the selected league settings."""
-    if teams != 12 or qb_starters != 1 or te_premium != 0:
-        return ()
-    if base_ppr == 0.5:
-        return ("Yahoo", "Sleeper")
-    if base_ppr == 1.0:
-        return ("NFL", "MFL")
-    return ()
-
-
 def build_draft_ranking(
     df: pd.DataFrame,
     *,
@@ -118,30 +105,16 @@ def build_draft_ranking(
         base_ppr=base_ppr,
         te_premium=te_premium,
     )
-    matching_providers = matching_adp_providers(
-        teams=teams,
-        qb_starters=qb_starters,
-        base_ppr=base_ppr,
-        te_premium=te_premium,
-    )
     for provider in ADP_PROVIDERS:
         ranking[provider] = pd.to_numeric(ranking.get(provider), errors="coerce")
-        if provider not in matching_providers:
-            ranking[provider] = pd.NA
-    if matching_providers:
-        market = ranking.loc[:, list(matching_providers)].apply(
-            pd.to_numeric, errors="coerce"
-        )
-        ranking["adp"] = market.mean(axis=1)
-        ranking["source_count"] = market.notna().sum(axis=1)
-        ranking["adp_spread"] = market.max(axis=1) - market.min(axis=1)
-        ranking["adp_stddev"] = market.std(axis=1, ddof=1)
-        ranking.loc[ranking["source_count"] < 2, ["adp_spread", "adp_stddev"]] = pd.NA
-    else:
-        ranking["adp"] = pd.NA
-        ranking["source_count"] = 0
-        ranking["adp_spread"] = pd.NA
-        ranking["adp_stddev"] = pd.NA
+    market = ranking.loc[:, list(ADP_PROVIDERS)].apply(
+        pd.to_numeric, errors="coerce"
+    )
+    ranking["adp"] = market.mean(axis=1)
+    ranking["source_count"] = market.notna().sum(axis=1)
+    ranking["adp_spread"] = market.max(axis=1) - market.min(axis=1)
+    ranking["adp_stddev"] = market.std(axis=1, ddof=1)
+    ranking.loc[ranking["source_count"] < 2, ["adp_spread", "adp_stddev"]] = pd.NA
     ranking["market_expected_points"] = calculate_market_expected_points(ranking)
     ranking["market_value"] = ranking["projected_points"] - ranking["market_expected_points"]
 

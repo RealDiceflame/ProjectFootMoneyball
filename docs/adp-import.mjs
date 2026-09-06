@@ -141,7 +141,7 @@ export function inspectAdpText(text) {
 export function buildPersonalAdp(
   parsed,
   column,
-  { fileName = "Imported ADP", snapshotDate = "", rankingSlug = "", formatLabel = "" } = {},
+  { fileName = "Imported ADP", snapshotDate = "" } = {},
 ) {
   const candidate = parsed.candidates.find(item => item.header === column);
   if (!candidate) throw new Error("Choose an ADP column from the selected file.");
@@ -160,13 +160,11 @@ export function buildPersonalAdp(
   }
   if (!entries.length) throw new Error(`The ${column} column has no usable ADP values.`);
   return {
-    version: 2,
+    version: 3,
     fileName,
     column,
     provider: candidate.provider,
     snapshotDate,
-    rankingSlug,
-    formatLabel,
     importedAt: new Date().toISOString(),
     entries,
   };

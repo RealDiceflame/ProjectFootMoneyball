@@ -2,7 +2,7 @@
 
 ## Use the web draft board
 
-Open <https://outlierbaseline.com/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, rookie and current-injury labels, and source-linked player intel. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, and matched ESPN headlines. Default market values use only ADP sources that match the selected format; unsupported formats display **No market** until a matching private file is imported. Sources and ADP SD show evidence count and standard deviation. Imported data stays in that browser, is bound to the selected format, and is never uploaded. A separate Kicker & D/ST page compares the current Sleeper, ESPN, and MyFantasyLeague markets. Desktop downloads remain available under GitHub Releases.
+Open <https://outlierbaseline.com/> in any modern browser. The website supports every team-count, QB, PPR, and TE-premium ranking combination, persistent drafted-player markers, column filters, sorting, CSV export, rookie and current-injury labels, and source-linked player intel. Click a player name to see current roster status, depth position, material arrivals/departures, injury data, and matched ESPN headlines. Every available Yahoo, Sleeper, ESPN, and MyFantasyLeague value remains visible on every board; only a provider that lacks a player is blank. Sources and ADP SD show evidence count and standard deviation. Imported data stays in that browser, works across league settings, and is never uploaded. A separate Kicker & D/ST page compares the current Sleeper, ESPN, and MyFantasyLeague markets. Desktop downloads remain available under GitHub Releases.
 
 ## Automatic site updates (no API key)
 
@@ -39,7 +39,7 @@ python update_player_intel.py --limit 50
 python update_player_intel.py --player "Josh Allen"
 ```
 
-A football-intelligence application that combines NFL season stats, rookie betting-line projections, and five-source market ADP. It produces interactive rankings for 8–16 teams, 1QB/2QB, Standard/Half/Full PPR, and optional TE premium scoring. Market +/- shows projected fantasy points above or below the same-position regression expectation at a player's consensus ADP; VORP remains the separate comparison with the replacement player. Sources counts the available ADP feeds and Spread measures their disagreement. Draft tags use Market +/-: TARGET is +50 points, VALUE is +25 to +49.9, FAIR is -19.9 to +24.9, and REACH is -20 or worse. A current risk signal overrides the market tier with RISK; a team change with no other material update becomes NEW TEAM.
+A football-intelligence application that combines NFL season stats, rookie betting-line projections, and four-source market ADP. It produces interactive rankings for 8–16 teams, 1QB/2QB, Standard/Half/Full PPR, and optional TE premium scoring. Market +/- shows projected fantasy points above or below the same-position regression expectation at a player's consensus ADP; VORP remains the separate comparison with the replacement player. Sources counts the available ADP feeds and Spread measures their disagreement. Draft tags use Market +/-: TARGET is +50 points, VALUE is +25 to +49.9, FAIR is -19.9 to +24.9, and REACH is -20 or worse. A current risk signal overrides the market tier with RISK; a team change with no other material update becomes NEW TEAM.
 
 ## Run the desktop application
 
@@ -128,7 +128,7 @@ Pytest is configured to ignore archived copies and generated build folders.
 ## Data sources
 
 - NFL season totals: nflverse player-stat releases
-- ADP: direct Sleeper, ESPN, and MyFantasyLeague feeds, plus the last authorized Yahoo snapshot; market calculations use only format-matched sources
+- ADP: direct Sleeper, ESPN, and MyFantasyLeague feeds, plus the last authorized Yahoo snapshot; each provider stays visible when it has a value and the consensus uses all available values
 - Rookie projections: betting-line inputs blended with historical position profiles
 
 Review each provider's usage and redistribution terms before distributing refreshed source data.
