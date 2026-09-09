@@ -36,14 +36,16 @@ jobs:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
           SPORTSGAMEODDS_API_KEY: ${{ secrets.SPORTSGAMEODDS_API_KEY }}
         run: python update_odds_board.py
+      - name: Build the survivor matrix and team ratings
+        run: python update_survivor_board.py
       - name: Publish updated site data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/ADP/combined_adp_2026.csv data/ADP/special_teams_adp_2026.csv docs/data/rankings.json docs/data/special_teams.json docs/data/player_news.json docs/data/player_history.json docs/data/nfl_odds.json
+          git add data/ADP/combined_adp_2026.csv data/ADP/special_teams_adp_2026.csv docs/data/rankings.json docs/data/special_teams.json docs/data/player_news.json docs/data/player_history.json docs/data/nfl_odds.json docs/data/survivor.json
           if git diff --cached --quiet; then
             echo "The published site data is already current."
           else
-            git commit -m "Update ADP, rankings, player news, and odds"
+            git commit -m "Update ADP, rankings, player news, odds, and survivor model"
             git push
           fi

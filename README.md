@@ -27,6 +27,20 @@ python update_player_history.py
 
 You can also open **Actions → Update site data → Run workflow** on GitHub at any time. The scheduled workflow handles daylight-saving changes automatically and publishes changed ADP, rankings, and news files to the website.
 
+## Survivor Lab (experimental)
+
+Open <https://outlierbaseline.com/survivor.html> for a 32-team, 18-week survivor matrix, used-team tracking, saved weekly picks, configurable planning window and tie rule, and 20,000-trial path comparisons. One pick per week and no team reuse are enforced; byes and started games cannot be selected. Plans stay in browser storage, separately for each season, and are not submitted to an external pool.
+
+`python update_survivor_board.py` builds `docs/data/survivor.json`. The existing four-times-daily update workflow runs this after the odds refresh. Visitors load this static snapshot, not an API. Download or validation failures retain the prior survivor snapshot.
+
+Team Baseline v1 is separate from fantasy scoring. It fits opponent-adjusted scoreboard offense/defense ratings with ridge regularization to three prior seasons plus completed current-season games, weighted with a 365-day half-life. Positive defense means points prevented. Home field is estimated with a two-point prior; neutral sites receive no advantage. Margin residual variation and a smoothed tie rate translate score estimates into experimental win probabilities. Missing scores and games less than six hours past kickoff are excluded from training. Completed games do not receive retrospective forecasts. A two-season historical check refits before each week and reports home-win Brier error versus 50/50; it is a diagnostic, not proof of calibration or profitability.
+
+The path planner uses rectangular assignment to maximize the product of weekly survival probabilities while preserving used teams and existing picks. Simulations share each game's outcome across plans and include ties. Weeks are assumed independent and current team strengths are held fixed. This is estimated survival through the selected window, **not** probability of winning a pool against other entrants. Injuries, personnel/roster changes, coaching schemes, opponent-adjusted play-by-play efficiency, and adaptive strategies are future layers; missing injury data never means healthy. Fantasy scoring formats do not change survivor estimates.
+
+The market comparison uses paired, same-book licensed sportsbook moneylines within 48 hours, only for upcoming games within eight days. It removes margin within each pair and takes the median non-tie share. Incomplete, stale, exchange, or undated reference coverage stays blank. Market prices are not inputs to Team Baseline v1.
+
+Tests: `python -m pytest tests/test_survivor.py` and `node --test tests/survivor_model.test.mjs`.
+
 ## Weekly odds board
 
 `odds.html` starts with upcoming nflverse schedules and consensus reference lines, public NFL contracts from Kalshi and Polymarket, and source-linked team logos. Polymarket's public Gamma API supplies the prediction-market panel and each matchup's main moneyline, spread, and total. It does not scrape DraftKings, FanDuel, or another sportsbook website.

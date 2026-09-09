@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071d18">
+  <meta name="description" content="Plan your NFL survivor picks with a weekly win-probability matrix, team offense and defense ratings, and season-path simulations.">
+  <link rel="canonical" href="https://outlierbaseline.com/survivor.html">
+  <title>Survivor Lab | OutlierBaseline</title>
+  <link rel="stylesheet" href="styles.css?v=20260909-history10">
+  <link rel="stylesheet" href="survivor.css?v=1">
+</head>
+<body class="survivor-page">
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="OutlierBaseline home"><span class="brand-mark" aria-hidden="true">OB</span><span><strong>OutlierBaseline</strong><small>Football intelligence lab</small></span></a>
+    <nav class="topnav" aria-label="Analytics pages">
+      <a href="./">Player rankings</a><a href="projection.html">Projection Lab</a><a href="survivor.html" class="active" aria-current="page">Survivor Lab</a><a href="special-teams.html">Kickers &amp; D/ST</a><a href="odds.html">Weekly odds</a>
+    </nav>
+    <div class="source-status" id="survivor-status" role="status">Loading team estimates…</div>
+  </header>
+  <main>
+    <section class="survivor-hero">
+      <div><p class="eyebrow">Survivor Lab · Experimental</p><h1>Pick this week.<br>Plan for the next.</h1><p>One team each week. No repeats. Explore the entire schedule before spending your strongest teams.</p></div>
+      <div class="survivor-version"><span>TEAM BASELINE v1</span><strong>32 teams. One path.</strong><p>NFL scoring estimates—not fantasy points. Injuries, roster changes, and schemes are not yet modeled.</p></div>
+    </section>
+    <p id="survivor-error" role="alert" hidden></p>
+    <noscript>This page needs JavaScript for the survivor matrix and simulations.</noscript>
+    <div id="survivor-content" hidden>
+      <section class="survivor-panel" aria-labelledby="rules-heading">
+        <div class="survivor-heading"><div><p class="eyebrow">Your pool</p><h2 id="rules-heading">Set the planning window</h2></div><p id="save-status">Saved only in this browser.</p></div>
+        <div class="survivor-controls">
+          <label>First week<select id="start-week"></select></label>
+          <label>Last week<select id="end-week"></select></label>
+          <label>Tie rule<select id="tie-rule"><option value="lose">A tie eliminates you</option><option value="survive">A tie keeps you alive</option></select></label>
+          <button id="fill-plan" class="survivor-primary" type="button">Fill empty weeks</button>
+          <button id="clear-plan" type="button">Clear picks in this window</button>
+        </div>
+        <details class="used-details"><summary>Teams you have already used <span id="used-count"></span></summary><p>Mark previous picks here. A used team cannot be selected again. Marking one removes it from your planned picks.</p><div id="used-teams" class="used-teams"></div></details>
+        <p id="plan-message" class="survivor-message" role="status" aria-live="polite"></p>
+      </section>
+      <section class="survivor-panel matrix-panel" aria-labelledby="matrix-heading">
+        <div class="survivor-heading"><div><p class="eyebrow">The season at a glance</p><h2 id="matrix-heading">Weekly survival matrix</h2></div><div class="matrix-legend"><span>Lower chance</span><i aria-hidden="true"></i><span>Higher chance</span></div></div>
+        <p id="matrix-help">Select a cell to pick that team for the week; select it again to remove it. Swipe sideways for later weeks. Percentages use the selected tie rule.</p>
+        <div class="survivor-table-scroll matrix-scroll" tabindex="0" role="region" aria-label="Weekly survivor matrix; scroll horizontally" aria-describedby="matrix-help"><table class="survivor-table survivor-matrix" id="survivor-matrix"></table></div>
+      </section>
+      <section class="survivor-panel" aria-labelledby="path-heading">
+        <div class="survivor-heading"><div><p class="eyebrow">One pick per week</p><h2 id="path-heading">Your planned path</h2></div><button id="simulate-plan" class="survivor-primary" type="button">Compare 20,000 simulations</button></div>
+        <p>Filling empty weeks keeps your existing picks and reserves every team only once. Picks outside this window also reserve their teams. This is a planner, not a pool-entry service.</p>
+        <div id="survival-summary" class="survival-summary"></div>
+        <div class="survivor-table-scroll" tabindex="0" role="region" aria-label="Planned picks"><table class="survivor-table" id="plan-table"></table></div>
+        <div id="simulation-results" aria-live="polite"></div>
+      </section>
+      <section class="survivor-panel">
+        <details><summary>Team offense and defense ratings</summary><p>Points above a league-average team after accounting for opponents and home field. Positive offense adds scoring; positive defense prevents it. These are scoreboard-based team ratings, not individual-player grades.</p><div id="ratings-summary"></div><div class="survivor-table-scroll" tabindex="0" role="region" aria-label="Team ratings"><table class="survivor-table" id="team-ratings"></table></div></details>
+      </section>
+      <section class="survivor-panel survivor-method" aria-labelledby="method-heading">
+        <p class="eyebrow">Know the assumptions</p><h2 id="method-heading">A baseline we can measure and improve</h2>
+        <div id="model-evidence"></div>
+        <p><strong>Team scoring:</strong> Opponent-adjusted offense and defense fitted to regular-season scoreboard points from the prior three seasons and completed current-season games. Recent results get more weight (365-day half-life); ratings are pulled toward league average. Neutral sites have no home advantage. Scores are treated as completed only when present and at least six hours past kickoff.</p>
+        <p><strong>Win estimates:</strong> Expected point margin is compared with historical margin variation. A small, smoothed historical tie rate is included. Conditional win estimates are bounded at 2.5–97.5%. These experimental probabilities are not calibrated guarantees; future weeks use today's team strengths.</p>
+        <p><strong>Planning and simulations:</strong> The suggested path maximizes the product of weekly survival probabilities with no team reuse. Weeks are assumed independent. Simulations sample one shared result per game, including ties, and compare your path against a fresh best path under these same assumptions. They do not model other pool entrants, popularity, adaptive picking, or the chance of winning the whole pool.</p>
+        <p><strong>Market comparison:</strong> Only complete opposing moneylines from the same licensed sportsbook, timestamped within 48 hours, for games within eight days. Bookmaker margin is removed per pair, then the median share is shown. It is conditional on a non-tie, not a guarantee or an input to this model. Missing coverage stays blank; exchanges and undated reference lines are excluded.</p>
+        <p><strong>Next model layers:</strong> Current-season efficiency, verified injury/availability adjustments (starting with quarterbacks), roster and coaching changes, then pass/run tendencies and defensive personnel. Individual defenders and scheme adjustments are not included yet. No injury data does not mean a team is healthy.</p>
+        <p>Data is refreshed through the site's existing four-times-daily update workflow. Reloading this page reads a saved snapshot; it does not spend sportsbook API credits. Schedules can change—confirm kickoff and your pool's lock rules.</p>
+        <p><a href="https://github.com/nflverse/nfldata/blob/master/data/games.csv" target="_blank" rel="noopener noreferrer">Source: nflverse schedules and results ↗</a> · <a href="odds.html">View weekly odds</a></p>
+      </section>
+    </div>
+  </main>
+  <footer><p>OutlierBaseline · Research, not certainty. No guaranteed outcomes. If you play for money, set a limit you can afford to lose.</p></footer>
+  <script type="module" src="survivor.js?v=1"></script>
+</body>
+</html>
