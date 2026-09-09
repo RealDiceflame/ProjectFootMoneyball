@@ -4,7 +4,7 @@ import {
   historyRows,
   normalizeHistoryName,
   sampleStandardDeviation,
-} from "./player-history.mjs?v=20260909-history10";
+} from "./player-history.mjs?v=20260909-archive1";
 
 const POSITIONS = ["QB", "RB", "WR", "TE"];
 const RECENCY_WEIGHTS = [5, 3, 2];
@@ -66,29 +66,37 @@ export function reportForPlayer(newsBundle, player) {
 
 export function buildPositionSamples(players, historyBundle, newsBundle, settings) {
   const reports = reportLookup(newsBundle);
+  const rankedByKey = new Map((players || []).map(player => [historyKey(player), player]));
   const samples = [];
   const seen = new Set();
-  for (const player of players || []) {
+  for (const [key, record] of Object.entries(historyBundle?.players || {})) {
+    // Older bundles rely on board metadata; newer ones include retired players.
+    const player = { ...rankedByKey.get(key), ...record, history_key: key };
+    if (!player.player || !POSITIONS.includes(String(player?.pos || "").toUpperCase())) continue;
     const identity = playerIdentity(player);
-    if (seen.has(identity) || !POSITIONS.includes(String(player?.pos || "").toUpperCase())) continue;
-    seen.add(identity);
     const report = reports.get(identity)
       || reports.get(`listed:${String(player?.player || "").trim().toLocaleLowerCase()}|${String(player?.listed_team || player?.team || "").toUpperCase()}`);
-    const birthDate = report?.birth_date;
+    const birthDate = player.birth_date || report?.birth_date;
     if (!birthDate) continue;
     for (const row of historyRows(historyBundle, player)) {
       const games = numberOrNull(row.games);
       const season = numberOrNull(row.season);
       if (games === null || games < 4 || season === null) continue;
-      const points = fantasyPoints({ ...row, pos: player.pos }, settings);
+      const position = String(row.pos || player.pos).toUpperCase();
+      if (!POSITIONS.includes(position)) continue;
+      const sampleKey = `${identity}|${season}`;
+      if (seen.has(sampleKey)) continue;
+      const points = fantasyPoints({ ...row, pos: position }, settings);
       const pointsPerGame = points / games;
       const age = ageOnSeptemberFirst(birthDate, season);
       if (!Number.isFinite(pointsPerGame) || !Number.isFinite(age) || age < 20 || age > 45) continue;
+      seen.add(sampleKey);
       samples.push({
         player: player.player,
         player_id: player.player_id || null,
         identity,
-        pos: String(player.pos).toUpperCase(),
+        pos: position,
+        is_historical: record.is_ranked === false,
         season,
         age,
         games,
@@ -184,7 +192,8 @@ export function projectPlayer(player, historyBundle, newsBundle, settings, proje
   const report = context?.reports
     ? reportFromLookup(context.reports, player)
     : reportForPlayer(newsBundle, player);
-  const age = ageOnSeptemberFirst(report?.birth_date, projectionSeason);
+  const birthDate = historyBundle?.players?.[historyKey(player)]?.birth_date || report?.birth_date;
+  const age = ageOnSeptemberFirst(birthDate, projectionSeason);
   const seasons = playerSeasonRows(player, historyBundle, settings);
   const existingProjection = numberOrNull(player?.projected_points);
   const allSamples = samples || buildPositionSamples([player], historyBundle, newsBundle, settings);
@@ -196,7 +205,7 @@ export function projectPlayer(player, historyBundle, newsBundle, settings, proje
     if (existingProjection === null) return null;
     return {
       age,
-      birth_date: report?.birth_date || null,
+      birth_date: birthDate || null,
       projected_ppg: existingProjection / 17,
       projected_points: existingProjection,
       projected_17_game_pace: existingProjection,
@@ -221,7 +230,9 @@ export function projectPlayer(player, historyBundle, newsBundle, settings, proje
   const recentPpg = weightedAverage(recent, "fantasy_points_per_game");
   const recentGames = weightedAverage(recent, "games");
   const evidenceGames = recent.reduce((total, season) => total + Math.min(season.games, 17), 0);
-  const ageChange = ageChangeFactor(allSamples, String(player.pos).toUpperCase(), age);
+  const ageKey = `${position}|${age}`;
+  const ageChange = context?.ageChanges?.get(ageKey) || ageChangeFactor(allSamples, position, age);
+  context?.ageChanges?.set(ageKey, ageChange);
   const ageAdjustedPpg = recentPpg * ageChange.factor;
   const reliability = Math.min(0.9, 0.75 + (Math.min(evidenceGames, 51) / 51) * 0.15);
   const projectedPpg = cohort?.mean === null || cohort?.mean === undefined
@@ -240,7 +251,7 @@ export function projectPlayer(player, historyBundle, newsBundle, settings, proje
 
   return {
     age,
-    birth_date: report?.birth_date || null,
+    birth_date: birthDate || null,
     projected_ppg: projectedPpg,
     projected_points: projectedPoints,
     projected_17_game_pace: projectedPpg * 17,
@@ -295,6 +306,7 @@ export function applyProjectionModel(rows, historyBundle, newsBundle, settings, 
   const samples = buildPositionSamples(baseRows, historyBundle, newsBundle, settings);
   const context = {
     reports: reportLookup(newsBundle),
+    ageChanges: new Map(),
     curves: Object.fromEntries(POSITIONS.map(position => [position, positionAgeCurve(samples, position)])),
   };
   const modeled = baseRows.map(row => {

@@ -29,7 +29,7 @@
       <div>
         <p class="eyebrow">OutlierBaseline Projection Lab</p>
         <h1>Project the next season—not the last one again.</h1>
-        <p id="projection-history-copy">Compare a player with every same-position season in the maintained ten-season history. Recent production sets the baseline, position-specific aging adjusts the scoring rate, and expected games turns it into a season projection.</p>
+        <p id="projection-history-copy">Compare current and historical players across ten seasons of NFL production. Recent form, position-specific aging, and expected games shape the next season's projections.</p>
       </div>
       <div class="model-version" aria-label="Model version">
         <span>Current model</span>
@@ -103,6 +103,8 @@
           <article><strong>3</strong><h3>Expected games</h3><p>Recent availability is blended with a healthy-season baseline instead of assuming everyone plays all 17 games.</p></article>
           <article><strong>4</strong><h3>Uncertainty</h3><p>Player history and the same-position age group create the displayed one-standard-deviation range.</p></article>
         </div>
+        <p id="historical-pool-note" class="model-caveat">Historical player records include recently retired players. The last recorded season describes the available statistics.</p>
+        <p class="model-caveat">Historical statistics and player identities: <a href="https://github.com/nflverse/nflverse-data">nflverse</a>.</p>
         <p class="model-caveat">This first version intentionally does not guess coaching changes, depth-chart usage, offensive efficiency, or strength of schedule. Those become separate, visible model inputs rather than hidden adjustments.</p>
       </section>
     </div>
@@ -111,6 +113,6 @@
   </main>
 
   <footer><span>OutlierBaseline · Age Curve v1</span><a href="./">Use these projections on the live rankings board</a></footer>
-  <script type="module" src="projection.js?v=20260909-history10"></script>
+  <script type="module" src="projection.js?v=20260909-archive1"></script>
 </body>
 </html>

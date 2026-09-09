@@ -4,9 +4,9 @@ import {
   inspectAdpText,
   recalculateMarketMetrics,
 } from "./adp-import.mjs";
-import { historyAnalytics, historyRows, historyWindow } from "./player-history.mjs?v=20260909-history10";
+import { historyAnalytics, historyRows, historyWindow } from "./player-history.mjs?v=20260909-archive1";
 import { mergeSpecialTeams, specialTeamRows } from "./live-board.mjs";
-import { applyProjectionModel } from "./projection-model.mjs?v=20260909-history10";
+import { applyProjectionModel } from "./projection-model.mjs?v=20260909-archive1";
 
 const DATA_URL = "./data/rankings.json";
 const INTEL_URL = "./data/player_intel.json";
@@ -1378,7 +1378,7 @@ async function loadRankings() {
       ? `${state.news.player_count} player news feeds`
       : "news feed awaiting update";
     const historyStatus = state.history.player_count
-      ? `${historyWindow(state.history).label} · ${state.history.player_count} player stat histories`
+      ? `${historyWindow(state.history).label} · ${state.history.player_count} player histories (${state.history.historical_player_count || 0} historical)`
       : "stat history awaiting update";
     state.defaultSourceStatus = `${data.projection_season} Age Curve v1 · ${formatAdpStatus(data)} · ${newsStatus} · ${historyStatus} · ${intelStatus}`;
     ui.sourceStatus.textContent = state.defaultSourceStatus;

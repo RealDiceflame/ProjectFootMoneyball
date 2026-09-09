@@ -90,3 +90,45 @@ test("re-ranks modeled players and summarizes season points by draft round", () 
   assert.equal(secondRoundRb.count, 1);
   assert.ok(Number.isFinite(firstRoundRb.mean));
 });
+
+test("historical careers contribute to age curves without entering the live draft board", () => {
+  const expanded = structuredClone(history);
+  expanded.players["id:past-runner"] = {
+    player: "Past Runner", player_id: "past-runner", pos: "RB", birth_date: "1994-01-01", is_ranked: false,
+    seasons: [[2021, "BUF", 16, 1000, 8, 40, 300, 2, 0], [2020, "BUF", 16, 1400, 10, 40, 400, 2, 0]],
+  };
+  expanded.players["id:unknown-birthday"] = {
+    player: "Unknown Birthday", player_id: "unknown-birthday", pos: "RB", is_ranked: false,
+    seasons: [[2021, "BUF", 16, 1000, 8, 40, 300, 2, 0]],
+  };
+  const model = applyProjectionModel(players, expanded, news, settings, 2026);
+  const pastSamples = model.samples.filter(row => row.identity === "id:past-runner");
+  assert.equal(pastSamples.length, 2);
+  assert.deepEqual(pastSamples.map(row => row.age), [27, 26]);
+  assert.ok(pastSamples.every(row => row.is_historical));
+  assert.equal(model.samples.length, 6);
+  assert.equal(model.rows.length, players.length);
+  assert.ok(model.rows.every(row => row.player_id !== "past-runner"));
+  assert.ok(ageChangeFactor(pastSamples, "RB", 27).factor < 1);
+  assert.ok(!model.samples.some(row => row.identity === "id:past-runner" && row.season > 2021));
+});
+
+test("archive identities supply birth dates and season positions without double counting", () => {
+  const expanded = structuredClone(history);
+  expanded.players["id:runner-1"] = {
+    ...expanded.players["id:runner-1"], ...players[0], birth_date: "2001-02-14", is_ranked: true,
+  };
+  expanded.players["name:runnerone|RB"] = expanded.players["id:runner-1"];
+  assert.equal(buildPositionSamples(players, expanded, news, settings).length, 4);
+  assert.equal(projectPlayer(players[0], expanded, {}, settings, 2026).age, 25);
+  const changedPosition = {
+    columns: ["season", "team", "games", "receptions", "receiving_yards", "pos"],
+    players: { "id:hybrid": {
+      player: "Hybrid", player_id: "hybrid", pos: "TE", birth_date: "1990-01-01", is_ranked: false,
+      seasons: [[2021, "BUF", 16, 50, 500, "TE"], [2020, "BUF", 16, 50, 500, "QB"]],
+    } },
+  };
+  const samples = buildPositionSamples([], changedPosition, {}, { ppr: "Half PPR", tePremium: "+0.5" });
+  assert.deepEqual(samples.map(row => row.pos), ["TE", "QB"]);
+  assert.deepEqual(samples.map(row => row.fantasy_points), [100, 75]);
+});

@@ -1,10 +1,10 @@
-import { historyWindow, sampleStandardDeviation } from "./player-history.mjs?v=20260909-history10";
+import { historicalPlayers, historyAnalytics, historyKey, historyRows, historyWindow, sampleStandardDeviation } from "./player-history.mjs?v=20260909-archive1";
 import {
   applyProjectionModel,
   POSITIONS,
   positionAgeCurve,
   roundPositionExpectations,
-} from "./projection-model.mjs?v=20260909-history10";
+} from "./projection-model.mjs?v=20260909-archive1";
 
 const DATA_URL = "./data/rankings.json";
 const HISTORY_URL = "./data/player_history.json";
@@ -23,6 +23,7 @@ const ui = {
   content: document.querySelector("#projection-content"),
   error: document.querySelector("#projection-error"),
   historyCopy: document.querySelector("#projection-history-copy"),
+  archiveNote: document.querySelector("#historical-pool-note"),
   ageHeading: document.querySelector("#age-curve-heading"),
   ageSummary: document.querySelector("#age-curve-summary"),
   ageChart: document.querySelector("#age-chart"),
@@ -45,6 +46,7 @@ const state = {
   position: POSITIONS.includes(params.get("pos")) ? params.get("pos") : "RB",
   player: params.get("player") || "",
   rows: [],
+  historical: [],
   samples: [],
 };
 
@@ -118,8 +120,10 @@ function withTooltip(node, text) {
 }
 
 function selectedPlayer() {
-  return state.rows.find(row => row.pos === state.position && row.player === state.player)
-    || state.rows.find(row => row.pos === state.position)
+  const choices = [...state.rows, ...state.historical].filter(row => row.pos === state.position);
+  return choices.find(row => (row.history_key || historyKey(row)) === state.player)
+    || choices.find(row => row.player === state.player)
+    || choices[0]
     || null;
 }
 
@@ -132,9 +136,22 @@ function renderPlayerOptions() {
   const choices = state.rows
     .filter(row => row.pos === state.position)
     .sort((left, right) => left.overall_rank - right.overall_rank);
-  const preferred = choices.some(row => row.player === state.player) ? state.player : choices[0]?.player || "";
-  state.player = preferred;
-  ui.player.replaceChildren(...choices.map(row => new Option(`${row.player} · ${row.position_rank}`, row.player, false, row.player === preferred)));
+  const historical = state.historical.filter(row => row.pos === state.position);
+  const preferred = selectedPlayer();
+  state.player = preferred ? preferred.history_key || historyKey(preferred) : "";
+  const groups = [];
+  for (const [label, rows] of [["Current draft board", choices], ["Historical players", historical]]) {
+    if (!rows.length) continue;
+    const group = document.createElement("optgroup");
+    group.label = label;
+    group.append(...rows.map(row => {
+      const key = row.history_key || historyKey(row);
+      const detail = row.is_historical ? `last recorded ${row.last_recorded_season}` : row.position_rank;
+      return new Option(`${row.player} · ${detail}`, key, false, key === state.player);
+    }));
+    groups.push(group);
+  }
+  ui.player.replaceChildren(...groups);
 }
 
 function metricCard(label, value, detail, tone = "") {
@@ -153,6 +170,19 @@ function metricCard(label, value, detail, tone = "") {
 function renderPlayerCards(player) {
   if (!player) {
     ui.playerCards.replaceChildren();
+    return;
+  }
+  if (player.is_historical) {
+    const analytics = historyAnalytics(historyRows(state.history, player), player, state.settings);
+    const latest = analytics.seasons[0];
+    const best = [...analytics.seasons].sort((left, right) => right.fantasy_points - left.fantasy_points)[0];
+    ui.playerCards.replaceChildren(
+      metricCard("Last recorded season", String(player.last_recorded_season), "Historical comparison", "featured"),
+      metricCard("Season points", latest?.fantasy_points.toFixed(1) || "—", `${latest?.season} · ${latest?.team} · ${latest?.games} games`),
+      metricCard("Best recorded season", best?.fantasy_points.toFixed(1) || "—", `${best?.season} · ${state.settings.ppr}`),
+      metricCard("Seasons in archive", String(analytics.seasons.length), historyWindow(state.history).range),
+      metricCard("Scoring variation", analytics.player_stddev?.toFixed(1) || "—", "Season-to-season PPG standard deviation"),
+    );
     return;
   }
   const adjustment = numeric(player.age_adjustment_pct);
@@ -213,15 +243,17 @@ function renderAgeChart(player) {
   const lower = [...curve].reverse().map(point => `${x(point.age)},${y(Math.max(0, point.mean - (point.stddev || 0)))}`);
   svg.append(svgNode("polygon", { class: "model-curve-band", points: [...upper, ...lower].join(" ") }));
 
+  const selectedRecord = player && state.history.players[player.history_key || historyKey(player)];
+  const selectedIdentity = player ? historyKey(selectedRecord || player) : null;
   samples.forEach((sample, index) => {
-    const isSelected = player && (sample.identity === (player.player_id ? `id:${player.player_id}` : "") || sample.player === player.player);
+    const isSelected = sample.identity === selectedIdentity;
     const jitter = ((index % 7) - 3) * 1.4;
     svg.append(withTooltip(svgNode("circle", {
       class: isSelected ? "model-player-season selected" : "model-player-season",
       cx: x(sample.age) + jitter,
       cy: y(sample.fantasy_points_per_game),
       r: isSelected ? 6 : 3.2,
-    }), `${sample.player}, age ${sample.age} (${sample.season}): ${sample.fantasy_points_per_game.toFixed(1)} FPTS/G in ${sample.games} games`));
+    }), `${sample.player}, age ${sample.age} (${sample.season}): ${sample.fantasy_points_per_game.toFixed(1)} FPTS/G in ${sample.games} games${sample.is_historical ? " · historical pool" : ""}`));
   });
 
   const linePoints = curve.map(point => `${x(point.age)},${y(point.mean)}`).join(" ");
@@ -302,22 +334,31 @@ function renderRoundMap() {
   ui.roundMap.replaceChildren(table);
 }
 
+function renderSelectedPlayer() {
+  const player = selectedPlayer();
+  const sampleCount = state.samples.filter(sample => sample.pos === state.position).length;
+  ui.ageHeading.textContent = `${state.position} production by age`;
+  if (player?.is_historical) {
+    ui.ageSummary.textContent = `${player.player}'s recorded seasons are highlighted. Last recorded NFL season: ${player.last_recorded_season}. Compare with ${sampleCount} qualifying ${state.position} player-seasons from the ${historySampleDescription()}.`;
+  } else {
+    ui.ageSummary.textContent = player
+      ? `${player.player} is projected for ${numeric(player.projected_ppg)?.toFixed(1) || "—"} points per game at age ${numeric(player.age) === null ? "unknown" : Math.round(player.age)}. The faded dots show ${sampleCount} qualifying ${state.position} player-seasons from the ${historySampleDescription()}, including historical players.`
+      : `No ${state.position} player is available for this format.`;
+  }
+  renderAgeChart(player);
+  renderPlayerCards(player);
+  syncUrl();
+}
+
 function render() {
   const modeled = applyProjectionModel(boardRows(), state.history, state.news, state.settings, state.data.projection_season);
   state.rows = modeled.rows;
   state.samples = modeled.samples;
+  state.historical = historicalPlayers(state.history, state.rows);
   renderPlayerOptions();
-  const player = selectedPlayer();
-  state.player = player?.player || "";
-  ui.ageHeading.textContent = `${state.position} production by age`;
-  ui.ageSummary.textContent = player
-    ? `${player.player} is projected for ${numeric(player.projected_ppg)?.toFixed(1) || "—"} points per game at age ${numeric(player.age) === null ? "unknown" : Math.round(player.age)}. The faded dots are every qualifying ${state.position} season in the ${historySampleDescription()}.`
-    : `No ${state.position} player is available for this format.`;
-  renderAgeChart(player);
-  renderPlayerCards(player);
+  renderSelectedPlayer();
   renderPositionVariance();
   renderRoundMap();
-  syncUrl();
 }
 
 function connectControls() {
@@ -339,13 +380,7 @@ function connectControls() {
   });
   ui.player.addEventListener("change", () => {
     state.player = ui.player.value;
-    const player = selectedPlayer();
-    ui.ageSummary.textContent = player
-      ? `${player.player} is projected for ${numeric(player.projected_ppg)?.toFixed(1) || "—"} points per game at age ${numeric(player.age) === null ? "unknown" : Math.round(player.age)}. The faded dots are every qualifying ${state.position} season in the ${historySampleDescription()}.`
-      : "Select a player to compare.";
-    renderAgeChart(player);
-    renderPlayerCards(player);
-    syncUrl();
+    renderSelectedPlayer();
   });
 }
 
@@ -366,9 +401,12 @@ async function load() {
     const historyPhrase = historyCoverage.count
       ? `${historyCoverage.count}-season history (${historyCoverage.range})`
       : "available history";
-    ui.historyCopy.textContent = `Compare a player with every same-position season in the maintained ${historyPhrase}. Recent production sets the baseline, position-specific aging adjusts the scoring rate, and expected games turns it into a season projection.`;
+    ui.historyCopy.textContent = `Compare current and historical players across the maintained ${historyPhrase}. Recent production sets the baseline, position-specific aging adjusts the scoring rate, and expected games turns it into a season projection.`;
     render();
-    ui.status.textContent = `${state.data.projection_season} model · ${historyCoverage.label} · ${state.samples.length} qualifying player-seasons`;
+    ui.status.textContent = `${state.data.projection_season} model · ${historyCoverage.label} · ${state.samples.length} qualifying player-seasons · ${state.historical.length} historical players`;
+    ui.archiveNote.textContent = state.historical.length
+      ? `The comparison pool includes ${state.historical.length} players outside today's draft board with NFL stats since ${state.history.historical_since_season}, including recently retired players. Select one under Historical players to explore their recorded production. Last recorded season does not confirm a retirement date. Age curves require a known birth date and at least four games in a season; aging changes require six games in each consecutive season. Seasons after a player stops playing are not treated as zero-point seasons.`
+      : "Historical player records are awaiting the next data refresh.";
     ui.loading.classList.add("hidden");
     ui.content.classList.remove("hidden");
   } catch (error) {

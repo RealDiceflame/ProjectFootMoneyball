@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   fantasyPoints,
+  historicalPlayers,
   historyAnalytics,
   historyKey,
   historyRows,
@@ -79,4 +80,15 @@ test("handles limited history without inventing a player standard deviation", ()
   assert.equal(analytics.volatility_score, 20);
   assert.deepEqual(analytics.basis, ["market"]);
   assert.equal(volatilityLabel(null), "Not rated");
+});
+
+test("historical player choices keep distinct identities and exclude current players", () => {
+  const bundle = { players: {
+    "id:current": { player: "Same Name", player_id: "current", pos: "WR", is_ranked: true },
+    "id:past": { player: "Same Name", player_id: "past", pos: "WR", is_ranked: false },
+    "id:added": { player: "Added Player", player_id: "added", pos: "TE", is_ranked: false },
+  } };
+  const choices = historicalPlayers(bundle, [{ player_id: "added" }]);
+  assert.deepEqual(choices.map(row => row.history_key), ["id:past"]);
+  assert.equal(choices[0].is_historical, true);
 });

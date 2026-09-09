@@ -29,7 +29,7 @@ jobs:
         run: python refresh_draft_board.py --keep-stats --skip-workbook
       - name: Build the player-news timeline
         run: python update_player_news.py
-      - name: Build ten-season player history
+      - name: Build current and historical player archive
         run: python update_player_history.py
       - name: Build the weekly NFL odds board
         env:

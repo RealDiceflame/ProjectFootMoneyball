@@ -11,11 +11,19 @@ export function historyKey(player) {
 }
 
 export function historyRows(bundle, player) {
-  const record = bundle?.players?.[historyKey(player)];
+  const record = bundle?.players?.[player?.history_key || historyKey(player)];
   if (!record?.seasons?.length || !bundle?.columns?.length) return [];
   return record.seasons.map(values => Object.fromEntries(
     bundle.columns.map((column, index) => [column, values[index]]),
   ));
+}
+
+export function historicalPlayers(bundle, rankedPlayers = []) {
+  const rankedKeys = new Set(rankedPlayers.map(historyKey));
+  return Object.entries(bundle?.players || {})
+    .filter(([key, record]) => record.is_ranked === false && record.player && !rankedKeys.has(key) && !rankedKeys.has(historyKey(record)))
+    .map(([key, record]) => ({ ...record, history_key: key, is_historical: true }))
+    .sort((left, right) => left.player.localeCompare(right.player));
 }
 
 export function historyWindow(bundle) {
@@ -78,7 +86,7 @@ export function volatilityLabel(score) {
 
 export function historyAnalytics(rows, player, settings) {
   const seasons = (rows || []).map(row => {
-    const fantasyPointsTotal = fantasyPoints({ ...row, pos: player?.pos }, settings);
+    const fantasyPointsTotal = fantasyPoints({ ...row, pos: row.pos || player?.pos }, settings);
     const games = Number(row.games) || 0;
     const fantasyPointsPerGame = games > 0 ? fantasyPointsTotal / games : null;
     return {

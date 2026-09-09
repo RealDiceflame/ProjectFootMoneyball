@@ -3,7 +3,7 @@
 import argparse
 from pathlib import Path
 
-from app.player_history import DEFAULT_HISTORY_SEASONS, refresh_player_history
+from app.player_history import DEFAULT_HISTORY_SEASONS, DEFAULT_HISTORICAL_LOOKBACK, refresh_player_history
 from config import STAT_SEASON
 
 
@@ -17,12 +17,17 @@ def main():
         default=STAT_SEASON - DEFAULT_HISTORY_SEASONS + 1,
     )
     parser.add_argument("--end-season", type=int, default=STAT_SEASON)
+    parser.add_argument(
+        "--historical-lookback", type=int, default=DEFAULT_HISTORICAL_LOOKBACK,
+        help="Include players outside the board whose last recorded season is within this many years of the end season.",
+    )
     args = parser.parse_args()
     return refresh_player_history(
         args.rankings,
         args.destination,
         start_season=args.start_season,
         end_season=args.end_season,
+        historical_lookback=args.historical_lookback,
     )
 
 
