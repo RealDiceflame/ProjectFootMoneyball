@@ -4,9 +4,9 @@ import {
   inspectAdpText,
   recalculateMarketMetrics,
 } from "./adp-import.mjs";
-import { historyAnalytics, historyRows } from "./player-history.mjs?v=20260906-projection1";
+import { historyAnalytics, historyRows, historyWindow } from "./player-history.mjs?v=20260909-history10";
 import { mergeSpecialTeams, specialTeamRows } from "./live-board.mjs";
-import { applyProjectionModel } from "./projection-model.mjs?v=20260906-projection1";
+import { applyProjectionModel } from "./projection-model.mjs?v=20260909-history10";
 
 const DATA_URL = "./data/rankings.json";
 const INTEL_URL = "./data/player_intel.json";
@@ -889,7 +889,8 @@ function appendPlayerHistory(container, player) {
   const settings = document.createElement("span");
   settings.className = "history-scoring";
   const premium = player.pos === "TE" && state.settings.tePremium === "+0.5" ? " + TE premium" : "";
-  settings.textContent = `${state.settings.ppr}${premium}`;
+  const historyCoverage = historyWindow(state.history);
+  settings.textContent = `${state.settings.ppr}${premium} · ${historyCoverage.range}`;
   headingRow.append(heading, settings);
   section.append(headingRow);
   const projectionSummary = renderProjectionSummary(player);
@@ -901,7 +902,7 @@ function appendPlayerHistory(container, player) {
     empty.className = "history-empty";
     empty.textContent = player.is_rookie
       ? "No NFL regular-season history yet. Rookie projections remain on the draft board."
-      : "No matching regular-season history was found in the five-season data window.";
+      : `No matching regular-season history was found in the ${historyWindow(state.history).range} data window.`;
     section.append(empty);
     container.append(section);
     return;
@@ -1377,7 +1378,7 @@ async function loadRankings() {
       ? `${state.news.player_count} player news feeds`
       : "news feed awaiting update";
     const historyStatus = state.history.player_count
-      ? `${state.history.player_count} player stat histories`
+      ? `${historyWindow(state.history).label} · ${state.history.player_count} player stat histories`
       : "stat history awaiting update";
     state.defaultSourceStatus = `${data.projection_season} Age Curve v1 · ${formatAdpStatus(data)} · ${newsStatus} · ${historyStatus} · ${intelStatus}`;
     ui.sourceStatus.textContent = state.defaultSourceStatus;

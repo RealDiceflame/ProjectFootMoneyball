@@ -7,7 +7,7 @@
   <meta name="description" content="Explore OutlierBaseline fantasy football age curves, player season projections, positional variance, and draft-round scoring expectations.">
   <link rel="canonical" href="https://outlierbaseline.com/projection.html">
   <title>Projection Lab | OutlierBaseline</title>
-  <link rel="stylesheet" href="styles.css?v=20260906-projection1">
+  <link rel="stylesheet" href="styles.css?v=20260909-history10">
 </head>
 <body>
   <header class="topbar">
@@ -29,7 +29,7 @@
       <div>
         <p class="eyebrow">OutlierBaseline Projection Lab</p>
         <h1>Project the next season—not the last one again.</h1>
-        <p>Compare a player with every same-position season in the five-year sample. Recent production sets the baseline, position-specific aging adjusts the scoring rate, and expected games turns it into a season projection.</p>
+        <p id="projection-history-copy">Compare a player with every same-position season in the maintained ten-season history. Recent production sets the baseline, position-specific aging adjusts the scoring rate, and expected games turns it into a season projection.</p>
       </div>
       <div class="model-version" aria-label="Model version">
         <span>Current model</span>
@@ -53,7 +53,7 @@
       </div>
     </section>
 
-    <div id="projection-loading" class="model-loading"><div class="football-loader" aria-hidden="true"></div><strong>Learning from five seasons</strong></div>
+    <div id="projection-loading" class="model-loading"><div class="football-loader" aria-hidden="true"></div><strong>Learning from ten seasons</strong></div>
     <div id="projection-content" class="projection-content hidden">
       <section class="model-panel age-curve-panel" aria-labelledby="age-curve-heading">
         <div class="model-panel-heading">
@@ -111,6 +111,6 @@
   </main>
 
   <footer><span>OutlierBaseline · Age Curve v1</span><a href="./">Use these projections on the live rankings board</a></footer>
-  <script type="module" src="projection.js?v=20260906-projection1"></script>
+  <script type="module" src="projection.js?v=20260909-history10"></script>
 </body>
 </html>

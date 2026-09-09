@@ -4,7 +4,7 @@ import {
   historyRows,
   normalizeHistoryName,
   sampleStandardDeviation,
-} from "./player-history.mjs?v=20260906-projection1";
+} from "./player-history.mjs?v=20260909-history10";
 
 const POSITIONS = ["QB", "RB", "WR", "TE"];
 const RECENCY_WEIGHTS = [5, 3, 2];

@@ -1,10 +1,10 @@
-import { sampleStandardDeviation } from "./player-history.mjs?v=20260906-projection1";
+import { historyWindow, sampleStandardDeviation } from "./player-history.mjs?v=20260909-history10";
 import {
   applyProjectionModel,
   POSITIONS,
   positionAgeCurve,
   roundPositionExpectations,
-} from "./projection-model.mjs?v=20260906-projection1";
+} from "./projection-model.mjs?v=20260909-history10";
 
 const DATA_URL = "./data/rankings.json";
 const HISTORY_URL = "./data/player_history.json";
@@ -22,6 +22,7 @@ const ui = {
   loading: document.querySelector("#projection-loading"),
   content: document.querySelector("#projection-content"),
   error: document.querySelector("#projection-error"),
+  historyCopy: document.querySelector("#projection-history-copy"),
   ageHeading: document.querySelector("#age-curve-heading"),
   ageSummary: document.querySelector("#age-curve-summary"),
   ageChart: document.querySelector("#age-chart"),
@@ -120,6 +121,11 @@ function selectedPlayer() {
   return state.rows.find(row => row.pos === state.position && row.player === state.player)
     || state.rows.find(row => row.pos === state.position)
     || null;
+}
+
+function historySampleDescription() {
+  const window = historyWindow(state.history);
+  return window.count ? `${window.range} history` : "available history";
 }
 
 function renderPlayerOptions() {
@@ -305,7 +311,7 @@ function render() {
   state.player = player?.player || "";
   ui.ageHeading.textContent = `${state.position} production by age`;
   ui.ageSummary.textContent = player
-    ? `${player.player} is projected for ${numeric(player.projected_ppg)?.toFixed(1) || "—"} points per game at age ${numeric(player.age) === null ? "unknown" : Math.round(player.age)}. The faded dots are every qualifying ${state.position} season in the current five-year sample.`
+    ? `${player.player} is projected for ${numeric(player.projected_ppg)?.toFixed(1) || "—"} points per game at age ${numeric(player.age) === null ? "unknown" : Math.round(player.age)}. The faded dots are every qualifying ${state.position} season in the ${historySampleDescription()}.`
     : `No ${state.position} player is available for this format.`;
   renderAgeChart(player);
   renderPlayerCards(player);
@@ -335,7 +341,7 @@ function connectControls() {
     state.player = ui.player.value;
     const player = selectedPlayer();
     ui.ageSummary.textContent = player
-      ? `${player.player} is projected for ${numeric(player.projected_ppg)?.toFixed(1) || "—"} points per game at age ${numeric(player.age) === null ? "unknown" : Math.round(player.age)}. The faded dots are every qualifying ${state.position} season in the current five-year sample.`
+      ? `${player.player} is projected for ${numeric(player.projected_ppg)?.toFixed(1) || "—"} points per game at age ${numeric(player.age) === null ? "unknown" : Math.round(player.age)}. The faded dots are every qualifying ${state.position} season in the ${historySampleDescription()}.`
       : "Select a player to compare.";
     renderAgeChart(player);
     renderPlayerCards(player);
@@ -356,8 +362,13 @@ async function load() {
     [state.data, state.history, state.news] = await Promise.all([
       rankingsResponse.json(), historyResponse.json(), newsResponse.json(),
     ]);
+    const historyCoverage = historyWindow(state.history);
+    const historyPhrase = historyCoverage.count
+      ? `${historyCoverage.count}-season history (${historyCoverage.range})`
+      : "available history";
+    ui.historyCopy.textContent = `Compare a player with every same-position season in the maintained ${historyPhrase}. Recent production sets the baseline, position-specific aging adjusts the scoring rate, and expected games turns it into a season projection.`;
     render();
-    ui.status.textContent = `${state.data.projection_season} model · ${state.history.player_count} player histories`;
+    ui.status.textContent = `${state.data.projection_season} model · ${historyCoverage.label} · ${state.samples.length} qualifying player-seasons`;
     ui.loading.classList.add("hidden");
     ui.content.classList.remove("hidden");
   } catch (error) {

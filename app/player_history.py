@@ -19,6 +19,7 @@ STATS_URL = (
     "https://github.com/nflverse/nflverse-data/releases/download/"
     "stats_player/stats_player_reg_{season}.csv"
 )
+DEFAULT_HISTORY_SEASONS = 10
 HISTORY_COLUMNS = (
     "season",
     "team",
@@ -102,7 +103,12 @@ def build_player_history(
     frames = [frame.copy() for frame in season_frames]
     ranked_players = load_ranked_players(rankings_path, DEFAULT_BOARD)
     players = {}
-    seasons = set()
+    seasons = {
+        int(season)
+        for frame in frames
+        if "season" in frame.columns
+        for season in pd.to_numeric(frame["season"], errors="coerce").dropna().unique()
+    }
 
     for player in ranked_players:
         matched = pd.concat(
@@ -117,7 +123,6 @@ def build_player_history(
         for row in matched.drop_duplicates(subset=["season"], keep="last").itertuples(index=False):
             values = row._asdict()
             season = int(values["season"])
-            seasons.add(season)
             rows.append([
                 season,
                 _team(values.get("recent_team")),
@@ -130,10 +135,15 @@ def build_player_history(
             "seasons": rows,
         }
 
+    ordered_seasons = sorted(seasons)
     payload = {
         "generated_at": now.isoformat(),
-        "seasons": sorted(seasons),
+        "seasons": ordered_seasons,
+        "start_season": ordered_seasons[0] if ordered_seasons else None,
+        "end_season": ordered_seasons[-1] if ordered_seasons else None,
+        "season_count": len(ordered_seasons),
         "player_count": len(players),
+        "player_season_count": sum(len(player["seasons"]) for player in players.values()),
         "source": "nflverse player stats",
         "attribution_url": "https://github.com/nflverse/nflverse-data",
         "columns": list(HISTORY_COLUMNS),

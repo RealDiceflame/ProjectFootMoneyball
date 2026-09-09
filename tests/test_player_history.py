@@ -56,7 +56,11 @@ def test_build_player_history_matches_ids_and_name_position_and_sorts_newest_fir
 
     payload = json.loads(destination.read_text(encoding="utf-8"))
     assert payload["seasons"] == [2024, 2025]
+    assert payload["start_season"] == 2024
+    assert payload["end_season"] == 2025
+    assert payload["season_count"] == 2
     assert payload["player_count"] == 2
+    assert payload["player_season_count"] == 4
     assert payload["players"]["id:00-0036912"]["seasons"][0][0] == 2025
     assert payload["players"]["name:noidrunner|RB"]["seasons"][0][1] == "BUF"
     assert "id:00-0099999" not in payload["players"]

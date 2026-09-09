@@ -18,6 +18,31 @@ export function historyRows(bundle, player) {
   ));
 }
 
+export function historyWindow(bundle) {
+  const integerOrNull = value => {
+    if (value === null || value === undefined || value === "") return null;
+    const number = Number(value);
+    return Number.isInteger(number) ? number : null;
+  };
+  const seasons = [...new Set((bundle?.seasons || [])
+    .map(Number)
+    .filter(Number.isInteger))]
+    .sort((left, right) => left - right);
+  const start = integerOrNull(bundle?.start_season) ?? seasons[0] ?? null;
+  const end = integerOrNull(bundle?.end_season) ?? seasons.at(-1) ?? null;
+  const count = integerOrNull(bundle?.season_count) ?? seasons.length;
+  const range = start === null || end === null
+    ? "History unavailable"
+    : start === end ? String(start) : `${start}–${end}`;
+  return {
+    start,
+    end,
+    count,
+    range,
+    label: count ? `${range} · ${count} season${count === 1 ? "" : "s"}` : range,
+  };
+}
+
 export function fantasyPoints(stats, settings) {
   const basePpr = { Standard: 0, "Half PPR": 0.5, "Full PPR": 1 }[settings?.ppr] ?? 0.5;
   const tePremium = stats?.pos === "TE" && settings?.tePremium === "+0.5" ? 0.5 : 0;

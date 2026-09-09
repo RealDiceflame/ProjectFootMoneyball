@@ -6,6 +6,7 @@ import {
   historyAnalytics,
   historyKey,
   historyRows,
+  historyWindow,
   sampleStandardDeviation,
   volatilityLabel,
 } from "../docs/player-history.mjs";
@@ -21,6 +22,20 @@ test("maps compact season arrays into named history rows", () => {
     players: { "id:1": { seasons: [[2025, "BUF", 17]] } },
   };
   assert.deepEqual(historyRows(bundle, { player_id: "1" }), [{ season: 2025, team: "BUF", games: 17 }]);
+});
+
+test("describes the maintained history range from bundle metadata", () => {
+  assert.deepEqual(historyWindow({
+    seasons: [2016, 2017, 2025], start_season: 2016, end_season: 2025, season_count: 10,
+  }), {
+    start: 2016,
+    end: 2025,
+    count: 10,
+    range: "2016–2025",
+    label: "2016–2025 · 10 seasons",
+  });
+  assert.equal(historyWindow({ seasons: [2025] }).label, "2025 · 1 season");
+  assert.equal(historyWindow({ start_season: null, end_season: null, season_count: 0 }).range, "History unavailable");
 });
 
 test("recalculates historical points for PPR and TE premium settings", () => {
