@@ -1,5 +1,6 @@
 import { historicalPlayers, historyAnalytics, historyKey, historyRows, historyWindow, sampleStandardDeviation } from "./player-history.mjs?v=20260909-archive1";
 import { historicalRoundExpectations } from "./draft-capital.mjs?v=20260909-capital1";
+import { draftTiming } from "./draft-timing.mjs?v=20260909-timing1";
 import {
   applyProjectionModel,
   POSITIONS,
@@ -33,6 +34,9 @@ const ui = {
   positionVariance: document.querySelector("#position-variance"),
   roundMap: document.querySelector("#round-map"),
   roundSeason: document.querySelector("#round-map-season"),
+  roundWait: document.querySelector("#round-map-wait"),
+  timingSummary: document.querySelector("#draft-timing-summary"),
+  timingCards: document.querySelector("#draft-timing-cards"),
   roundHeading: document.querySelector("#round-map-heading"),
   roundDescription: document.querySelector("#round-map-description"),
   roundCoverage: document.querySelector("#round-map-coverage"),
@@ -47,6 +51,7 @@ const state = {
   news: null,
   capital: null,
   roundSeason: params.get("roundSeason") || "current",
+  waitRounds: params.get("waitRounds") === "2" ? 2 : 1,
   settings: {
     teams: params.get("teams") || "12",
     quarterbacks: params.get("quarterbacks") || "2QB",
@@ -114,6 +119,8 @@ function syncUrl() {
   next.searchParams.set("pos", state.position);
   if (state.roundSeason === "current") next.searchParams.delete("roundSeason");
   else next.searchParams.set("roundSeason", state.roundSeason);
+  if (state.waitRounds === 2) next.searchParams.set("waitRounds", "2");
+  else next.searchParams.delete("waitRounds");
   if (state.player) next.searchParams.set("player", state.player);
   else next.searchParams.delete("player");
   window.history.replaceState({}, "", next);
@@ -304,10 +311,66 @@ function renderPositionVariance() {
   ui.positionVariance.replaceChildren(...cards);
 }
 
+function timingLabel(comparison) {
+  if (!comparison || comparison.status === "missing") return "No comparison";
+  if (comparison.status === "beyond_map") return "Beyond this map";
+  if (comparison.status === "limited") return "Limited history";
+  if (comparison.priority) return "Target window";
+  if (comparison.signal) return "Drop-off ahead";
+  if (comparison.status === "mixed") return "Mixed history";
+  return comparison.drop < 0 ? "Later average higher" : "Smaller drop";
+}
+
+function appendTimingCell(td, comparison) {
+  const label = document.createElement("span");
+  label.className = `draft-timing-label ${comparison?.priority ? "timing-target" : comparison?.signal ? "timing-drop" : ""}`;
+  label.textContent = timingLabel(comparison);
+  td.append(label);
+  if (comparison?.drop === null || comparison?.drop === undefined) return;
+  const cost = document.createElement("small");
+  cost.className = "draft-wait-cost";
+  cost.textContent = comparison.drop >= 0
+    ? `Wait to R${comparison.later_round}: −${comparison.drop.toFixed(1)} pts`
+    : `R${comparison.later_round} average: +${Math.abs(comparison.drop).toFixed(1)} pts`;
+  td.append(cost);
+  td.title += ` Timing: ${comparison.now_mean.toFixed(1)} now vs ${comparison.later_mean.toFixed(1)} later.`;
+  if (comparison.historical) {
+    const evidence = document.createElement("small");
+    evidence.className = "draft-timing-evidence";
+    evidence.textContent = `Declined in ${comparison.declining_years}/${comparison.years} shared years`;
+    td.append(evidence);
+    td.title += ` Equal-year averages; ${comparison.current_count} vs ${comparison.later_count} matched player-seasons. Not a statistical confidence test.`;
+  } else td.title += " Projection-only comparison, not historical evidence.";
+}
+
+function renderTimingCards(timing) {
+  ui.timingSummary.textContent = timing.historical
+    ? `Historical timing only · waiting ${timing.wait_rounds} round${timing.wait_rounds === 1 ? "" : "s"}. The points comparison gives shared years equal weight, so it can differ from subtracting the pooled averages in the map. Sample ADP is not verified for 2QB or TE-premium leagues.`
+    : `Projection-only timing · waiting ${timing.wait_rounds} round${timing.wait_rounds === 1 ? "" : "s"}. These are same-position scoring differences, not a roster-aware draft plan or a proven strategy.`;
+  ui.timingCards.replaceChildren(...timing.positions.map(position => {
+    const card = document.createElement("article"), heading = document.createElement("h4"), value = document.createElement("strong"), detail = document.createElement("p"), targets = document.createElement("p");
+    heading.textContent = position.pos;
+    const cliff = position.largest_drop;
+    value.textContent = cliff ? `Round ${cliff.round} → ${cliff.later_round}` : "No clear break";
+    detail.textContent = cliff
+      ? `Largest qualifying drop: ${cliff.drop.toFixed(1)} season points.${timing.historical ? ` Declined in ${cliff.declining_years}/${cliff.years} shared years.` : " Projection-only estimate."}`
+      : "No comparison meets the timing rules in this view. This does not mean you should avoid this position.";
+    targets.textContent = position.target_rounds.length
+      ? `Timing priorities: ${position.target_rounds.map(round => `R${round}`).join(", ")}`
+      : "No priority window identified.";
+    targets.className = "draft-target-rounds";
+    card.append(heading, value, detail, targets);
+    return card;
+  }));
+}
+
 function renderRoundMap() {
   const historical = state.roundSeason !== "current";
   const summary = historical ? historicalRoundExpectations(state.capital, state.settings, state.roundSeason) : null;
   const expectations = summary?.cells || roundPositionExpectations(state.rows, state.settings.teams, 15);
+  const timing = draftTiming(summary?.rows || state.rows, {teams: state.settings.teams, historical, waitRounds: state.waitRounds});
+  renderTimingCards(timing);
+  ui.roundWait.value = String(state.waitRounds);
   const seasonLabel = summary?.seasons.length > 1 ? `${summary.seasons[0]}–${summary.seasons.at(-1)}` : summary?.seasons[0];
   ui.roundHeading.textContent = historical ? `${seasonLabel || "Historical"} actual points by position and round` : `${state.data.projection_season} projected points by position and round`;
   ui.roundDescription.textContent = historical
@@ -315,7 +378,7 @@ function renderRoundMap() {
     : "Players are assigned to a round from current consensus ADP and the selected number of teams. Each cell shows average projected points, scoring standard deviation, and the number of players in that slice.";
   ui.roundCoverage.textContent = historical
     ? `${summary.in_rounds.toLocaleString()} player-seasons in rounds 1–15 · ${summary.seasons.length} season${summary.seasons.length === 1 ? "" : "s"} · ${summary.coverage.matched.toLocaleString()}/${summary.coverage.adp_players.toLocaleString()} ADP records matched overall`
-    : `${expectations.reduce((n, cell) => n + cell.count, 0)} players in rounds 1–15${state.capital ? " · Historical seasons available below" : " · Historical data is temporarily unavailable"}`;
+    : `${expectations.reduce((n, cell) => n + cell.count, 0)} players in rounds 1–15${state.capital ? " · Historical seasons available" : " · Historical data is temporarily unavailable"}`;
   ui.roundBasis.textContent = historical
     ? `ADP basis: MFL historical 12-team PPR redraft (actual + mock drafts). Not a verified ${state.settings.quarterbacks}, ${state.settings.ppr}, or TE-premium ADP sample. Points recalculate using ${state.settings.ppr}${state.settings.tePremium === "+0.5" ? " + 0.5 TE premium" : ""}; ${state.settings.teams}-team round boundaries rebucket those same ADP values, not a different source format.`
     : "Current ADP and current projections stay separate from the historical observations.";
@@ -326,7 +389,7 @@ function renderRoundMap() {
   const table = document.createElement("table");
   const head = document.createElement("thead");
   const header = document.createElement("tr");
-  ["Round", ...POSITIONS].forEach(label => {
+  ["Round", ...POSITIONS, "Timing priority"].forEach(label => {
     const th = document.createElement("th");
     th.scope = "col";
     th.textContent = label;
@@ -335,6 +398,7 @@ function renderRoundMap() {
   head.append(header);
   const body = document.createElement("tbody");
   for (let round = 1; round <= 15; round += 1) {
+    const roundTiming = timing.rounds.find(item => item.round === round);
     const tr = document.createElement("tr");
     const roundCell = document.createElement("th");
     roundCell.scope = "row";
@@ -359,9 +423,18 @@ function renderRoundMap() {
           ? `${result.player_count} distinct players; ${result.count} player-seasons. Mean ${result.mean.toFixed(1)} points; sample SD ${result.stddev?.toFixed(1) ?? "unavailable"}.`
           : `${result.count} players. Mean ${result.mean.toFixed(1)} projected points; sample SD ${result.stddev?.toFixed(1) ?? "unavailable"}.`;
         td.append(value, spread, count);
+        appendTimingCell(td, roundTiming.cells.find(item => item.pos === position));
       }
       tr.append(td);
     });
+    const priority = document.createElement("td");
+    priority.className = "round-timing-priority";
+    const priorityName = document.createElement("strong"), priorityNote = document.createElement("small");
+    priorityName.textContent = roundTiming.priorities.length ? roundTiming.priorities.join(" / ") : "No clear priority";
+    const comparable = roundTiming.cells.filter(item => ["drop", "mixed", "flexible"].includes(item.status)).length;
+    priorityNote.textContent = roundTiming.priorities.length ? `If still needed · ${comparable}/4 positions had enough data` : roundTiming.later_round > 15 ? "Later comparison is outside the map" : "No qualifying drop, or limited evidence";
+    priority.append(priorityName, priorityNote);
+    tr.append(priority);
     body.append(tr);
   }
   table.append(head, body);
@@ -396,6 +469,11 @@ function render() {
 }
 
 function connectControls() {
+  ui.roundWait.addEventListener("change", () => {
+    state.waitRounds = Number(ui.roundWait.value) === 2 ? 2 : 1;
+    renderRoundMap();
+    syncUrl();
+  });
   ui.roundSeason.addEventListener("change", () => {
     state.roundSeason = ui.roundSeason.value;
     renderRoundMap();

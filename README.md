@@ -37,6 +37,14 @@ Historical ADP uses **12-team PPR redraft, actual and mock drafts, minimum 5% dr
 
 Completed-season snapshots are cached in `docs/data/draft_capital_history.json`; normal scheduled updates fetch only newly added archive seasons. Use `--refresh` to deliberately redownload all maintained years. Failed refreshes keep the prior dataset intact. The current-projection map remains available if the historical snapshot cannot load. This does not change the existing update schedule or enable the deferred game-day refresh plan.
 
+### Position timing and drop-offs
+
+The draft capital map now compares drafting each position in a round versus waiting one or two rounds. It highlights **Target window** for positions within five season points of the largest qualifying cost of waiting in that round, **Drop-off ahead** for other qualifying declines, and separate smaller-drop, mixed-history, limited-history, and unavailable states. Four position cards show the largest qualifying drop and priority rounds. This compares same-position alternatives, not raw QB/RB/WR/TE scoring totals, and never forces a monotonically declining curve.
+
+Historical timing compares only years present on both sides, averaging each year's difference equally. This differs intentionally from the map's pooled player-season mean. A qualifying signal needs five shared seasons, ten player-seasons and five distinct players on each side, an average loss of at least ten points, and a decline in at least two-thirds of those years. These screening thresholds are heuristics, not significance tests or proven profitable strategies. Single-year views can display differences but cannot qualify for multi-year priority labels. Projection-only timing needs one current player on each side; missing rounds are not treated as zero. No comparison extends past round 15.
+
+The guide assumes the user still needs every position being compared. It does not model roster needs, snake-draft slot, exact future availability, starters versus bench upside, or historical format differences. In particular, historical MFL ADP is not verified 2QB/TE-premium ADP; those labels must not be read as format-specific historical recommendations. No timing result changes player rankings or Market +/- draft tags. Season view, team count, PPR, TE premium, and the waiting horizon recalculate the guide; URL parameters preserve the selected season and waiting horizon.
+
 ## Survivor Lab (experimental)
 
 Open <https://outlierbaseline.com/survivor.html> for a 32-team, 18-week survivor matrix, used-team tracking, saved weekly picks, configurable planning window and tie rule, and 20,000-trial path comparisons. One pick per week and no team reuse are enforced; byes and started games cannot be selected. Plans stay in browser storage, separately for each season, and are not submitted to an external pool.

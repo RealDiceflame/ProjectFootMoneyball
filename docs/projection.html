@@ -7,7 +7,7 @@
   <meta name="description" content="Explore OutlierBaseline fantasy football age curves, player season projections, positional variance, and draft-round scoring expectations.">
   <link rel="canonical" href="https://outlierbaseline.com/projection.html">
   <title>Projection Lab | OutlierBaseline</title>
-  <link rel="stylesheet" href="styles.css?v=20260909-capital1">
+  <link rel="stylesheet" href="styles.css?v=20260909-timing1">
 </head>
 <body>
   <header class="topbar">
@@ -94,9 +94,22 @@
         </div>
         <div class="round-map-controls">
           <label for="round-map-season">Season view<select id="round-map-season"><option value="current">Current projections</option></select></label>
+          <label for="round-map-wait">Compare waiting<select id="round-map-wait"><option value="1">1 round</option><option value="2">2 rounds</option></select></label>
           <p id="round-map-coverage" role="status"></p>
         </div>
         <p id="round-map-basis" class="round-map-note"></p>
+        <section class="draft-timing" aria-labelledby="draft-timing-heading">
+          <h3 id="draft-timing-heading">Where does waiting cost the most?</h3>
+          <p id="draft-timing-summary" class="round-map-note" role="status"></p>
+          <div id="draft-timing-cards" class="draft-timing-cards"></div>
+          <details class="draft-timing-method">
+            <summary>How to use the timing guide</summary>
+            <p>Compare a position in this round with the same position one or two rounds later. A target window means one of the largest qualifying scoring drops from waiting—not the highest raw fantasy score. Positions within five season points of the largest drop share the timing priority.</p>
+            <p>Historical comparisons use only years represented in both rounds and give each matching year equal weight. A signal requires at least five shared seasons, ten player-seasons and five distinct players on each side, a mean drop of at least ten season points, and a decline in at least two-thirds of the shared years. These are transparent screening rules, not a statistical confidence test. Single-year views show differences but cannot establish a multi-year signal.</p>
+            <p>Current-season timing uses the model's projected points; one player on each side is sufficient for a comparison, so it is labeled projection-only. Missing rounds stay unavailable. No declining curve is imposed: later-round averages can be higher.</p>
+            <p>This assumes you still need the positions being compared. It does not know your roster, draft slot, keeper rules, or which players will actually remain. An ADP round is an average, not a promise of availability. A quiet window is not proof a position is bad or safe to ignore; bench upside and individual bargains still matter. Historical ADP format limitations apply to every historical timing label. These labels do not change player rankings or the separate Market +/- draft tags.</p>
+          </details>
+        </section>
         <div class="round-map-shell" id="round-map" tabindex="0" role="region" aria-label="Draft capital map; scroll horizontally"></div>
         <p id="round-map-limitations" class="round-map-note"></p>
         <p class="round-map-note">Historical sources: <a href="https://api.myfantasyleague.com/2026/api_info?STATE=details&amp;TYPE=adp" target="_blank" rel="noopener noreferrer">MyFantasyLeague ADP API</a> · <a href="https://github.com/nflverse/nflverse-data/releases/tag/stats_player" target="_blank" rel="noopener noreferrer">nflverse regular-season statistics</a>.</p>
@@ -121,6 +134,6 @@
   </main>
 
   <footer><span>OutlierBaseline · Age Curve v1</span><a href="./">Use these projections on the live rankings board</a></footer>
-  <script type="module" src="projection.js?v=20260909-capital1"></script>
+  <script type="module" src="projection.js?v=20260909-timing1"></script>
 </body>
 </html>

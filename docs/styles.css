@@ -164,6 +164,26 @@ main { padding: 30px 0 24px; }
 #round-map td strong { font-size: 1.0625rem; }
 #round-map td span { font-size: .875rem; }
 #round-map td small { font-size: .8125rem; color: #a2baaf; white-space: normal; line-height: 1.4; }
+.draft-timing { margin: 22px 0; border-top: 1px solid var(--line); padding-top: 18px; }
+.draft-timing h3 { margin: 0; font: 500 1.35rem/1.3 Georgia, serif; }
+.draft-timing-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.draft-timing-cards article { padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: rgba(215,255,84,.035); }
+.draft-timing-cards h4 { color: var(--lime); margin: 0 0 8px; font-size: .875rem; }
+.draft-timing-cards strong { font-size: 1.15rem; }
+.draft-timing-cards p { font-size: .875rem; line-height: 1.6; color: var(--muted); margin: 10px 0 0; }
+.draft-timing-cards .draft-target-rounds { color: var(--ink); }
+.draft-timing-method { margin-top: 14px; color: var(--muted); font-size: .875rem; line-height: 1.65; }
+.draft-timing-method summary { cursor: pointer; min-height: 44px; padding: 12px 0; color: var(--ink); }
+.draft-timing-method p { max-width: 1050px; }
+#round-map table { min-width: 1020px; }
+#round-map .draft-timing-label { display: inline-block; margin: 10px 0 3px; padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; font-size: .8125rem; }
+#round-map .draft-timing-label.timing-target { color: var(--lime-ink); border-color: var(--lime); background: var(--lime); font-weight: 800; }
+#round-map .draft-timing-label.timing-drop { color: #ffe096; border-color: #896e2f; background: #332c19; }
+#round-map .draft-wait-cost { color: var(--ink); font-size: .875rem; }
+#round-map .round-timing-priority { min-width: 155px; white-space: normal; background: rgba(215,255,84,.025); }
+#round-map .round-timing-priority strong { color: var(--lime); }
+@media (max-width: 1000px) { .draft-timing-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .draft-timing-cards { grid-template-columns: 1fr; } }
 .model-methodology { padding: 25px; border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(145deg, rgba(12,41,33,.95), rgba(7,27,22,.97)); }
 .model-methodology h2 { margin: 3px 0 17px; font-family: Georgia, "Times New Roman", serif; font-size: 1.35rem; font-weight: 500; }
 .method-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
