@@ -58,6 +58,31 @@
 #survivor-error { border: 1px solid var(--red); border-radius: 10px; padding: 18px; }
 .simulation-chart { width: 100%; min-width: 430px; display: block; }
 .simulation-chart text { fill: #b6cbbf; font: 13px system-ui; }
+.matchup-panel { border-top: 3px solid var(--lime); }
+.matchup-panel p { font-size: 16px; }
+.matchup-panel h3 { margin-top: 24px; font-size: 20px; }
+.matchup-controls { gap: 12px; }
+.matchup-controls label { flex: 1 1 200px; min-width: 0; }
+.matchup-controls select { width: 100%; min-width: 0; max-width: 100%; text-overflow: ellipsis; }
+.matchup-controls #matchup-game-label { flex-basis: 400px; }
+.matchup-controls select:disabled { opacity: .8; }
+.matchup-caution { border-left: 3px solid #c7a35c; padding: 8px 14px; background: #b7994310; }
+#matchup-error { padding: 14px; border: 1px solid var(--red); border-radius: 8px; }
+.matchup-chart-label { display: grid; gap: 8px; font-size: 14px; }
+.matchup-distribution { width: 100%; min-width: 680px; display: block; }
+.matchup-distribution text { fill: #c5d7ce; font: 16px system-ui; }
+.matchup-outcomes { display: grid; gap: 10px; margin-block: 20px; }
+.matchup-outcome { display: grid; grid-template-columns: 155px minmax(30px, 1fr) 65px; align-items: center; gap: 14px; font-size: 14px; }
+.matchup-outcome strong { text-align: right; font-variant-numeric: tabular-nums; }
+.matchup-outcome-bar { display: block; height: 13px; background: linear-gradient(to right, var(--lime) var(--chance), #284337 var(--chance)); border-radius: 3px; }
+.away-outcome .matchup-outcome-bar { background: linear-gradient(to right, #8cc6ff var(--chance), #284337 var(--chance)); }
+.matchup-market, .matchup-method { margin-top: 24px; border-top: 1px solid var(--line); }
+.matchup-market .survivor-table :is(th, td):nth-child(-n+2) { white-space: normal; min-width: 170px; }
+@media (max-width: 520px) {
+  .matchup-outcome { grid-template-columns: 135px minmax(25px, 1fr) 52px; gap: 8px; }
+  .matchup-chart-label { width: 100%; }
+  .matchup-panel .survival-summary > div { flex-basis: 150px; }
+}
 @media (max-width: 700px) {
   .survivor-hero { grid-template-columns: 1fr; gap: 8px; padding-top: 8px; }
   .survivor-version { max-width: none; }

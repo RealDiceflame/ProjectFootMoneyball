@@ -57,7 +57,15 @@ The path planner uses rectangular assignment to maximize the product of weekly s
 
 The market comparison uses paired, same-book licensed sportsbook moneylines within 48 hours, only for upcoming games within eight days. It removes margin within each pair and takes the median non-tie share. Incomplete, stale, exchange, or undated reference coverage stays blank. Market prices are not inputs to Team Baseline v1.
 
-Tests: `python -m pytest tests/test_survivor.py` and `node --test tests/survivor_model.test.mjs`.
+### Head-to-head game simulator
+
+The top of the Survivor Lab now lets visitors simulate an upcoming NFL game or any two teams at home/neutral ground. It reports win/tie shares, expected scoreboard points, simulated averages/medians, standard deviations, middle-80% ranges, score/margin/total histograms, and close-game or large-margin outcome frequencies. Completed current-season scoring averages and the model's results cutoff are shown separately. Scheduled forecasts expire at kickoff; hypothetical games use the latest saved strengths, not historical pregame ratings.
+
+The 20,000 repeatable trials reuse the opponent-adjusted score baseline and **paired held-out scoring errors** from the prior two seasons' pre-week refits. Errors are recency-weighted (365-day half-life) and centered; neutral sites symmetrize home/away error roles. Scores are rounded/clamped to zero. Decisive outcomes and a smoothed historical final-tie component are sampled separately; this avoids interpreting all rounded ties as final ties. The simulation is a score-level approximation, not a drive, touchdown, overtime, yards, or player-box-score model. Its win shares can differ from the survivor matrix's normal-margin approximation. Empirical ranges are not calibrated prediction intervals and omit team-parameter, injury, roster, scheme, and weather uncertainty.
+
+The betting comparison reads the existing saved odds snapshot, never a visitor-triggered sportsbook API call. It matches fixture ID, team orientation, kickoff, current schedule week, and venue, within eight days. Sportsbook/exchange quotes need valid opposing selections, matching lines, timestamps no more than an hour apart, and age under 48 hours. Missing lines stay blank. Undated schedule reference lines are clearly separated from current quotes; their file-save time is not a source quote time. Market prices do not enter the score simulation. Source links point to the originating provider.
+
+Tests: `python -m pytest tests/test_survivor.py` and `node --test tests/survivor_model.test.mjs tests/matchup_model.test.mjs`.
 
 ## Weekly odds board
 

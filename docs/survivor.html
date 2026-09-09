@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#071d18">
-  <meta name="description" content="Plan your NFL survivor picks with a weekly win-probability matrix, team offense and defense ratings, and season-path simulations.">
+  <meta name="description" content="Simulate NFL team matchups, explore score distributions and weekly odds, and plan your survivor picks with a full-season matrix.">
   <link rel="canonical" href="https://outlierbaseline.com/survivor.html">
   <title>Survivor Lab | OutlierBaseline</title>
   <link rel="stylesheet" href="styles.css?v=20260909-history10">
-  <link rel="stylesheet" href="survivor.css?v=1">
+  <link rel="stylesheet" href="survivor.css?v=20260909-matchup1">
 </head>
 <body class="survivor-page">
   <header class="topbar">
@@ -20,12 +20,43 @@
   </header>
   <main>
     <section class="survivor-hero">
-      <div><p class="eyebrow">Survivor Lab · Experimental</p><h1>Pick this week.<br>Plan for the next.</h1><p>One team each week. No repeats. Explore the entire schedule before spending your strongest teams.</p></div>
+      <div><p class="eyebrow">Survivor &amp; Matchup Lab · Experimental</p><h1>Play the matchup.<br>Explore the possibilities.</h1><p>Simulate two NFL teams with today's saved ratings, or plan a no-repeat survivor path through the season.</p></div>
       <div class="survivor-version"><span>TEAM BASELINE v1</span><strong>32 teams. One path.</strong><p>NFL scoring estimates—not fantasy points. Injuries, roster changes, and schemes are not yet modeled.</p></div>
     </section>
     <p id="survivor-error" role="alert" hidden></p>
     <noscript>This page needs JavaScript for the survivor matrix and simulations.</noscript>
     <div id="survivor-content" hidden>
+      <section class="survivor-panel matchup-panel" aria-labelledby="matchup-heading">
+        <div class="survivor-heading"><div><p class="eyebrow">Head to head</p><h2 id="matchup-heading">Who wins this matchup?</h2></div><a href="#rules-heading">Skip to survivor planner ↓</a></div>
+        <div class="survivor-controls matchup-controls">
+          <label>Matchup type<select id="matchup-mode"><option value="schedule">Upcoming NFL game</option><option value="custom">Any two teams · hypothetical</option></select></label>
+          <label id="matchup-game-label">Scheduled game<select id="matchup-game"></select></label>
+          <label>Home / team A<select id="matchup-home"></select></label>
+          <label>Away / team B<select id="matchup-away"></select></label>
+          <label>Venue<select id="matchup-venue"><option value="home">Team A home field</option><option value="neutral">Neutral field</option></select></label>
+          <button id="simulate-matchup" class="survivor-primary" type="button">Simulate 20,000 games</button>
+        </div>
+        <p id="matchup-context"></p><p id="matchup-freshness" class="matchup-caution"></p>
+        <p id="matchup-error" role="alert" hidden></p>
+        <div id="matchup-results" hidden>
+          <div id="matchup-summary" class="survival-summary" aria-live="polite"></div>
+          <p id="matchup-verdict"></p>
+          <h3>Expected scoring &amp; uncertainty</h3>
+          <div class="survivor-table-scroll" role="region" tabindex="0" aria-label="Expected scoring statistics"><table class="survivor-table" id="matchup-stats"></table></div>
+          <p>SD (standard deviation) describes the spread of simulated game outcomes—not how precisely we know the average. The middle 80% range runs from the 10th to the 90th percentile; outcomes outside it are still possible.</p>
+          <div class="survivor-heading"><h3>Outcome distribution</h3><label class="matchup-chart-label">Show distribution<select id="matchup-chart-metric"><option value="margin">Point margin · A minus B</option><option value="home">Team A points</option><option value="away">Team B points</option><option value="total">Combined points</option></select></label></div>
+          <div id="matchup-chart"></div><p id="matchup-chart-description"></p>
+          <h3>How might the game finish?</h3><div id="matchup-outcomes" class="matchup-outcomes"></div>
+          <details><summary>Current-season results &amp; team strengths</summary><div class="survivor-table-scroll" role="region" tabindex="0" aria-label="Team scoring context"><table class="survivor-table" id="matchup-team-stats"></table></div><p>Season averages describe completed games, not this matchup's prediction. Before a team has played, those averages stay blank.</p></details>
+        </div>
+        <section class="matchup-market" aria-labelledby="matchup-market-heading"><h3 id="matchup-market-heading">This week's betting lines</h3><div id="matchup-market" aria-live="polite">Loading saved odds snapshot…</div><p><a href="odds.html">Open the full weekly odds board ↗</a></p></section>
+        <details class="matchup-method"><summary>How these game simulations work</summary>
+          <p>Expected scoreboard points come from the existing opponent-adjusted team model. We add paired scoring errors from forecasts made before each historical week, using the prior two regular seasons and giving recent games more weight. Errors are centered around zero; both teams' errors stay together. A neutral field removes home advantage and treats the error roles symmetrically.</p>
+          <p>Scores are rounded and cannot be negative. Decisive score scenarios are sampled separately from a small historical tie component, so rounding does not create excessive ties. This approximates final scoreboard outcomes; it does not simulate drives, overtime rules, touchdowns, yards, or individual player box scores. Probabilities can differ from the survivor matrix's simpler normal-margin calculation.</p>
+          <p>20,000 trials use a repeatable seed. The ranges reflect historical game variation, not uncertainty in team ratings, and have not been calibrated as prediction intervals. Injuries, starters, weather, schemes and roster changes are not included yet. Future games hold current team strength fixed. These estimates are research tools, not proven betting edges or guaranteed outcomes.</p>
+          <p>Lines are attached only to the same upcoming fixture in the current schedule week (within eight days). Dated sportsbook and exchange pairs older than 48 hours are withheld. Undated schedule reference lines are labeled separately and are not live quotes. Betting lines do not influence these simulations. Reloading reads saved files and makes no sportsbook API call.</p>
+        </details>
+      </section>
       <section class="survivor-panel" aria-labelledby="rules-heading">
         <div class="survivor-heading"><div><p class="eyebrow">Your pool</p><h2 id="rules-heading">Set the planning window</h2></div><p id="save-status">Saved only in this browser.</p></div>
         <div class="survivor-controls">
@@ -59,7 +90,7 @@
         <p><strong>Team scoring:</strong> Opponent-adjusted offense and defense fitted to regular-season scoreboard points from the prior three seasons and completed current-season games. Recent results get more weight (365-day half-life); ratings are pulled toward league average. Neutral sites have no home advantage. Scores are treated as completed only when present and at least six hours past kickoff.</p>
         <p><strong>Win estimates:</strong> Expected point margin is compared with historical margin variation. A small, smoothed historical tie rate is included. Conditional win estimates are bounded at 2.5–97.5%. These experimental probabilities are not calibrated guarantees; future weeks use today's team strengths.</p>
         <p><strong>Planning and simulations:</strong> The suggested path maximizes the product of weekly survival probabilities with no team reuse. Weeks are assumed independent. Simulations sample one shared result per game, including ties, and compare your path against a fresh best path under these same assumptions. They do not model other pool entrants, popularity, adaptive picking, or the chance of winning the whole pool.</p>
-        <p><strong>Market comparison:</strong> Only complete opposing moneylines from the same licensed sportsbook, timestamped within 48 hours, for games within eight days. Bookmaker margin is removed per pair, then the median share is shown. It is conditional on a non-tie, not a guarantee or an input to this model. Missing coverage stays blank; exchanges and undated reference lines are excluded.</p>
+        <p><strong>Survivor path market comparison:</strong> Only complete opposing moneylines from the same licensed sportsbook, timestamped within 48 hours, for games within eight days. Bookmaker margin is removed per pair, then the median share is shown. It is conditional on a non-tie, not a guarantee or an input to this model. Missing coverage stays blank; exchanges and undated reference lines are excluded from this path comparison.</p>
         <p><strong>Next model layers:</strong> Current-season efficiency, verified injury/availability adjustments (starting with quarterbacks), roster and coaching changes, then pass/run tendencies and defensive personnel. Individual defenders and scheme adjustments are not included yet. No injury data does not mean a team is healthy.</p>
         <p>Data is refreshed through the site's existing four-times-daily update workflow. Reloading this page reads a saved snapshot; it does not spend sportsbook API credits. Schedules can change—confirm kickoff and your pool's lock rules.</p>
         <p><a href="https://github.com/nflverse/nfldata/blob/master/data/games.csv" target="_blank" rel="noopener noreferrer">Source: nflverse schedules and results ↗</a> · <a href="odds.html">View weekly odds</a></p>
@@ -67,6 +98,6 @@
     </div>
   </main>
   <footer><p>OutlierBaseline · Research, not certainty. No guaranteed outcomes. If you play for money, set a limit you can afford to lose.</p></footer>
-  <script type="module" src="survivor.js?v=1"></script>
+  <script type="module" src="survivor.js?v=20260909-matchup1"></script>
 </body>
 </html>

@@ -1,4 +1,5 @@
 import {fixture, playable, probability, sanitizeState, validatePlan, suggestPlan, survivalPath, simulatePlans} from "./survivor-model.mjs?v=1";
+import {initMatchup} from "./matchup.js?v=20260909-matchup1";
 
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => {
@@ -235,6 +236,7 @@ async function init() {
     $("simulate-plan").addEventListener("click", runSimulation);
     renderEvidence(); render(); save();
     $("survivor-content").hidden = false;
+    initMatchup(data);
     // Only redraw when kickoff locks change, preserving focus during normal use.
     let lockSignature = data.games.map(g => playable(g)).join();
     setInterval(() => {

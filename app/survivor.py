@@ -105,6 +105,7 @@ def fit_model(games: list[dict], as_of: datetime, season: int) -> dict:
     return {"coefficients": coefficients, "average": average, "margin_sd": margin_sd,
             "tie_probability": (ties + 1) / (len(training) + 200),
             "training_games": len(training),
+            "current_season_games": sum(g["season"] == season for g in training),
             "training_first": min(g["kickoff"] for g in training),
             "training_last": max(g["kickoff"] for g in training)}
 
@@ -122,6 +123,7 @@ def predict(model: dict, game: dict) -> dict:
 def backtest(games: list[dict], season: int, as_of: datetime) -> dict:
     """Refit BEFORE each historical week, never using that week's results."""
     observations = []
+    score_residuals = []
     for year in range(season - 2, season):
         for week in range(1, 19):
             batch = [g for g in games if g["season"] == year and g["week"] == week
@@ -131,13 +133,22 @@ def backtest(games: list[dict], season: int, as_of: datetime) -> dict:
             cutoff = min(timestamp(g["kickoff"]) for g in batch)
             model = fit_model(games, cutoff, year)
             for game in batch:
-                p = predict(model, game)["home_win"]
+                forecast = predict(model, game)
+                p = forecast["home_win"]
                 observations.append((p, float(game["home_score"] > game["away_score"])))
+                # Keep errors from the SAME game together to retain scoring
+                # dependence. Every forecast was fitted before this week's games.
+                if "home_points" in forecast and "away_points" in forecast:
+                    weight = .5 ** ((as_of - timestamp(game["kickoff"])).total_seconds()
+                                      / 86400 / HALF_LIFE_DAYS)
+                    score_residuals.append([round(game["home_score"] - forecast["home_points"], 3),
+                                            round(game["away_score"] - forecast["away_points"], 3),
+                                            round(weight, 8)])
     if not observations:
         return {"games": 0}
     return {"games": len(observations), "seasons": [season - 2, season - 1],
             "brier_score": round(statistics.mean((p - y) ** 2 for p, y in observations), 4),
-            "coin_flip_brier": .25,
+            "coin_flip_brier": .25, "score_residuals": score_residuals,
             "description": "Pre-week refits; home-win Brier score (lower is better). Ties are not home wins. Fixed settings; this is a historical diagnostic, not proof of an edge."}
 
 
@@ -197,14 +208,28 @@ def build_snapshot(games: list[dict], season: int, as_of: datetime, odds: dict |
                          "away_score": game["away_score"] if final else None,
                          "model": predict(model, game) if status == "scheduled" else None,
                          "market": market_comparison(game, odds_by_id.get(game["game_id"]), as_of) if status == "scheduled" else None})
+    def season_scoring(team):
+        finished = [g for g in current if team in (g["home"], g["away"]) and completed(g, as_of)]
+        scored = [g["home_score" if g["home"] == team else "away_score"] for g in finished]
+        allowed = [g["away_score" if g["home"] == team else "home_score"] for g in finished]
+        return {"games": len(finished),
+                "points_for": round(statistics.mean(scored), 2) if scored else None,
+                "points_against": round(statistics.mean(allowed), 2) if allowed else None}
+
     teams = [{"team": team, "name": TEAM_NAMES[team],
               "offense": round(float(model["coefficients"][INDEX[team]]), 2),
-              "defense": round(float(model["coefficients"][32 + INDEX[team]]), 2)} for team in TEAMS]
+              "defense": round(float(model["coefficients"][32 + INDEX[team]]), 2),
+              "current_season": season_scoring(team)} for team in TEAMS]
+    evidence = backtest(games, season, as_of)
+    residuals = evidence.pop("score_residuals", [])
     return {"season": season, "generated_at": as_of.isoformat(), "model_version": MODEL_VERSION,
             "source": {"name": "nflverse schedules and results", "url": NFLVERSE_SOURCE_URL},
-            "training": {k: model[k] for k in ("training_games", "training_first", "training_last", "margin_sd", "tie_probability")},
+            "training": {k: model[k] for k in ("training_games", "current_season_games", "training_first", "training_last", "margin_sd", "tie_probability")},
             "league_points": round(model["average"], 2), "home_advantage": round(float(model["coefficients"][-1]), 2),
-            "backtest": backtest(games, season, as_of), "teams": teams, "games": fixtures}
+            "backtest": evidence, "teams": teams, "games": fixtures,
+            "simulation": {"method": "Paired pre-week forecast errors v1", "seasons": evidence.get("seasons", []),
+                           "residuals": residuals,
+                           "description": "Home error, away error, recency weight. Prior two regular seasons, forecasts fitted before each week. Centered in the simulator; not calibrated prediction intervals."}}
 
 
 def refresh_survivor(destination: Path, season: int, odds_path: Path) -> dict:

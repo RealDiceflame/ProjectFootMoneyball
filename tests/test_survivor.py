@@ -94,11 +94,14 @@ def test_backtest_uses_pre_week_cutoff(monkeypatch):
         assert not any(s.completed(g, cutoff) for g in batch)
         return {}
     monkeypatch.setattr(s, "fit_model", fit)
-    monkeypatch.setattr(s, "predict", lambda model, g: {"home_win": .6})
+    monkeypatch.setattr(s, "predict", lambda model, g: {"home_win": .6, "home_points": 21, "away_points": 18})
     result = s.backtest(batch, 2026, NOW)
     assert cutoffs == [s.timestamp(batch[0]["kickoff"])]
     assert result["games"] == 2
     assert result["brier_score"] == .26
+    assert len(result["score_residuals"]) == 2
+    assert result["score_residuals"][0][:2] == [3, 2]
+    assert all(0 < row[2] <= 1 for row in result["score_residuals"])
 
 
 def test_failed_refresh_preserves_snapshot(tmp_path, monkeypatch):
@@ -130,6 +133,8 @@ def test_published_snapshot_consistency():
         else:
             assert row["status"] != "scheduled"
     assert payload["backtest"]["games"] == 544
+    assert len(payload["simulation"]["residuals"]) == payload["backtest"]["games"]
+    assert all(len(row) == 3 and row[2] > 0 for row in payload["simulation"]["residuals"])
 
 
 def test_incomplete_schedule_is_rejected():
@@ -151,3 +156,5 @@ def test_finished_games_have_results_not_retrospective_forecasts(monkeypatch):
     saved = next(g for g in result["games"] if g["game_id"] == first["game_id"])
     assert saved["status"] == "final" and saved["home_score"] == 24
     assert saved["model"] is None and saved["market"] is None
+    home = next(t for t in result["teams"] if t["team"] == first["home"])
+    assert home["current_season"] == {"games": 1, "points_for": 24, "points_against": 20}

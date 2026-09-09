@@ -103,6 +103,15 @@ test("navigation, page controls, and imported modules stay connected", () => {
   for (const page of ["index", "projection", "special-teams", "odds"]) {
     assert.match(readFileSync(new URL(`../docs/${page}.html`, import.meta.url), "utf8"), /href="survivor.html"/);
   }
-  assert.match(html, /survivor.js\?v=1/);
-  assert.match(html, /survivor.css\?v=1/);
+  assert.match(html, /survivor\.js\?v=[\w-]+/);
+  assert.match(html, /survivor\.css\?v=[\w-]+/);
+  assert.match(js, /initMatchup\(data\)/);
+  const matchup = readFileSync(new URL("../docs/matchup.js", import.meta.url), "utf8");
+  for (const [, id] of matchup.matchAll(/\$\("([^"]+)"\)/g)) assert.ok(ids.includes(id), `Missing matchup control: ${id}`);
+  for (const name of ["matchup.js", "matchup-model.mjs"]) {
+    const code = readFileSync(new URL(`../docs/${name}`, import.meta.url), "utf8");
+    for (const [, module] of code.matchAll(/from "(\.\/[^"?]+)(?:\?[^"\n]*)?"/g)) {
+      assert.ok(readFileSync(new URL(`../docs/${module}`, import.meta.url), "utf8").length);
+    }
+  }
 });
