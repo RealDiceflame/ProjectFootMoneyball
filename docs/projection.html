@@ -7,7 +7,7 @@
   <meta name="description" content="Explore OutlierBaseline fantasy football age curves, player season projections, positional variance, and draft-round scoring expectations.">
   <link rel="canonical" href="https://outlierbaseline.com/projection.html">
   <title>Projection Lab | OutlierBaseline</title>
-  <link rel="stylesheet" href="styles.css?v=20260909-history10">
+  <link rel="stylesheet" href="styles.css?v=20260909-capital1">
 </head>
 <body>
   <header class="topbar">
@@ -89,10 +89,17 @@
           <div>
             <p class="eyebrow">Draft capital map</p>
             <h2 id="round-map-heading">Expected season points by position and round</h2>
-            <p>Players are assigned to a round from consensus ADP and the selected number of teams. Each cell shows average projected points, ± one standard deviation, and the number of players available in that slice.</p>
+            <p id="round-map-description">Compare this season's projections with actual season scoring grouped by historical draft position.</p>
           </div>
         </div>
-        <div class="round-map-shell" id="round-map"></div>
+        <div class="round-map-controls">
+          <label for="round-map-season">Season view<select id="round-map-season"><option value="current">Current projections</option></select></label>
+          <p id="round-map-coverage" role="status"></p>
+        </div>
+        <p id="round-map-basis" class="round-map-note"></p>
+        <div class="round-map-shell" id="round-map" tabindex="0" role="region" aria-label="Draft capital map; scroll horizontally"></div>
+        <p id="round-map-limitations" class="round-map-note"></p>
+        <p class="round-map-note">Historical sources: <a href="https://api.myfantasyleague.com/2026/api_info?STATE=details&amp;TYPE=adp" target="_blank" rel="noopener noreferrer">MyFantasyLeague ADP API</a> · <a href="https://github.com/nflverse/nflverse-data/releases/tag/stats_player" target="_blank" rel="noopener noreferrer">nflverse regular-season statistics</a>.</p>
       </section>
 
       <section class="model-methodology" aria-labelledby="method-heading">
@@ -114,6 +121,6 @@
   </main>
 
   <footer><span>OutlierBaseline · Age Curve v1</span><a href="./">Use these projections on the live rankings board</a></footer>
-  <script type="module" src="projection.js?v=20260909-archive1"></script>
+  <script type="module" src="projection.js?v=20260909-capital1"></script>
 </body>
 </html>

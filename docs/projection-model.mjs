@@ -374,12 +374,12 @@ export function applyProjectionModel(rows, historyBundle, newsBundle, settings, 
   return { rows: modeled, samples };
 }
 
-export function roundPositionExpectations(rows, teams, maximumRound = 15) {
+export function roundPositionExpectations(rows, teams, maximumRound = 15, pointsColumn = "projected_points") {
   const teamCount = Math.max(1, Number(teams) || 12);
   const groups = new Map();
   (rows || []).forEach(row => {
     const adp = numberOrNull(row.adp);
-    const points = numberOrNull(row.projected_points);
+    const points = numberOrNull(row[pointsColumn]);
     if (adp === null || points === null || !POSITIONS.includes(row.pos)) return;
     const round = Math.ceil(adp / teamCount);
     if (round < 1 || round > maximumRound) return;

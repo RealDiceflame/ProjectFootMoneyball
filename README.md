@@ -27,6 +27,16 @@ python update_player_history.py
 
 You can also open **Actions → Update site data → Run workflow** on GitHub at any time. The scheduled workflow handles daylight-saving changes automatically and publishes changed ADP, rankings, and news files to the website.
 
+## Historical draft capital map
+
+The Projection Lab's **Season view** switches between current projections, all historical seasons, and each completed year in the maintained archive (currently 2016–2025). Historical cells contain actual regular-season fantasy points, sample scoring standard deviation, player-season counts, and season coverage, grouped by that year's ADP. The pooled view gives each matched player-season equal weight, not each player or year. Current projections and historical actuals are never mixed in an average. PPR and TE-premium controls recalculate scoring; original 16/17-game season totals are retained, not scaled to a common pace.
+
+`python update_draft_capital_history.py` maintains the saved historical dataset. It uses MyFantasyLeague's public ADP and player APIs plus full nflverse regular-season totals, independently of the age curve's recent-retiree selection. A unique normalized name plus position connects MFL IDs to the source season's NFL IDs. Ambiguous identities, duplicated season rows, absent season stats, and zero-game rows are excluded instead of guessed or filled with zero; coverage and this possible upward bias are displayed. This includes players who retired before the current age-curve archive's cutoff when their year has an unambiguous match.
+
+Historical ADP uses **12-team PPR redraft, actual and mock drafts, minimum 5% draft-selection frequency**. It is not a verified 1QB, 2QB, half/full PPR, or TE-premium sample. Team-count controls change round boundaries around the same source picks, not the source league format. MFL's date-period filter does not apply to previous years, so these are year-level historical aggregates, not verified preseason snapshots or leakage-free backtests. The interface states these limitations rather than implying format-specific historical ADP exists.
+
+Completed-season snapshots are cached in `docs/data/draft_capital_history.json`; normal scheduled updates fetch only newly added archive seasons. Use `--refresh` to deliberately redownload all maintained years. Failed refreshes keep the prior dataset intact. The current-projection map remains available if the historical snapshot cannot load. This does not change the existing update schedule or enable the deferred game-day refresh plan.
+
 ## Survivor Lab (experimental)
 
 Open <https://outlierbaseline.com/survivor.html> for a 32-team, 18-week survivor matrix, used-team tracking, saved weekly picks, configurable planning window and tie rule, and 20,000-trial path comparisons. One pick per week and no team reuse are enforced; byes and started games cannot be selected. Plans stay in browser storage, separately for each season, and are not submitted to an external pool.

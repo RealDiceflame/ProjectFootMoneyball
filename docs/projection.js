@@ -1,14 +1,16 @@
 import { historicalPlayers, historyAnalytics, historyKey, historyRows, historyWindow, sampleStandardDeviation } from "./player-history.mjs?v=20260909-archive1";
+import { historicalRoundExpectations } from "./draft-capital.mjs?v=20260909-capital1";
 import {
   applyProjectionModel,
   POSITIONS,
   positionAgeCurve,
   roundPositionExpectations,
-} from "./projection-model.mjs?v=20260909-archive1";
+} from "./projection-model.mjs?v=20260909-capital1";
 
 const DATA_URL = "./data/rankings.json";
 const HISTORY_URL = "./data/player_history.json";
 const NEWS_URL = "./data/player_news.json";
+const CAPITAL_URL = "./data/draft_capital_history.json";
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
 const ui = {
@@ -30,6 +32,12 @@ const ui = {
   playerCards: document.querySelector("#player-projection-cards"),
   positionVariance: document.querySelector("#position-variance"),
   roundMap: document.querySelector("#round-map"),
+  roundSeason: document.querySelector("#round-map-season"),
+  roundHeading: document.querySelector("#round-map-heading"),
+  roundDescription: document.querySelector("#round-map-description"),
+  roundCoverage: document.querySelector("#round-map-coverage"),
+  roundBasis: document.querySelector("#round-map-basis"),
+  roundLimitations: document.querySelector("#round-map-limitations"),
 };
 
 const params = new URLSearchParams(window.location.search);
@@ -37,6 +45,8 @@ const state = {
   data: null,
   history: null,
   news: null,
+  capital: null,
+  roundSeason: params.get("roundSeason") || "current",
   settings: {
     teams: params.get("teams") || "12",
     quarterbacks: params.get("quarterbacks") || "2QB",
@@ -102,6 +112,8 @@ function syncUrl() {
   next.searchParams.set("ppr", state.settings.ppr);
   next.searchParams.set("tePremium", state.settings.tePremium);
   next.searchParams.set("pos", state.position);
+  if (state.roundSeason === "current") next.searchParams.delete("roundSeason");
+  else next.searchParams.set("roundSeason", state.roundSeason);
   if (state.player) next.searchParams.set("player", state.player);
   else next.searchParams.delete("player");
   window.history.replaceState({}, "", next);
@@ -293,7 +305,24 @@ function renderPositionVariance() {
 }
 
 function renderRoundMap() {
-  const expectations = roundPositionExpectations(state.rows, state.settings.teams, 15);
+  const historical = state.roundSeason !== "current";
+  const summary = historical ? historicalRoundExpectations(state.capital, state.settings, state.roundSeason) : null;
+  const expectations = summary?.cells || roundPositionExpectations(state.rows, state.settings.teams, 15);
+  const seasonLabel = summary?.seasons.length > 1 ? `${summary.seasons[0]}–${summary.seasons.at(-1)}` : summary?.seasons[0];
+  ui.roundHeading.textContent = historical ? `${seasonLabel || "Historical"} actual points by position and round` : `${state.data.projection_season} projected points by position and round`;
+  ui.roundDescription.textContent = historical
+    ? "Each cell shows average actual regular-season points, scoring standard deviation, and the number of matched player-seasons. Every player-season has equal weight; this is historical scoring variation, not a forecast range."
+    : "Players are assigned to a round from current consensus ADP and the selected number of teams. Each cell shows average projected points, scoring standard deviation, and the number of players in that slice.";
+  ui.roundCoverage.textContent = historical
+    ? `${summary.in_rounds.toLocaleString()} player-seasons in rounds 1–15 · ${summary.seasons.length} season${summary.seasons.length === 1 ? "" : "s"} · ${summary.coverage.matched.toLocaleString()}/${summary.coverage.adp_players.toLocaleString()} ADP records matched overall`
+    : `${expectations.reduce((n, cell) => n + cell.count, 0)} players in rounds 1–15${state.capital ? " · Historical seasons available below" : " · Historical data is temporarily unavailable"}`;
+  ui.roundBasis.textContent = historical
+    ? `ADP basis: MFL historical 12-team PPR redraft (actual + mock drafts). Not a verified ${state.settings.quarterbacks}, ${state.settings.ppr}, or TE-premium ADP sample. Points recalculate using ${state.settings.ppr}${state.settings.tePremium === "+0.5" ? " + 0.5 TE premium" : ""}; ${state.settings.teams}-team round boundaries rebucket those same ADP values, not a different source format.`
+    : "Current ADP and current projections stay separate from the historical observations.";
+  ui.roundLimitations.textContent = historical
+    ? `${summary.coverage.missing_stats} ADP records had no matched season statistics; ${summary.coverage.ambiguous} ambiguous matches were excluded. Missing seasons are not invented as zero-point seasons, which can bias averages upward. Actual totals retain each season's length (16 or 17 scheduled games). MFL cannot restrict prior-year ADP to a preseason date, so these are descriptive year-level aggregates—not a clean preseason backtest. QB count changes do not alter historical points or the source's ADP.`
+    : "Switch Season view to All historical seasons or a single year to explore the expanded scoring archive.";
+  ui.roundSeason.value = state.roundSeason;
   const table = document.createElement("table");
   const head = document.createElement("thead");
   const header = document.createElement("tr");
@@ -323,7 +352,12 @@ function renderRoundMap() {
         const spread = document.createElement("span");
         spread.textContent = result.stddev === null ? "SD —" : `± ${result.stddev.toFixed(0)}`;
         const count = document.createElement("small");
-        count.textContent = `${result.count} player${result.count === 1 ? "" : "s"}`;
+        count.textContent = historical
+          ? `${result.count} player-season${result.count === 1 ? "" : "s"} · ${result.season_count} year${result.season_count === 1 ? "" : "s"}`
+          : `${result.count} player${result.count === 1 ? "" : "s"}`;
+        td.title = historical
+          ? `${result.player_count} distinct players; ${result.count} player-seasons. Mean ${result.mean.toFixed(1)} points; sample SD ${result.stddev?.toFixed(1) ?? "unavailable"}.`
+          : `${result.count} players. Mean ${result.mean.toFixed(1)} projected points; sample SD ${result.stddev?.toFixed(1) ?? "unavailable"}.`;
         td.append(value, spread, count);
       }
       tr.append(td);
@@ -362,6 +396,11 @@ function render() {
 }
 
 function connectControls() {
+  ui.roundSeason.addEventListener("change", () => {
+    state.roundSeason = ui.roundSeason.value;
+    renderRoundMap();
+    syncUrl();
+  });
   [ui.teams, ui.quarterbacks, ui.ppr, ui.tePremium].forEach(control => {
     control.addEventListener("change", () => {
       state.settings = {
@@ -388,15 +427,25 @@ async function load() {
   syncControls();
   connectControls();
   try {
-    const [rankingsResponse, historyResponse, newsResponse] = await Promise.all([
+    const [rankingsResponse, historyResponse, newsResponse, capital] = await Promise.all([
       fetch(DATA_URL, { cache: "no-store" }),
       fetch(HISTORY_URL, { cache: "no-store" }),
       fetch(NEWS_URL, { cache: "no-store" }),
+      fetch(CAPITAL_URL, { cache: "no-store" }).then(response => response.ok ? response.json() : null).catch(() => null),
     ]);
     if (![rankingsResponse, historyResponse, newsResponse].every(response => response.ok)) throw new Error("One or more model inputs are unavailable");
     [state.data, state.history, state.news] = await Promise.all([
       rankingsResponse.json(), historyResponse.json(), newsResponse.json(),
     ]);
+    state.capital = capital?.schema_version === 1 && Array.isArray(capital.seasons) && capital.years ? capital : null;
+    const seasonChoices = [new Option(`${state.data.projection_season} projections`, "current")];
+    if (state.capital?.seasons.length) {
+      const years = [...state.capital.seasons].sort((a, b) => b - a);
+      seasonChoices.push(new Option(`All historical seasons (${years.at(-1)}–${years[0]})`, "all"));
+      years.forEach(year => seasonChoices.push(new Option(`${year} actual results`, String(year))));
+    }
+    if (!seasonChoices.some(option => option.value === state.roundSeason)) state.roundSeason = "current";
+    ui.roundSeason.replaceChildren(...seasonChoices);
     const historyCoverage = historyWindow(state.history);
     const historyPhrase = historyCoverage.count
       ? `${historyCoverage.count}-season history (${historyCoverage.range})`
