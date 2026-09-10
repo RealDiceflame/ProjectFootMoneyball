@@ -7,7 +7,7 @@
   <meta name="description" content="Explore OutlierBaseline fantasy football age curves, player season projections, positional variance, and draft-round scoring expectations.">
   <link rel="canonical" href="https://outlierbaseline.com/projection.html">
   <title>Projection Lab | OutlierBaseline</title>
-  <link rel="stylesheet" href="styles.css?v=20260909-timing1">
+  <link rel="stylesheet" href="styles.css?v=20260909-labs2">
 </head>
 <body>
   <header class="topbar">
@@ -69,6 +69,8 @@
             <span><i class="selected-dot"></i> Selected player</span>
           </div>
         </div>
+        <label class="age-view-control">Age comparison<select id="age-view"><option value="ppg">Points per game · position peers</option><option value="season">Season points · position peers</option><option value="career">Career-relative · best observed season = 100</option></select></label>
+        <p id="age-view-note" class="model-caveat"></p>
         <div class="age-chart-shell" id="age-chart"></div>
         <div class="projection-card-grid" id="player-projection-cards"></div>
       </section>
@@ -93,11 +95,15 @@
           </div>
         </div>
         <div class="round-map-controls">
-          <label for="round-map-season">Season view<select id="round-map-season"><option value="current">Current projections</option></select></label>
+          <label for="round-map-season">Season view<select id="round-map-season"><option value="all">All historical seasons</option><option value="current">Current projections</option></select></label>
           <label for="round-map-wait">Compare waiting<select id="round-map-wait"><option value="1">1 round</option><option value="2">2 rounds</option></select></label>
           <p id="round-map-coverage" role="status"></p>
         </div>
         <p id="round-map-basis" class="round-map-note"></p>
+        <label class="age-view-control">Graph position<select id="round-chart-position"><option value="all">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select></label>
+        <p class="round-chart-legend"><span class="legend-qb">● QB</span> <span class="legend-rb">● RB</span> <span class="legend-wr">● WR</span> <span class="legend-te">● TE</span> · Choose one position to show average ± one scoring SD.</p>
+        <div id="round-points-chart" class="age-chart-shell" tabindex="0" role="region" aria-label="Round scoring graph; scroll horizontally"></div>
+        <p class="round-map-note">Lines show scoring averages, not a promise of availability or the best roster strategy. Gaps mean missing data. Historical variation is not a calibrated forecast interval.</p>
         <section class="draft-timing" aria-labelledby="draft-timing-heading">
           <h3 id="draft-timing-heading">Where does waiting cost the most?</h3>
           <p id="draft-timing-summary" class="round-map-note" role="status"></p>
@@ -134,6 +140,8 @@
   </main>
 
   <footer><span>OutlierBaseline · Age Curve v1</span><a href="./">Use these projections on the live rankings board</a></footer>
-  <script type="module" src="projection.js?v=20260909-timing1"></script>
+  <script type="module" src="projection.js?v=20260909-labs2"></script>
+  <link rel="stylesheet" href="site-nav.css?v=20260909-labs2">
+  <script type="module" src="site-nav.js?v=20260909-labs2"></script>
 </body>
 </html>

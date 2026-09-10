@@ -662,3 +662,10 @@ dialog p:not(.eyebrow) { color: var(--muted); font-size: .82rem; line-height: 1.
   .history-chart { min-width: 520px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
+.age-view-control { display: inline-grid; gap: 8px; margin: 12px 0; max-width: 100%; font-size: 14px; }
+.age-view-control select { min-height: 44px; max-width: 100%; color: var(--ink); background: #102e25; border: 1px solid var(--line); padding: 10px; border-radius: 8px; }
+.round-points-chart { width: 100%; min-width: 800px; display: block; }
+.round-points-chart text { fill: #c5d7ce; font: 17px system-ui; }
+.round-chart-legend { font-size: 14px; line-height: 1.8; }
+.round-chart-legend span { margin-right: 16px; }
+.legend-qb { color: #8cc6ff; } .legend-rb { color: #d7ff54; } .legend-wr { color: #ffbc80; } .legend-te { color: #d6b3ff; }

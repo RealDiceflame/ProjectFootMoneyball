@@ -1,6 +1,7 @@
 import { historicalPlayers, historyAnalytics, historyKey, historyRows, historyWindow, sampleStandardDeviation } from "./player-history.mjs?v=20260909-archive1";
 import { historicalRoundExpectations } from "./draft-capital.mjs?v=20260909-capital1";
 import { draftTiming } from "./draft-timing.mjs?v=20260909-timing1";
+import {careerRelativeSamples, renderRoundChart} from "./lab-charts.mjs?v=20260909-labs2";
 import {
   applyProjectionModel,
   POSITIONS,
@@ -50,7 +51,7 @@ const state = {
   history: null,
   news: null,
   capital: null,
-  roundSeason: params.get("roundSeason") || "current",
+  roundSeason: params.get("roundSeason") || "all",
   waitRounds: params.get("waitRounds") === "2" ? 2 : 1,
   settings: {
     teams: params.get("teams") || "12",
@@ -117,7 +118,7 @@ function syncUrl() {
   next.searchParams.set("ppr", state.settings.ppr);
   next.searchParams.set("tePremium", state.settings.tePremium);
   next.searchParams.set("pos", state.position);
-  if (state.roundSeason === "current") next.searchParams.delete("roundSeason");
+  if (state.roundSeason === "all") next.searchParams.delete("roundSeason");
   else next.searchParams.set("roundSeason", state.roundSeason);
   if (state.waitRounds === 2) next.searchParams.set("waitRounds", "2");
   else next.searchParams.delete("waitRounds");
@@ -218,8 +219,15 @@ function renderPlayerCards(player) {
 }
 
 function renderAgeChart(player) {
-  const samples = state.samples.filter(sample => sample.pos === state.position);
-  const curve = positionAgeCurve(state.samples, state.position);
+  const view = document.querySelector("#age-view").value;
+  const original = state.samples.filter(sample => sample.pos === state.position);
+  const samples = view === "career" ? careerRelativeSamples(state.samples, state.position) : original.map(row => ({...row, fantasy_points_per_game: view === "season" ? row.fantasy_points : row.fantasy_points_per_game}));
+  const curve = positionAgeCurve(samples, state.position);
+  const units = view === "career" ? "% of best observed PPG" : view === "season" ? "Season fantasy points" : "Fantasy points per game";
+  const projectionValue = numeric(view === "season" ? player?.projected_points : player?.projected_ppg);
+  document.querySelector("#age-view-note").textContent = view === "career"
+    ? "Each player's best observed points-per-game season is 100; this compares career stages, not raw talent. Requires three recorded seasons with six or more games. Available history can miss a career's true peak. Retirement is not counted as zero. This descriptive curve does not change projections or force an arch."
+    : "This is a smoothed average of different players at each age, not a typical player's career path. Strong older survivors, playing time, and different talent levels can flatten or lift it. The band is player scoring variation, not confidence in the average. Try Career-relative to compare players with their own best observed season.";
   if (!samples.length || !curve.length) {
     ui.ageChart.textContent = "Age data is not yet available for this position.";
     return;
@@ -234,7 +242,7 @@ function renderAgeChart(player) {
     1,
     ...samples.map(sample => sample.fantasy_points_per_game),
     ...curve.map(point => point.mean + (point.stddev || 0)),
-    numeric(player?.projected_ppg) || 0,
+    view === "career" ? 0 : projectionValue || 0,
   ) * 1.08;
   const x = age => margin.left + (((age - minAge) / Math.max(1, maxAge - minAge)) * (width - margin.left - margin.right));
   const y = points => height - margin.bottom - ((Math.max(0, points) / maxPpg) * (height - margin.top - margin.bottom));
@@ -242,7 +250,7 @@ function renderAgeChart(player) {
     class: "model-age-chart",
     viewBox: `0 0 ${width} ${height}`,
     role: "img",
-    "aria-label": `${state.position} fantasy points per game by age, with ${player?.player || "the selected player"} highlighted`,
+    "aria-label": `${state.position} ${units} by age, with ${player?.player || "the selected player"} highlighted`,
   });
 
   [0, 0.25, 0.5, 0.75, 1].forEach(ratio => {
@@ -256,7 +264,7 @@ function renderAgeChart(player) {
     svg.append(svgNode("text", { class: "model-axis-label", x: x(age), y: height - 22, "text-anchor": "middle" }, String(age)));
   }
   svg.append(svgNode("text", { class: "model-axis-title", x: width / 2, y: height - 3, "text-anchor": "middle" }, "Age on September 1"));
-  svg.append(svgNode("text", { class: "model-axis-title", x: 14, y: height / 2, transform: `rotate(-90 14 ${height / 2})`, "text-anchor": "middle" }, "Fantasy points per game"));
+  svg.append(svgNode("text", { class: "model-axis-title", x: 14, y: height / 2, transform: `rotate(-90 14 ${height / 2})`, "text-anchor": "middle" }, units));
 
   const upper = curve.map(point => `${x(point.age)},${y(point.mean + (point.stddev || 0))}`);
   const lower = [...curve].reverse().map(point => `${x(point.age)},${y(Math.max(0, point.mean - (point.stddev || 0)))}`);
@@ -272,24 +280,24 @@ function renderAgeChart(player) {
       cx: x(sample.age) + jitter,
       cy: y(sample.fantasy_points_per_game),
       r: isSelected ? 6 : 3.2,
-    }), `${sample.player}, age ${sample.age} (${sample.season}): ${sample.fantasy_points_per_game.toFixed(1)} FPTS/G in ${sample.games} games${sample.is_historical ? " · historical pool" : ""}`));
+    }), `${sample.player}, age ${sample.age} (${sample.season}): ${sample.fantasy_points_per_game.toFixed(1)} ${units} in ${sample.games} games${sample.is_historical ? " · historical pool" : ""}`));
   });
 
   const linePoints = curve.map(point => `${x(point.age)},${y(point.mean)}`).join(" ");
   svg.append(withTooltip(svgNode("polyline", { class: "model-curve-line", points: linePoints }), `${state.position} smoothed position average`));
   curve.forEach(point => {
-    svg.append(withTooltip(svgNode("circle", { class: "model-curve-point", cx: x(point.age), cy: y(point.mean), r: 4 }), `Age ${point.age}: ${point.mean.toFixed(1)} average FPTS/G, SD ${point.stddev?.toFixed(1) || "—"}, ${point.count} player-seasons`));
+    svg.append(withTooltip(svgNode("circle", { class: "model-curve-point", cx: x(point.age), cy: y(point.mean), r: point.exact_count < 10 ? 3 : 5, opacity: point.exact_count < 10 ? .5 : 1 }), `Age ${point.age}: ${point.mean.toFixed(1)} average ${units}, SD ${point.stddev?.toFixed(1) || "—"}, ${point.exact_count} exact-age / ${point.count} nearby player-seasons${point.exact_count < 10 ? " · sparse age" : ""}`));
   });
 
-  if (player && numeric(player.age) !== null && numeric(player.projected_ppg) !== null) {
+  if (view !== "career" && !player?.is_historical && player && numeric(player.age) !== null && projectionValue !== null) {
     const centerX = x(player.age);
-    const centerY = y(player.projected_ppg);
+    const centerY = y(projectionValue);
     const size = 9;
     svg.append(
       withTooltip(svgNode("polygon", {
         class: "model-projection-point",
         points: `${centerX},${centerY - size} ${centerX + size},${centerY} ${centerX},${centerY + size} ${centerX - size},${centerY}`,
-      }), `${player.player} ${state.data.projection_season} projection: ${Number(player.projected_ppg).toFixed(1)} FPTS/G at age ${Math.round(player.age)}`),
+      }), `${player.player} ${state.data.projection_season} projection: ${projectionValue.toFixed(1)} ${units} at age ${Math.round(player.age)}`),
       svgNode("text", { class: "model-projection-label", x: centerX, y: Math.max(18, centerY - 15), "text-anchor": "middle" }, `${player.player} projection`),
     );
   }
@@ -368,6 +376,7 @@ function renderRoundMap() {
   const historical = state.roundSeason !== "current";
   const summary = historical ? historicalRoundExpectations(state.capital, state.settings, state.roundSeason) : null;
   const expectations = summary?.cells || roundPositionExpectations(state.rows, state.settings.teams, 15);
+  renderRoundChart(document.querySelector("#round-points-chart"), expectations, document.querySelector("#round-chart-position").value);
   const timing = draftTiming(summary?.rows || state.rows, {teams: state.settings.teams, historical, waitRounds: state.waitRounds});
   renderTimingCards(timing);
   ui.roundWait.value = String(state.waitRounds);
@@ -469,6 +478,8 @@ function render() {
 }
 
 function connectControls() {
+  document.querySelector("#age-view").addEventListener("change", () => renderAgeChart(selectedPlayer()));
+  document.querySelector("#round-chart-position").addEventListener("change", renderRoundMap);
   ui.roundWait.addEventListener("change", () => {
     state.waitRounds = Number(ui.roundWait.value) === 2 ? 2 : 1;
     renderRoundMap();
@@ -516,12 +527,13 @@ async function load() {
       rankingsResponse.json(), historyResponse.json(), newsResponse.json(),
     ]);
     state.capital = capital?.schema_version === 1 && Array.isArray(capital.seasons) && capital.years ? capital : null;
-    const seasonChoices = [new Option(`${state.data.projection_season} projections`, "current")];
+    const seasonChoices = [];
     if (state.capital?.seasons.length) {
       const years = [...state.capital.seasons].sort((a, b) => b - a);
       seasonChoices.push(new Option(`All historical seasons (${years.at(-1)}–${years[0]})`, "all"));
       years.forEach(year => seasonChoices.push(new Option(`${year} actual results`, String(year))));
     }
+    seasonChoices.push(new Option(`${state.data.projection_season} projections`, "current"));
     if (!seasonChoices.some(option => option.value === state.roundSeason)) state.roundSeason = "current";
     ui.roundSeason.replaceChildren(...seasonChoices);
     const historyCoverage = historyWindow(state.history);

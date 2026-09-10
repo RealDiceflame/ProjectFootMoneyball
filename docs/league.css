@@ -1,0 +1,14 @@
+.league-intro h1 { font: 500 clamp(30px, 4vw, 48px)/1.15 Georgia, serif; margin: 12px 0; }
+.league-page .survivor-panel p { font-size: 16px; }
+.league-page input { min-height: 44px; width: 160px; padding: 10px; color: var(--ink); background: #102e25; border: 1px solid var(--line); border-radius: 8px; }
+.league-bracket { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.league-round { padding: 16px; background: #102b22; border: 1px solid var(--line); border-radius: 10px; margin-top: 12px; }
+.league-round h3 { margin-top: 0; }
+.league-playoff-game { padding: 12px 0; border-bottom: 1px solid var(--line); line-height: 1.7; font-size: 16px; }
+.league-playoff-game strong { display: block; color: var(--lime); }
+.league-champion { grid-column: 1 / -1; border: 1px solid var(--lime); }
+#league-error { padding: 12px; border: 1px solid var(--red); }
+#league-progress { min-height: 25px; }
+.league-section-table { margin-bottom: 24px; }
+.league-section-table h3 { margin-top: 26px; }
+@media(max-width: 760px) { .league-bracket { grid-template-columns: 1fr; } }

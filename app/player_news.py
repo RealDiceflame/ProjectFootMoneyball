@@ -498,12 +498,20 @@ def build_player_news(
     return destination
 
 
-def _download_csv(url: str, columns: list[str], *, get: Callable = requests.get, optional: bool = False) -> pd.DataFrame:
+def _download_csv(url: str, columns: list[str], *, get: Callable = requests.get, optional: bool = False,
+                  optional_columns: tuple[str, ...] = ()) -> pd.DataFrame:
     response = get(url, headers={"User-Agent": "ProjectFootMoneyball/1.0"}, timeout=180)
     if optional and response.status_code == 404:
         return pd.DataFrame(columns=columns)
     response.raise_for_status()
-    return pd.read_csv(BytesIO(response.content), compression="gzip", usecols=columns)
+    frame = pd.read_csv(BytesIO(response.content), compression="gzip")
+    missing = set(columns) - set(frame.columns)
+    required_missing = missing - set(optional_columns)
+    if required_missing:
+        raise ValueError(f"Source is missing required columns: {sorted(required_missing)}")
+    for column in missing:
+        frame[column] = pd.NA
+    return frame.loc[:, columns]
 
 
 def _download_headlines(*, get: Callable = requests.get) -> list[dict]:
@@ -559,6 +567,7 @@ def refresh_player_news(
             "practice_primary_injury", "practice_secondary_injury", "practice_status",
         ],
         optional=True,
+        optional_columns=("report_secondary_injury", "practice_secondary_injury"),
     )
     status("[5/5] Loading recent ESPN NFL RSS headlines...")
     try:

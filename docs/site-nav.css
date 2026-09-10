@@ -1,0 +1,17 @@
+.lab-navigation { display: flex; flex-wrap: wrap; gap: 8px; overflow: visible; }
+.lab-navigation details { position: relative; }
+.lab-navigation summary { padding: 12px; min-height: 44px; cursor: pointer; color: var(--ink); font-size: 14px; border-radius: 8px; }
+.lab-navigation .current-lab > summary, .lab-navigation details[open] > summary { color: var(--lime); background: #1d392c; }
+.lab-navigation .lab-nav-menu { position: absolute; top: 100%; left: 0; z-index: 100; display: grid; min-width: 245px; padding: 8px; background: #102b22; border: 1px solid #4a6b56; border-radius: 9px; box-shadow: 0 10px 30px #0006; }
+.lab-navigation .lab-nav-menu a { display: block; white-space: normal; min-height: 44px; padding: 12px; font-size: 14px; }
+.lab-navigation :focus-visible { outline: 3px solid var(--lime); outline-offset: 2px; }
+.site-refresh-status { flex-basis: 100%; width: 100%; font-size: 14px; color: var(--muted); padding-top: 12px; }
+.site-refresh-status summary { cursor: pointer; padding-block: 10px; }
+.site-refresh-status p { max-width: 900px; line-height: 1.6; }
+footer:has(.site-refresh-status) { flex-wrap: wrap; }
+@media(max-width: 720px) {
+  .topbar:has(.lab-navigation) { flex-wrap: wrap; }
+  .lab-navigation { width: 100%; }
+  .lab-navigation details { flex: 1 1 140px; }
+  .lab-navigation .lab-nav-menu { position: static; min-width: 0; box-shadow: none; }
+}

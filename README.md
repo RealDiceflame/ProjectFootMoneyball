@@ -47,6 +47,10 @@ The guide assumes the user still needs every position being compared. It does no
 
 ## Survivor Lab (experimental)
 
+The Projection Lab now opens the draft-capital map on **All historical seasons** unless a URL explicitly selects another view. The round graph compares QB/RB/WR/TE average scoring; selecting one position adds a scoring-SD band. Missing rounds are gaps. Age charts offer PPG, season totals, and a career-relative view (best observed PPG season = 100, at least three six-game seasons). These are descriptive comparisons, not forced bell curves: survivor selection, playing time, talent and incomplete careers can distort the shape. The career-relative view does not alter player rankings or the age-adjustment model.
+
+Shared dropdown navigation groups Fantasy (player rankings followed by kickers/DST), Projection Lab, Simulation Lab, and Betting.
+
 Open <https://outlierbaseline.com/survivor.html> for a 32-team, 18-week survivor matrix, used-team tracking, saved weekly picks, configurable planning window and tie rule, and 20,000-trial path comparisons. One pick per week and no team reuse are enforced; byes and started games cannot be selected. Plans stay in browser storage, separately for each season, and are not submitted to an external pool.
 
 `python update_survivor_board.py` builds `docs/data/survivor.json`. The existing four-times-daily update workflow runs this after the odds refresh. Visitors load this static snapshot, not an API. Download or validation failures retain the prior survivor snapshot.
@@ -66,6 +70,18 @@ The 20,000 repeatable trials reuse the opponent-adjusted score baseline and **pa
 The betting comparison reads the existing saved odds snapshot, never a visitor-triggered sportsbook API call. It matches fixture ID, team orientation, kickoff, current schedule week, and venue, within eight days. Sportsbook/exchange quotes need valid opposing selections, matching lines, timestamps no more than an hour apart, and age under 48 hours. Missing lines stay blank. Undated schedule reference lines are clearly separated from current quotes; their file-save time is not a source quote time. Market prices do not enter the score simulation. Source links point to the originating provider.
 
 Tests: `python -m pytest tests/test_survivor.py` and `node --test tests/survivor_model.test.mjs tests/matchup_model.test.mjs`.
+
+### Teams, league records and postseason
+
+`league.html` runs 2,000–10,000 seasons in a browser worker. It shows each team's game-by-game score average, SD and middle-80% range; expected season W–L–T and scoring totals; division, playoff, bye, conference and Super Bowl probabilities; and one internally consistent example season/bracket. Completed regular-season scores stay fixed. Started games lacking final scores are explicitly unresolved, not live forecasts. All remaining games share one sampled outcome between opponents. A reproducible seed makes scenarios auditable.
+
+The 14-team playoff structure has four division winners and three wild cards per conference, one bye, divisional reseeding, higher-seed home field and a neutral Super Bowl. Postseason score sampling is conditional on decisive results, not an overtime simulator. Tiebreakers use records, applicable head-to-head/division/conference/common-game performance and schedule/victory strength, then simplified point differential and a seeded draw; official late scoring-rank and touchdown tiebreakers are not fully modeled. Actual postseason results, injuries, weather and changing team strength are not ingested by this version. Qualification/champion frequencies are model estimates, not calibrated guarantees. Example bracket winners are sampled outcomes, not the favorites in each game. Tests: `node --test tests/league_model.test.mjs`.
+
+### Six-hour website data refresh
+
+The existing GitHub workflow attempts refreshes at 00:00, 06:00, 12:00 and 18:00 America/New_York, and supports manual runs. `scripts/refresh_site.py` refreshes configured statistics/ADP/rankings, player news, history, draft-capital history, odds and team ratings independently. Each stage gets one retry, restores its last-good public files on failure, and records its own last-success time in `docs/data/update_status.json`. Successful stages are published even when another stage fails; the workflow still reports a failure so the problem is not hidden. Missing optional secondary-injury columns no longer stop the news refresh; missing required fields still fail safely.
+
+The workflow explicitly requests and verifies a Pages build after the data commit: GitHub's automatic token pushes do not trigger Pages by themselves. The shared footer exposes refresh health and warns about older snapshots or newer published data. It does not forcibly reload an active draft. GitHub scheduling and upstream availability are best effort, not a guarantee that every source is younger than six hours. Yahoo imports remain manual and unconfigured/paid AI reports are not enabled by this schedule. Source timestamps and coverage still matter. Tests: `python -m pytest tests/test_site_refresh.py tests/test_player_news.py`.
 
 ## Weekly odds board
 

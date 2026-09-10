@@ -61,8 +61,7 @@ export function histogram(values, width = 4) {
   });
 }
 
-export function simulateMatchup(data, choice, {trials = 20000, seed = 2026, now = Date.now()} = {}) {
-  if (!Number.isInteger(trials) || trials < 100 || trials > 100000) throw new Error("Invalid simulation count.");
+export function prepareMatchup(data, choice, {now = Date.now()} = {}) {
   const forecast = matchupForecast(data, choice.home, choice.away, choice.neutral === true);
   if (choice.game_id) {
     const scheduled = data.games.find(game => game.game_id === choice.game_id);
@@ -92,11 +91,17 @@ export function simulateMatchup(data, choice, {trials = 20000, seed = 2026, now 
   const decisive = weightedPool(scenarios.filter(row => row.home !== row.away));
   const tied = weightedPool(scenarios.map(row => ({home: Math.round((row.home + row.away) / 2),
     away: Math.round((row.home + row.away) / 2), weight: row.weight})));
+  return {forecast, draw: (random, postseason = false) => sample(!postseason && random() < tie ? tied : decisive, random)};
+}
+
+export function simulateMatchup(data, choice, {trials = 20000, seed = 2026, now = Date.now()} = {}) {
+  if (!Number.isInteger(trials) || trials < 100 || trials > 100000) throw new Error("Invalid simulation count.");
+  const {forecast, draw} = prepareMatchup(data, choice, {now});
   const random = seededRandom(seed), scores = {home: [], away: [], margin: [], total: []};
   const counts = {home: 0, away: 0, tie: 0};
   const outcomes = [0, 0, 0, 0, 0, 0, 0]; // Away 15+, 8–14, 1–7; tie; home 1–7, 8–14, 15+.
   for (let i = 0; i < trials; i++) {
-    const row = sample(random() < tie ? tied : decisive, random), margin = row.home - row.away;
+    const row = draw(random), margin = row.home - row.away;
     scores.home.push(row.home); scores.away.push(row.away); scores.margin.push(margin); scores.total.push(row.home + row.away);
     counts[margin > 0 ? "home" : margin < 0 ? "away" : "tie"]++;
     const bucket = margin < -14 ? 0 : margin < -7 ? 1 : margin < 0 ? 2 : margin === 0 ? 3 : margin <= 7 ? 4 : margin <= 14 ? 5 : 6;
