@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {injuryFeed, filterInjuries, safeSourceUrl, snapshotFreshness, safePlayerPhoto, titlePlayers, recentHeadlineCards} from "../docs/home-data.mjs";
+import {injuryFeed, filterInjuries, safeSourceUrl, snapshotFreshness, safePlayerPhoto, titlePlayers, leagueHeadlineCards} from "../docs/home-data.mjs";
 import {freshSeed, validSeed, MAX_SEED, exampleTrialIndices} from "../docs/simulation-runs.mjs";
 
 const report = (player, status, week = 1) => ({
@@ -75,7 +75,7 @@ test("portraits permit only the roster image host and preserve safe injury sourc
   assert.equal(injuryFeed(newsBundle(namedReport("Lamar Jackson")))[0].photoUrl, portraitUrl);
 });
 
-test("recent previews retain original article links, deduplicate, age out and require names in titles", () => {
+test("league previews keep unmatched stories while photos still require names in titles", () => {
   const article = {category: "Recent news", date: "2026-09-13", title: "Lamar Jackson and Derrick Henry practice", source: {url: "https://www.espn.com/nfl/story/_/id/123/original-story"}};
   const player = {...namedReport("Lamar Jackson"), events: [article, article,
     {...article, title: "QB practices", source: {url: "https://www.espn.com/nfl/lamar-jackson"}},
@@ -83,10 +83,21 @@ test("recent previews retain original article links, deduplicate, age out and re
     {...article, date: "2027-01-01", source: {url: "https://www.espn.com/nfl/future"}},
     {...article, source: {url: "https://evil.test/article"}},
     {...article, source: {url: "javascript:alert(1)"}}, null]};
-  const cards = recentHeadlineCards(newsBundle(player, namedReport("Derrick Henry")), Date.parse("2026-09-13T18:00:00Z"));
-  assert.equal(cards.length, 1); assert.equal(cards[0].url, article.source.url);
+  const cards = leagueHeadlineCards(newsBundle(player, namedReport("Derrick Henry")), Date.parse("2026-09-13T18:00:00Z"));
+  assert.equal(cards.length, 2); assert.equal(cards[0].url, article.source.url);
   assert.equal(cards[0].players.length, 2);
-  assert.deepEqual(recentHeadlineCards(null), []);
+  assert.equal(cards[1].title, "QB practices"); assert.equal(cards[1].players.length, 0);
+  assert.deepEqual(leagueHeadlineCards(null), []);
+});
+
+test("full league feed sorts by publication time, supports unknown dates and caps the scrollable list", () => {
+  const item = (index, published_at = "2026-09-13T15:00:00Z") => ({title: `League story ${index}`, url: `https://www.espn.com/nfl/story/${index}`, published_at});
+  const items = [item(0), item(1, "2026-09-13T16:00:00Z"), item(2, null), item(0), null];
+  const cards = leagueHeadlineCards({league_news: {items}}, Date.parse("2026-09-13T18:00:00Z"));
+  assert.deepEqual(cards.map(card => card.title), ["League story 1", "League story 0", "League story 2"]);
+  assert.ok(cards.every(card => card.players.length === 0)); assert.equal(cards[2].timestamp, null);
+  assert.equal(leagueHeadlineCards({league_news: {items: Array.from({length: 60}, (_, i) => item(i))}}, Date.parse("2026-09-13T18:00:00Z")).length, 50);
+  assert.deepEqual(leagueHeadlineCards({league_news: {items: []}, reports: {p: {events: [{category: "Recent news", title: "Old fallback", source: {url: "https://www.espn.com/nfl/story/old"}}]}}}), []);
 });
 test("fresh seeds are valid and avoid consecutive duplicates while fixed seeds remain explicit", () => {
   for (const word of [0, 1, MAX_SEED, 0xffffffff]) {
@@ -116,7 +127,10 @@ test("homepage controls and rankings route are wired with unique identifiers", (
   const ids = [...html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
   assert.equal(ids.length, new Set(ids).size);
   for (const [, id] of js.matchAll(/\$\("([^"]+)"\)/g)) assert.ok(ids.includes(id), id);
-  assert.match(html, /manually curated, not a live feed/);
+  assert.doesNotMatch(html, /manually curated|selected-source-cards|recent-headline-list/);
+  assert.match(html, /id="league-news-list"[^>]+tabindex="0"[^>]+role="region"/);
+  const css = readFileSync(new URL("../docs/home.css", import.meta.url), "utf8");
+  assert.match(css, /\.home-news-scroll\s*\{[^}]*max-height:[^}]*overflow-y: auto/);
   const updates = html.indexOf('aria-labelledby="updates-heading"');
   assert.ok(updates > html.indexOf('aria-labelledby="explore-heading"'));
   assert.ok(updates > html.indexOf('aria-labelledby="highlights-heading"'));

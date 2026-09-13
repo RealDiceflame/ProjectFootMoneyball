@@ -172,16 +172,12 @@ test("homepage links, injury filters, automatic X loading and mobile layout work
     assert.equal(await page.locator(".home-nav-link").getAttribute("aria-current"), "page");
     assert.equal(await page.locator(".topnav .current-lab").count(), 0);
     assert.equal(await page.locator("#home-injury-list article").count(), 8);
-    assert.equal(await page.locator("#selected-source-cards .home-source-card").count(), 4);
-    assert.deepEqual(await page.locator("#selected-source-cards .home-player-summary strong").allTextContents(),
-      ["Lamar Jackson", "Derrick Henry", "David Montgomery", "Malik Nabers"]);
-    assert.equal(await page.locator("#selected-source-cards .home-clip").nth(2).getAttribute("href"),
-      "https://www.espn.com/video/clip/_/id/49931282/david-montgomery-scores-3rd-td-game");
-    assert.equal(await page.locator("#selected-source-cards .home-clip").nth(3).getAttribute("href"),
-      "https://www.cbssports.com/watch/fantasy-football/video/malik-nabers-fantasy-outlook-and-injury-status");
-    assert.equal(await page.locator("#selected-source-cards .home-portrait").count(), 4);
+    assert.equal(await page.locator("#selected-source-cards").count(), 0);
+    assert.ok(await page.locator("#league-news-list .home-source-card").count() > 0);
+    assert.equal(await page.locator("#league-news-list").getAttribute("tabindex"), "0");
+    assert.ok(await page.locator("#league-news-list .home-clip").evaluateAll(links => links.every(link => new URL(link.href).hostname === "www.espn.com")));
     assert.equal(await page.locator(".home-highlights .home-injury-detail, .home-highlights .home-badge").count(), 0);
-    assert.doesNotMatch(await page.locator("#selected-source-cards .home-card-players").allTextContents().then(rows => rows.join(" ")), /injury|questionable|probable|RISK/i);
+    assert.doesNotMatch(await page.locator("#league-news-list .home-card-players").allTextContents().then(rows => rows.join(" ")), /injury|questionable|probable|RISK/i);
     await page.locator("#injury-more").click();
     assert.equal(await page.locator("#home-injury-list article").count(), 16);
     const player = await page.locator("#home-injury-list h3").first().textContent();
@@ -242,9 +238,9 @@ test("homepage gracefully isolates an unavailable injury snapshot", async () => 
     assert.match(await page.locator("#injury-freshness").textContent(), /No current injury status can be inferred/);
     assert.equal(await page.locator("#home-injury-list article").count(), 0);
     assert.equal(await page.locator("#injury-filter").isDisabled(), true);
-    assert.equal(await page.locator("#selected-source-cards .home-clip").count(), 4);
-    assert.match(await page.locator("#selected-source-cards").textContent(), /Player details unavailable/);
-    assert.equal(await page.locator("#selected-source-cards img").count(), 0);
+    assert.equal(await page.locator("#league-news-list .home-clip").count(), 0);
+    assert.match(await page.locator("#league-news-status").textContent(), /temporarily unavailable/);
+    assert.equal(await page.getByRole("link", {name: "ESPN NFL ↗", exact: true}).getAttribute("href"), "https://www.espn.com/nfl/");
     assert.ok(await page.getByRole("link", {name: "Explore player rankings", exact: false}).isVisible());
     assert.ok(await page.getByRole("link", {name: "Simulate the season", exact: true}).isVisible());
   } finally { await context.close(); }

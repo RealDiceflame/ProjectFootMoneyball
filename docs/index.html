@@ -14,7 +14,7 @@
   <meta name="twitter:image" content="https://outlierbaseline.com/og.png">
   <title>OutlierBaseline · Football Intelligence</title>
   <link rel="stylesheet" href="styles.css?v=20260909-labs2">
-  <link rel="stylesheet" href="home.css?v=20260913-cards1">
+  <link rel="stylesheet" href="home.css?v=20260913-feed1">
   <link rel="stylesheet" href="site-nav.css?v=20260913-home1">
 </head>
 <body class="home-page">
@@ -49,30 +49,14 @@
         <noscript>Enable JavaScript to view the saved reports. <a href="rankings.html">Open player rankings</a>.</noscript>
       </section>
       <aside class="home-section home-highlights" aria-labelledby="highlights-heading">
-        <p class="home-kicker">ON THE FIELD</p><h2 id="highlights-heading">Big plays &amp; the latest buzz</h2>
-        <p>Preview clips and analysis, then open the original publisher. Videos are not copied or hosted here.</p>
-        <p class="home-small">Links selected September 13, 2026 · manually curated, not a live feed.</p>
-        <div id="selected-source-cards">
-          <article class="home-source-card">
-            <a class="home-clip" href="https://www.nfl.com/videos/lamar-jackson-s-loft-locates-moore-for-53-yards" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">▶</span><div><small>NFL.COM · HIGHLIGHT</small><strong>Lamar Jackson connects for 53 yards</strong></div><b aria-hidden="true">↗</b></a>
-            <div class="home-card-players"><p class="home-small">Player details load from the saved snapshot.</p></div>
-          </article>
-          <article class="home-source-card">
-            <a class="home-clip" href="https://www.nfl.com/videos/derrick-henry-s-third-td-boosts-baltimore-s-lead" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">▶</span><div><small>NFL.COM · HIGHLIGHT</small><strong>Derrick Henry finds the end zone again</strong></div><b aria-hidden="true">↗</b></a>
-            <div class="home-card-players"><p class="home-small">Player details load from the saved snapshot.</p></div>
-          </article>
-          <article class="home-source-card">
-            <a class="home-clip" href="https://www.espn.com/video/clip/_/id/49931282/david-montgomery-scores-3rd-td-game" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">▶</span><div><small>ESPN · HIGHLIGHT</small><strong>David Montgomery adds a third touchdown</strong></div><b aria-hidden="true">↗</b></a>
-            <div class="home-card-players"><p class="home-small">Player details load from the saved snapshot.</p></div>
-          </article>
-          <article class="home-source-card">
-            <a class="home-clip" href="https://www.cbssports.com/watch/fantasy-football/video/malik-nabers-fantasy-outlook-and-injury-status" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">↗</span><div><small>CBS SPORTS · ANALYSIS</small><strong>Malik Nabers: fantasy outlook and injury discussion</strong></div><b aria-hidden="true">↗</b></a>
-            <div class="home-card-players"><p class="home-small">Player details load from the saved snapshot.</p></div>
-          </article>
-        </div>
-        <p class="home-small">Player photos use our roster data. A title must contain an unambiguous full name before we attach a player photo.</p>
+        <p class="home-kicker">ON THE FIELD</p><h2 id="highlights-heading">Around the league</h2>
+        <p>League news and analysis from ESPN’s NFL feed. Open any headline to read the original story.</p>
+        <p id="league-news-status" class="home-feed-status" role="status">Loading the saved league feed…</p>
+        <p id="league-news-help" class="home-small">Scroll for more stories. Updated on the six-hour schedule—not a live play-by-play feed.</p>
+        <div id="league-news-list" class="home-news-scroll" tabindex="0" role="region" aria-label="Scrollable league news" aria-describedby="league-news-help"></div>
+        <noscript><p class="home-small">Enable JavaScript to view saved headlines, or open ESPN NFL below.</p></noscript>
+        <p class="home-small">Player photos appear when the headline has a clear full-name match. League stories without a match still appear.</p>
         <div class="home-source-links"><a class="home-text-link" href="https://www.nfl.com/videos/" target="_blank" rel="noopener noreferrer">NFL highlights ↗</a><a class="home-text-link" href="https://www.espn.com/nfl/" target="_blank" rel="noopener noreferrer">ESPN NFL ↗</a><a class="home-text-link" href="https://www.cbssports.com/watch/nfl" target="_blank" rel="noopener noreferrer">CBS Sports NFL ↗</a></div>
-        <section class="home-recent-news" aria-labelledby="recent-headline-heading"><h3 id="recent-headline-heading">Recent player headlines</h3><p class="home-small">Headlines come from the saved six-hour refresh, not live article requests.</p><p id="recent-headline-status" class="home-small" role="status">Loading saved headlines…</p><div id="recent-headline-list"></div></section>
         <div class="home-social"><h3>From the NFL on X</h3><p class="home-small">The official account feed loads automatically below. X controls its order and availability; this is not a highlights-only filter.</p><p id="social-privacy" class="home-small">This embedded feed connects your browser to X, which may receive browsing information and use cookies. We request reduced personalization.</p>
           <p id="social-status" class="home-small" role="status"></p><div id="x-feed"></div>
           <p class="home-small"><a href="https://x.com/NFL" target="_blank" rel="noopener noreferrer">Open NFL on X ↗</a> · <a href="https://help.x.com/en/x-for-websites-ads-info-and-privacy" target="_blank" rel="noopener noreferrer">X privacy information ↗</a></p>
@@ -101,6 +85,6 @@
     </section>
   </main>
   <footer><p>OutlierBaseline · Independent football research. No affiliation with the NFL or featured platforms. Public tools remain available without an account.</p><a href="fantasy.html">My Leagues · local prototype</a></footer>
-  <script type="module" src="site-nav.js?v=20260913-home1"></script><script type="module" src="home.js?v=20260913-photos2"></script>
+  <script type="module" src="site-nav.js?v=20260913-home1"></script><script type="module" src="home.js?v=20260913-feed1"></script>
 </body>
 </html>

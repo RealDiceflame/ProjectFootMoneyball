@@ -1,4 +1,4 @@
-import {injuryFeed, filterInjuries, snapshotFreshness, titlePlayers, recentHeadlineCards} from "./home-data.mjs?v=20260913-cards1";
+import {injuryFeed, filterInjuries, snapshotFreshness, leagueHeadlineCards} from "./home-data.mjs?v=20260913-feed1";
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; };
 let injuries = [], shown = 8;
@@ -33,23 +33,27 @@ function playerSummary(player) {
 }
 
 function renderSourcePlayers(bundle) {
-  for (const card of document.querySelectorAll("#selected-source-cards .home-source-card")) {
-    const players = titlePlayers(bundle, card.querySelector(".home-clip strong").textContent);
-    card.querySelector(".home-card-players").replaceChildren(...(players.length ? players.map(playerSummary)
-      : [el("p", bundle ? "No unambiguous player match in the saved roster." : "Player details unavailable. Open the original story above.", "home-small")]));
-  }
-  const cards = recentHeadlineCards(bundle);
-  $("recent-headline-list").replaceChildren(...cards.map(card => {
+  const cards = leagueHeadlineCards(bundle);
+  $("league-news-list").replaceChildren(...cards.map(card => {
     const article = el("article", undefined, "home-source-card"), link = el("a", undefined, "home-clip");
     link.href = card.url; link.target = "_blank"; link.rel = "noopener noreferrer";
-    const title = el("div"); title.append(el("small", `${card.source} · ${card.date}`), el("strong", card.title));
+    const title = el("div"), metadata = el("small", `${card.source} · `);
+    if (card.timestamp) {
+      const time = el("time", new Date(card.timestamp).toLocaleString(undefined, {dateStyle: "medium", ...(card.timestamp.includes("T") ? {timeStyle: "short"} : {})}));
+      time.dateTime = card.timestamp; metadata.append(time);
+    } else metadata.append(el("span", "Publication time unavailable"));
+    title.append(metadata, el("strong", card.title));
     const arrow = el("b", "↗"); arrow.setAttribute("aria-hidden", "true"); link.append(title, arrow);
     const players = el("div", undefined, "home-card-players"); players.append(...card.players.map(playerSummary));
-    article.append(link, players); return article;
+    article.append(link); if (card.players.length) article.append(players); return article;
   }));
-  $("recent-headline-status").textContent = cards.length ? "Recent matched headlines from the saved ESPN feed (past 7 days)."
-    : bundle ? "No recent full-name player headlines in this saved feed. Source links above remain available."
-    : "The saved news feed is unavailable. Source links above remain available.";
+  const freshness = snapshotFreshness(bundle?.league_news?.updated_at || (!bundle?.league_news ? bundle?.generated_at : null));
+  const unavailable = !bundle || bundle.league_news?.status === "unavailable";
+  $("league-news-status").textContent = cards.length
+    ? `${cards.length} stories · Feed saved: ${freshness.label}.${unavailable ? " Latest source refresh failed; showing saved stories." : freshness.stale ? " This feed is overdue for an update." : " Refreshes scheduled every 6 hours."}`
+    : unavailable ? "News is temporarily unavailable. Open ESPN NFL below for the latest stories." : "No stories from the past seven days are available in this saved feed.";
+  $("league-news-status").classList.toggle("stale", unavailable || freshness.stale);
+  if (!cards.length) $("league-news-list").append(el("p", "New source links will appear here after a successful scheduled refresh.", "home-small"));
 }
 
 function renderInjuries() {
@@ -67,10 +71,11 @@ function renderInjuries() {
 }
 
 async function loadInjuries() {
+  let bundle = null;
   try {
     const response = await fetch("data/player_news.json", {cache: "no-store"});
     if (!response.ok) throw new Error("Injury snapshot could not be loaded.");
-    const bundle = await response.json(); injuries = injuryFeed(bundle);
+    bundle = await response.json(); injuries = injuryFeed(bundle);
     const freshness = snapshotFreshness(bundle.generated_at);
     $("injury-freshness").textContent = `Saved snapshot: ${freshness.label}. ${freshness.stale ? "This snapshot is older than the six-hour schedule or its date is unavailable. Verify availability with the source." : "Report weeks below describe the source coverage; this is not a live feed."}`;
     $("injury-freshness").classList.toggle("stale", freshness.stale);
@@ -81,7 +86,7 @@ async function loadInjuries() {
     $("injury-freshness").textContent = "The injury snapshot is unavailable. No current injury status can be inferred. Rankings and the other tools remain available.";
     $("injury-freshness").classList.add("stale");
     $("home-injury-list").replaceChildren();
-    renderSourcePlayers(null);
+    renderSourcePlayers(bundle);
   }
 }
 $("injury-search").addEventListener("input", () => { shown = 8; renderInjuries(); });

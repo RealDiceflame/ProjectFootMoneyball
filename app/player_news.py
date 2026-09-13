@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import re
 from typing import Callable
+from urllib.parse import urlsplit
 from xml.etree import ElementTree
 
 import pandas as pd
@@ -489,6 +490,8 @@ def build_player_news(
             "events": events,
         }
 
+    destination = Path(destination)
+    league_news = _league_news_snapshot(headlines, now, destination)
     payload = {
         "season": season,
         "generated_at": now.isoformat(),
@@ -496,6 +499,7 @@ def build_player_news(
         "source": "nflverse roster, depth-chart, and injury data plus ESPN NFL RSS headlines",
         "attribution_url": "https://github.com/nflverse/nflverse-data",
         "news_attribution_url": ESPN_NEWS_SOURCE,
+        "league_news": league_news,
         "reports": players,
     }
     destination = Path(destination)
@@ -526,18 +530,57 @@ def _download_headlines(*, get: Callable = requests.get) -> list[dict]:
     response = get(ESPN_NEWS_URL, headers={"User-Agent": "Mozilla/5.0 ProjectFootMoneyball/1.0"}, timeout=60)
     response.raise_for_status()
     root = ElementTree.fromstring(response.content)
+    if root.find("./channel") is None:
+        raise ValueError("The news source did not return an RSS channel.")
     headlines = []
     for item in root.findall("./channel/item"):
         title = (item.findtext("title") or "").strip()
         url = (item.findtext("link") or "").strip()
         published = (item.findtext("pubDate") or "").strip()
         try:
-            date_label = parsedate_to_datetime(published).date().isoformat()
+            published_time = parsedate_to_datetime(published)
+            if published_time.tzinfo is None:
+                published_time = published_time.replace(tzinfo=timezone.utc)
+            published_at = published_time.astimezone(timezone.utc).isoformat()
+            date_label = published_time.date().isoformat()
         except (TypeError, ValueError, OverflowError):
             date_label = "Recent"
+            published_at = None
         if title and url.startswith(("https://", "http://")):
-            headlines.append({"title": title, "url": url, "date": date_label})
+            headlines.append({"title": title, "url": url, "date": date_label, "published_at": published_at})
     return headlines
+
+
+def _league_news_snapshot(headlines: list[dict] | None, now: datetime, destination: Path) -> dict:
+    """Keep league-wide RSS links, including stories without a ranked player match."""
+    items, seen = [], set()
+    for article in headlines or []:
+        if not isinstance(article, dict):
+            continue
+        title, url = str(article.get("title") or "").strip(), str(article.get("url") or "").strip()
+        try:
+            parsed = urlsplit(url)
+            safe = (parsed.scheme == "https" and parsed.hostname in {"www.espn.com", "espn.com"}
+                    and not parsed.username and not parsed.password and parsed.port in {None, 443})
+        except ValueError:
+            safe = False
+        if not title or not safe or url in seen:
+            continue
+        seen.add(url)
+        items.append({"title": title, "url": url, "date": article.get("date"),
+                      "published_at": article.get("published_at"), "source": "ESPN"})
+    base = {"source": "ESPN NFL RSS", "source_url": ESPN_NEWS_SOURCE, "attempted_at": now.isoformat()}
+    if items or headlines == []:
+        return {**base, "status": "ok", "updated_at": now.isoformat(), "items": items[:50]}
+    # An outage must not erase the last good feed or pretend its timestamp is fresh.
+    try:
+        previous = json.loads(destination.read_text(encoding="utf-8")).get("league_news", {})
+    except (OSError, ValueError, AttributeError):
+        previous = {}
+    if not isinstance(previous, dict):
+        previous = {}
+    return {**base, "status": "unavailable", "updated_at": previous.get("updated_at"),
+            "items": previous.get("items") if isinstance(previous.get("items"), list) else []}
 
 
 def refresh_player_news(
@@ -580,9 +623,9 @@ def refresh_player_news(
     status("[5/5] Loading recent ESPN NFL RSS headlines...")
     try:
         headlines = _download_headlines()
-    except (requests.RequestException, ElementTree.ParseError) as error:
+    except (requests.RequestException, ElementTree.ParseError, ValueError) as error:
         status(f"[WARN] Recent headlines are temporarily unavailable: {error}")
-        headlines = []
+        headlines = None
     result = build_player_news(
         rankings_path,
         destination,

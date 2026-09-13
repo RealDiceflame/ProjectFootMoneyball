@@ -47,20 +47,24 @@ export function titlePlayers(bundle, title) {
   });
 }
 
-export function recentHeadlineCards(bundle, now = Date.now()) {
+export function leagueHeadlineCards(bundle, now = Date.now()) {
   const cards = new Map();
-  for (const report of Object.values(bundle?.reports || {})) {
-    for (const event of Array.isArray(report?.events) ? report.events : []) {
-      if (event?.category !== "Recent news" || typeof event.title !== "string") continue;
-      const url = safeSourceUrl(event.source?.url), date = Date.parse(event.date);
-      // Only the existing ESPN news source is automated. Curated sources are separate.
-      if (!url || !["www.espn.com", "espn.com"].includes(new URL(url).hostname)
-          || !Number.isFinite(date) || date > now + 86400000 || now - date > 7 * 86400000 || cards.has(url)) continue;
-      const players = titlePlayers(bundle, event.title);
-      if (players.length) cards.set(url, {url, title: event.title, date: event.date, players, source: "ESPN · NEWS"});
-    }
+  // Older snapshots can still supply their saved headlines during deployment.
+  const items = Array.isArray(bundle?.league_news?.items) ? bundle.league_news.items
+    : Object.values(bundle?.reports || {}).flatMap(report => (Array.isArray(report?.events) ? report.events : [])
+      .filter(event => event?.category === "Recent news")
+      .map(event => ({...event, url: event.source?.url})));
+  for (const item of items) {
+    if (!item || typeof item.title !== "string" || !item.title.trim()) continue;
+    const url = safeSourceUrl(item.url), suppliedTime = item.published_at || item.date;
+    const timestamp = typeof suppliedTime === "string" ? suppliedTime : null;
+    const date = Date.parse(timestamp);
+    if (!url || !["www.espn.com", "espn.com"].includes(new URL(url).hostname) || new URL(url).port
+        || (Number.isFinite(date) && (date > now + 86400000 || now - date > 7 * 86400000)) || cards.has(url)) continue;
+    cards.set(url, {url, title: item.title.trim(), timestamp: Number.isFinite(date) ? timestamp : null,
+      players: titlePlayers(bundle, item.title), source: "ESPN", sortTime: Number.isFinite(date) ? date : 0});
   }
-  return [...cards.values()].sort((a, b) => Date.parse(b.date) - Date.parse(a.date) || a.title.localeCompare(b.title)).slice(0, 4);
+  return [...cards.values()].sort((a, b) => b.sortTime - a.sortTime).slice(0, 50);
 }
 
 export function injuryFeed(bundle) {

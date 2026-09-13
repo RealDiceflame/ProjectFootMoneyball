@@ -3,7 +3,9 @@ import json
 
 import pandas as pd
 
-from app.player_news import build_player_news, espn_team_url, match_headlines, normalize_name
+from app.player_news import build_player_news, espn_team_url, match_headlines, normalize_name, _download_headlines, _league_news_snapshot
+from types import SimpleNamespace
+import pytest
 
 
 def _rankings(path):
@@ -14,6 +16,32 @@ def _rankings(path):
             [2, "Reserve Receiver", "KC", "WR"],
         ]},
     }), encoding="utf-8")
+
+
+def test_league_rss_preserves_original_links_and_publication_times():
+    xml = b'''<rss><channel><item><title>League-wide update</title><link>https://www.espn.com/nfl/story/123</link><pubDate>Sun, 13 Sep 2026 12:00:00 -0400</pubDate></item><item><title>Undated report</title><link>https://www.espn.com/nfl/story/456</link><pubDate>Unknown</pubDate></item></channel></rss>'''
+    rows = _download_headlines(get=lambda *a, **k: SimpleNamespace(content=xml, raise_for_status=lambda: None))
+    assert rows[0]["published_at"] == "2026-09-13T16:00:00+00:00"
+    assert rows[0]["url"] == "https://www.espn.com/nfl/story/123"
+    assert rows[1]["published_at"] is None
+    with pytest.raises(ValueError, match="RSS"):
+        _download_headlines(get=lambda *a, **k: SimpleNamespace(content=b"<html>Unavailable</html>", raise_for_status=lambda: None))
+
+
+def test_league_snapshot_keeps_unmatched_stories_and_last_good_feed_on_failure(tmp_path):
+    destination = tmp_path / "news.json"
+    now = datetime(2026, 9, 13, 16, tzinfo=timezone.utc)
+    article = {"title": "League-wide coaching news", "url": "https://www.espn.com/nfl/story/123", "date": "2026-09-13"}
+    snapshot = _league_news_snapshot([article, article, {**article, "url": "javascript:alert(1)"}, {**article, "url": "https://evil.test/story"}], now, destination)
+    assert len(snapshot["items"]) == 1
+    assert snapshot["items"][0]["title"] == article["title"]
+    assert snapshot["status"] == "ok"
+    destination.write_text(json.dumps({"league_news": snapshot}), encoding="utf-8")
+    failed = _league_news_snapshot(None, datetime(2026, 9, 13, 22, tzinfo=timezone.utc), destination)
+    assert failed["status"] == "unavailable"
+    assert failed["updated_at"] == snapshot["updated_at"]
+    assert failed["items"] == snapshot["items"]
+    assert failed["attempted_at"] != failed["updated_at"]
 
 
 def test_normalize_name_ignores_common_suffixes_and_punctuation():
