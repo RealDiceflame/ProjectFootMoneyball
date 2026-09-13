@@ -39,9 +39,9 @@ $("injury-search").addEventListener("input", () => { shown = 8; renderInjuries()
 $("injury-filter").addEventListener("change", () => { shown = 8; renderInjuries(); });
 $("injury-more").addEventListener("click", () => { shown += 8; renderInjuries(); });
 
-// No social scripts, frames, or requests are loaded until the visitor opts in.
-$("load-x-feed").addEventListener("click", async () => {
-  $("load-x-feed").disabled = true; $("social-status").textContent = "Requesting the official X feed…";
+// Load the official embed asynchronously so an X outage cannot block the page.
+async function loadXFeed() {
+  $("social-status").textContent = "Loading the NFL on X…";
   const target = $("x-feed"), link = el("a", "View posts from @NFL on X");
   link.className = "twitter-timeline"; link.href = "https://x.com/NFL"; link.target = "_blank"; link.rel = "noopener noreferrer";
   link.dataset.theme = "dark"; link.dataset.height = "560"; link.dataset.dnt = "true"; target.replaceChildren(link);
@@ -57,5 +57,6 @@ $("load-x-feed").addEventListener("click", async () => {
   } catch {
     $("social-status").textContent = "The embedded feed could not load. You can still watch clips above or open NFL on X directly.";
   }
-});
+}
 loadInjuries();
+loadXFeed();

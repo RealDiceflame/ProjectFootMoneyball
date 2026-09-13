@@ -66,6 +66,9 @@ test("homepage controls and rankings route are wired with unique identifiers", (
   for (const [, id] of js.matchAll(/\$\("([^"]+)"\)/g)) assert.ok(ids.includes(id), id);
   assert.match(html, /manually curated, not a live feed/);
   assert.doesNotMatch(html, /<script[^>]+src="https:\/\/platform\.x/);
+  assert.doesNotMatch(html, /id="load-x-feed"/);
+  assert.match(html, /feed loads automatically below/);
+  assert.match(js, /loadXFeed\(\);/);
   const rankings = readFileSync(new URL("../docs/rankings.html", import.meta.url), "utf8");
   assert.match(rankings, /id="board-heading"/); assert.match(rankings, /src="app.js/);
 });

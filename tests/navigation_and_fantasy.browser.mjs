@@ -156,14 +156,18 @@ test("bad stored data and cross-tab conflicts are not overwritten", async () => 
   } finally { await context.close(); }
 });
 
-test("homepage links, injury filters, privacy opt-in and mobile layout work", async () => {
+test("homepage links, injury filters, automatic X loading and mobile layout work", async () => {
   const {context, page} = await openPage({}, "/");
   try {
     const errors = [], external = [];
     page.on("pageerror", error => errors.push(error.message));
     page.on("request", request => { if (new URL(request.url()).origin !== base) external.push(request.url()); });
     await page.reload(); await page.locator("#home-injury-list article").first().waitFor();
-    assert.deepEqual(errors, []); assert.deepEqual(external, []);
+    assert.deepEqual(errors, []);
+    await page.waitForFunction(() => document.querySelector("#social-status").textContent.includes("could not load"));
+    assert.deepEqual(external, ["https://platform.x.com/widgets.js"]);
+    assert.equal(await page.locator("#load-x-feed").count(), 0);
+    assert.equal(await page.locator("#x-feed .twitter-timeline").getAttribute("data-dnt"), "true");
     assert.equal(await page.locator(".home-nav-link").getAttribute("aria-current"), "page");
     assert.equal(await page.locator(".topnav .current-lab").count(), 0);
     assert.equal(await page.locator("#home-injury-list article").count(), 8);
@@ -194,11 +198,26 @@ test("homepage links, injury filters, privacy opt-in and mobile layout work", as
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `home width ${width}`);
     }
     await page.setViewportSize({width: 390, height: 844}); await screenshot(page, "home-mobile.png");
-    assert.equal(external.length, 0);
-    await page.locator("#load-x-feed").click();
-    await page.waitForFunction(() => document.querySelector("#social-status").textContent.includes("could not load"));
-    assert.ok(external.includes("https://platform.x.com/widgets.js"));
+    assert.deepEqual(external, ["https://platform.x.com/widgets.js"]);
     assert.equal(await page.getByRole("link", {name: "Open NFL on X ↗", exact: true}).getAttribute("href"), "https://x.com/NFL");
+  } finally { await context.close(); }
+});
+
+test("automatic X embed initializes once when the widget script is available", async () => {
+  const {context, page} = await openPage();
+  try {
+    let widgetRequests = 0;
+    await context.route("https://platform.x.com/widgets.js", route => {
+      widgetRequests++;
+      return route.fulfill({contentType: "text/javascript", body: 'document.querySelector("#x-feed").dataset.widgetTestLoaded = "true";'});
+    });
+    await page.goto(base + "/");
+    await page.waitForFunction(() => document.querySelector("#social-status").textContent.startsWith("X content requested."));
+    assert.equal(widgetRequests, 1);
+    assert.equal(await page.locator("#x-feed").getAttribute("data-widget-test-loaded"), "true");
+    assert.equal(await page.locator("#x-feed .twitter-timeline").getAttribute("href"), "https://x.com/NFL");
+    assert.equal(await page.locator("#x-feed .twitter-timeline").getAttribute("data-dnt"), "true");
+    assert.equal(await page.locator("#load-x-feed").count(), 0);
   } finally { await context.close(); }
 });
 
