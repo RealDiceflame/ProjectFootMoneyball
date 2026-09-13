@@ -61,7 +61,7 @@ if (nav) {
 }
 
 const footer = document.querySelector("footer");
-if (footer) {
+if (footer && footer.dataset.compact !== "true") {
   const status = document.createElement("details"), title = document.createElement("summary"), info = document.createElement("div");
   status.className = "site-refresh-status"; title.textContent = "Data refresh: every 6 hours (Eastern time)"; status.append(title, info); footer.append(status);
   let initial = null;

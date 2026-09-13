@@ -164,7 +164,7 @@ test("homepage links, injury filters, automatic X loading and mobile layout work
     page.on("request", request => { if (new URL(request.url()).origin !== base) external.push(request.url()); });
     await page.reload(); await page.locator("#home-injury-list article").first().waitFor();
     assert.deepEqual(errors, []);
-    await page.waitForFunction(() => document.querySelector("#social-status").textContent.includes("could not load"));
+    await page.waitForFunction(() => document.querySelector("#social-status").textContent.includes("X feed unavailable"));
     assert.equal(external.filter(url => url === "https://platform.x.com/widgets.js").length, 1);
     assert.ok(external.every(url => ["platform.x.com", "static.www.nfl.com"].includes(new URL(url).hostname)));
     assert.equal(await page.locator("#load-x-feed").count(), 0);
@@ -220,7 +220,7 @@ test("automatic X embed initializes once when the widget script is available", a
       return route.fulfill({contentType: "text/javascript", body: 'document.querySelector("#x-feed").dataset.widgetTestLoaded = "true";'});
     });
     await page.goto(base + "/");
-    await page.waitForFunction(() => document.querySelector("#social-status").textContent.startsWith("X content requested."));
+    await page.waitForFunction(() => document.querySelector("#x-feed").dataset.widgetTestLoaded === "true");
     assert.equal(widgetRequests, 1);
     assert.equal(await page.locator("#x-feed").getAttribute("data-widget-test-loaded"), "true");
     assert.equal(await page.locator("#x-feed .twitter-timeline").getAttribute("href"), "https://x.com/NFL");
@@ -235,14 +235,14 @@ test("homepage gracefully isolates an unavailable injury snapshot", async () => 
     await context.route("**/data/player_news.json", route => route.fulfill({status: 503, body: "unavailable"}));
     await page.reload();
     await page.waitForFunction(() => document.querySelector("#injury-count").textContent === "Reports unavailable");
-    assert.match(await page.locator("#injury-freshness").textContent(), /No current injury status can be inferred/);
+    assert.match(await page.locator("#injury-freshness").textContent(), /Injury reports temporarily unavailable/);
     assert.equal(await page.locator("#home-injury-list article").count(), 0);
     assert.equal(await page.locator("#injury-filter").isDisabled(), true);
     assert.equal(await page.locator("#league-news-list .home-clip").count(), 0);
     assert.match(await page.locator("#league-news-status").textContent(), /temporarily unavailable/);
     assert.equal(await page.getByRole("link", {name: "ESPN NFL ↗", exact: true}).getAttribute("href"), "https://www.espn.com/nfl/");
-    assert.ok(await page.getByRole("link", {name: "Explore player rankings", exact: false}).isVisible());
-    assert.ok(await page.getByRole("link", {name: "Simulate the season", exact: true}).isVisible());
+    assert.ok(await page.locator("#explore").getByRole("link", {name: /Player rankings/}).isVisible());
+    assert.ok(await page.locator("#explore").getByRole("link", {name: /League simulations/}).isVisible());
   } finally { await context.close(); }
 });
 
@@ -258,7 +258,7 @@ test("moving rankings preserves draft picks and settings across Home navigation"
     }));
     assert.equal(JSON.parse(saved.picks).length, 1);
     await page.locator(".home-nav-link").click(); await page.waitForURL(base + "/");
-    await page.getByRole("link", {name: "Explore player rankings", exact: false}).click();
+    await page.locator("#explore").getByRole("link", {name: /Player rankings/}).click();
     await page.waitForURL("**/rankings.html"); await page.locator(".draft-toggle").first().waitFor();
     assert.equal(await page.locator("#teams").inputValue(), "10");
     assert.equal(await page.locator(".topnav .current-lab > summary").textContent(), "Fantasy");

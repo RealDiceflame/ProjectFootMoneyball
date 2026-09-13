@@ -50,10 +50,10 @@ function renderSourcePlayers(bundle) {
   const freshness = snapshotFreshness(bundle?.league_news?.updated_at || (!bundle?.league_news ? bundle?.generated_at : null));
   const unavailable = !bundle || bundle.league_news?.status === "unavailable";
   $("league-news-status").textContent = cards.length
-    ? `${cards.length} stories · Feed saved: ${freshness.label}.${unavailable ? " Latest source refresh failed; showing saved stories." : freshness.stale ? " This feed is overdue for an update." : " Refreshes scheduled every 6 hours."}`
-    : unavailable ? "News is temporarily unavailable. Open ESPN NFL below for the latest stories." : "No stories from the past seven days are available in this saved feed.";
+    ? `${cards.length} stories · Updated ${freshness.label}${unavailable ? " · Refresh unavailable" : freshness.stale ? " · Update delayed" : ""}`
+    : unavailable ? "News temporarily unavailable" : "No recent stories available";
   $("league-news-status").classList.toggle("stale", unavailable || freshness.stale);
-  if (!cards.length) $("league-news-list").append(el("p", "New source links will appear here after a successful scheduled refresh.", "home-small"));
+  if (!cards.length) $("league-news-list").append(el("p", "Try the source links below.", "home-small"));
 }
 
 function renderInjuries() {
@@ -77,13 +77,13 @@ async function loadInjuries() {
     if (!response.ok) throw new Error("Injury snapshot could not be loaded.");
     bundle = await response.json(); injuries = injuryFeed(bundle);
     const freshness = snapshotFreshness(bundle.generated_at);
-    $("injury-freshness").textContent = `Saved snapshot: ${freshness.label}. ${freshness.stale ? "This snapshot is older than the six-hour schedule or its date is unavailable. Verify availability with the source." : "Report weeks below describe the source coverage; this is not a live feed."}`;
+    $("injury-freshness").textContent = `Updated ${freshness.label}${freshness.stale ? " · Update delayed" : ""}`;
     $("injury-freshness").classList.toggle("stale", freshness.stale);
     renderInjuries(); renderSourcePlayers(bundle);
   } catch {
     for (const id of ["injury-search", "injury-filter", "injury-more"]) $(id).disabled = true;
     $("injury-count").textContent = "Reports unavailable";
-    $("injury-freshness").textContent = "The injury snapshot is unavailable. No current injury status can be inferred. Rankings and the other tools remain available.";
+    $("injury-freshness").textContent = "Injury reports temporarily unavailable";
     $("injury-freshness").classList.add("stale");
     $("home-injury-list").replaceChildren();
     renderSourcePlayers(bundle);
@@ -107,9 +107,9 @@ async function loadXFeed() {
       script.onerror = () => { clearTimeout(timeout); reject(new Error("blocked")); };
       document.head.append(script);
     });
-    $("social-status").textContent = "X content requested. If the feed is unavailable or asks you to sign in, use “Open NFL on X” below. This is not a live play-by-play feed.";
+    $("social-status").textContent = "";
   } catch {
-    $("social-status").textContent = "The embedded feed could not load. You can still watch clips above or open NFL on X directly.";
+    $("social-status").textContent = "X feed unavailable. Open NFL on X below.";
   }
 }
 loadInjuries();

@@ -1,0 +1,62 @@
+name: Update scoreboard
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["app/scoreboard.py", "update_scores.py", "scripts/publish_scoreboard.py", ".github/workflows/update-scores.yml"]
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: update-scoreboard
+  cancel-in-progress: false
+
+jobs:
+  scores:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Refresh reported scores
+        id: refresh
+        continue-on-error: true
+        env:
+          TRIGGER: ${{ github.event_name }}
+        run: |
+          if [ "$TRIGGER" = "schedule" ]; then
+            python update_scores.py --scheduled
+          else
+            python update_scores.py
+          fi
+      - name: Save scoreboard
+        id: save
+        run: |
+          git add docs/data/scores.json
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Refresh reported NFL scores"
+            git pull --rebase origin main
+            git push
+          fi
+      - name: Publish any unpublished scoreboard
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python -m pip install requests
+          python scripts/publish_scoreboard.py
+      - name: Report a failed score refresh
+        if: always() && steps.refresh.outcome == 'failure'
+        run: |
+          echo "Score refresh failed. Last-good scores were retained. See the publication step for deployment status."
+          exit 1

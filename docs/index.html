@@ -6,15 +6,15 @@
   <meta name="description" content="OutlierBaseline brings together fantasy football rankings, player injury reports, projection research, team simulations and weekly odds.">
   <link rel="canonical" href="https://outlierbaseline.com/">
   <meta property="og:title" content="OutlierBaseline · Football intelligence">
-  <meta property="og:description" content="Fantasy tools. Team simulations. A clearer view of the game.">
+  <meta property="og:description" content="Be an Outlier. Know your Baseline.">
   <meta property="og:type" content="website"><meta property="og:url" content="https://outlierbaseline.com/">
   <meta property="og:image" content="https://outlierbaseline.com/og.png">
   <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="OutlierBaseline">
-  <meta name="twitter:description" content="Fantasy tools. Team simulations. A clearer view of the game.">
+  <meta name="twitter:description" content="Be an Outlier. Know your Baseline.">
   <meta name="twitter:image" content="https://outlierbaseline.com/og.png">
   <title>OutlierBaseline · Football Intelligence</title>
   <link rel="stylesheet" href="styles.css?v=20260909-labs2">
-  <link rel="stylesheet" href="home.css?v=20260913-feed1">
+  <link rel="stylesheet" href="home.css?v=20260913-scores1">
   <link rel="stylesheet" href="site-nav.css?v=20260913-home1">
 </head>
 <body class="home-page">
@@ -26,33 +26,29 @@
   </header>
   <main id="home-main">
     <section class="home-hero" aria-labelledby="home-title">
-      <div><h1 id="home-title">Know the game.<br><em>Find your edge.</em></h1>
-        <div class="home-actions"><a class="home-primary" href="rankings.html">Explore player rankings <span aria-hidden="true">↗</span></a><a class="home-secondary" href="league.html">Simulate the season</a></div>
-      </div>
-      <aside class="home-start" aria-labelledby="start-heading"><h2 id="start-heading">Get started</h2>
-        <a href="rankings.html"><span>01</span><div><strong>Prepare your draft</strong><small>Format-aware rankings &amp; market comparisons</small></div><b aria-hidden="true">↗</b></a>
-        <a href="projection.html"><span>02</span><div><strong>Research a player</strong><small>Age curves, scoring history &amp; draft capital</small></div><b aria-hidden="true">↗</b></a>
-        <a href="league.html"><span>03</span><div><strong>Explore what could happen</strong><small>Matchups, playoff paths &amp; season outcomes</small></div><b aria-hidden="true">↗</b></a>
-        <p class="home-small">Research tools, not guaranteed outcomes.</p>
-      </aside>
+      <h1 id="home-title">Be an Outlier.<br><em>Know your Baseline.</em></h1>
     </section>
-    <div class="home-data-strip"><span><i aria-hidden="true"></i> Saved data · refreshes scheduled every 6 hours</span><a href="#injury-heading">Check report timestamps ↓</a></div>
+    <section class="home-section home-scores" aria-labelledby="scores-heading">
+      <div class="home-section-heading"><h2 id="scores-heading">NFL scores</h2><label>Week <select id="score-week" disabled aria-label="Scoreboard week"></select></label></div>
+      <p id="score-status" class="home-small" role="status">Loading scores…</p>
+      <div id="score-games" class="home-score-grid" tabindex="0" role="region" aria-label="Weekly games, scroll horizontally"></div>
+      <noscript>Enable JavaScript to view the scoreboard.</noscript>
+    </section>
     <div class="home-feed-grid">
       <section class="home-section home-injuries" aria-labelledby="injury-heading">
         <div class="home-section-heading"><h2 id="injury-heading">Injury watch</h2><span id="injury-count" class="home-small"></span></div>
-        <p id="injury-freshness" class="home-feed-status" role="status">Loading the saved injury snapshot…</p>
+        <p id="injury-freshness" class="home-feed-status" role="status">Loading reports…</p>
         <div class="home-filters"><label>Search reports<input id="injury-search" type="search" placeholder="Player, team, injury…" autocomplete="off"></label><label>Availability<select id="injury-filter" title="Questionable, probable and practice participation alone do not receive a Risk label."><option value="all">All reported statuses</option><option value="risk">Out / doubtful / injured reserve</option></select></label></div>
         <div id="home-injury-list" aria-live="polite"></div><button id="injury-more" type="button" class="home-secondary" hidden>Show more reports</button>
-        <p class="home-small">Source: <a href="https://github.com/nflverse/nflverse-data" target="_blank" rel="noopener noreferrer">nflverse</a> · Covered fantasy players only. A missing report does not mean healthy.</p>
         <noscript>Enable JavaScript to view the saved reports. <a href="rankings.html">Open player rankings</a>.</noscript>
       </section>
       <aside class="home-section home-highlights" aria-labelledby="highlights-heading">
         <h2 id="highlights-heading">Around the league</h2>
-        <p id="league-news-status" class="home-feed-status" role="status">Loading the saved league feed…</p>
+        <p id="league-news-status" class="home-feed-status" role="status">Loading stories…</p>
         <div id="league-news-list" class="home-news-scroll" tabindex="0" role="region" aria-label="Scrollable league news"></div>
         <noscript><p class="home-small">Enable JavaScript to view saved headlines, or open ESPN NFL below.</p></noscript>
         <div class="home-source-links"><a class="home-text-link" href="https://www.nfl.com/videos/" target="_blank" rel="noopener noreferrer">NFL highlights ↗</a><a class="home-text-link" href="https://www.espn.com/nfl/" target="_blank" rel="noopener noreferrer">ESPN NFL ↗</a><a class="home-text-link" href="https://www.cbssports.com/watch/nfl" target="_blank" rel="noopener noreferrer">CBS Sports NFL ↗</a></div>
-        <div class="home-social"><h3>NFL on X</h3><p id="social-privacy" class="home-small">This feed connects to X, which may receive browsing information and use cookies.</p>
+        <div class="home-social"><h3>NFL on X</h3>
           <p id="social-status" class="home-small" role="status"></p><div id="x-feed"></div>
           <p class="home-small"><a href="https://x.com/NFL" target="_blank" rel="noopener noreferrer">Open NFL on X ↗</a> · <a href="https://help.x.com/en/x-for-websites-ads-info-and-privacy" target="_blank" rel="noopener noreferrer">X privacy information ↗</a></p>
         </div>
@@ -78,7 +74,11 @@
       </div>
     </section>
   </main>
-  <footer><p>OutlierBaseline · Independent football research. No affiliation with the NFL or featured platforms. Public tools remain available without an account.</p><a href="fantasy.html">My Leagues · local prototype</a></footer>
-  <script type="module" src="site-nav.js?v=20260913-home1"></script><script type="module" src="home.js?v=20260913-feed1"></script>
+  <footer data-compact="true"><span>OutlierBaseline</span><details class="home-source-details"><summary>Sources &amp; privacy</summary>
+    <p>Scores: <a href="https://github.com/nflverse/nflverse-data/releases/tag/schedules" target="_blank" rel="noopener noreferrer">Lee Sharpe / nflverse</a>, <a href="https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Selected and formatted by OutlierBaseline. Reported scores are not a live game clock or confirmation of a final result. Checks run about every 15 minutes near games and every six hours otherwise; source and publishing delays can occur.</p>
+    <p>Injuries: <a href="https://github.com/nflverse/nflverse-data" target="_blank" rel="noopener noreferrer">nflverse</a>. Covered fantasy players only; a missing report does not mean healthy. Questionable, Probable and practice participation alone do not earn a Risk label. News: ESPN NFL RSS. News and injury refreshes remain on the six-hour schedule.</p>
+    <p id="social-privacy">The NFL feed connects to X, which may receive browsing information and use cookies. <a href="https://help.x.com/en/x-for-websites-ads-info-and-privacy" target="_blank" rel="noopener noreferrer">X privacy information</a>. OutlierBaseline is independent and not affiliated with the featured platforms.</p>
+  </details></footer>
+  <script type="module" src="site-nav.js?v=20260913-compact1"></script><script type="module" src="home.js?v=20260913-scores1"></script><script type="module" src="scores.js?v=20260913-scores1"></script>
 </body>
 </html>
