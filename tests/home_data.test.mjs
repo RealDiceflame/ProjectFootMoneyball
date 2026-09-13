@@ -138,7 +138,8 @@ test("homepage controls and rankings route are wired with unique identifiers", (
   assert.equal(html.slice(updates, html.indexOf("</main>")).match(/<section\b/g), null, "Product updates are the final homepage section");
   assert.doesNotMatch(html, /<script[^>]+src="https:\/\/platform\.x/);
   assert.doesNotMatch(html, /id="load-x-feed"/);
-  assert.match(html, /feed loads automatically below/);
+  assert.doesNotMatch(html, /class="home-kicker"|class="home-intro"|id="league-news-help"/);
+  assert.match(html, /id="social-privacy"/);
   assert.match(js, /loadXFeed\(\);/);
   const rankings = readFileSync(new URL("../docs/rankings.html", import.meta.url), "utf8");
   assert.match(rankings, /id="board-heading"/); assert.match(rankings, /src="app.js/);

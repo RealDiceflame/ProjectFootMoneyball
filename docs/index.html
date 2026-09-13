@@ -26,10 +26,10 @@
   </header>
   <main id="home-main">
     <section class="home-hero" aria-labelledby="home-title">
-      <div><p class="home-kicker">OUTLIERBASELINE / FOOTBALL INTELLIGENCE</p><h1 id="home-title">Know the game.<br><em>Find your edge.</em></h1><p class="home-intro">Fantasy tools, player research, and thousands of possible Sundays. Explore the numbers—and the uncertainty behind them.</p>
+      <div><h1 id="home-title">Know the game.<br><em>Find your edge.</em></h1>
         <div class="home-actions"><a class="home-primary" href="rankings.html">Explore player rankings <span aria-hidden="true">↗</span></a><a class="home-secondary" href="league.html">Simulate the season</a></div>
       </div>
-      <aside class="home-start" aria-labelledby="start-heading"><p class="home-kicker">PICK YOUR NEXT MOVE</p><h2 id="start-heading">Less searching.<br>More understanding.</h2>
+      <aside class="home-start" aria-labelledby="start-heading"><h2 id="start-heading">Get started</h2>
         <a href="rankings.html"><span>01</span><div><strong>Prepare your draft</strong><small>Format-aware rankings &amp; market comparisons</small></div><b aria-hidden="true">↗</b></a>
         <a href="projection.html"><span>02</span><div><strong>Research a player</strong><small>Age curves, scoring history &amp; draft capital</small></div><b aria-hidden="true">↗</b></a>
         <a href="league.html"><span>03</span><div><strong>Explore what could happen</strong><small>Matchups, playoff paths &amp; season outcomes</small></div><b aria-hidden="true">↗</b></a>
@@ -39,33 +39,27 @@
     <div class="home-data-strip"><span><i aria-hidden="true"></i> Saved data · refreshes scheduled every 6 hours</span><a href="#injury-heading">Check report timestamps ↓</a></div>
     <div class="home-feed-grid">
       <section class="home-section home-injuries" aria-labelledby="injury-heading">
-        <div class="home-section-heading"><div><p class="home-kicker">PLAYER AVAILABILITY</p><h2 id="injury-heading">Injury watch</h2></div><span id="injury-count" class="home-small"></span></div>
-        <p>Latest available reports for covered fantasy players—not a live injury wire or a complete NFL injury list.</p>
+        <div class="home-section-heading"><h2 id="injury-heading">Injury watch</h2><span id="injury-count" class="home-small"></span></div>
         <p id="injury-freshness" class="home-feed-status" role="status">Loading the saved injury snapshot…</p>
-        <div class="home-filters"><label>Search reports<input id="injury-search" type="search" placeholder="Player, team, injury…" autocomplete="off"></label><label>Availability<select id="injury-filter"><option value="all">All reported statuses</option><option value="risk">Out / doubtful / injured reserve</option></select></label></div>
-        <p class="home-small">Sorted by report week, then availability concern. Questionable, probable, or practice participation alone do not receive a Risk label.</p>
+        <div class="home-filters"><label>Search reports<input id="injury-search" type="search" placeholder="Player, team, injury…" autocomplete="off"></label><label>Availability<select id="injury-filter" title="Questionable, probable and practice participation alone do not receive a Risk label."><option value="all">All reported statuses</option><option value="risk">Out / doubtful / injured reserve</option></select></label></div>
         <div id="home-injury-list" aria-live="polite"></div><button id="injury-more" type="button" class="home-secondary" hidden>Show more reports</button>
-        <p class="home-small">Facts from <a href="https://github.com/nflverse/nflverse-data" target="_blank" rel="noopener noreferrer">nflverse</a>. Source buttons open the linked team injury pages, which may be newer than this snapshot. A missing report does not mean a player is healthy.</p>
+        <p class="home-small">Source: <a href="https://github.com/nflverse/nflverse-data" target="_blank" rel="noopener noreferrer">nflverse</a> · Covered fantasy players only. A missing report does not mean healthy.</p>
         <noscript>Enable JavaScript to view the saved reports. <a href="rankings.html">Open player rankings</a>.</noscript>
       </section>
       <aside class="home-section home-highlights" aria-labelledby="highlights-heading">
-        <p class="home-kicker">ON THE FIELD</p><h2 id="highlights-heading">Around the league</h2>
-        <p>League news and analysis from ESPN’s NFL feed. Open any headline to read the original story.</p>
+        <h2 id="highlights-heading">Around the league</h2>
         <p id="league-news-status" class="home-feed-status" role="status">Loading the saved league feed…</p>
-        <p id="league-news-help" class="home-small">Scroll for more stories. Updated on the six-hour schedule—not a live play-by-play feed.</p>
-        <div id="league-news-list" class="home-news-scroll" tabindex="0" role="region" aria-label="Scrollable league news" aria-describedby="league-news-help"></div>
+        <div id="league-news-list" class="home-news-scroll" tabindex="0" role="region" aria-label="Scrollable league news"></div>
         <noscript><p class="home-small">Enable JavaScript to view saved headlines, or open ESPN NFL below.</p></noscript>
-        <p class="home-small">Player photos appear when the headline has a clear full-name match. League stories without a match still appear.</p>
         <div class="home-source-links"><a class="home-text-link" href="https://www.nfl.com/videos/" target="_blank" rel="noopener noreferrer">NFL highlights ↗</a><a class="home-text-link" href="https://www.espn.com/nfl/" target="_blank" rel="noopener noreferrer">ESPN NFL ↗</a><a class="home-text-link" href="https://www.cbssports.com/watch/nfl" target="_blank" rel="noopener noreferrer">CBS Sports NFL ↗</a></div>
-        <div class="home-social"><h3>From the NFL on X</h3><p class="home-small">The official account feed loads automatically below. X controls its order and availability; this is not a highlights-only filter.</p><p id="social-privacy" class="home-small">This embedded feed connects your browser to X, which may receive browsing information and use cookies. We request reduced personalization.</p>
+        <div class="home-social"><h3>NFL on X</h3><p id="social-privacy" class="home-small">This feed connects to X, which may receive browsing information and use cookies.</p>
           <p id="social-status" class="home-small" role="status"></p><div id="x-feed"></div>
           <p class="home-small"><a href="https://x.com/NFL" target="_blank" rel="noopener noreferrer">Open NFL on X ↗</a> · <a href="https://help.x.com/en/x-for-websites-ads-info-and-privacy" target="_blank" rel="noopener noreferrer">X privacy information ↗</a></p>
-          <p class="home-small">Instagram feed integration is not enabled yet.</p>
         </div>
       </aside>
     </div>
     <section class="home-section" id="explore" aria-labelledby="explore-heading">
-      <div class="home-section-heading"><div><p class="home-kicker">GO DEEPER</p><h2 id="explore-heading">The tools behind your next decision</h2></div></div>
+      <div class="home-section-heading"><h2 id="explore-heading">Explore tools</h2></div>
       <div class="home-tool-grid">
         <a href="rankings.html"><span>FANTASY</span><h3>Player rankings ↗</h3><p>PPR, 2QB, TE premium, ADP comparisons and drafted markers.</p></a>
         <a href="special-teams.html"><span>FANTASY</span><h3>Kickers &amp; D/ST ↗</h3><p>Compare the special-teams market without filling gaps with guesses.</p></a>
@@ -76,7 +70,7 @@
       </div>
     </section>
     <section class="home-section" aria-labelledby="updates-heading">
-      <div class="home-section-heading"><div><p class="home-kicker">BUILDING IN THE OPEN</p><h2 id="updates-heading">New at OutlierBaseline</h2></div><span class="home-small">Product updates · not player news</span></div>
+      <div class="home-section-heading"><h2 id="updates-heading">New at OutlierBaseline</h2></div>
       <div class="home-updates">
         <article><time datetime="2026-09-13">SEPTEMBER 13, 2026</time><span class="home-badge">SIMULATION LAB</span><h3>A fresh run. A complete story.</h3><p>Generate new seasons, replay a fixed seed, and explore 20 complete finishes from each batch.</p><a href="league.html#bracket-heading">Explore possible finishes ↗</a></article>
         <article><time datetime="2026-09-13">SEPTEMBER 13, 2026</time><span class="home-badge">FANTASY · PROTOTYPE</span><h3>Your league starts here.</h3><p>Try league settings, roster slots and team names. Browser-only for now; shared leagues and sign-ins are not open.</p><a href="fantasy.html">Try a local league setup ↗</a></article>
