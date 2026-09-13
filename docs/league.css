@@ -9,6 +9,11 @@
 .league-champion { grid-column: 1 / -1; border: 1px solid var(--lime); }
 #league-error { padding: 12px; border: 1px solid var(--red); }
 #league-progress { min-height: 25px; }
+.league-run-controls .league-seed-mode { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.league-run-controls input[type="checkbox"] { width: 20px; min-height: 20px; height: 20px; }
+.league-run-controls input[readonly] { opacity: .75; }
+#league-example-select { max-width: 100%; }
+#league-results details > summary { cursor: pointer; min-height: 44px; padding: 12px 0; font-size: 16px; }
 .league-section-table { margin-bottom: 24px; }
 .league-section-table h3 { margin-top: 26px; }
 @media(max-width: 760px) { .league-bracket { grid-template-columns: 1fr; } }

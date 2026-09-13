@@ -35,9 +35,55 @@ test("completed results stay fixed; unfinished games are not called live forecas
   const result = simulateLeague(current, {trials: 100, now: clock});
   const fixed = result.games.find(game => game.game_id === first.game_id);
   assert.equal(fixed.home_stats.mean, 31); assert.equal(fixed.home_stats.sd, 0); assert.equal(fixed.home_win, 1);
+  assert.ok(result.examples.every(example => example.games.find(game => game.game_id === first.game_id).home === 31));
   first.status = "locked"; first.home_score = null; first.away_score = null;
   assert.ok(simulateLeague(current, {trials: 100, now: clock}).games.find(game => game.game_id === first.game_id).unresolved);
   assert.throws(() => simulateLeague({...data, games: data.games.slice(1)}, {trials: 100, now}), /complete/);
+});
+
+test("all saved seasons include consistent game totals, records and playoff paths", () => {
+  const progress = [], result = simulateLeague(data, {trials: 100, seed: 923, now, onProgress: value => progress.push(value)});
+  assert.equal(result.examples.length, 20);
+  assert.equal(result.examples[0].trial, 1); assert.equal(result.examples.at(-1).trial, 100);
+  assert.equal(progress.at(-1), 1); assert.ok(progress.every((p, i) => p >= 0 && p <= 1 && (!i || p >= progress[i - 1])));
+  const fixtures = new Map(data.games.map(game => [game.game_id, game]));
+  for (const example of result.examples) {
+    assert.equal(example.games.length, 272); assert.equal(new Set(example.games.map(g => g.game_id)).size, 272);
+    const computed = Object.fromEntries(data.teams.map(({team}) => [team, {wins: 0, losses: 0, ties: 0, pf: 0, pa: 0}]));
+    for (const score of example.games) {
+      const fixture = fixtures.get(score.game_id), home = computed[fixture.home], away = computed[fixture.away];
+      assert.ok(Number.isInteger(score.home) && score.home >= 0 && Number.isInteger(score.away) && score.away >= 0);
+      home.pf += score.home; home.pa += score.away; away.pf += score.away; away.pa += score.home;
+      if (score.home > score.away) { home.wins++; away.losses++; }
+      else if (score.away > score.home) { away.wins++; home.losses++; }
+      else { home.ties++; away.ties++; }
+    }
+    for (const [team, record] of Object.entries(computed)) {
+      assert.equal(record.wins + record.losses + record.ties, 17);
+      for (const [key, value] of Object.entries(record)) assert.equal(example.records[team][key], value);
+    }
+    assert.equal(example.postseason.rounds.length, 13);
+    for (const conf of ["AFC", "NFC"]) {
+      assert.equal(new Set(example.seeds[conf]).size, 7);
+      const champions = Object.entries(example.divisions).filter(([division]) => division.startsWith(conf)).map(([, teams]) => teams[0]);
+      assert.deepEqual(new Set(example.seeds[conf].slice(0, 4)), new Set(champions));
+      for (const game of example.postseason.rounds.filter(game => game.conference === conf)) {
+        assert.equal(example.seeds[conf][game.home_seed - 1], game.home);
+        assert.equal(example.seeds[conf][game.away_seed - 1], game.away);
+        assert.equal(game.winner, game.home_points > game.away_points ? game.home : game.away);
+      }
+    }
+    assert.equal(example.postseason.champion, example.postseason.rounds.at(-1).winner);
+  }
+  assert.ok(result.examples.some(example => JSON.stringify(example.games) !== JSON.stringify(result.example.games)));
+  const changed = simulateLeague(data, {trials: 100, seed: 924, now});
+  assert.notDeepEqual(changed.example.games, result.example.games);
+  assert.notDeepEqual(changed.teams, result.teams);
+  assert.deepEqual(result, simulateLeague(data, {trials: 100, seed: 923, now}));
+});
+
+test("seed validation rejects invalid inputs instead of silently choosing a different run", () => {
+  for (const seed of [0, -1, "2026", 1.5, NaN, 2147483648]) assert.throws(() => simulateLeague(data, {trials: 100, seed, now}), /seed/);
 });
 
 test("playoff bracket gives byes, reseeds, uses higher seed home and neutral Super Bowl", () => {

@@ -4,7 +4,7 @@ import {test, before, after} from "node:test";
 import assert from "node:assert/strict";
 import {createRequire} from "node:module";
 import {createServer} from "node:http";
-import {readFile} from "node:fs/promises";
+import {readFile, mkdir} from "node:fs/promises";
 import {fileURLToPath} from "node:url";
 import {resolve, extname, sep} from "node:path";
 import {STORAGE_KEY} from "../docs/fantasy-leagues.mjs";
@@ -30,17 +30,23 @@ before(async () => {
 });
 after(async () => { await browser?.close(); if (server) await new Promise(done => server.close(done)); });
 
-async function openPage(options = {}) {
+async function openPage(options = {}, pathname = "/fantasy.html") {
   const context = await browser.newContext({viewport: {width: 1440, height: 1000}, ...options});
   await context.route("**/*", route => new URL(route.request().url()).origin === base ? route.continue() : route.abort());
   const page = await context.newPage();
   page.setDefaultTimeout(7000);
-  await page.goto(`${base}/fantasy.html`);
+  await page.goto(`${base}${pathname}`);
   await page.locator(".lab-navigation").waitFor();
   return {context, page};
 }
 const isOpen = locator => locator.evaluate(element => element.open);
 const waitForOpen = (page, name, open) => page.waitForFunction(({name, open}) => [...document.querySelectorAll(".topnav > details")].find(group => group.querySelector("summary").textContent === name)?.open === open, {name, open});
+
+async function screenshot(page, name) {
+  if (!process.env.BROWSER_SCREENSHOTS) return;
+  await mkdir(process.env.BROWSER_SCREENSHOTS, {recursive: true});
+  await page.screenshot({path: resolve(process.env.BROWSER_SCREENSHOTS, name), fullPage: true});
+}
 
 test("desktop hover menus group all labs, stay open over links, switch and dismiss", async () => {
   const {context, page} = await openPage();
@@ -147,5 +153,155 @@ test("bad stored data and cross-tab conflicts are not overwritten", async () => 
     await page.getByRole("button", {name: "Create local setup"}).click();
     assert.match(await page.locator("#hub-error").textContent(), /Another tab/);
     assert.equal(JSON.parse(await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY)).leagues.length, 0);
+  } finally { await context.close(); }
+});
+
+test("homepage links, injury filters, privacy opt-in and mobile layout work", async () => {
+  const {context, page} = await openPage({}, "/");
+  try {
+    const errors = [], external = [];
+    page.on("pageerror", error => errors.push(error.message));
+    page.on("request", request => { if (new URL(request.url()).origin !== base) external.push(request.url()); });
+    await page.reload(); await page.locator("#home-injury-list article").first().waitFor();
+    assert.deepEqual(errors, []); assert.deepEqual(external, []);
+    assert.equal(await page.locator(".home-nav-link").getAttribute("aria-current"), "page");
+    assert.equal(await page.locator(".topnav .current-lab").count(), 0);
+    assert.equal(await page.locator("#home-injury-list article").count(), 8);
+    await page.locator("#injury-more").click();
+    assert.equal(await page.locator("#home-injury-list article").count(), 16);
+    const player = await page.locator("#home-injury-list h3").first().textContent();
+    await page.locator("#injury-search").fill(player);
+    assert.equal(await page.locator("#home-injury-list article").count(), 1);
+    const source = page.locator("#home-injury-list article a").first();
+    assert.match(await source.getAttribute("href"), /^https:\/\/www.espn.com\//);
+    assert.equal(await source.getAttribute("target"), "_blank");
+    await page.locator("#injury-search").fill("");
+    await page.locator("#injury-filter").selectOption("risk");
+    assert.ok((await page.locator("#home-injury-list .home-badge").allTextContents()).every(value => value === "RISK"));
+    await page.locator("#injury-search").fill("no-such-player");
+    assert.match(await page.locator("#home-injury-list").textContent(), /No reports match/);
+    await page.locator("#injury-search").fill(""); await page.locator("#injury-filter").selectOption("all");
+    const internal = await page.locator('a[href]').evaluateAll(links => [...new Set(links.filter(a => a.origin === location.origin).map(a => a.href))]);
+    for (const url of internal) {
+      const response = await context.request.get(url);
+      assert.equal(response.status(), 200, url);
+      const hash = new URL(url).hash.slice(1);
+      if (hash) assert.ok((await response.text()).includes(`id="${hash}"`), url);
+    }
+    await screenshot(page, "home-desktop.png");
+    for (const width of [320, 390, 768]) {
+      await page.setViewportSize({width, height: 844});
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `home width ${width}`);
+    }
+    await page.setViewportSize({width: 390, height: 844}); await screenshot(page, "home-mobile.png");
+    assert.equal(external.length, 0);
+    await page.locator("#load-x-feed").click();
+    await page.waitForFunction(() => document.querySelector("#social-status").textContent.includes("could not load"));
+    assert.ok(external.includes("https://platform.x.com/widgets.js"));
+    assert.equal(await page.getByRole("link", {name: "Open NFL on X ↗", exact: true}).getAttribute("href"), "https://x.com/NFL");
+  } finally { await context.close(); }
+});
+
+test("homepage gracefully isolates an unavailable injury snapshot", async () => {
+  const {context, page} = await openPage({}, "/");
+  try {
+    await context.route("**/data/player_news.json", route => route.fulfill({status: 503, body: "unavailable"}));
+    await page.reload();
+    await page.waitForFunction(() => document.querySelector("#injury-count").textContent === "Reports unavailable");
+    assert.match(await page.locator("#injury-freshness").textContent(), /No current injury status can be inferred/);
+    assert.equal(await page.locator("#home-injury-list article").count(), 0);
+    assert.equal(await page.locator("#injury-filter").isDisabled(), true);
+    assert.ok(await page.getByRole("link", {name: "Explore player rankings", exact: false}).isVisible());
+    assert.ok(await page.getByRole("link", {name: "Simulate the season", exact: true}).isVisible());
+  } finally { await context.close(); }
+});
+
+test("moving rankings preserves draft picks and settings across Home navigation", async () => {
+  const {context, page} = await openPage({}, "/rankings.html");
+  try {
+    await page.locator(".draft-toggle").first().waitFor();
+    await page.locator("#teams").selectOption("10");
+    await page.locator(".draft-toggle").first().click();
+    const saved = await page.evaluate(() => ({
+      picks: localStorage.getItem("project-foot-moneyball:drafted:v1"),
+      settings: localStorage.getItem("project-foot-moneyball:settings:v1"),
+    }));
+    assert.equal(JSON.parse(saved.picks).length, 1);
+    await page.locator(".home-nav-link").click(); await page.waitForURL(base + "/");
+    await page.getByRole("link", {name: "Explore player rankings", exact: false}).click();
+    await page.waitForURL("**/rankings.html"); await page.locator(".draft-toggle").first().waitFor();
+    assert.equal(await page.locator("#teams").inputValue(), "10");
+    assert.equal(await page.locator(".topnav .current-lab > summary").textContent(), "Fantasy");
+    assert.deepEqual(await page.evaluate(() => ({
+      picks: localStorage.getItem("project-foot-moneyball:drafted:v1"),
+      settings: localStorage.getItem("project-foot-moneyball:settings:v1"),
+    })), saved);
+    assert.equal(await page.locator(".draft-toggle[aria-pressed=true]").count(), 1);
+  } finally { await context.close(); }
+});
+
+const waitForRun = (page, run) => page.waitForFunction(run => document.querySelector("#league-progress").textContent.startsWith(`Run ${run}:`), run, {timeout: 60000});
+const seasonView = page => page.evaluate(() => ({
+  games: document.querySelector("#league-example-games").textContent,
+  records: document.querySelector("#league-example-records").textContent,
+  bracket: document.querySelector("#league-bracket").textContent,
+}));
+test("real worker runs complete seasons, switches examples, draws fresh seeds and replays fixed seeds", async () => {
+  const {context, page} = await openPage({}, "/league.html");
+  try {
+    await waitForRun(page, 1);
+    assert.equal(await page.locator("#league-error").isVisible(), false);
+    assert.match(await page.locator("#league-progress").textContent(), /2,000 complete seasons/);
+    assert.equal(await page.locator("#league-example-select option").count(), 20);
+    assert.equal(await page.locator("#league-example-games tbody tr").count(), 272);
+    assert.equal(await page.locator("#league-example-records tbody tr").count(), 32);
+    const seed1 = await page.locator("#league-seed").inputValue(), example1 = await seasonView(page);
+    const aggregate = await page.locator("#league-divisions").textContent();
+    await page.locator("#league-next-example").click();
+    assert.equal(await page.locator("#league-example-select").inputValue(), "1");
+    assert.notDeepEqual(await seasonView(page), example1);
+    assert.equal(await page.locator("#league-divisions").textContent(), aggregate);
+    await page.locator("#league-example-select").selectOption("0");
+    assert.deepEqual(await seasonView(page), example1);
+    await page.locator("#league-run").click(); await waitForRun(page, 2);
+    assert.notEqual(await page.locator("#league-seed").inputValue(), seed1);
+    assert.notDeepEqual(await seasonView(page), example1);
+    await page.locator("#league-fixed-seed").check(); await page.locator("#league-seed").fill("2026");
+    await page.locator("#league-run").click(); await waitForRun(page, 3);
+    const fixed = await seasonView(page), fixedAggregate = await page.locator("#league-divisions").textContent();
+    await page.locator("#league-run").click(); await waitForRun(page, 4);
+    assert.deepEqual(await seasonView(page), fixed);
+    assert.equal(await page.locator("#league-divisions").textContent(), fixedAggregate);
+    assert.match(await page.locator("#league-progress").textContent(), /fixed-seed mode/);
+    await page.locator("#league-seed").fill("0"); await page.locator("#league-run").click();
+    assert.match(await page.locator("#league-error").textContent(), /whole-number seed/);
+    // A invalid new seed must not start a worker or silently change the previous result.
+    assert.deepEqual(await seasonView(page), fixed);
+    await page.locator("#league-seed").fill("2026"); await page.locator("#league-fixed-seed").uncheck();
+    for (const [trials, run] of [["5000", 5], ["10000", 6]]) {
+      await page.locator("#league-trials").selectOption(trials);
+      await page.locator("#league-run").click(); await waitForRun(page, run);
+      assert.match(await page.locator("#league-progress").textContent(), new RegExp(Number(trials).toLocaleString() + " complete seasons"));
+      assert.equal(await page.locator("#league-example-games tbody tr").count(), 272);
+    }
+    await page.setViewportSize({width: 390, height: 844});
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.locator("#league-example-select").selectOption("19");
+    assert.match(await page.locator("#league-example-note").textContent(), /trial 10,000 of 10,000/);
+    await screenshot(page, "league-mobile.png");
+  } finally { await context.close(); }
+});
+
+test("an incomplete worker response is never displayed as a completed simulation", async () => {
+  const {context, page} = await openPage();
+  try {
+    await context.route("**/league-worker.mjs?*", route => route.fulfill({
+      contentType: "text/javascript", body: 'onmessage = () => postMessage({result:{trials:2000,games:[],examples:[]}});',
+    }));
+    await page.goto(base + "/league.html");
+    await page.locator("#league-error").waitFor({state: "visible"});
+    assert.match(await page.locator("#league-progress").textContent(), /did not finish; no partial run/);
+    assert.equal(await page.locator("#league-results").isVisible(), false);
+    assert.equal(await page.locator("#league-run").isDisabled(), false);
   } finally { await context.close(); }
 });

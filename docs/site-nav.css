@@ -1,5 +1,7 @@
 .lab-navigation { display: flex; flex-wrap: wrap; gap: 8px; overflow: visible; }
 .lab-navigation details { position: relative; }
+.lab-navigation > .home-nav-link { display: flex; align-items: center; padding: 12px; min-height: 44px; border-radius: 8px; font-size: 14px; }
+.lab-navigation > .home-nav-link:hover, .lab-navigation > .home-nav-link[aria-current="page"] { color: var(--lime); background: #1d392c; }
 .lab-navigation summary { padding: 12px; min-height: 44px; cursor: pointer; color: var(--ink); font-size: 14px; border-radius: 8px; transition: background .15s, color .15s; }
 .lab-navigation summary:hover { color: var(--lime); background: #1d392c; }
 .lab-navigation .current-lab > summary, .lab-navigation details[open] > summary { color: var(--lime); background: #1d392c; }

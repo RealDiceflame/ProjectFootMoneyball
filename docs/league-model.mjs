@@ -1,5 +1,6 @@
 import {prepareMatchup, summarize} from "./matchup-model.mjs?v=20260909-labs2";
 import {seededRandom} from "./survivor-model.mjs?v=1";
+import {validSeed, exampleTrialIndices} from "./simulation-runs.mjs?v=20260913-home1";
 
 export const DIVISIONS = {
   "AFC East": ["BUF", "MIA", "NE", "NYJ"], "AFC North": ["BAL", "CIN", "CLE", "PIT"],
@@ -109,6 +110,7 @@ function scoreSummary(counts, n) {
 
 export function simulateLeague(data, {trials = 2000, seed = 2026, now = Date.now(), onProgress = () => {}} = {}) {
   if (!Number.isInteger(trials) || trials < 100 || trials > 10000) throw new Error("Choose 100–10,000 season simulations.");
+  if (!validSeed(seed)) throw new Error("Choose a whole-number seed between 1 and 2147483647.");
   const teams = data.teams.map(t => t.team);
   if (new Set(teams).size !== 32 || teams.some(team => !TEAM_DIVISION[team]) || data.games.length !== 272) throw new Error("A complete 32-team, 272-game schedule is required.");
   const counts = Object.fromEntries(teams.map(team => [team, 0]));
@@ -132,7 +134,7 @@ export function simulateLeague(data, {trials = 2000, seed = 2026, now = Date.now
     return {game, final, unresolved, sampler, home: new Map(), away: new Map(), homeWins: 0, awayWins: 0, ties: 0};
   });
   const accum = Object.fromEntries(teams.map(team => [team, {wins: [], losses: 0, ties: 0, pf: 0, pa: 0, division: 0, playoffs: 0, bye: 0, conference: 0, champion: 0}]));
-  let example;
+  const examples = [], retainedTrials = new Set(exampleTrialIndices(trials));
   for (let trial = 0; trial < trials; trial++) {
     const records = Object.fromEntries(teams.map(team => [team, {wins: 0, losses: 0, ties: 0, pf: 0, pa: 0, games: []}]));
     const sampleGames = [];
@@ -145,7 +147,7 @@ export function simulateLeague(data, {trials = 2000, seed = 2026, now = Date.now
       else if (score.away > score.home) { a.wins++; h.losses++; fixture.awayWins++; }
       else { h.ties++; a.ties++; fixture.ties++; }
       fixture.home.set(score.home, (fixture.home.get(score.home) || 0) + 1); fixture.away.set(score.away, (fixture.away.get(score.away) || 0) + 1);
-      if (!trial) sampleGames.push({game_id: game.game_id, home: score.home, away: score.away});
+      if (retainedTrials.has(trial)) sampleGames.push({game_id: game.game_id, home: score.home, away: score.away});
     }
     const {divisions, seeds} = playoffSeeds(records, random), postseason = playPostseason(seeds, drawPostseason);
     for (const team of teams) {
@@ -154,12 +156,13 @@ export function simulateLeague(data, {trials = 2000, seed = 2026, now = Date.now
       acc.division += divisions[TEAM_DIVISION[team]][0] === team; acc.playoffs += seeds[conf].includes(team); acc.bye += seeds[conf][0] === team;
       acc.conference += postseason.champs[conf] === team; acc.champion += postseason.champion === team;
     }
-    if (!trial) example = {records: Object.fromEntries(teams.map(team => [team, {...records[team], games: undefined}])), divisions, seeds, postseason, games: sampleGames};
+    if (retainedTrials.has(trial)) examples.push({trial: trial + 1, records: Object.fromEntries(teams.map(team => [team, {...records[team], games: undefined}])), divisions, seeds, postseason, games: sampleGames});
     if (trial % 100 === 0) onProgress(trial / trials);
   }
-  return {trials, seed, generated_at: data.generated_at, completed_games: fixtures.filter(f => f.final).length, unresolved_games: fixtures.filter(f => f.unresolved).length,
+  onProgress(1);
+  return {trials, seed, scenario_time: now, generated_at: data.generated_at, completed_games: fixtures.filter(f => f.final).length, unresolved_games: fixtures.filter(f => f.unresolved).length,
     teams: teams.map(team => { const acc = accum[team]; return {team, division: TEAM_DIVISION[team], wins: summarize(acc.wins), losses: acc.losses / trials, ties: acc.ties / trials, points_for: acc.pf / trials, points_against: acc.pa / trials,
       division_probability: acc.division / trials, playoff_probability: acc.playoffs / trials, bye_probability: acc.bye / trials, conference_probability: acc.conference / trials, champion_probability: acc.champion / trials}; }),
     games: fixtures.map(f => ({...f.game, model: undefined, market: undefined, final: f.final, unresolved: f.unresolved,
-      home_stats: scoreSummary(f.home, trials), away_stats: scoreSummary(f.away, trials), home_win: f.homeWins / trials, away_win: f.awayWins / trials, tie: f.ties / trials})), example};
+      home_stats: scoreSummary(f.home, trials), away_stats: scoreSummary(f.away, trials), home_win: f.homeWins / trials, away_win: f.awayWins / trials, tie: f.ties / trials})), example: examples[0], examples};
 }
