@@ -436,10 +436,11 @@ def build_player_news(
 
     ranked_players = load_ranked_players(rankings_path, DEFAULT_BOARD)
     ranked_names = {normalize_name(player["player"]) for player in ranked_players}
+    ambiguous_names = _ambiguous_roster_names(current_roster)
     headline_events = match_headlines(
         ranked_players,
         headlines or [],
-        ambiguous_names=_ambiguous_roster_names(current_roster),
+        ambiguous_names=ambiguous_names,
     )
     for player in ranked_players:
         key = player_key(player["player"], player["team"])
@@ -472,6 +473,13 @@ def build_player_news(
             "listed_team": player["team"],
             "current_team": current_team,
             "headshot_url": _headshot_url(player, current_roster, current_team),
+            # The homepage must check the full roster, not just ranked fantasy players.
+            # Unknown coverage fails closed: a name alone cannot identify a player.
+            "headline_name_ambiguous": (
+                normalize_name(player["player"]) in ambiguous_names
+                if not current_roster.empty and "full_name" in current_roster.columns
+                else None
+            ),
             "birth_date": _birth_date(player, current_roster, current_team),
             "pos": player["pos"],
             "signal": signal,

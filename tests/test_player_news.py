@@ -92,6 +92,7 @@ def test_build_player_news_creates_depth_roster_and_position_updates(tmp_path):
     assert payload["player_count"] == 2
     assert starter["listed_team"] == "BUF"
     assert starter["current_team"] == "BUF"
+    assert starter["headline_name_ambiguous"] is False
     assert starter["headshot_url"] == (
         "https://static.www.nfl.com/image/upload/"
         "f_auto,q_auto,w_160,c_fill,g_face/league/starter"
@@ -207,6 +208,7 @@ def test_player_id_prevents_same_name_roster_collision(tmp_path):
     assert report["player_id"] == "00-0036912"
     assert report["current_team"] == "PHI"
     assert report["headshot_url"] == "https://static.example.com/eagles-smith.png"
+    assert report["headline_name_ambiguous"] is True
     assert all(event["category"] != "Roster" for event in report["events"])
 
 

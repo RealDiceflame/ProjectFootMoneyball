@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {injuryFeed, filterInjuries, safeSourceUrl, snapshotFreshness} from "../docs/home-data.mjs";
+import {injuryFeed, filterInjuries, safeSourceUrl, snapshotFreshness, safePlayerPhoto, titlePlayers, recentHeadlineCards} from "../docs/home-data.mjs";
 import {freshSeed, validSeed, MAX_SEED, exampleTrialIndices} from "../docs/simulation-runs.mjs";
 
 const report = (player, status, week = 1) => ({
@@ -39,6 +39,54 @@ test("snapshot freshness distinguishes missing, future and overdue dates", () =>
   assert.equal(snapshotFreshness("2026-09-13T06:00:00Z", now).stale, false);
   assert.equal(snapshotFreshness("2026-09-12T18:00:00Z", now).stale, true);
   for (const value of ["bad", null, "2026-09-14T00:00:00Z"]) assert.deepEqual(snapshotFreshness(value, now), {label: "Snapshot time unavailable", stale: true});
+});
+
+const portraitUrl = "https://static.www.nfl.com/image/upload/f_auto,q_auto,w_160,c_fill,g_face/league/example";
+const namedReport = (player, status = "Questionable") => ({...report(player, status), headline_name_ambiguous: false, headshot_url: portraitUrl});
+const newsBundle = (...players) => ({reports: Object.fromEntries(players.map((player, index) => [index, player]))});
+
+test("preview title matches full names, punctuation, suffixes and multiple players without URL or substring guesses", () => {
+  const bundle = newsBundle(namedReport("Lamar Jackson"), namedReport("Derrick Henry"), namedReport("Will Levis"),
+    namedReport("A.J. Brown"), namedReport("Brian Thomas Jr."), namedReport("D'Andre Swift"));
+  assert.deepEqual(titlePlayers(bundle, "Lamar Jackson’s pass sets up Derrick Henry").map(row => row.player), ["Lamar Jackson", "Derrick Henry"]);
+  for (const title of ["Jackson throws a touchdown", "Will Levison scores", "QB scores a touchdown"]) assert.deepEqual(titlePlayers(bundle, title), []);
+  for (const title of ["AJ Brown scores", "Brian Thomas runs free", "D’Andre Swift’s touchdown"]) assert.equal(titlePlayers(bundle, title).length, 1, title);
+  const preview = titlePlayers(bundle, "Lamar Jackson scores")[0];
+  assert.equal(preview.team, "KC"); assert.equal(preview.photoUrl, portraitUrl);
+  assert.equal(preview.injury.status, "Questionable"); assert.equal(preview.injury.risk, false);
+  assert.equal(preview.injury.reportLabel, "Week 1");
+});
+
+test("preview matching fails closed on full-roster ambiguity, duplicate identities and older snapshots", () => {
+  const player = namedReport("DeVonta Smith");
+  assert.deepEqual(titlePlayers(newsBundle({...player, headline_name_ambiguous: true}), "DeVonta Smith signs"), []);
+  assert.deepEqual(titlePlayers(newsBundle({...player, headline_name_ambiguous: undefined}), "DeVonta Smith signs"), []);
+  assert.deepEqual(titlePlayers(newsBundle(player, {...player, player: "Devonta Smith", player_id: "defender", pos: "DB"}), "DeVonta Smith signs"), []);
+  assert.deepEqual(titlePlayers(newsBundle({...player, player_id: null}), "DeVonta Smith signs"), []);
+  assert.equal(titlePlayers(newsBundle(player, player), "DeVonta Smith signs").length, 1);
+  assert.deepEqual(titlePlayers(null, "DeVonta Smith signs"), []);
+  const unknown = titlePlayers(newsBundle({...player, injury: null}), "DeVonta Smith scores")[0];
+  assert.equal(unknown.injury, null);
+});
+
+test("portraits permit only the roster image host and preserve safe injury sources", () => {
+  assert.equal(safePlayerPhoto(portraitUrl), portraitUrl);
+  for (const url of ["http://static.www.nfl.com/photo", "https://static.www.nfl.com.evil.test/photo", "https://evil.test/photo", "data:image/svg+xml,x", "https://user@static.www.nfl.com/photo", null]) assert.equal(safePlayerPhoto(url), null);
+  assert.equal(injuryFeed(newsBundle(namedReport("Lamar Jackson")))[0].photoUrl, portraitUrl);
+});
+
+test("recent previews retain original article links, deduplicate, age out and require names in titles", () => {
+  const article = {category: "Recent news", date: "2026-09-13", title: "Lamar Jackson and Derrick Henry practice", source: {url: "https://www.espn.com/nfl/story/_/id/123/original-story"}};
+  const player = {...namedReport("Lamar Jackson"), events: [article, article,
+    {...article, title: "QB practices", source: {url: "https://www.espn.com/nfl/lamar-jackson"}},
+    {...article, date: "2026-08-01", source: {url: "https://www.espn.com/nfl/old"}},
+    {...article, date: "2027-01-01", source: {url: "https://www.espn.com/nfl/future"}},
+    {...article, source: {url: "https://evil.test/article"}},
+    {...article, source: {url: "javascript:alert(1)"}}, null]};
+  const cards = recentHeadlineCards(newsBundle(player, namedReport("Derrick Henry")), Date.parse("2026-09-13T18:00:00Z"));
+  assert.equal(cards.length, 1); assert.equal(cards[0].url, article.source.url);
+  assert.equal(cards[0].players.length, 2);
+  assert.deepEqual(recentHeadlineCards(null), []);
 });
 test("fresh seeds are valid and avoid consecutive duplicates while fixed seeds remain explicit", () => {
   for (const word of [0, 1, MAX_SEED, 0xffffffff]) {

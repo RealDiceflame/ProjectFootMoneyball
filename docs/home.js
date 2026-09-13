@@ -1,18 +1,71 @@
-import {injuryFeed, filterInjuries, snapshotFreshness} from "./home-data.mjs?v=20260913-home1";
+import {injuryFeed, filterInjuries, snapshotFreshness, titlePlayers, recentHeadlineCards} from "./home-data.mjs?v=20260913-cards1";
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; };
 let injuries = [], shown = 8;
 
+function portrait(player) {
+  const wrapper = el("span", undefined, "home-portrait");
+  const initials = el("span", player.player.split(/\s+/).slice(0, 2).map(word => word[0]).join(""));
+  initials.setAttribute("aria-hidden", "true"); wrapper.append(initials);
+  if (player.photoUrl) {
+    const photo = el("img"); photo.alt = `${player.player} portrait`;
+    photo.width = 56; photo.height = 56; photo.loading = "lazy"; photo.decoding = "async";
+    photo.referrerPolicy = "no-referrer";
+    photo.addEventListener("error", () => photo.remove(), {once: true});
+    photo.src = player.photoUrl; wrapper.append(photo);
+  }
+  return wrapper;
+}
+
+function injuryDetails(body, row) {
+  body.append(el("p", `${row.injury} · ${row.status}`, "home-injury-detail"));
+  if (row.practice && row.practice !== row.status) body.append(el("p", `Practice: ${row.practice}`));
+  if (row.url) {
+    const source = el("a", "Team injury source ↗"); source.href = row.url;
+    source.target = "_blank"; source.rel = "noopener noreferrer"; body.append(source);
+  }
+}
+
+function playerSummary(player) {
+  const summary = el("div", undefined, "home-player-summary"), body = el("div");
+  body.append(el("strong", player.player), el("p", `${player.team} · ${player.pos}`, "home-small"));
+  if (player.injury) {
+    body.append(el("span", `Saved injury report · ${player.injury.reportLabel}`, "home-small"));
+    injuryDetails(body, player.injury);
+    if (player.injury.risk) body.append(el("span", "RISK", "home-badge home-risk"));
+  } else body.append(el("p", "No injury report available in the saved snapshot.", "home-small"));
+  summary.append(portrait(player), body); return summary;
+}
+
+function renderSourcePlayers(bundle) {
+  for (const card of document.querySelectorAll("#selected-source-cards .home-source-card")) {
+    const players = titlePlayers(bundle, card.querySelector(".home-clip strong").textContent);
+    card.querySelector(".home-card-players").replaceChildren(...(players.length ? players.map(playerSummary)
+      : [el("p", bundle ? "No unambiguous player match in the saved roster." : "Player details unavailable. Open the original story above.", "home-small")]));
+  }
+  const cards = recentHeadlineCards(bundle);
+  $("recent-headline-list").replaceChildren(...cards.map(card => {
+    const article = el("article", undefined, "home-source-card"), link = el("a", undefined, "home-clip");
+    link.href = card.url; link.target = "_blank"; link.rel = "noopener noreferrer";
+    const title = el("div"); title.append(el("small", `${card.source} · ${card.date}`), el("strong", card.title));
+    const arrow = el("b", "↗"); arrow.setAttribute("aria-hidden", "true"); link.append(title, arrow);
+    const players = el("div", undefined, "home-card-players"); players.append(...card.players.map(playerSummary));
+    article.append(link, players); return article;
+  }));
+  $("recent-headline-status").textContent = cards.length ? "Recent matched headlines from the saved ESPN feed (past 7 days)."
+    : bundle ? "No recent full-name player headlines in this saved feed. Source links above remain available."
+    : "The saved news feed is unavailable. Source links above remain available.";
+}
+
 function renderInjuries() {
   const rows = filterInjuries(injuries, $("injury-search").value, $("injury-filter").value);
-  $("injury-count").textContent = `${rows.length} matching reports`;
+  $("injury-count").textContent = `${rows.length} matching report${rows.length === 1 ? "" : "s"}`;
   $("home-injury-list").replaceChildren(...rows.slice(0, shown).map(row => {
-    const card = el("article", undefined, "home-injury"), body = el("div");
-    body.append(el("span", `${row.team} · ${row.pos} · ${row.reportLabel}`, "home-small"), el("h3", row.player), el("p", row.injury), el("p", row.status));
-    if (row.practice && row.practice !== row.status) body.append(el("p", `Practice: ${row.practice}`));
-    if (row.url) { const source = el("a", "Team injury source ↗"); source.href = row.url; source.target = "_blank"; source.rel = "noopener noreferrer"; body.append(source); }
+    const card = el("article", undefined, "home-injury"), body = el("div"), summary = el("div", undefined, "home-player-summary");
+    body.append(el("span", `${row.team} · ${row.pos} · ${row.reportLabel}`, "home-small"), el("h3", row.player));
+    injuryDetails(body, row); summary.append(portrait(row), body);
     const badge = el("span", row.risk ? "RISK" : "REPORTED", `home-badge${row.risk ? " home-risk" : ""}`);
-    card.append(body, badge); return card;
+    card.append(summary, badge); return card;
   }));
   if (!rows.length) $("home-injury-list").append(el("p", injuries.length ? "No reports match these filters." : "No injury entries are available in this snapshot. Missing reports do not mean players are healthy.", "home-small"));
   $("injury-more").hidden = rows.length <= shown;
@@ -26,13 +79,14 @@ async function loadInjuries() {
     const freshness = snapshotFreshness(bundle.generated_at);
     $("injury-freshness").textContent = `Saved snapshot: ${freshness.label}. ${freshness.stale ? "This snapshot is older than the six-hour schedule or its date is unavailable. Verify availability with the source." : "Report weeks below describe the source coverage; this is not a live feed."}`;
     $("injury-freshness").classList.toggle("stale", freshness.stale);
-    renderInjuries();
+    renderInjuries(); renderSourcePlayers(bundle);
   } catch {
     for (const id of ["injury-search", "injury-filter", "injury-more"]) $(id).disabled = true;
     $("injury-count").textContent = "Reports unavailable";
     $("injury-freshness").textContent = "The injury snapshot is unavailable. No current injury status can be inferred. Rankings and the other tools remain available.";
     $("injury-freshness").classList.add("stale");
     $("home-injury-list").replaceChildren();
+    renderSourcePlayers(null);
   }
 }
 $("injury-search").addEventListener("input", () => { shown = 8; renderInjuries(); });
