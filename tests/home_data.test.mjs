@@ -117,6 +117,11 @@ test("homepage controls and rankings route are wired with unique identifiers", (
   assert.equal(ids.length, new Set(ids).size);
   for (const [, id] of js.matchAll(/\$\("([^"]+)"\)/g)) assert.ok(ids.includes(id), id);
   assert.match(html, /manually curated, not a live feed/);
+  const updates = html.indexOf('aria-labelledby="updates-heading"');
+  assert.ok(updates > html.indexOf('aria-labelledby="explore-heading"'));
+  assert.ok(updates > html.indexOf('aria-labelledby="highlights-heading"'));
+  assert.ok(updates < html.indexOf("</main>"));
+  assert.equal(html.slice(updates, html.indexOf("</main>")).match(/<section\b/g), null, "Product updates are the final homepage section");
   assert.doesNotMatch(html, /<script[^>]+src="https:\/\/platform\.x/);
   assert.doesNotMatch(html, /id="load-x-feed"/);
   assert.match(html, /feed loads automatically below/);
