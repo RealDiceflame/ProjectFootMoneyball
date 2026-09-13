@@ -16,13 +16,14 @@ slugs). Players need stable IDs and a non-ambiguous name check supplied by
 are absent from the fantasy rankings. Missing checks and name collisions leave
 the card without a player association. Multiple named players can share a card.
 
-`docs/home.js` adds roster portraits and saved injury details to source cards
-and the injury list. Portrait URLs are limited to the existing NFL image host;
+`docs/home.js` adds roster portraits, names, teams and positions to source cards.
+Injury details and badges appear only in the separate Injury watch section,
+not on highlight or recent-headline cards. Portrait URLs are limited to the existing NFL image host;
 missing or failed portraits use initials. Article links remain usable if the
 snapshot cannot load. No article bodies, videos or publisher thumbnails are
 scraped or rehosted for these cards, and no new API key is required.
 
-Injury details belong to the saved snapshot, not to the linked article. Preserve
+In Injury watch, details belong to the saved snapshot. Preserve
 the report week, snapshot timestamp and source link. No report means unknown,
 not healthy. Questionable, Probable and practice participation alone do not earn
 a Risk label; Out, Doubtful and injured-reserve statuses do.

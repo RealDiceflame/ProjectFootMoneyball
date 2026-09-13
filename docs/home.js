@@ -29,11 +29,6 @@ function injuryDetails(body, row) {
 function playerSummary(player) {
   const summary = el("div", undefined, "home-player-summary"), body = el("div");
   body.append(el("strong", player.player), el("p", `${player.team} · ${player.pos}`, "home-small"));
-  if (player.injury) {
-    body.append(el("span", `Saved injury report · ${player.injury.reportLabel}`, "home-small"));
-    injuryDetails(body, player.injury);
-    if (player.injury.risk) body.append(el("span", "RISK", "home-badge home-risk"));
-  } else body.append(el("p", "No injury report available in the saved snapshot.", "home-small"));
   summary.append(portrait(player), body); return summary;
 }
 

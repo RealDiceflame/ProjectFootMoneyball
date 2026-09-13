@@ -180,6 +180,8 @@ test("homepage links, injury filters, automatic X loading and mobile layout work
     assert.equal(await page.locator("#selected-source-cards .home-clip").nth(3).getAttribute("href"),
       "https://www.cbssports.com/watch/fantasy-football/video/malik-nabers-fantasy-outlook-and-injury-status");
     assert.equal(await page.locator("#selected-source-cards .home-portrait").count(), 4);
+    assert.equal(await page.locator(".home-highlights .home-injury-detail, .home-highlights .home-badge").count(), 0);
+    assert.doesNotMatch(await page.locator("#selected-source-cards .home-card-players").allTextContents().then(rows => rows.join(" ")), /injury|questionable|probable|RISK/i);
     await page.locator("#injury-more").click();
     assert.equal(await page.locator("#home-injury-list article").count(), 16);
     const player = await page.locator("#home-injury-list h3").first().textContent();

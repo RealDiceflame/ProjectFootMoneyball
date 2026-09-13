@@ -109,6 +109,10 @@ test("example indices cover the full batch without extra random draws", () => {
 test("homepage controls and rankings route are wired with unique identifiers", () => {
   const html = readFileSync(new URL("../docs/index.html", import.meta.url), "utf8");
   const js = readFileSync(new URL("../docs/home.js", import.meta.url), "utf8");
+  const sourceSummary = js.slice(js.indexOf("function playerSummary("), js.indexOf("function renderSourcePlayers("));
+  assert.match(sourceSummary, /portrait\(player\)/);
+  assert.doesNotMatch(sourceSummary, /injury|RISK|home-badge/i);
+  assert.match(js.slice(js.indexOf("function renderInjuries(")), /injuryDetails\(body, row\)/);
   const ids = [...html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
   assert.equal(ids.length, new Set(ids).size);
   for (const [, id] of js.matchAll(/\$\("([^"]+)"\)/g)) assert.ok(ids.includes(id), id);
