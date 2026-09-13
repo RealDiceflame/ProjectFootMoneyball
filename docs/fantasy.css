@@ -1,0 +1,26 @@
+.fantasy-page main { max-width: 1220px; }
+.fantasy-panel { margin-bottom: 22px; padding: clamp(18px, 3vw, 30px); background: #0c241e; border: 1px solid var(--line); border-radius: 16px; }
+.fantasy-page h1 { font: 500 clamp(32px, 5vw, 52px)/1.15 Georgia, serif; margin: 12px 0; }
+.fantasy-page h2 { font-size: 24px; margin: 0 0 16px; }
+.fantasy-page h3 { font-size: 18px; margin: 0 0 12px; }
+.fantasy-page p { font-size: 16px; line-height: 1.65; color: var(--muted); }
+.fantasy-page .eyebrow { font-size: 12px; color: var(--lime); }
+.fantasy-page .fantasy-notice { padding: 16px; background: #243024; border-left: 3px solid var(--lime); }
+.fantasy-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; align-items: center; }
+.fantasy-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.fantasy-page .button { font-size: 14px; min-height: 44px; white-space: normal; }
+.fantasy-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; }
+.fantasy-cards article { min-width: 0; padding: 20px; background: #102b22; border: 1px solid var(--line); border-radius: 10px; overflow-wrap: anywhere; }
+.fantasy-cards .fantasy-tag { font-size: 12px; color: var(--lime); }
+.fantasy-page fieldset { margin: 20px 0; padding: 18px; min-width: 0; border: 1px solid var(--line-strong); border-radius: 10px; }
+.fantasy-page legend { padding-inline: 8px; font-weight: 700; }
+.fantasy-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 18px; }
+.fantasy-fields label { display: grid; align-content: start; gap: 8px; font-size: 14px; }
+.fantasy-fields input, .fantasy-fields select { width: 100%; min-width: 0; min-height: 44px; padding: 10px; color: var(--ink); background: #071d18; border: 1px solid #4a6b56; border-radius: 8px; font-size: 16px; }
+.fantasy-fields :disabled { opacity: .65; cursor: not-allowed; }
+.roster-fields { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+.fantasy-page :focus-visible { outline: 3px solid var(--lime); outline-offset: 3px; }
+.fantasy-page [hidden] { display: none !important; }
+#hub-error { border: 1px solid var(--red); padding: 16px; color: #ffb9b3; }
+#hub-status { min-height: 26px; }
+@media(max-width: 720px) { .fantasy-page .source-status { text-align: left; } }

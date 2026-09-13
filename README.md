@@ -49,7 +49,13 @@ The guide assumes the user still needs every position being compared. It does no
 
 The Projection Lab now opens the draft-capital map on **All historical seasons** unless a URL explicitly selects another view. The round graph compares QB/RB/WR/TE average scoring; selecting one position adds a scoring-SD band. Missing rounds are gaps. Age charts offer PPG, season totals, and a career-relative view (best observed PPG season = 100, at least three six-game seasons). These are descriptive comparisons, not forced bell curves: survivor selection, playing time, talent and incomplete careers can distort the shape. The career-relative view does not alter player rankings or the age-adjustment model.
 
-Shared dropdown navigation groups Fantasy (player rankings followed by kickers/DST), Projection Lab, Simulation Lab, and Betting.
+Shared dropdown navigation groups **Fantasy** (player rankings followed by kickers/DST and My Leagues), **Labs** (Projection Lab and Simulation Lab sections), and **Betting**. Menus open on mouse hover with a short close delay; native click/tap/Enter/Space, keyboard focus and Escape dismissal remain available.
+
+### Fantasy platform foundation
+
+Open <https://outlierbaseline.com/fantasy.html> for **My Leagues**, an explicitly labeled browser-only setup prototype. Create multiple league setups, name the teams, choose PPR/additive TE premium/passing-TD preferences, and configure starting/bench/IR roster slots. Backups export as JSON and import as independent copies without replacing existing setups. It does not change the rankings board or existing draft markers. Browser storage is not a user account or shared database; clearing it removes setups unless backed up.
+
+There are no connected accounts, playable hosted leagues, player rosters, live drafts, scoring or lineup submissions yet. The intended product supports both native OutlierBaseline leagues and authorized outside-league integrations. See [the fantasy platform roadmap](documentation/fantasy-platform-roadmap.md) for the server/security boundary, provider permission checks and staged implementation. Unit tests: `node --test tests/fantasy_leagues.test.mjs`; browser checks: `node --test tests/navigation_and_fantasy.browser.mjs` (requires Playwright).
 
 Open <https://outlierbaseline.com/survivor.html> for a 32-team, 18-week survivor matrix, used-team tracking, saved weekly picks, configurable planning window and tie rule, and 20,000-trial path comparisons. One pick per week and no team reuse are enforced; byes and started games cannot be selected. Plans stay in browser storage, separately for each season, and are not submitted to an external pool.
 

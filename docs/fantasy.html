@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071d18">
+  <meta name="description" content="Start planning your own OutlierBaseline fantasy leagues. A browser-only league setup prototype, with scoring, roster settings, and team names.">
+  <link rel="canonical" href="https://outlierbaseline.com/fantasy.html">
+  <title>My Leagues · Prototype | OutlierBaseline</title>
+  <link rel="stylesheet" href="styles.css?v=20260909-labs2">
+  <link rel="stylesheet" href="site-nav.css?v=20260913-hub1">
+  <link rel="stylesheet" href="fantasy.css?v=20260913-hub1">
+</head>
+<body class="fantasy-page">
+  <header class="topbar">
+    <a class="brand" href="./"><span class="brand-mark" aria-hidden="true">OB</span><span><strong>OutlierBaseline</strong><small>Football intelligence lab</small></span></a>
+    <nav class="topnav" aria-label="Analytics pages"><a href="./">Player rankings</a><a href="special-teams.html">Kickers &amp; D/ST</a><a href="fantasy.html" aria-current="page">My leagues</a><a href="projection.html">Projection Lab</a><a href="league.html">Simulation Lab</a><a href="odds.html">Weekly odds</a></nav>
+    <span class="source-status">Local prototype · no accounts yet</span>
+  </header>
+  <main>
+    <section class="fantasy-panel fantasy-intro" aria-labelledby="hub-heading">
+      <p class="eyebrow">My leagues · foundation preview</p><h1 id="hub-heading">Your leagues. One home.</h1>
+      <p>The first step toward hosting your own fantasy leagues and bringing your outside teams together with OutlierBaseline's draft and lineup tools.</p>
+      <p class="fantasy-notice"><strong>Browser-only prototype.</strong> These are saved league setups—not playable, shared leagues. There are no logins, invites, connected accounts, player rosters, drafts, or live scoring yet. Data stays on this browser and device; clearing browser data removes it. Export a backup to keep a copy.</p>
+    </section>
+    <noscript>JavaScript is required to create and save league setups. Nothing is uploaded to a server.</noscript>
+    <p id="hub-error" role="alert" hidden></p><p id="hub-status" role="status" aria-live="polite"></p>
+    <section class="fantasy-panel" aria-labelledby="saved-heading">
+      <div class="fantasy-heading"><h2 id="saved-heading">Saved league setups</h2><div class="fantasy-actions">
+        <button id="new-league" type="button" class="button primary">New league setup</button>
+        <button id="export-leagues" type="button" class="button secondary" disabled>Export backup</button>
+        <button id="import-leagues" type="button" class="button secondary">Import backup as copies</button>
+        <input id="backup-file" type="file" accept=".json,application/json" hidden>
+      </div></div>
+      <p>Imports add independent copies; they never overwrite existing leagues or connect you to other users.</p>
+      <div id="saved-leagues" class="fantasy-cards"></div>
+    </section>
+    <section class="fantasy-panel" aria-labelledby="setup-heading">
+      <h2 id="setup-heading" tabindex="-1">Create a league setup</h2>
+      <form id="league-setup">
+        <fieldset><legend>League details</legend><div class="fantasy-fields">
+          <label>League name<input name="name" maxlength="60" required placeholder="Sunday friends league" autocomplete="off"></label>
+          <label>Season<input name="season" type="number" min="2020" max="2100" value="2026" required></label>
+          <label>Number of teams<select name="team_count"><option>8</option><option>10</option><option selected>12</option><option>14</option><option>16</option></select></label>
+        </div><p id="team-count-note">Team count is fixed after creation in this prototype. Create another setup to try a different size.</p></fieldset>
+        <fieldset><legend>Scoring preferences</legend><div class="fantasy-fields">
+          <label>Points per reception<select name="ppr"><option value="0">Standard · 0</option><option value="0.5" selected>Half PPR · 0.5</option><option value="1">Full PPR · 1</option></select></label>
+          <label>Extra points per TE reception<select name="te_premium"><option value="0">Off</option><option value="0.5">+0.5</option><option value="1">+1</option></select></label>
+          <label>Points per passing touchdown<select name="passing_td"><option value="4">4</option><option value="6">6</option></select></label>
+        </div><p>TE premium is added to regular PPR. These preferences are saved only; the scoring engine and remaining scoring rules are not configured yet. This page does not change your rankings or draft markers.</p></fieldset>
+        <fieldset><legend>Roster slots per team</legend><div id="roster-fields" class="fantasy-fields roster-fields"></div>
+          <p>FLEX = RB/WR/TE. Superflex = QB/RB/WR/TE. Bench and injured-reserve slots do not count as starters. Eligibility and injury rules are not enforced yet.</p>
+          <p id="roster-summary" aria-live="polite"></p>
+        </fieldset>
+        <fieldset id="team-names" hidden><legend>Team names</legend><p>Names are placeholders for teams—not invited managers or user accounts.</p><div id="team-name-fields" class="fantasy-fields"></div></fieldset>
+        <div class="fantasy-actions"><button id="save-league" class="button primary" type="submit">Create local setup</button><button id="cancel-edit" class="button secondary" type="button" hidden>Cancel editing</button></div>
+      </form>
+    </section>
+    <section class="fantasy-panel" aria-labelledby="future-heading">
+      <p class="eyebrow">Where this goes next · not available yet</p><h2 id="future-heading">One hub, two ways to play.</h2>
+      <div class="fantasy-cards">
+        <article><h3>OutlierBaseline leagues</h3><p>Next: accounts, private leagues and invitations, followed by a shared draft room, player rosters, lineup locks, scoring, waivers and trades. A server must be the authority for each pick and roster change.</p></article>
+        <article><h3>Connected leagues</h3><p>Start with permitted read-only league and roster imports. Match provider player IDs to our player IDs, then add draft assistance and lineup recommendations across your teams.</p><p><a href="https://docs.sleeper.com/" target="_blank" rel="noopener noreferrer">Sleeper's official API</a> is read-only; commercial use requires licensing discussions. It cannot submit lineup changes.</p></article>
+        <article><h3>Lineup assistance</h3><p>Recommendations first. Actual lineup submission needs a supported write API, authorized access, ownership checks and your confirmation. No account passwords or API keys belong on this public page.</p><p><a href="https://developer.yahoo.com/api/" target="_blank" rel="noopener noreferrer">Yahoo's API information</a> describes protected access through OAuth. Connection and write permissions still need to be verified for our application.</p></article>
+      </div>
+    </section>
+  </main>
+  <footer><p>OutlierBaseline · My Leagues prototype. No entry fees, account connections or automated lineup submissions.</p><a href="./">Return to player rankings</a></footer>
+  <script type="module" src="site-nav.js?v=20260913-hub1"></script>
+  <script type="module" src="fantasy.js?v=20260913-hub1"></script>
+</body>
+</html>
