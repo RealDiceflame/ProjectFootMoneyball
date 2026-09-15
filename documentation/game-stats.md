@@ -1,6 +1,6 @@
 # Game statistics archive
 
-Each score card opens `game.html?game=YYYY_WW_AWAY_HOME`. Available team stats are compared side by side; player stats are grouped by passing, rushing, receiving, defense, kicking, punting, returns, fantasy and other fields. All source statistical columns have a display group and remain available in the game JSON download.
+Each score card opens `game.html?game=YYYY_WW_AWAY_HOME`. Available team stats are compared side by side; player stats are grouped by passing, rushing, receiving, defense, kicking, punting, returns, fantasy and other fields. Every player category shows away players on the left and home players on the right, with team headers repeated for clarity; narrow screens stack away then home. Stats sections stay expanded, including the complete team comparison below the player groups. Tables have no capped internal vertical scroll; wide tables retain horizontal scrolling with the player name pinned. All source statistical columns have a display group and remain available in the game JSON download.
 
 The first archive covers the 16 played regular-season games of 2026 Week 1. Pending games show their schedule/score but do not invent box-score statistics. Archive links keep working across the season rollover.
 

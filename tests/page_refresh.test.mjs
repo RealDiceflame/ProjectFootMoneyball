@@ -64,3 +64,55 @@ test("available score remains visible when box-score request fails",async()=>{
   assert.match(view.nodes.get("game-stats").textContent,/Box score temporarily unavailable/);
   assert.ok(view.nodes.get("game-summary").children.length===2);
 });
+
+const descendants=node=>node.children.flatMap(child=>[child,...descendants(child)]);
+test("player categories stay open and split every row into away/home panels",async()=>{
+  const bundle=JSON.parse(readFileSync(new URL("2026_01_NE_SEA.json",folder),"utf8"));
+  const {players}=gameData.unpackStats(bundle,bundle.game.game_id);
+  const responses=[{games:[bundle.game]},bundle,{games:[bundle.game]},bundle];
+  const view=await page("game.js",`?game=${bundle.game.game_id}`,responses);
+  const content=view.nodes.get("game-stats");
+  assert.equal(descendants(content).filter(node=>node.tagName==="details").length,0);
+  for(const [name,keys] of gameData.statGroups(bundle.player_columns)){
+    const active=gameData.activeStatRows(players,keys);if(!active.length)continue;
+    const category=content.children.find(node=>node.dataset.group===name);
+    assert.ok(category,`${name} remains visible`);
+    const panels=category.children[1].children;
+    assert.deepEqual(panels.map(node=>node.dataset.side),["away","home"]);
+    for(const [index,side] of ["away","home"].entries()){
+      const panel=panels[index],team=bundle.game[side];
+      const expected=active.filter(row=>row.team===team);
+      assert.equal(panel.dataset.team,team);
+      assert.match(panel.children[0].textContent,new RegExp(TEAM_NAMES[team]));
+      const body=descendants(panel).find(node=>node.tagName==="tbody");
+      if(!expected.length){assert.match(panel.textContent,/No recorded player stats/);continue;}
+      assert.equal(body.children.length,expected.length,`${name}: no ${side} rows lost`);
+      expected.forEach((row,i)=>assert.deepEqual(body.children[i].children.map(cell=>cell.textContent),
+        [row.player_id?(row.player_display_name||row.player_name||row.player_id):"Uncredited team events",
+          row.position||"—",...keys.map(key=>gameData.statValue(row[key]))]));
+    }
+  }
+  assert.match(content.textContent,/Uncredited team events/);
+  const previousChildren=content.children;
+  await view.refresh();
+  assert.equal(content.children,previousChildren,"Unchanged refresh preserves tables and reading position");
+});
+
+test("same-name players are not combined and team stats remain fully expanded",async()=>{
+  const bundle=structuredClone(gameBundle),nameIndex=bundle.player_columns.indexOf("player_display_name");
+  for(const row of bundle.players)row[nameIndex]="Same Name";
+  const view=await page("game.js",`?game=${bundle.game.game_id}`,[{games:[bundle.game]},bundle]);
+  const content=view.nodes.get("game-stats"),all=content.children.find(node=>node.dataset.group==="teams");
+  const body=descendants(all).find(node=>node.tagName==="tbody");
+  assert.equal(body.children.length,bundle.team_columns.filter(key=>!gameData.ID_FIELDS.has(key)).length);
+  const receiving=content.children.find(node=>node.dataset.group==="Receiving");
+  for(const panel of receiving.children[1].children){
+    const names=descendants(panel).filter(node=>node.tagName==="tbody")
+      .flatMap(node=>node.children.map(row=>row.children[0].textContent));
+    assert.ok(names.filter(name=>name==="Same Name").length>1);
+  }
+  const css=readFileSync(new URL("../docs/game.css",import.meta.url),"utf8");
+  const wrapper=css.match(/\.game-table-wrap\s*\{([^}]+)\}/)[1];
+  assert.doesNotMatch(wrapper,/max-height|height:/);
+  assert.match(css,/@media\(max-width:900px\).*grid-template-columns: minmax\(0,1fr\)/);
+});

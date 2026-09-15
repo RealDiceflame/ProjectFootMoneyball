@@ -16,8 +16,26 @@ function table(headers, rows, caption) {
 
 function teamTable(teams, game, keys, caption) {
   const byTeam=Object.fromEntries(teams.map(row=>[row.team,row]));
-  return table(["Statistic",TEAM_NAMES[game.away],TEAM_NAMES[game.home]],
+  return table(["Statistic",`Away · ${TEAM_NAMES[game.away]}`,`Home · ${TEAM_NAMES[game.home]}`],
     keys.map(key=>[statLabel(key),statValue(byTeam[game.away]?.[key]),statValue(byTeam[game.home]?.[key])]),caption);
+}
+
+function playerTeamPanel(rows, keys, game, side, category) {
+  const team=game[side], label=side==="away"?"Away":"Home";
+  const panel=el("section",undefined,"game-stat-team");panel.dataset.team=team;panel.dataset.side=side;
+  const heading=el("h4",undefined,"game-stat-team-heading");
+  heading.append(teamMark(team),el("span",`${label} · ${TEAM_NAMES[team]}`));
+  panel.append(heading);
+  // Partition source rows by team, never by name: names need not be unique.
+  const teamRows=rows.filter(row=>row.team===team);
+  if(!teamRows.length){
+    panel.append(el("p","No recorded player stats in this category.","game-stat-empty"));
+    return panel;
+  }
+  const values=teamRows.map(row=>[row.player_id?(row.player_display_name||row.player_name||row.player_id):"Uncredited team events",
+    row.position||"—",...keys.map(key=>statValue(row[key]))]);
+  panel.append(table(["Player","Position",...keys.map(statLabel)],values,`${label} ${TEAM_NAMES[team]} · ${category}`));
+  return panel;
 }
 
 function render(game, bundle) {
@@ -26,7 +44,9 @@ function render(game, bundle) {
   const display=scoreDisplay(game), summary=$("game-summary");
   summary.replaceChildren(...["away","home"].map(side=>{
     const row=el("div",undefined,"game-team"),mark=teamMark(game[side]);mark.width=48;mark.height=48;
-    row.append(mark,el("span",TEAM_NAMES[game[side]]),el("strong",display[side]));return row;
+    const name=el("div",undefined,"game-team-name");
+    name.append(el("small",side==="away"?"Away":"Home"),el("span",TEAM_NAMES[game[side]]));
+    row.append(mark,name,el("strong",display[side]));return row;
   }));
   const time=game.kickoff?new Date(game.kickoff).toLocaleString(undefined,{dateStyle:"medium",timeStyle:"short"}):"Time TBD";
   $("game-status").textContent=`Week ${game.week} · ${time} · ${display.label}`;
@@ -42,20 +62,24 @@ function render(game, bundle) {
   $("game-status").textContent+=` · Stats updated ${new Date(bundle.updated_at).toLocaleString()}`;
   const nextSignature=bundle.content_sha256;
   if(signature===nextSignature)return;
-  const open=new Set([...content.querySelectorAll("details[open]")].map(node=>node.dataset.group));
-  const first=signature===null;signature=nextSignature;
+  signature=nextSignature;
   const nodes=[],teamSection=el("section");
   teamSection.append(el("h2","Team comparison"),teamTable(teams,game,TEAM_SUMMARY.filter(key=>bundle.team_columns.includes(key)),"Team comparison"));
   nodes.push(teamSection);
-  const all=el("details");all.dataset.group="teams";all.open=open.has("teams");
-  all.append(el("summary","All available team statistics"),teamTable(teams,game,bundle.team_columns.filter(key=>!ID_FIELDS.has(key)),"All team statistics"));nodes.push(all);
   nodes.push(el("h2","Player box score"));
   for(const [name,keys] of statGroups(bundle.player_columns)){
     const rows=activeStatRows(players,keys);if(!rows.length)continue;
-    const section=el("details");section.dataset.group=name;section.open=open.has(name)||(first&&name==="Passing");
-    const values=rows.map(row=>[row.player_id?(row.player_display_name||row.player_name||row.player_id):"Uncredited team events",row.team,row.position||"—",...keys.map(key=>statValue(row[key]))]);
-    section.append(el("summary",name),table(["Player","Team","Position",...keys.map(statLabel)],values,`${name} player statistics`));nodes.push(section);
+    const section=el("section",undefined,"game-stat-category");section.dataset.group=name;
+    const heading=el("h3",name);heading.id=`stat-${name.toLowerCase()}`;
+    section.setAttribute("aria-labelledby",heading.id);
+    const sides=el("div",undefined,"game-stat-sides");
+    sides.append(...["away","home"].map(side=>playerTeamPanel(rows,keys,game,side,name)));
+    section.append(heading,sides);nodes.push(section);
   }
+  const all=el("section");all.dataset.group="teams";
+  all.append(el("h2","All available team statistics"),
+    teamTable(teams,game,bundle.team_columns.filter(key=>!ID_FIELDS.has(key)),"All team statistics"));
+  nodes.push(all);
   const unavailable=el("p","Possession time, third/fourth-down conversions, snap counts and play-by-play are not available from this feed.");
   const download=el("a","Download game data","game-download");download.href=`data/game_stats/${bundle.season}/${gameId}.json`;download.download=`${gameId}.json`;
   nodes.push(unavailable,download);content.replaceChildren(...nodes);
