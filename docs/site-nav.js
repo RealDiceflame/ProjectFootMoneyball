@@ -1,4 +1,5 @@
 const menus = [
+  ["Stats", [[null, [["Game results", "stats.html"], ["League leaders", "stats.html?view=leaders"]]]]],
   ["Fantasy", [[null, [["Player rankings", "rankings.html"], ["Kickers & D/ST", "special-teams.html"], ["My leagues · prototype", "fantasy.html"]]]]],
   ["Labs", [
     ["Projection Lab", [["Player age & scoring", "projection.html"], ["Draft capital map", "projection.html#round-map-heading"]]],
@@ -27,7 +28,11 @@ if (nav) {
       }
       for (const [label, url] of links) {
         const link = document.createElement("a"); link.textContent = label; link.href = url;
-        if ((url === "./" ? "index.html" : url.split("#")[0]) === page) { details.classList.add("current-lab"); if (!url.includes("#")) link.setAttribute("aria-current", "page"); }
+        const target = new URL(url, location.href);
+        if ((target.pathname.split("/").pop() || "index.html") === page) {
+          details.classList.add("current-lab");
+          if (!url.includes("#") && (page !== "stats.html" || target.searchParams.get("view") === new URLSearchParams(location.search).get("view"))) link.setAttribute("aria-current", "page");
+        }
         link.addEventListener("click", () => close(details)); section.append(link);
       }
       list.append(section);

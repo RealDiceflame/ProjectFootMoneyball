@@ -51,8 +51,8 @@ async function screenshot(page, name) {
 test("desktop hover menus group all labs, stay open over links, switch and dismiss", async () => {
   const {context, page} = await openPage();
   try {
-    assert.deepEqual(await page.locator(".topnav > details > summary").allTextContents(), ["Fantasy", "Labs", "Betting"]);
-    const labs = page.locator(".topnav > details").nth(1);
+    assert.deepEqual(await page.locator(".topnav > details > summary").allTextContents(), ["Stats", "Fantasy", "Labs", "Betting"]);
+    const labs = page.locator(".topnav > details").filter({has: page.getByText("Labs", {exact: true})});
     assert.equal(await isOpen(labs), false);
     await labs.locator("summary").hover(); await waitForOpen(page, "Labs", true);
     assert.deepEqual(await labs.locator("h2").allTextContents(), ["Projection Lab", "Simulation Lab"]);
@@ -75,7 +75,7 @@ test("desktop hover menus group all labs, stay open over links, switch and dismi
 test("keyboard links keep their focus, Escape closes without reopening, and Tab can leave", async () => {
   const {context, page} = await openPage();
   try {
-    const labs = page.locator(".topnav > details").nth(1), summary = labs.locator("summary");
+    const labs = page.locator(".topnav > details").filter({has: page.getByText("Labs", {exact: true})}), summary = labs.locator("summary");
     await summary.focus(); await page.keyboard.press("Enter"); await waitForOpen(page, "Labs", true);
     await page.keyboard.press("Tab");
     assert.equal(await page.evaluate(() => document.activeElement.textContent), "Player age & scoring");
@@ -93,7 +93,7 @@ test("keyboard links keep their focus, Escape closes without reopening, and Tab 
 test("mobile uses tap, fits the viewport, and follows grouped links", async () => {
   const {context, page} = await openPage({viewport: {width: 390, height: 844}, isMobile: true, hasTouch: true});
   try {
-    const labs = page.locator(".topnav > details").nth(1);
+    const labs = page.locator(".topnav > details").filter({has: page.getByText("Labs", {exact: true})});
     assert.equal(await isOpen(labs), false);
     await labs.locator("summary").tap(); await waitForOpen(page, "Labs", true);
     assert.ok(await labs.getByRole("link", {name: "Team game forecasts"}).isVisible());

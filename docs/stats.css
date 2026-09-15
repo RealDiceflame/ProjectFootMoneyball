@@ -1,0 +1,35 @@
+.stats-page main { max-width: 1440px; }
+.stats-page h1 { font: 500 clamp(2rem,4vw,3rem)/1.15 Georgia,serif; margin: 0 0 24px; }
+.stats-views { display: flex; gap: 20px; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+.stats-views a { padding: 12px 0; text-decoration: none; color: var(--muted); font-size: 1rem; }
+.stats-views a[aria-current="page"] { color: var(--lime); border-bottom: 3px solid var(--lime); }
+.stats-controls { display: flex; flex-wrap: wrap; gap: 16px; }
+.stats-controls label { display: grid; gap: 7px; font-size: .875rem; color: var(--muted); min-width: 140px; }
+.stats-controls label[hidden] { display: none; }
+.stats-controls select { min-height: 44px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--panel); color: var(--ink); padding: 8px 36px 8px 12px; }
+#stats-status { color: var(--muted); font-size: .875rem; line-height: 1.6; margin: 20px 0; }
+#stats-status.stale { color: #ffc979; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,310px),1fr)); gap: 18px; }
+.stats-card { min-width: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); padding: 20px; }
+.stats-card h2 { font-size: 1.125rem; margin: 0 0 16px; }
+.stats-game { display: block; color: var(--ink); text-decoration: none; }
+.stats-game:hover { border-color: var(--lime); }
+.stats-game > p { color: var(--muted); font-size: .875rem; line-height: 1.5; margin: 8px 0; }
+.stats-game-team { display: flex; gap: 10px; align-items: center; font-size: 1rem; margin-block: 10px; }
+.stats-game-team img { width: 30px; height: 30px; object-fit: contain; }
+.stats-game-team strong { margin-left: auto; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+.stats-game .stats-game-link { color: var(--lime); margin-top: 16px; }
+.stats-card table { width: 100%; border-collapse: collapse; font-size: .875rem; table-layout: auto; }
+.stats-card th, .stats-card td { position: static; left: auto; min-width: 0; box-shadow: none; text-align: left; padding: 11px 4px; border-bottom: 1px solid var(--line); white-space: normal; background: transparent; }
+.stats-card thead th { color: var(--muted); font-size: .875rem; }
+.stats-card th:first-child, .stats-card td:first-child { width: 2rem; }
+.stats-card tbody th { font-weight: 500; overflow-wrap: anywhere; }
+.stats-card td:last-child, .stats-card thead th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.stats-card tbody tr:first-child td:last-child { color: var(--lime); font-weight: 700; }
+.stats-player-team { display: block; font-size: .875rem; color: var(--muted); margin-top: 3px; }
+.stats-empty { color: var(--muted); line-height: 1.6; }
+.stats-page :focus-visible { outline: 3px solid var(--lime); outline-offset: 3px; }
+.stats-page footer { flex-wrap: wrap; gap: 16px; font-size: .875rem; }
+.stats-page footer details { max-width: 700px; }
+.stats-page footer p { line-height: 1.6; }
+@media(max-width:600px) { .stats-card { padding: 16px; } .stats-controls label { flex: 1 1 120px; } }

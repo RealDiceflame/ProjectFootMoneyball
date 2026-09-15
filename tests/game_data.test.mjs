@@ -19,7 +19,7 @@ test("zero, missing, fractional and negative box-score values stay distinct",()=
 
 test("each archived game validates and every statistic has a viewable group",()=>{
   const directory=new URL("../docs/data/game_stats/2026/",import.meta.url);
-  const files=readdirSync(directory).filter(name=>name!=="index.json");
+  const files=readdirSync(directory).filter(name=>name.endsWith(".json")&&validGameId(name.slice(0,-5)));
   assert.ok(files.length>=16);
   for(const file of files){
     const bundle=JSON.parse(readFileSync(new URL(file,directory),"utf8"));

@@ -11,6 +11,7 @@ import re
 from urllib.request import Request, urlopen
 
 from app.scoreboard import TEAM_ALIASES, parse_time
+from app.league_leaders import build_stats_summary
 
 RELEASES = {
     "players": "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_{season}.csv",
@@ -162,6 +163,8 @@ def refresh_game_stats(root, season, *, fetch=download, now=None):
     artifacts[root / f"data/game_stats/{season}/provenance.json"] = encoded(source_info)
     artifacts[season_path / "index.json"] = encoded({"schema_version": 1, "season": season,
         "checked_at": collected_at, "sources": source_info, "games": index})
+    artifacts[season_path / "summary.json"] = encoded(
+        build_stats_summary(season, schedule, players, index, collected_at))
     catalogue = read_json(public / "index.json", {"schema_version": 1, "seasons": []})
     catalogue["seasons"] = sorted(set(catalogue["seasons"]) | {season}, reverse=True)
     catalogue["checked_at"] = collected_at

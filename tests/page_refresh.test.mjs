@@ -4,6 +4,7 @@ import vm from "node:vm";
 import {readFileSync,readdirSync} from "node:fs";
 import * as homeData from "../docs/home-data.mjs";
 import * as gameData from "../docs/game-data.mjs";
+import * as statsData from "../docs/stats-data.mjs";
 import {TEAM_NAMES,scoreDisplay,gameConditions} from "../docs/scores-data.mjs";
 
 class Node {
@@ -21,7 +22,7 @@ async function page(script,query,responses,helpers={}){
   const nodes=new Map(),intervals=[],calls=[];
   const doc={hidden:false,events:{},getElementById(id){if(!nodes.has(id))nodes.set(id,new Node());return nodes.get(id);},
     createElement:tag=>new Node(tag),addEventListener(key,fn){this.events[key]=fn;}};
-  const context=vm.createContext({...homeData,...gameData,TEAM_NAMES,scoreDisplay,gameConditions,document:doc,location:{search:query},
+  const context=vm.createContext({...homeData,...gameData,...statsData,TEAM_NAMES,scoreDisplay,gameConditions,document:doc,location:{search:query},
     URLSearchParams,Date,AbortSignal,setTimeout,clearTimeout,teamMark:()=>new Node("img"),
     setInterval(fn){intervals.push(fn);},...helpers,
     async fetch(url){calls.push(url);const next=responses.shift();if(next instanceof Error)throw next;return {ok:next!==null,status:next===null?404:200,json:async()=>next};}});
@@ -76,6 +77,38 @@ test("available score remains visible when box-score request fails",async()=>{
 });
 
 const descendants=node=>node.children.flatMap(child=>[child,...descendants(child)]);
+
+const statsBundle=JSON.parse(readFileSync(new URL("../docs/data/game_stats/2026/summary.json",import.meta.url),"utf8"));
+const catalogue={seasons:[2026]};
+test("stats page links every available game and leaders respond to week/category changes",async()=>{
+  const games=await page("stats.js","",[catalogue,statsBundle]);
+  assert.equal(games.nodes.get("stats-results").children.length,16);
+  assert.ok(games.nodes.get("stats-results").children.every(node=>node.href.startsWith("game.html?game=2026_01_")));
+  const view=await page("stats.js","?view=leaders",[catalogue,statsBundle]);
+  assert.equal(view.nodes.get("stats-week").value,"all");
+  assert.equal(view.nodes.get("stats-category-label").hidden,false);
+  assert.match(view.nodes.get("stats-results").textContent,/Passing yards/);
+  view.nodes.get("stats-category").value="Defense";view.nodes.get("stats-category").events.change();
+  assert.match(view.nodes.get("stats-results").textContent,/Sacks/);
+  assert.doesNotMatch(view.nodes.get("stats-results").textContent,/Passing yards/);
+  view.nodes.get("stats-week").value="2";view.nodes.get("stats-week").events.change();
+  assert.match(view.nodes.get("stats-status").textContent,/0 game box scores/);
+  assert.match(view.nodes.get("stats-results").textContent,/No nonzero totals/);
+});
+
+test("stats refresh recovers catalogue failure and retains loaded leaders after an outage",async()=>{
+  let now=Date.parse("2026-09-15T18:00:00Z");
+  class Clock extends Date {static now(){return now;}}
+  const view=await page("stats.js","?view=leaders",[new Error("offline"),catalogue,statsBundle,new Error("offline")],{Date:Clock});
+  assert.match(view.nodes.get("stats-status").textContent,/temporarily unavailable/);
+  now+=300001;await view.refresh();
+  assert.deepEqual(view.calls.slice(0,2),["data/game_stats/index.json","data/game_stats/index.json"]);
+  assert.match(view.nodes.get("stats-results").textContent,/Passing yards/);
+  now+=300001;await view.refresh();
+  assert.match(view.nodes.get("stats-status").textContent,/last loaded stats/);
+  assert.match(view.nodes.get("stats-results").textContent,/Passing yards/);
+  view.doc.hidden=true;now+=300001;await view.refresh();assert.equal(view.calls.length,4);
+});
 test("player categories stay open and split every row into away/home panels",async()=>{
   const bundle=JSON.parse(readFileSync(new URL("2026_01_NE_SEA.json",folder),"utf8"));
   const {players}=gameData.unpackStats(bundle,bundle.game.game_id);

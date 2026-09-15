@@ -50,6 +50,10 @@ def test_archive_keeps_sources_prior_seasons_and_stable_unchanged_game(tmp_path)
     assert refresh_game_stats(tmp_path,2026,fetch=fetch,now=NOW)==1
     game=tmp_path/f"docs/data/game_stats/2026/{GAME['game_id']}.json"
     saved=game.read_bytes()
+    summary_path=tmp_path/"docs/data/game_stats/2026/summary.json"
+    summary=json.loads(summary_path.read_text())
+    assert summary["periods"]["all"]["game_count"]==1
+    assert summary["periods"]["all"]["leaders"]["def_sacks"][0]["value"]==0.5
     assert (tmp_path/"data/game_stats/2026/players.csv").read_bytes()==source("players")
     refresh_game_stats(tmp_path,2026,fetch=fetch,now=datetime(2026,9,16,tzinfo=timezone.utc))
     assert game.read_bytes()==saved and historical.exists()
@@ -59,9 +63,12 @@ def test_archive_keeps_sources_prior_seasons_and_stable_unchanged_game(tmp_path)
 def test_bad_schema_or_network_cannot_replace_saved_data_but_credits_can_be_corrected(tmp_path):
     fetch=setup(tmp_path);refresh_game_stats(tmp_path,2026,fetch=fetch,now=NOW)
     game=tmp_path/f"docs/data/game_stats/2026/{GAME['game_id']}.json";saved=game.read_bytes()
+    summary_path=tmp_path/"docs/data/game_stats/2026/summary.json"
+    saved_summary=summary_path.read_bytes()
     with pytest.raises(ValueError,match="columns disappeared"):
         refresh_game_stats(tmp_path,2026,fetch=lambda url:(source("players" if "stats_player" in url else "teams",remove_column=True),None),now=NOW)
     assert game.read_bytes()==saved
+    assert summary_path.read_bytes()==saved_summary
     def fail(url): raise OSError("offline")
     with pytest.raises(OSError): refresh_game_stats(tmp_path,2026,fetch=fail,now=NOW)
     assert game.read_bytes()==saved
