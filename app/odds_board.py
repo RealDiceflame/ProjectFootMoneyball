@@ -13,6 +13,7 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 import requests
+from app.venues import venue_overrides
 
 
 SCHEDULE_URL = "https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv"
@@ -44,19 +45,6 @@ STADIUM_COORDINATES = {
     "PIT00": (40.4467, -80.0158), "SEA00": (47.5953, -122.3316),
     "SFO01": (37.4030, -121.9697), "TAM00": (27.9760, -82.5042),
     "VEG00": (36.0908, -115.1825), "WAS00": (38.9077, -76.8633),
-}
-
-# International schedule rows can retain the home club's usual roof/surface values.
-# These overrides describe the actual host venue so the public game card stays honest.
-VENUE_OVERRIDES = {
-    "MEL00": {"roof": "outdoors", "surface": "grass"},
-    "RIO00": {"roof": "outdoors", "surface": "grass"},
-    "LON02": {"roof": "outdoors", "surface": "artificial"},
-    "LON00": {"roof": "outdoors", "surface": "grass"},
-    "PAR00": {"roof": "outdoors", "surface": "grass"},
-    "MAD01": {"roof": "retractable", "surface": "grass"},
-    "MUN01": {"roof": "outdoors", "surface": "grass"},
-    "MEX00": {"roof": "outdoors", "surface": "grass"},
 }
 
 TEAM_NAMES = {
@@ -276,7 +264,7 @@ def _schedule_games(schedule: pd.DataFrame, *, season: int, now: datetime) -> li
         away, home = str(row["away_team"]), str(row["home_team"])
         stadium_id = _text(row.get("stadium_id"))
         venue = row.copy()
-        for key, value in VENUE_OVERRIDES.get(stadium_id, {}).items():
+        for key, value in venue_overrides(stadium_id, _text(row.get("roof"))).items():
             venue[key] = value
         games.append({
             "game_id": str(row["game_id"]),
@@ -669,15 +657,21 @@ def _nws_forecast(game: dict, *, get: Callable = requests.get) -> dict | None:
     for period in periods:
         try:
             start = datetime.fromisoformat(str(period.get("startTime")))
+            end = datetime.fromisoformat(str(period["endTime"])) if period.get("endTime") else start + timedelta(hours=1)
+            if start.tzinfo is None or end.tzinfo is None:
+                continue
         except (TypeError, ValueError):
             continue
-        eligible.append((abs((start.astimezone(timezone.utc) - kickoff).total_seconds()), period))
+        if start <= kickoff < end:
+            eligible.append((abs((start.astimezone(timezone.utc) - kickoff).total_seconds()), period))
     if not eligible:
         return None
     distance, period = min(eligible, key=lambda item: item[0])
     if distance > 2 * 60 * 60:
         return None
     temperature = _number(period.get("temperature"))
+    if temperature is not None and period.get("temperatureUnit") == "C":
+        temperature = temperature * 9 / 5 + 32
     return {
         "status": "forecast",
         "summary": _text(period.get("shortForecast")) or "Forecast available",
@@ -685,6 +679,7 @@ def _nws_forecast(game: dict, *, get: Callable = requests.get) -> dict | None:
         "wind_speed": _text(period.get("windSpeed")),
         "wind_direction": _text(period.get("windDirection")),
         "source_url": NWS_SOURCE_URL,
+        "valid_at": period["startTime"],
     }
 
 
@@ -702,7 +697,7 @@ def add_nws_weather(
         if game.get("weather", {}).get("status") != "pending":
             continue
         kickoff = datetime.fromisoformat(game["kickoff"])
-        if kickoff > now + timedelta(days=7) or game.get("stadium_id") not in STADIUM_COORDINATES:
+        if kickoff < now or kickoff > now + timedelta(days=7) or game.get("stadium_id") not in STADIUM_COORDINATES:
             continue
         cache_key = (str(game.get("stadium_id")), game["kickoff"][:13])
         if cache_key not in cache:

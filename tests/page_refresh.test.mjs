@@ -4,7 +4,7 @@ import vm from "node:vm";
 import {readFileSync,readdirSync} from "node:fs";
 import * as homeData from "../docs/home-data.mjs";
 import * as gameData from "../docs/game-data.mjs";
-import {TEAM_NAMES,scoreDisplay} from "../docs/scores-data.mjs";
+import {TEAM_NAMES,scoreDisplay,gameConditions} from "../docs/scores-data.mjs";
 
 class Node {
   constructor(tag="div"){this.tagName=tag;this.children=[];this.events={};this.dataset={};this.value="";this.scrollTop=0;
@@ -21,7 +21,7 @@ async function page(script,query,responses,helpers={}){
   const nodes=new Map(),intervals=[],calls=[];
   const doc={hidden:false,events:{},getElementById(id){if(!nodes.has(id))nodes.set(id,new Node());return nodes.get(id);},
     createElement:tag=>new Node(tag),addEventListener(key,fn){this.events[key]=fn;}};
-  const context=vm.createContext({...homeData,...gameData,TEAM_NAMES,scoreDisplay,document:doc,location:{search:query},
+  const context=vm.createContext({...homeData,...gameData,TEAM_NAMES,scoreDisplay,gameConditions,document:doc,location:{search:query},
     URLSearchParams,Date,AbortSignal,setTimeout,clearTimeout,teamMark:()=>new Node("img"),
     setInterval(fn){intervals.push(fn);},...helpers,
     async fetch(url){calls.push(url);const next=responses.shift();if(next instanceof Error)throw next;return {ok:next!==null,status:next===null?404:200,json:async()=>next};}});

@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
+from app.game_conditions import schedule_conditions, attach_saved_weather
 
 SCHEDULE_URL = "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv.gz"
 SOURCE_URL = "https://github.com/nflverse/nflverse-data/releases/tag/schedules"
@@ -55,7 +56,8 @@ def parse_games(text, season, *, expected_games=272):
         if None in scores:
             scores = [None, None]
         games.append({"game_id": identity, "week": week, "home": home, "away": away,
-                      "gameday": date, "kickoff": kickoff, "home_score": scores[0], "away_score": scores[1]})
+                      "gameday": date, "kickoff": kickoff, "home_score": scores[0], "away_score": scores[1],
+                      **schedule_conditions(row)})
     if len(games) != expected_games:
         raise ValueError("Incomplete regular-season schedule; keeping the previous scoreboard")
     return sorted(games, key=lambda game: (game["week"], game["gameday"], game["kickoff"] or "", game["game_id"]))
@@ -104,6 +106,14 @@ def refresh_scores(destination, season, *, scheduled=False, now=None, fetch=fetc
                              for side in ("home", "away"))
             if had_scores and game["home_score"] is None and game["kickoff"] and parse_time(game["kickoff"]) <= now:
                 raise ValueError("Previously reported scores disappeared; keeping the previous scoreboard")
+    # Reuse the six-hour weather snapshot. Frequent score checks add no weather API calls.
+    try:
+        odds = json.loads(destination.with_name("nfl_odds.json").read_text(encoding="utf-8"))
+        if not isinstance(odds, dict) or odds.get("season") != season or not isinstance(odds.get("games"), list):
+            odds = {}
+    except (OSError, ValueError):
+        odds = {}
+    attach_saved_weather(games, previous if previous.get("season") == season else {}, odds, now)
     payload = {"season": season, "checked_at": now.isoformat(), "score_type": "reported",
                "source": {"name": "Lee Sharpe / nflverse", "url": SOURCE_URL, "license_url": LICENSE_URL},
                "games": games}

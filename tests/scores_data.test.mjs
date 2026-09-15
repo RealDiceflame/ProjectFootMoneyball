@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {scoreboardGames, defaultScoreWeek, scoreDisplay, scoreboardStale} from "../docs/scores-data.mjs";
+import {scoreboardGames, defaultScoreWeek, scoreDisplay, scoreboardStale, gameConditions} from "../docs/scores-data.mjs";
 const game = {game_id:"2026_01_BUF_BAL",week:1,home:"BAL",away:"BUF",gameday:"2026-09-13",kickoff:"2026-09-13T17:00:00Z",home_score:0,away_score:14};
 const now = Date.parse("2026-09-13T18:00:00Z");
 
@@ -43,4 +43,28 @@ test("homepage uses the user's exact headline, compact footer and independent sc
   assert.doesNotMatch(js,/api[_-]?key|api\.the-odds-api|api\.espn/i);
   const data=JSON.parse(readFileSync(new URL("../docs/data/scores.json",import.meta.url),"utf8"));
   assert.equal(scoreboardGames(data).length,272);
+});
+
+test("all selected-week games wrap into rows without an inner scrolling region", () => {
+  const css=readFileSync(new URL("../docs/home.css",import.meta.url),"utf8");
+  const grid=css.match(/\.home-score-grid\s*\{([^}]+)\}/)[1];
+  assert.match(grid,/grid-template-columns: repeat\(auto-fit/);
+  assert.doesNotMatch(grid,/overflow|max-height|grid-auto-flow/);
+  const html=readFileSync(new URL("../docs/index.html",import.meta.url),"utf8");
+  assert.doesNotMatch(html,/scroll horizontally/);
+});
+
+test("venue and weather labels separate forecasts from reported game conditions", () => {
+  const base={...game, city:"Baltimore, MD", stadium:"M&T Bank Stadium", roof:"outdoors"};
+  assert.equal(gameConditions(base,now).location,"Baltimore, MD");
+  assert.equal(gameConditions({...base,city:null},now).location,"M&T Bank Stadium");
+  assert.equal(gameConditions(base,now).weather,"Game weather unavailable");
+  assert.match(gameConditions({...base,weather:{status:"schedule",temperature:0,wind_speed:"0 mph"}},now).weather,/Reported game weather · 0°F · Wind 0 mph/);
+  const forecast={status:"forecast",temperature:72,summary:"Sunny",checked_at:"2026-09-13T16:00:00Z"};
+  assert.match(gameConditions({...base,weather:forecast},now).weather,/^Pre-game forecast/);
+  assert.match(gameConditions({...base,weather:forecast},now-2*3600000).weather,/^Kickoff forecast/);
+  assert.match(gameConditions({...base,kickoff:"2026-09-15T17:00:00Z",weather:forecast},now+86400000).weather,/^Earlier kickoff forecast/);
+  assert.equal(gameConditions({...base,roof:"dome"},now).weather,"Indoors / roof closed");
+  assert.equal(gameConditions({...base,roof:"dome",stadium_id:"LAX01"},now).weather,"Covered, open-sided stadium");
+  assert.doesNotMatch(gameConditions({...base,roof:"retractable"},now).weather,/Indoors/);
 });

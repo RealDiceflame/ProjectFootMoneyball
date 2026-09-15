@@ -1,6 +1,14 @@
 # Homepage scoreboard
 
-The homepage shows a selectable regular-season week, initially the current NFL week. The next week opens exactly 24 hours before its first kickoff. A manually selected week remains selected. Cards include team logos and link to saved game statistics, and scroll horizontally on phones. Times use the visitor's local time zone.
+The homepage shows a selectable regular-season week, initially the current NFL week. The next week opens exactly 24 hours before its first kickoff. A manually selected week remains selected. All games in the selected week wrap into a responsive grid with no inner scrolling area. Cards include team logos, the actual venue city, game weather and a link to saved game statistics. Times use the visitor's local time zone.
+
+## Venue and kickoff weather
+
+The schedule supplies stadium ID/name, roof, temperature (°F) and wind (mph). City is keyed to the actual stadium, not the nominal home franchise, including international games. Unknown stadium IDs display the venue name without guessing a city. Representative venue references: [SoFi/Inglewood](https://www.sofistadium.com/connect), [MetLife/East Rutherford](https://www.metlifestadium.com/a-z-guide), [Levi's/Santa Clara](https://levisstadium.com/contact-us/), [Stade de France/Saint-Denis](https://www.stadefrance.com/fr/credits). International roof overrides are shared with the odds board.
+
+Reported schedule conditions take priority. Otherwise the score publisher reuses the six-hour odds snapshot's [National Weather Service](https://www.weather.gov/documentation/services-web-api) kickoff-hour forecast, matching game ID, teams, stadium ID and kickoff instant. Scoreboard polling makes no extra weather-provider requests. Weather failure never blocks scores. Forecast collection times stay unchanged on reuse; old forecasts are labeled earlier forecasts and past-game forecasts remain explicitly pre-game forecasts, never observations.
+
+Closed/domed venues are identified separately (SoFi is labeled covered/open-sided); a retractable roof with unknown status is not assumed closed. Missing conditions remain unavailable. Future weather generally appears within seven days for supported US venues; no international forecast provider is added. Conditions are kept with scores and flow into the existing per-game archive for later research.
 
 ## Source and meaning
 

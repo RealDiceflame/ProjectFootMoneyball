@@ -93,7 +93,7 @@
 .home-scores .home-section-heading { margin-bottom: 8px; }
 .home-scores label { display: flex; align-items: center; gap: 10px; font-size: 14px; }
 .home-scores select { min-width: 0; max-width: 100%; background: #102c23; color: var(--ink); border: 1px solid var(--line-strong); border-radius: 8px; min-height: 44px; font-size: 16px; padding: 8px; }
-.home-score-grid { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(11rem, 1fr); overflow-x: auto; padding: 4px 0 12px; gap: 12px; scrollbar-color: #78958a #0c241e; }
+.home-score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); padding: 4px 0 12px; gap: 12px; }
 .home-score-card { background: #0c241e; border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
 .home-score-card { display: block; color: var(--ink); text-decoration: none; }
 .home-score-card:hover { border-color: var(--lime); }
@@ -103,6 +103,7 @@
 .home-score-label, .home-score-card time { color: var(--muted); display: block; font-size: .75rem; line-height: 1.5; }
 .home-score-label { margin-bottom: 12px; }
 .home-score-card time { margin-top: 12px; }
+.home-score-location, .home-score-weather { display: block; color: var(--muted); font-size: .875rem; line-height: 1.5; margin-top: 8px; overflow-wrap: anywhere; }
 .home-score-team { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 1rem; margin: 6px 0; }
 .home-score-team strong { font-size: 1.25rem; font-variant-numeric: tabular-nums; }
 #score-status.stale { color: #ffc979; }

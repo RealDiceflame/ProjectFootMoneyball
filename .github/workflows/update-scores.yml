@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["app/scoreboard.py", "update_scores.py", "scripts/publish_scoreboard.py", "scripts/push_snapshot.py", ".github/workflows/update-scores.yml"]
+    paths: ["app/scoreboard.py", "app/game_conditions.py", "app/venues.py", "update_scores.py", "scripts/publish_scoreboard.py", "scripts/push_snapshot.py", ".github/workflows/update-scores.yml"]
   schedule:
     - cron: "7,22,37,52 * * * *"
 

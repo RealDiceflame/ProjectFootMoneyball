@@ -319,4 +319,5 @@ def test_nws_hourly_forecast_is_added_near_kickoff():
         "wind_speed": "8 mph",
         "wind_direction": "NW",
         "source_url": "https://www.weather.gov/documentation/services-web-api",
+        "valid_at": "2026-09-09T17:00:00-07:00",
     }

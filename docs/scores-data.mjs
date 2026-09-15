@@ -34,3 +34,24 @@ export function scoreboardStale(bundle, now = Date.now()) {
   const inWindow = Array.isArray(bundle?.games) && bundle.games.some(game => {const time = Date.parse(game?.kickoff); return Number.isFinite(time) && now >= time-2*3600000 && now <= time+10*3600000;});
   return !Number.isFinite(checked) || checked > now+300000 || now-checked > (inWindow ? 45*60000 : 7*3600000);
 }
+
+export function gameConditions(game, now = Date.now()) {
+  const location = game.city || game.stadium || "Venue TBD";
+  const weather = game.weather || {}, kickoff = Date.parse(game.kickoff);
+  const past = Number.isFinite(kickoff) && kickoff <= now;
+  const covered = game.roof === "dome" || game.roof === "closed";
+  const indoor = game.stadium_id === "LAX01" ? "Covered, open-sided stadium" : "Indoors / roof closed";
+  const pieces = [];
+  if (typeof weather.temperature === "number" && Number.isFinite(weather.temperature)) pieces.push(`${Math.round(weather.temperature)}°F`);
+  if (weather.wind_speed) pieces.push(`Wind ${[weather.wind_direction, weather.wind_speed].filter(Boolean).join(" ")}`);
+  if (weather.status === "schedule" && pieces.length) {
+    return {location, weather: `${covered ? indoor + " · " : ""}Reported game weather · ${pieces.join(" · ")}`};
+  }
+  if (covered) return {location, weather: indoor};
+  if (weather.status === "forecast" && (pieces.length || weather.summary)) {
+    const saved = Date.parse(weather.checked_at), stale = !Number.isFinite(saved) || now - saved > 12*3600000;
+    const label = past ? "Pre-game forecast" : stale ? "Earlier kickoff forecast" : "Kickoff forecast";
+    return {location, weather: `${label} · ${[weather.summary, ...pieces].filter(Boolean).join(" · ")}`};
+  }
+  return {location, weather: past ? "Game weather unavailable" : "Kickoff forecast pending"};
+}

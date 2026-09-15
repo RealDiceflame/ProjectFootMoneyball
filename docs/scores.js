@@ -1,4 +1,4 @@
-import {TEAM_NAMES, scoreboardGames, defaultScoreWeek, scoreDisplay, scoreboardStale} from "./scores-data.mjs?v=20260915-games1";
+import {TEAM_NAMES, scoreboardGames, defaultScoreWeek, scoreDisplay, scoreboardStale, gameConditions} from "./scores-data.mjs?v=20260915-weather1";
 import {teamMark} from "./team-logos.mjs?v=20260915-games1";
 const list = document.getElementById("score-games"), select = document.getElementById("score-week"), status = document.getElementById("score-status");
 const el = (tag, text, className) => {const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node;};
@@ -19,7 +19,11 @@ function render() {
     const time = el("time", Number.isFinite(kickoff) ? new Date(kickoff).toLocaleString(undefined,
       {weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZoneName:"short"}) : `${game.gameday || "Date TBD"} · Time TBD`);
     if (Number.isFinite(kickoff)) time.dateTime = game.kickoff;
-    card.append(time, el("span", "Game stats →", "home-score-link")); return card;
+    const conditions = gameConditions(game);
+    const location = el("span", conditions.location, "home-score-location");
+    location.title = game.stadium || conditions.location;
+    card.append(time, location, el("span", conditions.weather, "home-score-weather"),
+      el("span", "Game stats →", "home-score-link")); return card;
   }));
   if (!list.children.length) list.append(el("p", "No games available for this week."));
   const stale = scoreboardStale(bundle);

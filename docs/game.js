@@ -1,4 +1,4 @@
-import {TEAM_NAMES, scoreDisplay} from "./scores-data.mjs?v=20260915-games1";
+import {TEAM_NAMES, scoreDisplay, gameConditions} from "./scores-data.mjs?v=20260915-weather1";
 import {teamMark} from "./team-logos.mjs?v=20260915-games1";
 import {ID_FIELDS, TEAM_SUMMARY, validGameId, unpackStats, statGroups, statLabel, statValue, activeStatRows} from "./game-data.mjs?v=20260915-games1";
 const $ = id=>document.getElementById(id);
@@ -31,6 +31,8 @@ function render(game, bundle) {
   const time=game.kickoff?new Date(game.kickoff).toLocaleString(undefined,{dateStyle:"medium",timeStyle:"short"}):"Time TBD";
   $("game-status").textContent=`Week ${game.week} · ${time} · ${display.label}`;
   $("game-status").classList.remove("stale");
+  const conditions=gameConditions(game);
+  $("game-conditions").textContent=[game.stadium,conditions.location,conditions.weather].filter(Boolean).join(" · ");
   const content=$("game-stats");
   if(!bundle){
     content.replaceChildren(el("p","Box score pending. Team and player stats will appear here when the source publishes them."));

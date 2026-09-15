@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import vm from "node:vm";
-import {TEAM_NAMES, scoreboardGames, defaultScoreWeek, scoreDisplay, scoreboardStale} from "../docs/scores-data.mjs";
+import {TEAM_NAMES, scoreboardGames, defaultScoreWeek, scoreDisplay, scoreboardStale, gameConditions} from "../docs/scores-data.mjs";
 
 const loader = readFileSync(new URL("../docs/scores.js", import.meta.url), "utf8")
   .replace(/^import[^\n]*\r?\n/gm, "");
@@ -68,7 +68,7 @@ async function page(...initialResponses) {
     static now() {return clock.now;}
   }
   const context = vm.createContext({
-    document, Date:ClockDate, TEAM_NAMES, scoreboardGames,
+    document, Date:ClockDate, TEAM_NAMES, scoreboardGames, gameConditions,
     teamMark: team => new ElementStub("img"),
     defaultScoreWeek: games => defaultScoreWeek(games, clock.now),
     scoreDisplay: game => scoreDisplay(game, clock.now),
@@ -92,6 +92,18 @@ async function page(...initialResponses) {
 const cards = view => view.list.children.filter(child => child.tagName === "a");
 const scores = card => card.children.filter(child => child.tagName === "div")
   .map(row => row.children[1].textContent);
+
+test("all sixteen games remain visible with venue/weather and clickable box scores", async () => {
+  const real=JSON.parse(readFileSync(new URL("../docs/data/scores.json",import.meta.url),"utf8"));
+  const week=real.games.filter(game=>game.week===1);
+  const view=await page(response(snapshot(week)));
+  assert.equal(cards(view).length,16);
+  for (const card of cards(view)) {
+    assert.match(card.href,/^game.html\?game=2026_01_/);
+    assert.ok(card.children.some(node=>node.className==="home-score-location"&&node.textContent));
+    assert.ok(card.children.some(node=>node.className==="home-score-weather"&&node.textContent));
+  }
+});
 
 test("score loader displays its first snapshot and schedules shared-file refreshes", async () => {
   const view = await page(response(snapshot()));

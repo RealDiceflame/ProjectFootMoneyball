@@ -7,7 +7,7 @@
   <title>Game stats · OutlierBaseline</title>
   <link rel="stylesheet" href="styles.css?v=20260909-labs2">
   <link rel="stylesheet" href="site-nav.css?v=20260913-home1">
-  <link rel="stylesheet" href="game.css?v=20260915-games1">
+  <link rel="stylesheet" href="game.css?v=20260915-weather1">
 </head>
 <body class="game-page">
   <header class="topbar">
@@ -19,6 +19,7 @@
     <h1 id="game-heading">Game stats</h1>
     <div id="game-summary" class="game-summary"></div>
     <p id="game-status" role="status">Loading game…</p>
+    <p id="game-conditions"></p>
     <div id="game-stats"></div>
     <noscript>Enable JavaScript to view game statistics.</noscript>
   </main>
@@ -26,8 +27,9 @@
     <p>Team and player statistics: <a href="https://github.com/nflverse/nflverse-data" target="_blank" rel="noopener noreferrer">nflverse</a>, <a href="https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Selected and formatted by OutlierBaseline. Team marks belong to their respective owners.</p>
     <p>Box scores usually arrive after games and may be corrected later. A dash means unavailable, not zero. These releases do not include possession time, third/fourth-down conversion rates, snap counts or play-by-play. Player rows cover recorded statistics, not the full active roster. Anonymous source events are kept separate from named players.</p>
     <p>Data is archived by season and game for future research. These are observed results, not predictions; preserving them does not automatically retrain a model.</p>
+    <p>Weather: reported stadium conditions from nflverse or saved <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noopener noreferrer">National Weather Service</a> kickoff forecasts. Forecasts are not observations; indoor venues are marked separately. Future forecasts generally become available within seven days. Weather may be unavailable for international venues.</p>
   </details></footer>
   <script type="module" src="site-nav.js?v=20260913-compact1"></script>
-  <script type="module" src="game.js?v=20260915-games1"></script>
+  <script type="module" src="game.js?v=20260915-weather1"></script>
 </body>
 </html>
