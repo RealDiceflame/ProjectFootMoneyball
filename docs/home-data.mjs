@@ -1,3 +1,23 @@
+// Older saved RSS titles may still contain HTML entities. Decode as plain text;
+// callers must keep using textContent, never interpret a headline as HTML.
+export function headlineText(value) {
+  const named = {amp:"&",quot:'"',apos:"'",lt:"<",gt:">",nbsp:"\u00a0",
+    lsquo:"‘",rsquo:"’",ldquo:"“",rdquo:"”",ndash:"–",mdash:"—",hellip:"…"};
+  let text = String(value || "");
+  for (let pass=0; pass<2; pass++) {
+    const decoded = text.replace(/&(#x[\da-f]+|#\d+|[a-z]+);/gi, (entity,key) => {
+      if (key[0] !== "#") return Object.hasOwn(named, key.toLowerCase()) ? named[key.toLowerCase()] : entity;
+      const hex = key[1]?.toLowerCase() === "x";
+      const point = Number.parseInt(key.slice(hex ? 2 : 1),hex ? 16 : 10);
+      return point > 0 && point <= 0x10ffff && !(point >= 0xd800 && point <= 0xdfff)
+        ? String.fromCodePoint(point) : entity;
+    });
+    if (decoded === text) break;
+    text = decoded;
+  }
+  return text.trim();
+}
+
 export function safeSourceUrl(value) {
   try {
     const url = new URL(value);
@@ -16,7 +36,7 @@ function playerKey(report) {
 }
 
 function titleWords(value) {
-  return String(value || "").toLowerCase().replace(/[’']s\b/g, "").replace(/[.’']/g, "")
+  return headlineText(value).toLowerCase().replace(/[’']s\b/g, "").replace(/[.’']/g, "")
     .replace(/[^a-z0-9]+/g, " ").trim();
 }
 
@@ -56,13 +76,15 @@ export function leagueHeadlineCards(bundle, now = Date.now()) {
       .map(event => ({...event, url: event.source?.url})));
   for (const item of items) {
     if (!item || typeof item.title !== "string" || !item.title.trim()) continue;
+    const title = headlineText(item.title);
+    if (!title) continue;
     const url = safeSourceUrl(item.url), suppliedTime = item.published_at || item.date;
     const timestamp = typeof suppliedTime === "string" ? suppliedTime : null;
     const date = Date.parse(timestamp);
     if (!url || !["www.espn.com", "espn.com", "sports.yahoo.com"].includes(new URL(url).hostname) || new URL(url).port
         || (Number.isFinite(date) && (date > now + 86400000 || now - date > 7 * 86400000)) || cards.has(url)) continue;
-    cards.set(url, {url, title: item.title.trim(), timestamp: Number.isFinite(date) ? timestamp : null,
-      players: titlePlayers(bundle, item.title), source: new URL(url).hostname === "sports.yahoo.com" ? "Yahoo Sports" : "ESPN",
+    cards.set(url, {url, title, timestamp: Number.isFinite(date) ? timestamp : null,
+      players: titlePlayers(bundle, title), source: new URL(url).hostname === "sports.yahoo.com" ? "Yahoo Sports" : "ESPN",
       sortTime: Number.isFinite(date) ? date : 0});
   }
   return [...cards.values()].sort((a, b) => b.sortTime - a.sortTime).slice(0, 50);

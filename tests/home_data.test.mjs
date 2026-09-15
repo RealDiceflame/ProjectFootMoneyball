@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {injuryFeed, filterInjuries, safeSourceUrl, snapshotFreshness, safePlayerPhoto, titlePlayers, leagueHeadlineCards} from "../docs/home-data.mjs";
+import {headlineText, injuryFeed, filterInjuries, safeSourceUrl, snapshotFreshness, safePlayerPhoto, titlePlayers, leagueHeadlineCards} from "../docs/home-data.mjs";
 import {freshSeed, validSeed, MAX_SEED, exampleTrialIndices} from "../docs/simulation-runs.mjs";
 
 const report = (player, status, week = 1) => ({
@@ -44,6 +44,36 @@ test("snapshot freshness distinguishes missing, future and overdue dates", () =>
 const portraitUrl = "https://static.www.nfl.com/image/upload/f_auto,q_auto,w_160,c_fill,g_face/league/example";
 const namedReport = (player, status = "Questionable") => ({...report(player, status), headline_name_ambiguous: false, headshot_url: portraitUrl});
 const newsBundle = (...players) => ({reports: Object.fromEntries(players.map((player, index) => [index, player]))});
+
+test("headline punctuation decodes numeric, named and double-escaped entities as plain text", () => {
+  for (const apostrophe of ["&#39;", "&#x27;", "&apos;", "&amp;#39;"]) {
+    assert.equal(headlineText("  D" + apostrophe + "Andre Swift" + apostrophe + "s touchdown  "), "D'Andre Swift's touchdown");
+  }
+  for (const quote of ["&quot;", "&#34;", "&#x22;", "&amp;quot;"]) {
+    assert.equal(headlineText(quote + "Great play" + quote), '"Great play"');
+  }
+  assert.equal(headlineText("Coach’s ‘update’ — “ready” &amp; waiting"), "Coach’s ‘update’ — “ready” & waiting");
+  assert.equal(headlineText("&lsquo;Ready&rsquo; &mdash; &ldquo;yes&rdquo;"), "‘Ready’ — “yes”");
+  for (const unchanged of ["&unknown;", "&constructor;", "&#xZZ;", "&#1114112;", "&#55296;", "&#0;"]) {
+    assert.equal(headlineText(unchanged), unchanged);
+  }
+  assert.equal(headlineText(null), "");
+});
+
+test("encoded league titles keep player photos, source links and publication dates without mutating data", () => {
+  const item = {title: "D&#39;Andre Swift: &quot;Ready&quot; &amp; waiting",
+    url: "https://sports.yahoo.com/nfl/article/update.html?source=rss&campaign=nfl",
+    published_at: "2026-09-15T12:00:00Z", source: "Yahoo Sports"};
+  const bundle = {...newsBundle(namedReport("D'Andre Swift")), league_news: {items: [item]}};
+  const [card] = leagueHeadlineCards(bundle, Date.parse("2026-09-15T18:00:00Z"));
+  assert.equal(card.title, 'D\'Andre Swift: "Ready" & waiting');
+  assert.equal(card.url, item.url); assert.equal(card.timestamp, item.published_at);
+  assert.equal(card.source, item.source);
+  assert.equal(card.players[0].player, "D'Andre Swift");
+  assert.equal(card.players[0].photoUrl, portraitUrl);
+  assert.match(item.title, /&#39;/);
+  assert.equal(titlePlayers(bundle, "D&amp;#39;Andre Swift scores").length, 1);
+});
 
 test("preview title matches full names, punctuation, suffixes and multiple players without URL or substring guesses", () => {
   const bundle = newsBundle(namedReport("Lamar Jackson"), namedReport("Derrick Henry"), namedReport("Will Levis"),

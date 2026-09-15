@@ -3,7 +3,7 @@ import json
 
 import pandas as pd
 
-from app.player_news import build_player_news, espn_team_url, match_headlines, normalize_name, _download_headlines, _league_news_snapshot
+from app.player_news import build_player_news, espn_team_url, match_headlines, normalize_name, _download_headlines, _league_news_snapshot, _parse_headlines
 from types import SimpleNamespace
 import pytest
 
@@ -37,6 +37,41 @@ def test_rss_retry_yahoo_fallback_and_original_attribution():
     rows = _download_headlines(get=get, sleep=lambda _: None, status=lambda _: None)
     assert len(calls) == 3 and rows[0]["source"] == "Yahoo Sports"
     assert rows[0]["url"].startswith("https://sports.yahoo.com/")
+
+
+@pytest.mark.parametrize("title_xml", [
+    "<![CDATA[D&#39;Andre Swift says &quot;ready&quot; &amp; returns]]>",
+    "<![CDATA[D&#x27;Andre Swift says &#34;ready&#34; &amp; returns]]>",
+    "D&amp;apos;Andre Swift says &amp;quot;ready&amp;quot; &amp;amp; returns",
+    "<![CDATA[D&amp;#39;Andre Swift says &amp;quot;ready&amp;quot; &amp;amp; returns]]>",
+])
+def test_rss_title_entities_decode_without_changing_article_metadata(title_xml):
+    xml = f'''<rss><channel><item>
+        <title>{title_xml}</title>
+        <link>https://sports.yahoo.com/nfl/article/report.html?quote=%22&amp;apostrophe=%27</link>
+        <pubDate>Tue, 15 Sep 2026 09:00:00 -0400</pubDate>
+    </item></channel></rss>'''.encode("utf-8")
+    rows = _parse_headlines(xml, "Yahoo Sports", {"sports.yahoo.com"})
+    assert rows == [{
+        "title": 'D\'Andre Swift says "ready" & returns',
+        "url": "https://sports.yahoo.com/nfl/article/report.html?quote=%22&apostrophe=%27",
+        "date": "2026-09-15",
+        "published_at": "2026-09-15T13:00:00+00:00",
+        "source": "Yahoo Sports",
+    }]
+
+
+def test_league_snapshot_normalizes_saved_title_without_changing_metadata(tmp_path):
+    article = {
+        "title": "D&amp;#39;Andre Swift says &amp;quot;ready&amp;quot;",
+        "url": "https://sports.yahoo.com/nfl/article/report.html?quote=%22&apostrophe=%27",
+        "date": "2026-09-15",
+        "published_at": "2026-09-15T13:00:00+00:00",
+        "source": "Yahoo Sports",
+    }
+    snapshot = _league_news_snapshot([article], datetime(2026, 9, 15, 14, tzinfo=timezone.utc), tmp_path / "news.json")
+    assert snapshot["items"] == [{**article, "title": 'D\'Andre Swift says "ready"'}]
+    assert article["title"] == "D&amp;#39;Andre Swift says &amp;quot;ready&amp;quot;"
 
 
 def test_empty_feed_keeps_last_good_timestamp(tmp_path):
@@ -88,6 +123,24 @@ def test_match_headlines_uses_full_name_in_url_and_labels_injury_watch():
     }])
     assert matched["starter runner|BUF"][0]["severity"] == "watch"
     assert matched["starter runner|BUF"][0]["category"] == "Recent news"
+
+
+def test_match_headlines_decodes_apostrophe_names_before_matching():
+    players = [{"player": "D'Andre Swift", "team": "CHI", "pos": "RB"}]
+    article = {
+        "title": "D&#39;Andre Swift says &quot;ready&quot; after injury",
+        "date": "2026-09-15",
+        "url": "https://sports.yahoo.com/nfl/article/report.html?quote=%22&apostrophe=%27",
+        "source": "Yahoo Sports",
+    }
+    matched = match_headlines(players, [article])
+    assert len(matched) == 1
+    events = next(iter(matched.values()))
+    assert len(events) == 1
+    assert events[0]["title"] == 'D\'Andre Swift says "ready" after injury'
+    assert events[0]["date"] == article["date"]
+    assert events[0]["source"] == {"title": "Yahoo Sports NFL News", "url": article["url"]}
+    assert events[0]["severity"] == "watch"
 
 
 def test_match_headlines_skips_ambiguous_roster_names():

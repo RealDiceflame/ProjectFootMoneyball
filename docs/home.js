@@ -1,4 +1,4 @@
-import {injuryFeed, filterInjuries, snapshotFreshness, leagueHeadlineCards} from "./home-data.mjs?v=20260915-games1";
+import {injuryFeed, filterInjuries, snapshotFreshness, leagueHeadlineCards} from "./home-data.mjs?v=20260915-headlines1";
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; };
 let injuries = [], shown = 8, newsBundle = null, newsBusy = false, newsLastAttempt = 0, newsCardsKey = "";

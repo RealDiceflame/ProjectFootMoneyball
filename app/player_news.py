@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
+from html import unescape
 from io import BytesIO
 import json
 from pathlib import Path
@@ -48,6 +49,17 @@ NON_FOOTBALL_HEADLINE_TERMS = {
     "dating", "engagement", "engaged", "girlfriend", "home purchase", "marriage",
     "purchased", "real estate", "relationship", "wedding", "wife",
 }
+
+
+def headline_text(value: str) -> str:
+    """Decode RSS title entities as text, including a second escaped layer."""
+    text = str(value or "")
+    for _ in range(2):
+        decoded = unescape(text)
+        if decoded == text:
+            break
+        text = decoded
+    return text.strip()
 
 
 def normalize_name(value: str) -> str:
@@ -401,7 +413,7 @@ def match_headlines(
         if full_name in ambiguous_names:
             continue
         for article in headlines:
-            headline = str(article.get("title") or "").strip()
+            headline = headline_text(article.get("title"))
             if any(term in headline.casefold() for term in NON_FOOTBALL_HEADLINE_TERMS):
                 continue
             searchable = normalize_name(f"{headline} {article.get('url') or ''}")
@@ -549,7 +561,7 @@ def _parse_headlines(content: bytes, provider: str, allowed_hosts: set[str]) -> 
         raise ValueError("The news source did not return an RSS channel.")
     headlines = []
     for item in root.findall("./channel/item"):
-        title = (item.findtext("title") or "").strip()
+        title = headline_text(item.findtext("title"))
         url = (item.findtext("link") or "").strip()
         published = (item.findtext("pubDate") or "").strip()
         try:
@@ -605,7 +617,7 @@ def _league_news_snapshot(headlines: list[dict] | None, now: datetime, destinati
     for article in headlines or []:
         if not isinstance(article, dict):
             continue
-        title, url = str(article.get("title") or "").strip(), str(article.get("url") or "").strip()
+        title, url = headline_text(article.get("title")), str(article.get("url") or "").strip()
         try:
             parsed = urlsplit(url)
             safe = (parsed.scheme == "https" and parsed.hostname in {"www.espn.com", "espn.com", "sports.yahoo.com"}

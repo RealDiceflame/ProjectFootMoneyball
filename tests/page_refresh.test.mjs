@@ -32,6 +32,16 @@ async function page(script,query,responses,helpers={}){
 }
 const news=(time="2026-09-15T12:00:00Z",items=[])=>({generated_at:time,reports:{},league_news:{status:"ok",updated_at:time,attempted_at:time,items}});
 
+test("homepage shows decoded quotes while HTML-looking headlines stay inert text", async()=>{
+  const title="Player&#39;s &quot;big play&quot; &lt;img src=x onerror=alert(1)&gt;";
+  const view=await page("home.js","",[news(undefined,[{title,url:"https://sports.yahoo.com/nfl/article/update.html"}])]);
+  const content=view.nodes.get("league-news-list");
+  const heading=descendants(content).find(node=>node.tagName==="strong");
+  assert.equal(heading.textContent, 'Player\'s "big play" <img src=x onerror=alert(1)>');
+  assert.equal(heading.children.length,0);
+  assert.equal(descendants(content).filter(node=>["img","script"].includes(node.tagName)).length,0);
+});
+
 test("homepage retains reports through failure, recovers, and pauses hidden polling",async()=>{
   const responses=[news(),new Error("offline"),news("2026-09-15T13:00:00Z")];
   const view=await page("home.js","",responses);
