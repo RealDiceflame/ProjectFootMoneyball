@@ -1,0 +1,23 @@
+.game-page main { max-width: 1200px; margin-inline: auto; }
+.game-page h1 { font: 500 clamp(1.75rem,4vw,3rem)/1.15 Georgia,serif; margin: 24px 0; }
+.game-back, .game-download { color: var(--lime); text-underline-offset: 4px; }
+.game-summary { display: flex; gap: 24px; flex-wrap: wrap; margin: 20px 0; }
+.game-team { display: flex; align-items: center; gap: 12px; padding: 20px; background: #0c241e; border: 1px solid var(--line); border-radius: 12px; flex: 1 1 230px; font-size: 1.25rem; }
+.game-team strong { margin-left: auto; font-size: 2rem; font-variant-numeric: tabular-nums; }
+.team-logo { object-fit: contain; flex: 0 0 auto; }
+#game-status { color: var(--muted); font-size: .875rem; line-height: 1.6; }
+#game-status.stale { color: #ffc979; }
+.game-page section, .game-page main details { margin-block: 24px; min-width: 0; }
+.game-page h2, .game-page summary { font-size: 1.25rem; font-weight: 600; }
+.game-page summary { cursor: pointer; padding-block: 10px; }
+.game-table-wrap { overflow: auto; max-height: 650px; border: 1px solid var(--line); border-radius: 8px; margin-top: 12px; }
+.game-page table { width: 100%; border-collapse: collapse; font-size: .875rem; table-layout: auto; }
+.game-page th, .game-page td { padding: 12px; border-bottom: 1px solid var(--line); white-space: nowrap; text-align: right; position: static; }
+.game-page th:first-child, .game-page td:first-child { text-align: left; }
+.game-page thead th { position: sticky; top: 0; background: #143228; z-index: 1; }
+.game-page tbody th { font-weight: 500; }
+.game-page :focus-visible { outline: 3px solid var(--lime); outline-offset: 3px; }
+.game-page footer { flex-wrap: wrap; font-size: .875rem; gap: 16px; }
+.game-page footer details { max-width: 700px; }
+.game-page footer p { line-height: 1.6; }
+@media(max-width:600px) { .game-page th, .game-page td { padding: 10px; } .game-summary { gap: 10px; } }

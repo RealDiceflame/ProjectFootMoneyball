@@ -59,10 +59,11 @@ export function leagueHeadlineCards(bundle, now = Date.now()) {
     const url = safeSourceUrl(item.url), suppliedTime = item.published_at || item.date;
     const timestamp = typeof suppliedTime === "string" ? suppliedTime : null;
     const date = Date.parse(timestamp);
-    if (!url || !["www.espn.com", "espn.com"].includes(new URL(url).hostname) || new URL(url).port
+    if (!url || !["www.espn.com", "espn.com", "sports.yahoo.com"].includes(new URL(url).hostname) || new URL(url).port
         || (Number.isFinite(date) && (date > now + 86400000 || now - date > 7 * 86400000)) || cards.has(url)) continue;
     cards.set(url, {url, title: item.title.trim(), timestamp: Number.isFinite(date) ? timestamp : null,
-      players: titlePlayers(bundle, item.title), source: "ESPN", sortTime: Number.isFinite(date) ? date : 0});
+      players: titlePlayers(bundle, item.title), source: new URL(url).hostname === "sports.yahoo.com" ? "Yahoo Sports" : "ESPN",
+      sortTime: Number.isFinite(date) ? date : 0});
   }
   return [...cards.values()].sort((a, b) => b.sortTime - a.sortTime).slice(0, 50);
 }

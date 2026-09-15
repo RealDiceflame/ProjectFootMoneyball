@@ -166,7 +166,7 @@ test("homepage links, injury filters, automatic X loading and mobile layout work
     assert.deepEqual(errors, []);
     await page.waitForFunction(() => document.querySelector("#social-status").textContent.includes("X feed unavailable"));
     assert.equal(external.filter(url => url === "https://platform.x.com/widgets.js").length, 1);
-    assert.ok(external.every(url => ["platform.x.com", "static.www.nfl.com"].includes(new URL(url).hostname)));
+    assert.ok(external.every(url => ["platform.x.com", "static.www.nfl.com", "a.espncdn.com"].includes(new URL(url).hostname)));
     assert.equal(await page.locator("#load-x-feed").count(), 0);
     assert.equal(await page.locator("#x-feed .twitter-timeline").getAttribute("data-dnt"), "true");
     assert.equal(await page.locator(".home-nav-link").getAttribute("aria-current"), "page");
@@ -175,7 +175,7 @@ test("homepage links, injury filters, automatic X loading and mobile layout work
     assert.equal(await page.locator("#selected-source-cards").count(), 0);
     assert.ok(await page.locator("#league-news-list .home-source-card").count() > 0);
     assert.equal(await page.locator("#league-news-list").getAttribute("tabindex"), "0");
-    assert.ok(await page.locator("#league-news-list .home-clip").evaluateAll(links => links.every(link => new URL(link.href).hostname === "www.espn.com")));
+    assert.ok(await page.locator("#league-news-list .home-clip").evaluateAll(links => links.every(link => ["www.espn.com","espn.com","sports.yahoo.com"].includes(new URL(link.href).hostname))));
     assert.equal(await page.locator(".home-highlights .home-injury-detail, .home-highlights .home-badge").count(), 0);
     assert.doesNotMatch(await page.locator("#league-news-list .home-card-players").allTextContents().then(rows => rows.join(" ")), /injury|questionable|probable|RISK/i);
     await page.locator("#injury-more").click();
@@ -206,7 +206,7 @@ test("homepage links, injury filters, automatic X loading and mobile layout work
     }
     await page.setViewportSize({width: 390, height: 844}); await screenshot(page, "home-mobile.png");
     assert.equal(external.filter(url => url === "https://platform.x.com/widgets.js").length, 1);
-    assert.ok(external.every(url => ["platform.x.com", "static.www.nfl.com"].includes(new URL(url).hostname)));
+    assert.ok(external.every(url => ["platform.x.com", "static.www.nfl.com", "a.espncdn.com"].includes(new URL(url).hostname)));
     assert.equal(await page.getByRole("link", {name: "Open NFL on X ↗", exact: true}).getAttribute("href"), "https://x.com/NFL");
   } finally { await context.close(); }
 });

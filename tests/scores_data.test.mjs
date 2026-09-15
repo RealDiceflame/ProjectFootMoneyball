@@ -13,11 +13,13 @@ test("reported scores preserve zero, never infer final/live, and leave missing o
   for (const invalid of [-1, NaN, Infinity, 1.5, "0"]) assert.equal(scoreDisplay({...game,home_score:invalid},now).home,"—");
   assert.equal(scoreDisplay({...game,kickoff:null},now).label,"Time TBD");
 });
-test("week choice retains the NFL week through Monday and switches two days before the next kickoff", () => {
+test("week choice switches exactly one day before the next kickoff", () => {
   const next = {...game,game_id:"next",week:2,gameday:"2026-09-17",kickoff:"2026-09-18T00:15:00Z"};
   assert.equal(defaultScoreWeek([game,next],now),1);
   assert.equal(defaultScoreWeek([game,next],Date.parse("2026-09-15T00:00:00Z")),1);
-  assert.equal(defaultScoreWeek([game,next],Date.parse("2026-09-16T00:15:00Z")),2);
+  assert.equal(defaultScoreWeek([game,next],Date.parse("2026-09-16T00:15:00Z")),1);
+  assert.equal(defaultScoreWeek([game,next],Date.parse("2026-09-17T00:14:59Z")),1);
+  assert.equal(defaultScoreWeek([game,next],Date.parse("2026-09-17T00:15:00Z")),2);
   assert.equal(defaultScoreWeek([],now),null);
 });
 test("bad rows do not break the board and stale checks use game windows", () => {

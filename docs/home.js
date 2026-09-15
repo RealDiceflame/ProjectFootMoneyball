@@ -1,7 +1,7 @@
-import {injuryFeed, filterInjuries, snapshotFreshness, leagueHeadlineCards} from "./home-data.mjs?v=20260913-feed1";
+import {injuryFeed, filterInjuries, snapshotFreshness, leagueHeadlineCards} from "./home-data.mjs?v=20260915-games1";
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; };
-let injuries = [], shown = 8;
+let injuries = [], shown = 8, newsBundle = null, newsBusy = false, newsLastAttempt = 0, newsCardsKey = "";
 
 function portrait(player) {
   const wrapper = el("span", undefined, "home-portrait");
@@ -32,6 +32,15 @@ function playerSummary(player) {
   summary.append(portrait(player), body); return summary;
 }
 
+function updateNewsStatus(bundle, cards = leagueHeadlineCards(bundle)) {
+  const freshness = snapshotFreshness(bundle?.league_news?.updated_at || (!bundle?.league_news ? bundle?.generated_at : null));
+  const unavailable = !bundle || bundle.league_news?.status === "unavailable";
+  $("league-news-status").textContent = cards.length
+    ? `${cards.length} stories · Updated ${freshness.label}${unavailable ? " · Refresh unavailable" : freshness.stale ? " · Update delayed" : ""}`
+    : unavailable ? "News temporarily unavailable" : "No recent stories available";
+  $("league-news-status").classList.toggle("stale", unavailable || freshness.stale);
+}
+
 function renderSourcePlayers(bundle) {
   const cards = leagueHeadlineCards(bundle);
   $("league-news-list").replaceChildren(...cards.map(card => {
@@ -47,12 +56,7 @@ function renderSourcePlayers(bundle) {
     const players = el("div", undefined, "home-card-players"); players.append(...card.players.map(playerSummary));
     article.append(link); if (card.players.length) article.append(players); return article;
   }));
-  const freshness = snapshotFreshness(bundle?.league_news?.updated_at || (!bundle?.league_news ? bundle?.generated_at : null));
-  const unavailable = !bundle || bundle.league_news?.status === "unavailable";
-  $("league-news-status").textContent = cards.length
-    ? `${cards.length} stories · Updated ${freshness.label}${unavailable ? " · Refresh unavailable" : freshness.stale ? " · Update delayed" : ""}`
-    : unavailable ? "News temporarily unavailable" : "No recent stories available";
-  $("league-news-status").classList.toggle("stale", unavailable || freshness.stale);
+  updateNewsStatus(bundle, cards);
   if (!cards.length) $("league-news-list").append(el("p", "Try the source links below.", "home-small"));
 }
 
@@ -71,23 +75,43 @@ function renderInjuries() {
 }
 
 async function loadInjuries() {
-  let bundle = null;
+  if (newsBusy || document.hidden) return;
+  newsBusy = true; newsLastAttempt = Date.now();
   try {
-    const response = await fetch("data/player_news.json", {cache: "no-store"});
+    const response = await fetch("data/player_news.json", {cache: "no-store", signal: AbortSignal.timeout(15000)});
     if (!response.ok) throw new Error("Injury snapshot could not be loaded.");
-    bundle = await response.json(); injuries = injuryFeed(bundle);
+    const bundle = await response.json(), nextInjuries = injuryFeed(bundle);
+    if (!Number.isFinite(Date.parse(bundle.generated_at))) throw new Error("Invalid snapshot timestamp");
+    const cardKey = JSON.stringify(leagueHeadlineCards(bundle).map(card=>[card.url,card.title]));
+    const changed = !newsBundle || newsBundle.generated_at !== bundle.generated_at
+      || newsBundle.league_news?.attempted_at !== bundle.league_news?.attempted_at || cardKey !== newsCardsKey;
+    newsCardsKey = cardKey;
+    newsBundle = bundle; injuries = nextInjuries;
     const freshness = snapshotFreshness(bundle.generated_at);
     $("injury-freshness").textContent = `Updated ${freshness.label}${freshness.stale ? " · Update delayed" : ""}`;
     $("injury-freshness").classList.toggle("stale", freshness.stale);
-    renderInjuries(); renderSourcePlayers(bundle);
+    for (const id of ["injury-search", "injury-filter", "injury-more"]) $(id).disabled = false;
+    if (changed) {
+      const scroll = $("league-news-list").scrollTop;
+      renderInjuries(); renderSourcePlayers(bundle); $("league-news-list").scrollTop = scroll;
+    } else {
+      updateNewsStatus(bundle);
+    }
   } catch {
+    if (newsBundle) {
+      const freshness = snapshotFreshness(newsBundle.generated_at);
+      $("injury-freshness").textContent = `Updated ${freshness.label} · Refresh unavailable`;
+      $("league-news-status").textContent = $("league-news-status").textContent.replace(/ · Refresh unavailable$/, "") + " · Refresh unavailable";
+      $("injury-freshness").classList.add("stale"); $("league-news-status").classList.add("stale");
+      return;
+    }
     for (const id of ["injury-search", "injury-filter", "injury-more"]) $(id).disabled = true;
     $("injury-count").textContent = "Reports unavailable";
     $("injury-freshness").textContent = "Injury reports temporarily unavailable";
     $("injury-freshness").classList.add("stale");
     $("home-injury-list").replaceChildren();
-    renderSourcePlayers(bundle);
-  }
+    renderSourcePlayers(null);
+  } finally { newsBusy = false; }
 }
 $("injury-search").addEventListener("input", () => { shown = 8; renderInjuries(); });
 $("injury-filter").addEventListener("change", () => { shown = 8; renderInjuries(); });
@@ -113,4 +137,9 @@ async function loadXFeed() {
   }
 }
 loadInjuries();
+// Check our saved file only; visitors never call a news or injury provider.
+setInterval(loadInjuries, 60000);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && Date.now() - newsLastAttempt >= 60000) loadInjuries();
+});
 loadXFeed();

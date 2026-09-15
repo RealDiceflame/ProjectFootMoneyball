@@ -8,6 +8,7 @@ from io import BytesIO
 import json
 from pathlib import Path
 import re
+import time
 from typing import Callable
 from urllib.parse import urlsplit
 from xml.etree import ElementTree
@@ -23,6 +24,10 @@ DEPTH_URL = "https://github.com/nflverse/nflverse-data/releases/download/depth_c
 INJURY_URL = "https://github.com/nflverse/nflverse-data/releases/download/injuries/injuries_{season}.csv.gz"
 ESPN_NEWS_URL = "https://www.espn.com/espn/rss/nfl/news"
 ESPN_NEWS_SOURCE = "https://www.espn.com/nfl/"
+NEWS_FEEDS = [
+    ("ESPN", ESPN_NEWS_URL, ESPN_NEWS_SOURCE, {"www.espn.com", "espn.com"}),
+    ("Yahoo Sports", "https://sports.yahoo.com/nfl/news/rss/", "https://sports.yahoo.com/nfl/", {"sports.yahoo.com"}),
+]
 ESPN_TEAM_CODES = {"LA": "lar", "WAS": "wsh"}
 NFL_HEADSHOT_TRANSFORM = "/image/upload/f_auto,q_auto/"
 NFL_HEADSHOT_COMPACT = "/image/upload/f_auto,q_auto,w_160,c_fill,g_face/"
@@ -407,8 +412,8 @@ def match_headlines(
                 _headline_severity(headline),
                 article.get("date") or "Recent",
                 headline,
-                "Open the linked ESPN report for the full context.",
-                _source("ESPN NFL News", article.get("url") or ESPN_NEWS_SOURCE),
+                "Open the original report for the full context.",
+                _source(f"{article.get('source', 'ESPN')} NFL News", article.get("url") or ESPN_NEWS_SOURCE),
             ))
             if len(matched[key]) >= 3:
                 break
@@ -438,9 +443,20 @@ def build_player_news(
     ranked_players = load_ranked_players(rankings_path, DEFAULT_BOARD)
     ranked_names = {normalize_name(player["player"]) for player in ranked_players}
     ambiguous_names = _ambiguous_roster_names(current_roster)
+    # Retain dated player headlines during provider outages without marking them fresh.
+    league_news = _league_news_snapshot(headlines, now, Path(destination))
+    matching_headlines = league_news["items"]
+    def recent(article):
+        try:
+            value = datetime.fromisoformat(str(article.get("published_at") or "").replace("Z", "+00:00"))
+            return value.tzinfo is not None and 0 <= (now - value).total_seconds() <= 7 * 86400
+        except ValueError:
+            return False
+    if not headlines:
+        matching_headlines = [article for article in matching_headlines if recent(article)]
     headline_events = match_headlines(
         ranked_players,
-        headlines or [],
+        matching_headlines,
         ambiguous_names=ambiguous_names,
     )
     for player in ranked_players:
@@ -491,14 +507,13 @@ def build_player_news(
         }
 
     destination = Path(destination)
-    league_news = _league_news_snapshot(headlines, now, destination)
     payload = {
         "season": season,
         "generated_at": now.isoformat(),
         "player_count": len(players),
-        "source": "nflverse roster, depth-chart, and injury data plus ESPN NFL RSS headlines",
+        "source": f"nflverse roster, depth-chart, and injury data plus {league_news['source']} headlines",
         "attribution_url": "https://github.com/nflverse/nflverse-data",
-        "news_attribution_url": ESPN_NEWS_SOURCE,
+        "news_attribution_url": league_news["source_url"],
         "league_news": league_news,
         "reports": players,
     }
@@ -526,10 +541,10 @@ def _download_csv(url: str, columns: list[str], *, get: Callable = requests.get,
     return frame.loc[:, columns]
 
 
-def _download_headlines(*, get: Callable = requests.get) -> list[dict]:
-    response = get(ESPN_NEWS_URL, headers={"User-Agent": "Mozilla/5.0 ProjectFootMoneyball/1.0"}, timeout=60)
-    response.raise_for_status()
-    root = ElementTree.fromstring(response.content)
+def _parse_headlines(content: bytes, provider: str, allowed_hosts: set[str]) -> list[dict]:
+    if not content.strip() or len(content) > 2_000_000:
+        raise ValueError("RSS response is empty or exceeds the size limit.")
+    root = ElementTree.fromstring(content)
     if root.find("./channel") is None:
         raise ValueError("The news source did not return an RSS channel.")
     headlines = []
@@ -546,9 +561,42 @@ def _download_headlines(*, get: Callable = requests.get) -> list[dict]:
         except (TypeError, ValueError, OverflowError):
             date_label = "Recent"
             published_at = None
-        if title and url.startswith(("https://", "http://")):
-            headlines.append({"title": title, "url": url, "date": date_label, "published_at": published_at})
+        try:
+            parsed = urlsplit(url)
+            safe = (parsed.scheme == "https" and parsed.hostname in allowed_hosts
+                    and not parsed.username and not parsed.password and parsed.port in {None, 443})
+        except ValueError:
+            safe = False
+        if title and safe:
+            headlines.append({"title": title, "url": url, "date": date_label, "published_at": published_at, "source": provider})
+    if not headlines:
+        raise ValueError("RSS source returned no usable stories.")
     return headlines
+
+
+def _download_headlines(*, get: Callable = requests.get, sleep: Callable = time.sleep,
+                        status: Callable = print) -> list[dict]:
+    for provider, url, _, hosts in NEWS_FEEDS:
+        for attempt in range(2):
+            response = None
+            try:
+                response = get(url, headers={"User-Agent": "Mozilla/5.0 ProjectFootMoneyball/1.0",
+                                             "Accept": "application/rss+xml, application/xml, text/xml"}, timeout=30)
+                response.raise_for_status()
+                content = response.content
+                status(f"[RSS] {provider}: HTTP {getattr(response, 'status_code', 200)}, {len(content)} bytes, "
+                       f"{getattr(response, 'headers', {}).get('Content-Type', 'unknown type')}")
+                headlines = _parse_headlines(content, provider, hosts)
+                status(f"[RSS] Selected {provider}: {len(headlines)} stories.")
+                return headlines
+            except (requests.RequestException, ElementTree.ParseError, ValueError) as error:
+                status(f"[WARN] {provider} RSS attempt {attempt + 1}/2 failed: {error}")
+                # Respect denial/rate limits; use another openly syndicated source.
+                if response is not None and getattr(response, "status_code", 200) in {401, 403, 429}:
+                    break
+                if attempt == 0:
+                    sleep(2)
+    raise ValueError("RSS feeds unavailable; keeping previously saved headlines.")
 
 
 def _league_news_snapshot(headlines: list[dict] | None, now: datetime, destination: Path) -> dict:
@@ -560,7 +608,7 @@ def _league_news_snapshot(headlines: list[dict] | None, now: datetime, destinati
         title, url = str(article.get("title") or "").strip(), str(article.get("url") or "").strip()
         try:
             parsed = urlsplit(url)
-            safe = (parsed.scheme == "https" and parsed.hostname in {"www.espn.com", "espn.com"}
+            safe = (parsed.scheme == "https" and parsed.hostname in {"www.espn.com", "espn.com", "sports.yahoo.com"}
                     and not parsed.username and not parsed.password and parsed.port in {None, 443})
         except ValueError:
             safe = False
@@ -568,9 +616,12 @@ def _league_news_snapshot(headlines: list[dict] | None, now: datetime, destinati
             continue
         seen.add(url)
         items.append({"title": title, "url": url, "date": article.get("date"),
-                      "published_at": article.get("published_at"), "source": "ESPN"})
-    base = {"source": "ESPN NFL RSS", "source_url": ESPN_NEWS_SOURCE, "attempted_at": now.isoformat()}
-    if items or headlines == []:
+                      "published_at": article.get("published_at"),
+                      "source": "Yahoo Sports" if parsed.hostname == "sports.yahoo.com" else "ESPN"})
+    provider = items[0]["source"] if items else None
+    source_url = next((entry[2] for entry in NEWS_FEEDS if entry[0] == provider), ESPN_NEWS_SOURCE)
+    base = {"source": f"{provider or 'NFL'} RSS", "source_url": source_url, "attempted_at": now.isoformat()}
+    if items:
         return {**base, "status": "ok", "updated_at": now.isoformat(), "items": items[:50]}
     # An outage must not erase the last good feed or pretend its timestamp is fresh.
     try:
@@ -579,7 +630,8 @@ def _league_news_snapshot(headlines: list[dict] | None, now: datetime, destinati
         previous = {}
     if not isinstance(previous, dict):
         previous = {}
-    return {**base, "status": "unavailable", "updated_at": previous.get("updated_at"),
+    return {**base, "source": previous.get("source", base["source"]), "source_url": previous.get("source_url", source_url),
+            "status": "unavailable", "updated_at": previous.get("updated_at"),
             "items": previous.get("items") if isinstance(previous.get("items"), list) else []}
 
 
@@ -620,9 +672,9 @@ def refresh_player_news(
         optional=True,
         optional_columns=("report_secondary_injury", "practice_secondary_injury"),
     )
-    status("[5/5] Loading recent ESPN NFL RSS headlines...")
+    status("[5/5] Loading recent NFL RSS headlines...")
     try:
-        headlines = _download_headlines()
+        headlines = _download_headlines(status=status)
     except (requests.RequestException, ElementTree.ParseError, ValueError) as error:
         status(f"[WARN] Recent headlines are temporarily unavailable: {error}")
         headlines = None

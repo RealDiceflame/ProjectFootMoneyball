@@ -1,5 +1,6 @@
 """Retry unpublished score snapshots without rebuilding an unchanged scoreboard."""
 import base64
+import argparse
 import json
 import os
 import re
@@ -12,10 +13,12 @@ SCORE_PATH = "docs/data/scores.json"
 
 
 def publish_scoreboard(repository, token, snapshot, *, client=requests, clock=time.monotonic,
-                       sleep=time.sleep, wait_seconds=180):
+                       sleep=time.sleep, wait_seconds=180, snapshot_path=SCORE_PATH):
     """Compare committed scores with successful builds; request at most one build."""
     if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
         raise ValueError("Invalid repository")
+    if snapshot_path not in {SCORE_PATH, "docs/data/game_stats/index.json"}:
+        raise ValueError("Unsupported public snapshot")
     base = f"https://api.github.com/repos/{repository}"
     headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
     deadline, snapshots, requested = clock() + wait_seconds, {}, False
@@ -31,7 +34,7 @@ def publish_scoreboard(repository, token, snapshot, *, client=requests, clock=ti
         if not re.fullmatch(r"[0-9a-f]{40}", commit):
             raise ValueError("Pages returned an invalid build commit")
         if commit not in snapshots:
-            response = request("get", f"{base}/contents/{SCORE_PATH}", params={"ref": commit})
+            response = request("get", f"{base}/contents/{snapshot_path}", params={"ref": commit})
             if response.status_code == 404:
                 snapshots[commit] = None  # A build from before the scoreboard was added.
             else:
@@ -67,11 +70,15 @@ def publish_scoreboard(repository, token, snapshot, *, client=requests, clock=ti
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--stats", action="store_true", help="Verify publication of the game-stats archive")
+    args = parser.parse_args()
+    path = "docs/data/game_stats/index.json" if args.stats else SCORE_PATH
     # Read the committed artifact, never an uncommitted result of a failed save.
-    content = subprocess.check_output(["git", "show", f"HEAD:{SCORE_PATH}"])
+    content = subprocess.check_output(["git", "show", f"HEAD:{path}"])
     requested = publish_scoreboard(os.environ["GITHUB_REPOSITORY"], os.environ["GH_TOKEN"],
-                                  json.loads(content))
-    print("Scoreboard published successfully." if requested else "Scoreboard publication is current.")
+                                  json.loads(content), snapshot_path=path)
+    print("Snapshot published successfully." if requested else "Snapshot publication is current.")
 
 
 if __name__ == "__main__":

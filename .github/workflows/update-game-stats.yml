@@ -1,0 +1,56 @@
+name: Update game stats
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["app/game_stats.py", "update_game_stats.py", "scripts/publish_scoreboard.py", ".github/workflows/update-game-stats.yml"]
+  schedule:
+    - cron: "0 0,6,12,18 * * *"
+      timezone: "America/New_York"
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: update-game-stats
+  cancel-in-progress: false
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Collect and validate game box scores
+        id: refresh
+        continue-on-error: true
+        run: python update_game_stats.py
+      - name: Commit complete archive
+        if: steps.refresh.outcome == 'success'
+        run: |
+          git add docs/data/game_stats data/game_stats
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Update archived NFL game box scores"
+            git pull --rebase origin main
+            git push
+          fi
+      - name: Publish archived box scores
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python -m pip install requests
+          python scripts/publish_scoreboard.py --stats
+      - name: Report unsuccessful stats refresh
+        if: always() && steps.refresh.outcome == 'failure'
+        run: |
+          echo "Game stats failed validation or download. The last-good published archive was retained."
+          exit 1

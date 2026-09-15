@@ -1,22 +1,25 @@
-import {TEAM_NAMES, scoreboardGames, defaultScoreWeek, scoreDisplay, scoreboardStale} from "./scores-data.mjs?v=20260913-scores1";
+import {TEAM_NAMES, scoreboardGames, defaultScoreWeek, scoreDisplay, scoreboardStale} from "./scores-data.mjs?v=20260915-games1";
+import {teamMark} from "./team-logos.mjs?v=20260915-games1";
 const list = document.getElementById("score-games"), select = document.getElementById("score-week"), status = document.getElementById("score-status");
 const el = (tag, text, className) => {const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node;};
 let bundle, games = [], busy = false, lastAttempt = 0, userSelectedWeek = false;
 
 function render() {
   list.replaceChildren(...games.filter(game => game.week === Number(select.value)).map(game => {
-    const card = el("article", undefined, "home-score-card"), display = scoreDisplay(game);
+    const card = el("a", undefined, "home-score-card"), display = scoreDisplay(game);
+    card.href = `game.html?game=${encodeURIComponent(game.game_id)}`;
     card.append(el("span", display.label, "home-score-label"));
     for (const side of ["away", "home"]) {
       const row = el("div", undefined, "home-score-team");
-      const team = el("span", TEAM_NAMES[game[side]]); team.title = game[side];
+      const team = el("span", undefined, "home-score-name"); team.title = game[side];
+      team.append(teamMark(game[side]), el("span", TEAM_NAMES[game[side]]));
       row.append(team, el("strong", display[side])); card.append(row);
     }
     const kickoff = Date.parse(game.kickoff);
     const time = el("time", Number.isFinite(kickoff) ? new Date(kickoff).toLocaleString(undefined,
       {weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZoneName:"short"}) : `${game.gameday || "Date TBD"} · Time TBD`);
     if (Number.isFinite(kickoff)) time.dateTime = game.kickoff;
-    card.append(time); return card;
+    card.append(time, el("span", "Game stats →", "home-score-link")); return card;
   }));
   if (!list.children.length) list.append(el("p", "No games available for this week."));
   const stale = scoreboardStale(bundle);

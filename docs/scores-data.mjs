@@ -13,9 +13,9 @@ export function scoreboardGames(bundle) {
 
 export function defaultScoreWeek(games, now = Date.now()) {
   const weeks = [...new Set(games.map(game => game.week))].sort((a,b) => a-b);
-  // Open the next NFL week two days before its first kickoff; retain all prior results.
+  // Open the next NFL week one day before its first kickoff; retain prior results.
   const opened = weeks.filter(week => Math.min(...games.filter(game => game.week === week)
-    .map(game => Date.parse(game.kickoff || `${game.gameday}T12:00:00Z`))) - 48*3600000 <= now);
+    .map(game => Date.parse(game.kickoff || `${game.gameday}T12:00:00Z`))) - 24*3600000 <= now);
   return opened.at(-1) || weeks[0] || null;
 }
 

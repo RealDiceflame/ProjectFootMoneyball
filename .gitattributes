@@ -1,2 +1,4 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+# Preserve downloaded archive bytes so their recorded SHA-256 hashes remain reproducible.
+data/game_stats/**/*.csv -text

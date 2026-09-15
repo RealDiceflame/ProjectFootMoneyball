@@ -1,6 +1,6 @@
 # Homepage scoreboard
 
-The homepage shows a selectable regular-season week, initially the current NFL week. The next week opens two days before its first kickoff. Cards scroll horizontally, including on phones. Times use the visitor's local time zone.
+The homepage shows a selectable regular-season week, initially the current NFL week. The next week opens exactly 24 hours before its first kickoff. A manually selected week remains selected. Cards include team logos and link to saved game statistics, and scroll horizontally on phones. Times use the visitor's local time zone.
 
 ## Source and meaning
 
@@ -24,3 +24,9 @@ Run `python update_scores.py` at the repository root, or use Actions → Update 
 The integrity check currently expects 272 games, 32 teams and 18 weeks. Postseason, preseason and older 16-game schedules are not included. A new season without a complete published schedule keeps the last-good snapshot rather than producing an empty board.
 
 Tests: `python -m pytest tests/test_scoreboard.py` and `node --test tests/scores_data.test.mjs`.
+
+## News and game details
+
+The homepage now rereads its own saved news/injury snapshot every minute while visible, and checks on returning to the tab. A failed request keeps visible reports, controls and the previous timestamp. The underlying source collection still runs every six hours. ESPN RSS gets two bounded attempts, then the openly syndicated Yahoo Sports NFL News RSS is tried. Access denials/rate limits are not retried. Each article retains the real publisher and original link. An empty or malformed feed cannot become a new successful snapshot. Headline failures are recorded separately from roster/injury success in the site refresh status.
+
+See [the game-stat archive](game-stats.md) for box-score coverage and future model inputs.

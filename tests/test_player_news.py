@@ -25,7 +25,28 @@ def test_league_rss_preserves_original_links_and_publication_times():
     assert rows[0]["url"] == "https://www.espn.com/nfl/story/123"
     assert rows[1]["published_at"] is None
     with pytest.raises(ValueError, match="RSS"):
-        _download_headlines(get=lambda *a, **k: SimpleNamespace(content=b"<html>Unavailable</html>", raise_for_status=lambda: None))
+        _download_headlines(get=lambda *a, **k: SimpleNamespace(content=b"<html>Unavailable</html>", raise_for_status=lambda: None), sleep=lambda _: None)
+
+
+def test_rss_retry_yahoo_fallback_and_original_attribution():
+    calls = []
+    def get(url, **kwargs):
+        calls.append(url)
+        content = b"" if "espn.com" in url else b'<rss><channel><item><title>NFL update</title><link>https://sports.yahoo.com/nfl/article/update-123.html</link></item></channel></rss>'
+        return SimpleNamespace(content=content, status_code=200, headers={}, raise_for_status=lambda: None)
+    rows = _download_headlines(get=get, sleep=lambda _: None, status=lambda _: None)
+    assert len(calls) == 3 and rows[0]["source"] == "Yahoo Sports"
+    assert rows[0]["url"].startswith("https://sports.yahoo.com/")
+
+
+def test_empty_feed_keeps_last_good_timestamp(tmp_path):
+    destination = tmp_path / "news.json"
+    saved = {"source": "Yahoo Sports RSS", "source_url": "https://sports.yahoo.com/nfl/", "updated_at": "2026-09-13T16:00:00Z",
+             "items": [{"title": "Saved", "url": "https://sports.yahoo.com/nfl/story.html", "source": "Yahoo Sports"}]}
+    destination.write_text(json.dumps({"league_news": saved}))
+    result = _league_news_snapshot([], datetime(2026,9,15,tzinfo=timezone.utc), destination)
+    assert result["items"] == saved["items"] and result["updated_at"] == saved["updated_at"]
+    assert result["status"] == "unavailable" and result["source"] == "Yahoo Sports RSS"
 
 
 def test_league_snapshot_keeps_unmatched_stories_and_last_good_feed_on_failure(tmp_path):

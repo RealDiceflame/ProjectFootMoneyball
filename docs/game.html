@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071d18">
+  <meta name="description" content="NFL game scores, team comparisons and player box scores on OutlierBaseline.">
+  <title>Game stats · OutlierBaseline</title>
+  <link rel="stylesheet" href="styles.css?v=20260909-labs2">
+  <link rel="stylesheet" href="site-nav.css?v=20260913-home1">
+  <link rel="stylesheet" href="game.css?v=20260915-games1">
+</head>
+<body class="game-page">
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="OutlierBaseline home"><span class="brand-mark" aria-hidden="true">OB</span><span><strong>OutlierBaseline</strong><small>Football intelligence</small></span></a>
+    <nav class="topnav" aria-label="Analytics pages"><a href="./">Home</a><a href="rankings.html">Player rankings</a><a href="league.html">League simulations</a></nav>
+  </header>
+  <main>
+    <a class="game-back" href="./#scores-heading">← NFL scores</a>
+    <h1 id="game-heading">Game stats</h1>
+    <div id="game-summary" class="game-summary"></div>
+    <p id="game-status" role="status">Loading game…</p>
+    <div id="game-stats"></div>
+    <noscript>Enable JavaScript to view game statistics.</noscript>
+  </main>
+  <footer data-compact="true"><span>OutlierBaseline</span><details><summary>Sources &amp; data notes</summary>
+    <p>Team and player statistics: <a href="https://github.com/nflverse/nflverse-data" target="_blank" rel="noopener noreferrer">nflverse</a>, <a href="https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Selected and formatted by OutlierBaseline. Team marks belong to their respective owners.</p>
+    <p>Box scores usually arrive after games and may be corrected later. A dash means unavailable, not zero. These releases do not include possession time, third/fourth-down conversion rates, snap counts or play-by-play. Player rows cover recorded statistics, not the full active roster. Anonymous source events are kept separate from named players.</p>
+    <p>Data is archived by season and game for future research. These are observed results, not predictions; preserving them does not automatically retrain a model.</p>
+  </details></footer>
+  <script type="module" src="site-nav.js?v=20260913-compact1"></script>
+  <script type="module" src="game.js?v=20260915-games1"></script>
+</body>
+</html>

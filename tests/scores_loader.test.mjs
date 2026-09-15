@@ -5,7 +5,7 @@ import vm from "node:vm";
 import {TEAM_NAMES, scoreboardGames, defaultScoreWeek, scoreDisplay, scoreboardStale} from "../docs/scores-data.mjs";
 
 const loader = readFileSync(new URL("../docs/scores.js", import.meta.url), "utf8")
-  .replace(/^import[^\n]*\r?\n/, "");
+  .replace(/^import[^\n]*\r?\n/gm, "");
 const initialNow = Date.parse("2026-09-13T18:00:00Z");
 const firstGame = {game_id:"2026_01_BUF_BAL", week:1, home:"BAL", away:"BUF",
   gameday:"2026-09-13", kickoff:"2026-09-13T17:00:00Z", home_score:0, away_score:14};
@@ -49,6 +49,7 @@ class ElementStub extends EventTargetStub {
   set textContent(value) {this.ownText = String(value); this.children = [];}
   get textContent() {return this.ownText + this.children.map(child => child.textContent).join("");}
   append(...children) {this.children.push(...children);}
+  setAttribute(name, value) {this[name] = value;}
   replaceChildren(...children) {this.ownText = ""; this.children = [...children];}
 }
 
@@ -68,6 +69,7 @@ async function page(...initialResponses) {
   }
   const context = vm.createContext({
     document, Date:ClockDate, TEAM_NAMES, scoreboardGames,
+    teamMark: team => new ElementStub("img"),
     defaultScoreWeek: games => defaultScoreWeek(games, clock.now),
     scoreDisplay: game => scoreDisplay(game, clock.now),
     scoreboardStale: bundle => scoreboardStale(bundle, clock.now),
@@ -87,7 +89,7 @@ async function page(...initialResponses) {
   };
 }
 
-const cards = view => view.list.children.filter(child => child.tagName === "article");
+const cards = view => view.list.children.filter(child => child.tagName === "a");
 const scores = card => card.children.filter(child => child.tagName === "div")
   .map(row => row.children[1].textContent);
 
@@ -172,7 +174,7 @@ test("manual week selection survives refresh when the automatic current week cha
   view.select.value = "2";
   await view.select.dispatch("change");
   assert.equal(cards(view)[0].children[0].textContent, "Scheduled");
-  view.clock.now = Date.parse("2026-09-23T18:00:00Z");
+  view.clock.now = Date.parse("2026-09-24T18:00:00Z");
   assert.equal(defaultScoreWeek([firstGame, second, third], view.clock.now), 3);
   view.queue.push(response(snapshot([firstGame, {...second, home_score:7, away_score:24}, third], view.clock.now)));
   await view.refresh();

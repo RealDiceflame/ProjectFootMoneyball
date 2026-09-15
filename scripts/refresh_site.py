@@ -61,6 +61,12 @@ def main():
         results[name] = {"status": "success" if ok else "failed", "attempted_at": ended,
                          "last_success": ended if ok else previous.get("sources", {}).get(name, {}).get("last_success"),
                          "note": "Refreshed configured sources; individual provider coverage may vary." if ok else "Refresh failed; last-good snapshot retained."}
+        if name == "news" and ok:
+            headlines = json.loads((ROOT / "docs/data/player_news.json").read_text(encoding="utf-8")).get("league_news", {})
+            ready = headlines.get("status") == "ok" and bool(headlines.get("items"))
+            results["headlines"] = {"status": "success" if ready else "failed", "attempted_at": ended,
+                "last_success": headlines.get("updated_at"), "note": headlines.get("source", "NFL RSS")
+                    if ready else "Headline providers failed; previous stories retained. Roster/injury refresh is independent."}
     payload = {"started_at": started, "completed_at": datetime.now(timezone.utc).isoformat(),
                "schedule": "00:00, 06:00, 12:00, 18:00 America/New_York; scheduling is best effort",
                "status": "success" if all(row["status"] == "success" for row in results.values()) else "partial_failure",
