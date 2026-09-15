@@ -1,0 +1,67 @@
+name: Sync private stats database
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Update site data", "Update game stats"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-private-stats-database
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: >-
+      ${{ vars.STATS_DATABASE_SYNC_ENABLED == 'true' &&
+          ((github.event_name == 'workflow_run' &&
+            github.event.workflow_run.conclusion == 'success' &&
+            github.event.workflow_run.head_branch == 'main' &&
+            github.event.workflow_run.head_repository.full_name == github.repository) ||
+           (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install database tools
+        run: python -m pip install -r requirements-database.txt
+      - name: Import and verify saved stats
+        env:
+          OUTLIER_DATABASE_URL: ${{ vars.OUTLIER_DATABASE_URL }}
+          OUTLIER_DATABASE_PASSWORD: ${{ secrets.OUTLIER_DATABASE_PASSWORD }}
+          OUTLIER_DATABASE_CA_CERT: ${{ vars.OUTLIER_DATABASE_CA_CERT }}
+          OUTLIER_DATABASE_SSLROOTCERT: ${{ runner.temp }}/outlier-database-ca.pem
+        run: |
+          python - <<'PY'
+          import os
+          import sys
+          from pathlib import Path
+
+          for name in (
+              "OUTLIER_DATABASE_URL",
+              "OUTLIER_DATABASE_PASSWORD",
+              "OUTLIER_DATABASE_CA_CERT",
+          ):
+              if not os.environ.get(name, "").strip():
+                  print(f"Database sync is enabled but {name} is missing.", file=sys.stderr)
+                  raise SystemExit(1)
+
+          try:
+              certificate = Path(os.environ["OUTLIER_DATABASE_SSLROOTCERT"])
+              certificate.write_text(os.environ["OUTLIER_DATABASE_CA_CERT"], encoding="utf-8")
+              certificate.chmod(0o600)
+          except OSError:
+              print("Database sync could not prepare the CA certificate.", file=sys.stderr)
+              raise SystemExit(1) from None
+          PY
+          python database_stats.py sync

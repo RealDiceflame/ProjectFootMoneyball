@@ -2,9 +2,9 @@ name: Test stats database
 on:
   push:
     branches: [main]
-    paths: ["database/**", "database_stats.py", "app/stats_database.py", "app/stats_import.py", "requirements-database.txt", "tests/test_stats_*.py", ".github/workflows/test-stats-database.yml"]
+    paths: ["database/**", "database_stats.py", "app/stats_*.py", "requirements-database.txt", "tests/test_stats_*.py", ".github/workflows/test-stats-database.yml", ".github/workflows/sync-stats-database.yml"]
   pull_request:
-    paths: ["database/**", "database_stats.py", "app/stats_database.py", "app/stats_import.py", "requirements-database.txt", "tests/test_stats_*.py", ".github/workflows/test-stats-database.yml"]
+    paths: ["database/**", "database_stats.py", "app/stats_*.py", "requirements-database.txt", "tests/test_stats_*.py", ".github/workflows/test-stats-database.yml", ".github/workflows/sync-stats-database.yml"]
   workflow_dispatch:
 permissions:
   contents: read
@@ -37,4 +37,4 @@ jobs:
       - name: Test imports, history, SQL totals and rollback on disposable PostgreSQL
         env:
           OUTLIER_TEST_DATABASE_URL: postgresql://postgres:disposable-ci-test-only@127.0.0.1:5432/outlier_test
-        run: python -m pytest tests/test_stats_import.py tests/test_stats_connection.py tests/test_stats_postgres.py -q
+        run: python -m pytest tests/test_stats_*.py -q

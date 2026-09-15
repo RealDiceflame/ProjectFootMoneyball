@@ -6,7 +6,11 @@ The optional [statistics database foundation](documentation/stats-database.md)
 can validate and import saved game and historical-season statistics into private
 PostgreSQL storage. Start with `python database_stats.py plan`; no account or
 connection is needed for that check. The public site still reads its existing
-JSON files. Production database sync and a website cutover are not enabled.
+JSON files. The opt-in private sync workflow remains off until configured;
+no website database cutover is enabled. `database_stats.py verify` compares
+normalized records and SQL totals. See the setup guide for the restricted
+updater account and GitHub configuration; never use administrator credentials
+in the scheduled sync.
 
 ## Home page
 
