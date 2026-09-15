@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["app/game_stats.py", "update_game_stats.py", "scripts/publish_scoreboard.py", ".github/workflows/update-game-stats.yml"]
+    paths: ["app/game_stats.py", "update_game_stats.py", "scripts/publish_scoreboard.py", "scripts/push_snapshot.py", ".github/workflows/update-game-stats.yml"]
   schedule:
     - cron: "0 0,6,12,18 * * *"
       timezone: "America/New_York"
@@ -40,8 +40,7 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git commit -m "Update archived NFL game box scores"
-            git pull --rebase origin main
-            git push
+            python scripts/push_snapshot.py
           fi
       - name: Publish archived box scores
         env:

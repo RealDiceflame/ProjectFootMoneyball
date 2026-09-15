@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["app/scoreboard.py", "update_scores.py", "scripts/publish_scoreboard.py", ".github/workflows/update-scores.yml"]
+    paths: ["app/scoreboard.py", "update_scores.py", "scripts/publish_scoreboard.py", "scripts/push_snapshot.py", ".github/workflows/update-scores.yml"]
   schedule:
     - cron: "7,22,37,52 * * * *"
 
@@ -46,8 +46,7 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git commit -m "Refresh reported NFL scores"
-            git pull --rebase origin main
-            git push
+            python scripts/push_snapshot.py
           fi
       - name: Publish any unpublished scoreboard
         env:

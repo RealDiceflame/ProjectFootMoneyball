@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["scripts/refresh_site.py", "app/player_news.py", ".github/workflows/update-player-news.yml"]
+    paths: ["scripts/refresh_site.py", "scripts/push_snapshot.py", "app/player_news.py", ".github/workflows/update-player-news.yml"]
   schedule:
     - cron: "0 0,6,12,18 * * *"
       timezone: "America/New_York"
@@ -23,6 +23,8 @@ jobs:
     timeout-minutes: 110
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -45,8 +47,7 @@ jobs:
             echo "The published site data is already current."
           else
             git commit -m "Update ADP, rankings, player news, odds, and survivor model"
-            git pull --rebase origin main
-            git push
+            python scripts/push_snapshot.py
           fi
       - name: Publish refreshed snapshots to the website
         env:
