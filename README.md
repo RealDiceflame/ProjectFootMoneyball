@@ -1,5 +1,13 @@
 # OutlierBaseline
 
+## PostgreSQL preparation
+
+The optional [statistics database foundation](documentation/stats-database.md)
+can validate and import saved game and historical-season statistics into private
+PostgreSQL storage. Start with `python database_stats.py plan`; no account or
+connection is needed for that check. The public site still reads its existing
+JSON files. Production database sync and a website cutover are not enabled.
+
 ## Home page
 
 Open <https://outlierbaseline.com/> for product updates, source-linked injury reports, selected official highlight links, and entry points to the fantasy, simulation and market tools. Rankings now live at <https://outlierbaseline.com/rankings.html>; their existing browser settings, imported ADP and drafted markers are unchanged. The shared navigation includes Home alongside Fantasy, Labs and Betting.
