@@ -45,13 +45,16 @@ test("homepage uses the user's exact headline, compact footer and independent sc
   assert.equal(scoreboardGames(data).length,272);
 });
 
-test("all selected-week games wrap into rows without an inner scrolling region", () => {
+test("compact score ticker is a manually scrolling single row above the headline", () => {
   const css=readFileSync(new URL("../docs/home.css",import.meta.url),"utf8");
   const grid=css.match(/\.home-score-grid\s*\{([^}]+)\}/)[1];
-  assert.match(grid,/grid-template-columns: repeat\(auto-fit/);
-  assert.doesNotMatch(grid,/overflow|max-height|grid-auto-flow/);
+  assert.match(grid,/grid-auto-flow: column/);
+  assert.match(grid,/overflow-x: auto/);
+  assert.doesNotMatch(grid,/animation|grid-template-columns/);
   const html=readFileSync(new URL("../docs/index.html",import.meta.url),"utf8");
-  assert.doesNotMatch(html,/scroll horizontally/);
+  assert.match(html,/aria-label="Previous games"/);
+  assert.match(html,/aria-label="Next games"/);
+  assert.ok(html.indexOf('class="home-section home-scores"')<html.indexOf('class="home-hero"'));
 });
 
 test("venue and weather labels separate forecasts from reported game conditions", () => {

@@ -1,6 +1,6 @@
 # Homepage scoreboard
 
-The homepage shows a selectable regular-season week, initially the current NFL week. The next week opens exactly 24 hours before its first kickoff. A manually selected week remains selected. All games in the selected week wrap into a responsive grid with no inner scrolling area. Cards include team logos, the actual venue city, game weather and a link to saved game statistics. Times use the visitor's local time zone.
+The homepage shows a compact single-row score ticker above its headline, with a selectable regular-season week. The next week opens exactly 24 hours before its first kickoff. A manually selected week remains selected. All games remain accessible with swipe/scroll, keyboard focus or Previous/Next buttons; the ticker never moves automatically. Compact cards show team logos/names, reported scores and kickoff times in the visitor's local time zone. City/weather remain in the card description and hover text and are fully visible on the linked game-stat page. Snapshot refreshes preserve ticker position and focused games; changing weeks resets the strip.
 
 ## Venue and kickoff weather
 

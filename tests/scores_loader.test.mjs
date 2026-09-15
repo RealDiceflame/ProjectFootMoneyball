@@ -33,6 +33,11 @@ class ElementStub extends EventTargetStub {
   value = "";
   disabled = false;
   ownText = "";
+  dataset = {};
+  scrollLeft = 0;
+  clientWidth = 400;
+  scrollWidth = 3000;
+  scrollBy({left}) {this.scrollLeft=Math.max(0,Math.min(this.scrollWidth-this.clientWidth,this.scrollLeft+left));}
   constructor(tagName) {
     super(); this.tagName = tagName;
     const classes = new Set();
@@ -57,11 +62,12 @@ async function page(...initialResponses) {
   const clock = {now:initialNow}, queue = [...initialResponses], calls = [], intervals = [];
   const list = new ElementStub("section"), select = new ElementStub("select"), status = new ElementStub("p");
   select.disabled = true;
-  const elements = new Map([["score-games", list], ["score-week", select], ["score-status", status]]);
+  const previous=new ElementStub("button"),next=new ElementStub("button");
+  const elements = new Map([["score-games", list], ["score-week", select], ["score-status", status], ["score-prev", previous], ["score-next", next]]);
   const document = Object.assign(new EventTargetStub(), {
     hidden:false,
     getElementById: id => elements.get(id),
-    createElement: tag => new ElementStub(tag),
+    createElement: tag => {const node=new ElementStub(tag);node.focus=()=>{document.activeElement=node;};return node;},
   });
   class ClockDate extends Date {
     constructor(...args) {super(...(args.length ? args : [clock.now]));}
@@ -84,7 +90,7 @@ async function page(...initialResponses) {
     },
   });
   await new vm.Script(loader, {filename:"docs/scores.js"}).runInContext(context);
-  return {clock, queue, calls, intervals, list, select, status, document,
+  return {clock, queue, calls, intervals, list, select, status, document, previous, next,
     refresh: async () => {await intervals[0].callback();},
   };
 }
@@ -93,16 +99,58 @@ const cards = view => view.list.children.filter(child => child.tagName === "a");
 const scores = card => card.children.filter(child => child.tagName === "div")
   .map(row => row.children[1].textContent);
 
-test("all sixteen games remain visible with venue/weather and clickable box scores", async () => {
+test("all sixteen games remain in the ticker with accessible weather and clickable box scores", async () => {
   const real=JSON.parse(readFileSync(new URL("../docs/data/scores.json",import.meta.url),"utf8"));
   const week=real.games.filter(game=>game.week===1);
   const view=await page(response(snapshot(week)));
   assert.equal(cards(view).length,16);
   for (const card of cards(view)) {
     assert.match(card.href,/^game.html\?game=2026_01_/);
-    assert.ok(card.children.some(node=>node.className==="home-score-location"&&node.textContent));
-    assert.ok(card.children.some(node=>node.className==="home-score-weather"&&node.textContent));
+    assert.ok(card.children.some(node=>node.className==="home-score-extra"&&node.textContent));
+    assert.match(card.title,/View game stats/);
   }
+});
+
+test("ticker keeps position and focus through unchanged, failed, and changed refreshes",async()=>{
+  const view=await page(response(snapshot()));
+  view.list.scrollLeft=320;
+  view.document.activeElement=cards(view)[0];
+  const original=cards(view)[0];
+  view.queue.push(response(snapshot()));
+  await view.refresh();
+  assert.equal(cards(view)[0],original);
+  assert.equal(view.list.scrollLeft,320);
+  view.queue.push(new Error("Offline"));
+  await view.refresh();
+  assert.equal(cards(view)[0],original);
+  assert.equal(view.document.activeElement,original);
+  view.queue.push(response(snapshot([{...firstGame,home_score:7}])));
+  await view.refresh();
+  assert.equal(view.list.scrollLeft,320);
+  assert.equal(view.document.activeElement,cards(view)[0]);
+  view.document.activeElement=view.select;
+  view.queue.push(response(snapshot([{...firstGame,home_score:10}])));
+  await view.refresh();
+  assert.equal(view.document.activeElement,view.select,"Refresh must not steal focus from controls");
+});
+
+test("ticker arrow controls move manually, stop at edges, and reset on week change",async()=>{
+  const second={...firstGame,game_id:"2026_02_BUF_BAL",week:2,kickoff:"2026-09-20T17:00:00Z"};
+  const view=await page(response(snapshot([firstGame,second])));
+  assert.equal(view.previous.disabled,true);
+  assert.equal(view.next.disabled,false);
+  await view.next.dispatch("click");
+  await view.list.dispatch("scroll");
+  assert.equal(view.list.scrollLeft,320);
+  assert.equal(view.previous.disabled,false);
+  await view.previous.dispatch("click");
+  assert.equal(view.list.scrollLeft,0);
+  view.list.scrollLeft=2600;
+  await view.list.dispatch("scroll");
+  assert.equal(view.next.disabled,true);
+  view.select.value="2";
+  await view.select.dispatch("change");
+  assert.equal(view.list.scrollLeft,0);
 });
 
 test("score loader displays its first snapshot and schedules shared-file refreshes", async () => {
