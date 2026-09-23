@@ -1,5 +1,6 @@
 // Run with Node's test runner. Install Playwright or set PLAYWRIGHT_MODULE to its module path.
 // BROWSER_CHANNEL defaults to msedge; use chromium for Playwright's bundled browser.
+// BROWSER_ENGINE=webkit runs the same touch regressions in Playwright's WebKit.
 import {test, before, after} from "node:test";
 import assert from "node:assert/strict";
 import {createRequire} from "node:module";
@@ -9,7 +10,7 @@ import {fileURLToPath} from "node:url";
 import {resolve, extname, sep} from "node:path";
 import {STORAGE_KEY} from "../docs/fantasy-leagues.mjs";
 
-const {chromium} = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || "playwright");
+const engines = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || "playwright");
 const root = fileURLToPath(new URL("../docs/", import.meta.url));
 let browser, server, base;
 before(async () => {
@@ -25,8 +26,10 @@ before(async () => {
   });
   await new Promise(done => server.listen(0, "127.0.0.1", done));
   base = `http://127.0.0.1:${server.address().port}`;
+  const engine = process.env.BROWSER_ENGINE || "chromium";
+  assert.ok(["chromium", "webkit"].includes(engine), `Unsupported browser engine: ${engine}`);
   const channel = process.env.BROWSER_CHANNEL || "msedge";
-  browser = await chromium.launch({headless: true, ...(channel === "chromium" ? {} : {channel})});
+  browser = await engines[engine].launch({headless: true, ...(engine === "chromium" && channel !== "chromium" ? {channel} : {})});
 });
 after(async () => { await browser?.close(); if (server) await new Promise(done => server.close(done)); });
 
@@ -40,7 +43,18 @@ async function openPage(options = {}, pathname = "/fantasy.html") {
   return {context, page};
 }
 const isOpen = locator => locator.evaluate(element => element.open);
-const waitForOpen = (page, name, open) => page.waitForFunction(({name, open}) => [...document.querySelectorAll(".topnav > details")].find(group => group.querySelector("summary").textContent === name)?.open === open, {name, open});
+const navGroup = (page, name) => page.locator(".lab-navigation details").filter({has: page.locator("summary", {hasText: new RegExp(`^${name}$`)})});
+const waitForOpen = (page, name, open) => page.waitForFunction(({name, open}) => [...document.querySelectorAll(".lab-navigation details")].find(group => group.querySelector("summary").textContent === name)?.open === open, {name, open});
+const mobileOptions = {viewport: {width: 390, height: 844}, isMobile: true, hasTouch: true};
+const waitForMobileMenu = (page, expanded) => page.waitForFunction(expanded => document.querySelector(".site-nav-toggle")?.getAttribute("aria-expanded") === String(expanded), expanded);
+const assertNoOverflow = async (page, label) => assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, label);
+// Windows Playwright WebKit skips even plain, unstyled native anchors with Tab
+// and Alt+Tab. Focus one explicitly to test our focus handling in that runtime;
+// Chromium still verifies the real Tab entry order. Both use Tab to leave links.
+const focusFirstNavLink = async (page, group) => {
+  if (process.platform === "win32" && process.env.BROWSER_ENGINE === "webkit") await group.locator("a").first().focus();
+  else await page.keyboard.press("Tab");
+};
 
 async function screenshot(page, name) {
   if (!process.env.BROWSER_SCREENSHOTS) return;
@@ -51,8 +65,10 @@ async function screenshot(page, name) {
 test("desktop hover menus group all labs, stay open over links, switch and dismiss", async () => {
   const {context, page} = await openPage();
   try {
-    assert.deepEqual(await page.locator(".topnav > details > summary").allTextContents(), ["Stats", "Fantasy", "Labs", "Betting"]);
-    const labs = page.locator(".topnav > details").filter({has: page.getByText("Labs", {exact: true})});
+    assert.deepEqual(await page.locator(".site-nav-links > details > summary").allTextContents(), ["Stats", "Fantasy", "Labs", "Betting"]);
+    assert.equal(await page.locator(".site-nav-toggle").isVisible(), false);
+    assert.equal(await page.locator("#site-nav-links").isVisible(), true);
+    const labs = navGroup(page, "Labs");
     assert.equal(await isOpen(labs), false);
     await labs.locator("summary").hover(); await waitForOpen(page, "Labs", true);
     assert.deepEqual(await labs.locator("h2").allTextContents(), ["Projection Lab", "Simulation Lab"]);
@@ -62,12 +78,12 @@ test("desktop hover menus group all labs, stay open over links, switch and dismi
     await page.getByRole("heading", {name: "Your leagues. One home."}).hover({position: {x: 10, y: 10}});
     await waitForOpen(page, "Labs", false);
     await labs.locator("summary").hover();
-    await page.locator(".topnav > details").last().locator("summary").hover();
+    await navGroup(page, "Betting").locator("summary").hover();
     await waitForOpen(page, "Betting", true); await waitForOpen(page, "Labs", false);
     await page.getByRole("heading", {name: "Your leagues. One home."}).click();
     await waitForOpen(page, "Betting", false);
     // Mouse-click focus on a previous tab must not disable later hover navigation.
-    await page.locator(".topnav > details").first().locator("summary").click();
+    await navGroup(page, "Stats").locator("summary").click();
     await labs.locator("summary").hover(); await waitForOpen(page, "Labs", true);
   } finally { await context.close(); }
 });
@@ -75,9 +91,9 @@ test("desktop hover menus group all labs, stay open over links, switch and dismi
 test("keyboard links keep their focus, Escape closes without reopening, and Tab can leave", async () => {
   const {context, page} = await openPage();
   try {
-    const labs = page.locator(".topnav > details").filter({has: page.getByText("Labs", {exact: true})}), summary = labs.locator("summary");
+    const labs = navGroup(page, "Labs"), summary = labs.locator("summary");
     await summary.focus(); await page.keyboard.press("Enter"); await waitForOpen(page, "Labs", true);
-    await page.keyboard.press("Tab");
+    await focusFirstNavLink(page, labs);
     assert.equal(await page.evaluate(() => document.activeElement.textContent), "Player age & scoring");
     await page.getByRole("heading", {name: "Your leagues. One home."}).hover({position: {x: 10, y: 10}});
     // Focused keyboard links must not disappear when the mouse leaves.
@@ -90,19 +106,203 @@ test("keyboard links keep their focus, Escape closes without reopening, and Tab 
   } finally { await context.close(); }
 });
 
-test("mobile uses tap, fits the viewport, and follows grouped links", async () => {
-  const {context, page} = await openPage({viewport: {width: 390, height: 844}, isMobile: true, hasTouch: true});
+test("mobile navigation starts collapsed, expands full-width groups, and fits 320/390/768 pixels", async () => {
+  const {context, page} = await openPage(mobileOptions);
   try {
-    const labs = page.locator(".topnav > details").filter({has: page.getByText("Labs", {exact: true})});
+    const toggle = page.locator(".site-nav-toggle"), panel = page.locator("#site-nav-links");
+    assert.equal(await toggle.getAttribute("aria-controls"), "site-nav-links");
+    for (const width of [320, 390, 768]) {
+      await page.setViewportSize({width, height: 844});
+      await waitForMobileMenu(page, false);
+      assert.equal(await page.locator(".lab-navigation details[open]").count(), 0);
+      assert.equal(await toggle.isVisible(), width <= 720);
+      assert.equal(await panel.isVisible(), width > 720);
+      if (width <= 720) {
+        assert.equal(await toggle.textContent(), "Menu");
+        await toggle.tap(); await waitForMobileMenu(page, true);
+        assert.equal(await toggle.textContent(), "Close menu");
+        assert.equal(await page.locator(".home-nav-link").isVisible(), true);
+      }
+      await assertNoOverflow(page, `closed groups at ${width}px`);
+      for (const name of ["Stats", "Fantasy", "Labs", "Betting"]) {
+        const group = navGroup(page, name);
+        await group.locator("summary").tap(); await waitForOpen(page, name, true);
+        assert.equal(await page.locator(".lab-navigation details[open]").count(), 1);
+        await assertNoOverflow(page, `${name} expanded at ${width}px`);
+        if (width <= 720) {
+          const groupBox = await group.boundingBox();
+          const panelContentWidth = await panel.evaluate(element => {
+            const style = getComputedStyle(element);
+            return element.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+          });
+          assert.ok(Math.abs(groupBox.width - panelContentWidth) <= 2, `${name} fills the mobile panel content area`);
+        }
+      }
+      await screenshot(page, `navigation-${width}.png`);
+      if (process.env.BROWSER_SCREENSHOTS) await page.locator(".topbar").screenshot({path: resolve(process.env.BROWSER_SCREENSHOTS, `navigation-header-${width}.png`)});
+      if (width <= 720) {
+        await toggle.tap(); await waitForMobileMenu(page, false);
+        assert.equal(await panel.isVisible(), false);
+        assert.equal(await page.locator(".lab-navigation details[open]").count(), 0);
+      }
+    }
+  } finally { await context.close(); }
+});
+
+test("mobile navigation keeps a tapped category in place until its click", async () => {
+  const {context, page} = await openPage(mobileOptions);
+  try {
+    await page.locator(".site-nav-toggle").tap();
+    await page.evaluate(() => {
+      window.navTapTrace = [];
+      let pressed = null;
+      document.addEventListener("pointerdown", event => {
+        const summary = event.target.closest(".lab-navigation summary");
+        if (summary) pressed = {summary, top: summary.getBoundingClientRect().top};
+      }, true);
+      document.addEventListener("pointerup", () => {
+        if (pressed) window.navTapTrace.push({phase: "pointerup", name: pressed.summary.textContent, movement: pressed.summary.getBoundingClientRect().top - pressed.top});
+      }, true);
+      document.addEventListener("click", event => {
+        if (pressed) {
+          window.navTapTrace.push({phase: "click", intended: pressed.summary.textContent, actual: event.target.closest("summary")?.textContent});
+          pressed = null;
+        }
+      }, true);
+    });
+    for (const name of ["Stats", "Fantasy", "Labs", "Betting", "Stats"]) {
+      // A touch must reset keyboard modality before focus transfers categories.
+      await page.keyboard.press("Shift");
+      await navGroup(page, name).locator("summary").tap(); await waitForOpen(page, name, true);
+      assert.equal(await page.locator(".lab-navigation details[open]").count(), 1);
+    }
+    const trace = await page.evaluate(() => window.navTapTrace);
+    assert.equal(trace.filter(event => event.phase === "click").length, 5);
+    for (const event of trace) {
+      if (event.phase === "pointerup") assert.ok(Math.abs(event.movement) < 1, `${event.name} moved ${event.movement}px before click`);
+      else assert.equal(event.actual, event.intended, "The click reaches the category pressed at pointerdown");
+    }
+  } finally { await context.close(); }
+});
+
+test("mobile navigation preserves the link through pointerdown and null-relatedTarget focusout", async () => {
+  const {context, page} = await openPage(mobileOptions, "/projection.html");
+  try {
+    await page.locator(".site-nav-toggle").tap();
+    const labs = navGroup(page, "Labs"), summary = labs.locator("summary");
+    await summary.tap(); await waitForOpen(page, "Labs", true);
+    await summary.focus();
+    await page.keyboard.press("Shift");
+    const link = labs.getByRole("link", {name: "Draft capital map", exact: true});
+    assert.equal(await link.getAttribute("href"), "projection.html#round-map-heading");
+    // Safari can report no related target during touch focus transfer. The browser
+    // still has to deliver the subsequent click to this visible, native link.
+    await link.dispatchEvent("pointerdown", {pointerType: "touch", bubbles: true});
+    await summary.dispatchEvent("focusout", {relatedTarget: null, bubbles: true});
+    await page.waitForTimeout(250);
+    assert.equal(await isOpen(labs), true);
+    assert.equal(await link.isVisible(), true);
+    await link.tap();
+    await page.waitForURL(base + "/projection.html#round-map-heading");
+    await waitForMobileMenu(page, false);
     assert.equal(await isOpen(labs), false);
-    await labs.locator("summary").tap(); await waitForOpen(page, "Labs", true);
-    assert.ok(await labs.getByRole("link", {name: "Team game forecasts"}).isVisible());
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
-    await labs.locator("summary").tap(); await waitForOpen(page, "Labs", false);
-    await labs.locator("summary").tap();
-    await labs.getByRole("link", {name: "Draft capital map"}).tap();
-    await page.waitForURL("**/projection.html#round-map-heading");
-    assert.equal(await page.locator(".topnav .current-lab > summary").textContent(), "Labs");
+  } finally { await context.close(); }
+});
+
+test("mobile navigation follows all 13 native destinations with actual taps", async () => {
+  const {context, page} = await openPage(mobileOptions);
+  const errors = [];
+  page.on("pageerror", error => errors.push(error.message));
+  const destinations = [
+    ["Stats", "Game results", "stats.html"],
+    ["Stats", "League leaders", "stats.html?view=leaders", "/stats.html"],
+    ["Fantasy", "Player rankings", "rankings.html"],
+    ["Fantasy", "Kickers & D/ST", "special-teams.html"],
+    ["Fantasy", "My leagues · prototype", "fantasy.html"],
+    ["Labs", "Player age & scoring", "projection.html"],
+    ["Labs", "Draft capital map", "projection.html#round-map-heading", "/projection.html"],
+    ["Labs", "Head-to-head matchup", "survivor.html#matchup-heading", "/survivor.html"],
+    ["Labs", "Team game forecasts", "league.html#team-games-heading", "/league.html"],
+    ["Labs", "League, playoffs & Super Bowl", "league.html"],
+    ["Labs", "Survivor planner", "survivor.html#rules-heading", "/survivor.html"],
+    ["Betting", "Weekly odds", "odds.html"],
+    [null, "Home", "./"],
+  ];
+  try {
+    assert.equal(await page.locator(".lab-navigation a").count(), destinations.length);
+    for (const [category, name, href, start = "/fantasy.html"] of destinations) {
+      await page.goto(base + start); await page.locator(".lab-navigation").waitFor();
+      await page.locator(".site-nav-toggle").tap(); await waitForMobileMenu(page, true);
+      if (category) { await navGroup(page, category).locator("summary").tap(); await waitForOpen(page, category, true); }
+      const link = page.locator(".lab-navigation").getByRole("link", {name, exact: true});
+      assert.equal(await link.getAttribute("href"), href, `${name} keeps its native href`);
+      await link.tap();
+      await page.waitForURL(new URL(href, base + start).href);
+      await page.locator(".lab-navigation").waitFor(); await waitForMobileMenu(page, false);
+      assert.equal(await page.locator("#site-nav-links").isVisible(), false, `${name} closes the panel`);
+      assert.equal(await page.locator(".lab-navigation details[open]").count(), 0, `${name} closes its group`);
+      if (category) assert.equal(await page.locator(".topnav .current-lab > summary").textContent(), category);
+      else assert.equal(await page.locator(".home-nav-link").getAttribute("aria-current"), "page");
+    }
+    assert.deepEqual(errors, [], "Navigation does not produce browser errors");
+  } finally { await context.close(); }
+});
+
+test("mobile navigation ignores scrolling and cancelled touches and preserves outside link activation", async () => {
+  const {context, page} = await openPage(mobileOptions);
+  try {
+    await page.locator(".site-nav-toggle").tap();
+    await navGroup(page, "Labs").locator("summary").tap(); await waitForOpen(page, "Labs", true);
+    const heading = page.getByRole("heading", {name: "Your leagues. One home."});
+    const start = {pointerType: "touch", pointerId: 11, clientX: 30, clientY: 30, bubbles: true};
+    await heading.dispatchEvent("pointerdown", start);
+    await heading.dispatchEvent("pointermove", {...start, clientY: 55});
+    await heading.dispatchEvent("pointerup", {...start, clientY: 55});
+    await waitForMobileMenu(page, true); assert.equal(await isOpen(navGroup(page, "Labs")), true);
+    await heading.dispatchEvent("pointerdown", start);
+    await heading.dispatchEvent("pointercancel", start);
+    await heading.dispatchEvent("pointerup", start);
+    await waitForMobileMenu(page, true); assert.equal(await isOpen(navGroup(page, "Labs")), true);
+    const link = page.locator("footer").getByRole("link", {name: "Return to player rankings"});
+    assert.equal(await link.getAttribute("href"), "rankings.html");
+    await link.evaluate(element => element.addEventListener("pointerup", () => {
+      sessionStorage.setItem("nav-test-panel-at-outside-link-pointerup", document.querySelector(".site-nav-toggle").getAttribute("aria-expanded"));
+    }, {once: true}));
+    await link.tap(); await page.waitForURL(base + "/rankings.html");
+    assert.equal(await page.evaluate(() => sessionStorage.getItem("nav-test-panel-at-outside-link-pointerup")), "true", "The panel remains in place until the outside link receives its click");
+    await waitForMobileMenu(page, false);
+  } finally { await context.close(); }
+});
+
+test("mobile navigation supports keyboard Escape, outside dismissal, and responsive reset", async () => {
+  const {context, page} = await openPage(mobileOptions);
+  try {
+    const toggle = page.locator(".site-nav-toggle"), panel = page.locator("#site-nav-links");
+    const labs = navGroup(page, "Labs"), summary = labs.locator("summary");
+    await toggle.focus(); await page.keyboard.press("Enter"); await waitForMobileMenu(page, true);
+    await summary.focus(); await page.keyboard.press("Enter"); await waitForOpen(page, "Labs", true);
+    await focusFirstNavLink(page, labs);
+    assert.equal(await page.evaluate(() => document.activeElement.textContent), "Player age & scoring");
+    await page.keyboard.press("Escape"); await waitForOpen(page, "Labs", false);
+    assert.equal(await summary.evaluate(element => element === document.activeElement), true);
+    await waitForMobileMenu(page, true);
+    await page.keyboard.press("Escape"); await waitForMobileMenu(page, false);
+    assert.equal(await toggle.evaluate(element => element === document.activeElement), true);
+    await toggle.tap(); await summary.tap(); await waitForOpen(page, "Labs", true);
+    await page.getByRole("heading", {name: "Your leagues. One home."}).tap();
+    await waitForMobileMenu(page, false); await waitForOpen(page, "Labs", false);
+    await toggle.focus(); await page.keyboard.press("Enter");
+    await navGroup(page, "Betting").locator("summary").focus();
+    await page.keyboard.press("Enter"); await focusFirstNavLink(page, navGroup(page, "Betting")); await page.keyboard.press("Tab");
+    await waitForMobileMenu(page, false); await waitForOpen(page, "Betting", false);
+    await toggle.tap(); await summary.tap(); await waitForOpen(page, "Labs", true);
+    await page.setViewportSize({width: 1024, height: 844});
+    await waitForMobileMenu(page, false); await waitForOpen(page, "Labs", false);
+    assert.equal(await toggle.isVisible(), false); assert.equal(await panel.isVisible(), true);
+    await summary.tap(); await waitForOpen(page, "Labs", true);
+    await page.setViewportSize({width: 390, height: 844});
+    await waitForMobileMenu(page, false); await waitForOpen(page, "Labs", false);
+    assert.equal(await toggle.isVisible(), true); assert.equal(await panel.isVisible(), false);
   } finally { await context.close(); }
 });
 

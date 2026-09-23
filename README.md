@@ -69,7 +69,7 @@ The guide assumes the user still needs every position being compared. It does no
 
 The Projection Lab now opens the draft-capital map on **All historical seasons** unless a URL explicitly selects another view. The round graph compares QB/RB/WR/TE average scoring; selecting one position adds a scoring-SD band. Missing rounds are gaps. Age charts offer PPG, season totals, and a career-relative view (best observed PPG season = 100, at least three six-game seasons). These are descriptive comparisons, not forced bell curves: survivor selection, playing time, talent and incomplete careers can distort the shape. The career-relative view does not alter player rankings or the age-adjustment model.
 
-Shared dropdown navigation groups **Fantasy** (player rankings followed by kickers/DST and My Leagues), **Labs** (Projection Lab and Simulation Lab sections), and **Betting**. Menus open on mouse hover with a short close delay; native click/tap/Enter/Space, keyboard focus and Escape dismissal remain available.
+Shared navigation groups **Stats**, **Fantasy** (player rankings followed by kickers/DST and My Leagues), **Labs** (Projection Lab and Simulation Lab sections), and **Betting**. Desktop menus open on mouse hover with a short close delay. On phones (720px wide or less), a single **Menu** button opens full-width, tap-to-expand sections with large links. Touch focus changes do not dismiss a link before its tap completes. Native links, keyboard Enter/Space, outside-click dismissal and Escape remain available; Escape closes a section first, then the phone menu.
 
 ### Fantasy platform foundation
 
