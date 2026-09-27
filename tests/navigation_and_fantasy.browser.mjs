@@ -47,7 +47,11 @@ const navGroup = (page, name) => page.locator(".lab-navigation details").filter(
 const waitForOpen = (page, name, open) => page.waitForFunction(({name, open}) => [...document.querySelectorAll(".lab-navigation details")].find(group => group.querySelector("summary").textContent === name)?.open === open, {name, open});
 const mobileOptions = {viewport: {width: 390, height: 844}, isMobile: true, hasTouch: true};
 const waitForMobileMenu = (page, expanded) => page.waitForFunction(expanded => document.querySelector(".site-nav-toggle")?.getAttribute("aria-expanded") === String(expanded), expanded);
-const assertNoOverflow = async (page, label) => assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, label);
+const assertNoOverflow = async (page, label) => assert.equal(await page.evaluate(() =>
+  document.documentElement.scrollWidth <= innerWidth && [...document.querySelectorAll(".lab-navigation details[open] .lab-nav-menu")].every(menu => {
+    const bounds = menu.getBoundingClientRect();
+    return bounds.left >= -1 && bounds.right <= innerWidth + 1;
+  })), true, label);
 // Windows Playwright WebKit skips even plain, unstyled native anchors with Tab
 // and Alt+Tab. Focus one explicitly to test our focus handling in that runtime;
 // Chromium still verifies the real Tab entry order. Both use Tab to leave links.
@@ -106,18 +110,18 @@ test("keyboard links keep their focus, Escape closes without reopening, and Tab 
   } finally { await context.close(); }
 });
 
-test("mobile navigation starts collapsed, expands full-width groups, and fits 320/390/768 pixels", async () => {
+test("mobile navigation starts collapsed, expands full-width groups, and fits phones, tablets and desktop", async () => {
   const {context, page} = await openPage(mobileOptions);
   try {
     const toggle = page.locator(".site-nav-toggle"), panel = page.locator("#site-nav-links");
     assert.equal(await toggle.getAttribute("aria-controls"), "site-nav-links");
-    for (const width of [320, 390, 768]) {
+    for (const width of [320, 390, 768, 1024, 1280]) {
       await page.setViewportSize({width, height: 844});
       await waitForMobileMenu(page, false);
       assert.equal(await page.locator(".lab-navigation details[open]").count(), 0);
-      assert.equal(await toggle.isVisible(), width <= 720);
-      assert.equal(await panel.isVisible(), width > 720);
-      if (width <= 720) {
+      assert.equal(await toggle.isVisible(), width <= 1024);
+      assert.equal(await panel.isVisible(), width > 1024);
+      if (width <= 1024) {
         assert.equal(await toggle.textContent(), "Menu");
         await toggle.tap(); await waitForMobileMenu(page, true);
         assert.equal(await toggle.textContent(), "Close menu");
@@ -131,7 +135,7 @@ test("mobile navigation starts collapsed, expands full-width groups, and fits 32
         await page.waitForFunction(() => document.querySelectorAll(".lab-navigation details[open]").length === 1);
         assert.equal(await page.locator(".lab-navigation details[open]").count(), 1);
         await assertNoOverflow(page, `${name} expanded at ${width}px`);
-        if (width <= 720) {
+        if (width <= 1024) {
           const groupBox = await group.boundingBox();
           const panelContentWidth = await panel.evaluate(element => {
             const style = getComputedStyle(element);
@@ -142,7 +146,7 @@ test("mobile navigation starts collapsed, expands full-width groups, and fits 32
       }
       await screenshot(page, `navigation-${width}.png`);
       if (process.env.BROWSER_SCREENSHOTS) await page.locator(".topbar").screenshot({path: resolve(process.env.BROWSER_SCREENSHOTS, `navigation-header-${width}.png`)});
-      if (width <= 720) {
+      if (width <= 1024) {
         await toggle.tap(); await waitForMobileMenu(page, false);
         assert.equal(await panel.isVisible(), false);
         assert.equal(await page.locator(".lab-navigation details[open]").count(), 0);
@@ -299,7 +303,7 @@ test("mobile navigation supports keyboard Escape, outside dismissal, and respons
     await page.keyboard.press("Enter"); await focusFirstNavLink(page, navGroup(page, "Betting")); await page.keyboard.press("Tab");
     await waitForMobileMenu(page, false); await waitForOpen(page, "Betting", false);
     await toggle.tap(); await summary.tap(); await waitForOpen(page, "Labs", true);
-    await page.setViewportSize({width: 1024, height: 844});
+    await page.setViewportSize({width: 1280, height: 844});
     await waitForMobileMenu(page, false); await waitForOpen(page, "Labs", false);
     assert.equal(await toggle.isVisible(), false); assert.equal(await panel.isVisible(), true);
     await summary.tap(); await waitForOpen(page, "Labs", true);

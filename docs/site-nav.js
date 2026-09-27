@@ -11,7 +11,7 @@ const nav = document.querySelector(".topnav"), page = location.pathname.split("/
 if (nav) {
   nav.classList.add("lab-navigation");
   const hover = matchMedia("(any-hover: hover) and (any-pointer: fine)");
-  const mobile = matchMedia("(max-width: 720px)");
+  const mobile = matchMedia("(max-width: 1024px)");
   const menuButton = document.createElement("button"), panel = document.createElement("div");
   menuButton.type = "button"; menuButton.className = "site-nav-toggle";
   menuButton.setAttribute("aria-controls", "site-nav-links");
