@@ -7,6 +7,7 @@ import {readFile} from "node:fs/promises";
 import {fileURLToPath} from "node:url";
 import {resolve, extname, sep} from "node:path";
 import {simulateLeague} from "../docs/league-model.mjs";
+import {observeRefreshChecks, waitForRefreshCheck, completedRefreshChecks} from "./helpers/refresh-clock.mjs";
 
 const {chromium} = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || "playwright");
 const root = fileURLToPath(new URL("../docs/", import.meta.url));
@@ -57,20 +58,7 @@ async function open(path, {fakeWorker = false} = {}) {
   page.setDefaultTimeout(15000);
   page.on("pageerror", error => errors.push(error.message));
   await page.clock.install({time: new Date(now)});
-  await page.addInitScript(() => {
-    // Observe the real poller's watchdog rather than guessing when its fetch /
-    // JSON / render chain has settled. The helper clears this timer in finally,
-    // including manifest-only checks and rejected snapshots. Keep the timer's
-    // behavior unchanged so aborted requests remain part of the test coverage.
-    const setTimeout = window.setTimeout.bind(window), clearTimeout = window.clearTimeout.bind(window);
-    const checks = window.labRefreshChecks = {started: 0, pending: new Set()};
-    window.setTimeout = (callback, delay, ...args) => {
-      const id = setTimeout(callback, delay, ...args);
-      if (delay === 15000) { checks.started++; checks.pending.add(id); }
-      return id;
-    };
-    window.clearTimeout = id => { checks.pending.delete(id); return clearTimeout(id); };
-  });
+  await observeRefreshChecks(page);
   if (fakeWorker) await page.addInitScript(() => {
     window.labWorkers = [];
     window.Worker = class {
@@ -80,7 +68,7 @@ async function open(path, {fakeWorker = false} = {}) {
     };
   });
   await page.goto(`${base}/${path}`);
-  const settled = () => page.waitForFunction(() => window.labRefreshChecks.started > 0 && window.labRefreshChecks.pending.size === 0);
+  const settled = () => waitForRefreshCheck(page);
   await settled();
   return {context, page, values, requests, errors, holdNextManifest: () => {
     let requested, release;
@@ -90,10 +78,10 @@ async function open(path, {fakeWorker = false} = {}) {
     return {started, release};
   }, tick: async (changed = true) => {
     await settled();
-    const previousChecks = await page.evaluate(() => window.labRefreshChecks.started);
+    const previousChecks = await completedRefreshChecks(page);
     if (changed) revision++;
     await page.clock.fastForward(60001);
-    await page.waitForFunction(previous => window.labRefreshChecks.started > previous && window.labRefreshChecks.pending.size === 0, previousChecks);
+    await waitForRefreshCheck(page, previousChecks);
   }};
 }
 

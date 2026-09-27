@@ -6,6 +6,7 @@ import {createServer} from "node:http";
 import {readFile} from "node:fs/promises";
 import {fileURLToPath} from "node:url";
 import {resolve, extname, sep} from "node:path";
+import {observeRefreshChecks, waitForRefreshCheck, completedRefreshChecks} from "./helpers/refresh-clock.mjs";
 
 const {chromium} = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || "playwright");
 const root = fileURLToPath(new URL("../docs/", import.meta.url));
@@ -48,9 +49,16 @@ test("odds refresh preserves filters and focus, labels cached quotes, retains go
   page.setDefaultTimeout(15000);
   page.on("pageerror", error => errors.push(error.message));
   await page.clock.install({time: new Date(now)});
-  const tick = async () => {revision++; await page.clock.fastForward(60001);};
+  await observeRefreshChecks(page);
+  const tick = async () => {
+    await waitForRefreshCheck(page);
+    const previous = await completedRefreshChecks(page);
+    revision++; await page.clock.fastForward(60001);
+    await waitForRefreshCheck(page, previous);
+  };
   try {
     await page.goto(`${base}/odds.html`);
+    await waitForRefreshCheck(page);
     await page.locator("#odds-games .odds-game-card").first().waitFor();
     const week = original.weeks[1] || original.weeks[0], game = original.games.find(game => game.week === week);
     await page.selectOption("#odds-week", String(week));

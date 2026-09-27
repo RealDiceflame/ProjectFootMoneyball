@@ -6,6 +6,7 @@ import {createServer} from "node:http";
 import {readFile} from "node:fs/promises";
 import {fileURLToPath} from "node:url";
 import {resolve, extname, sep} from "node:path";
+import {observeRefreshChecks, waitForRefreshCheck, completedRefreshChecks} from "./helpers/refresh-clock.mjs";
 
 const {chromium} = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || "playwright");
 const root = fileURLToPath(new URL("../docs/", import.meta.url));
@@ -39,13 +40,19 @@ async function open(path, prepare = () => {}) {
   // not depend on the changing injury designations in checked-in snapshots.
   values.player_news = {season: 2026, generated_at: new Date(now).toISOString(), reports: {}};
   prepare(values);
-  let revision = 0;
+  let revision = 0, heldManifest = null;
   await context.route("**/*", async route => {
     const url = new URL(route.request().url());
     if (url.origin !== base) return route.abort(); // No upstream provider traffic.
     const key = /^\/data\/(.+)\.json$/.exec(url.pathname)?.[1];
     if (key) requests[key] = (requests[key] || 0) + 1;
-    if (key === "update_status") return route.fulfill({json: {completed_at: new Date(now + revision * 1000).toISOString()}});
+    if (key === "update_status") {
+      if (heldManifest) {
+        const held = heldManifest; heldManifest = null;
+        held.started(); await held.gate;
+      }
+      return route.fulfill({json: {completed_at: new Date(now + revision * 1000).toISOString()}});
+    }
     if (Object.hasOwn(values, key)) {
       if (values[key] === "NETWORK_ERROR") return route.abort("failed");
       if (values[key] === "BAD_JSON") return route.fulfill({contentType: "application/json", body: "{invalid"});
@@ -57,10 +64,21 @@ async function open(path, prepare = () => {}) {
   page.setDefaultTimeout(15000);
   page.on("pageerror", error => errors.push(error.message));
   await page.clock.install({time: new Date(now)});
+  await observeRefreshChecks(page);
   await page.goto(`${base}/${path}`);
-  return {context, page, values, requests, errors, tick: async (changed = true) => {
+  await waitForRefreshCheck(page);
+  return {context, page, values, requests, errors, holdManifest: () => {
+    let started, release;
+    const reached = new Promise(resolve => { started = resolve; });
+    const gate = new Promise(resolve => { release = resolve; });
+    heldManifest = {started, gate};
+    return {reached, release};
+  }, tick: async (changed = true, duration = 60001) => {
+    await waitForRefreshCheck(page);
+    const previous = await completedRefreshChecks(page);
     if (changed) revision++;
-    await page.clock.fastForward(60001);
+    await page.clock.fastForward(duration);
+    await waitForRefreshCheck(page, previous);
   }};
 }
 
@@ -111,7 +129,17 @@ test("rankings refresh preserves room settings, search, filters, sort, drafted s
     assert.equal(await page.locator("#table-body tr").count(), 1, `${await page.locator("#board-summary").textContent()} stored=${saved.drafted}`);
     assert.equal(await selectedRow(page).locator(".personal-adp-value").count() > 0, true, await selectedRow(page).textContent());
     assert.equal(await selectedRow(page).locator(".personal-adp-value").first().textContent(), "12.3");
-    await board.tick(false);
+    // Hold an unchanged manifest deterministically: the next simulated minute
+    // cannot start before this real request has finished and the poller settles.
+    const held = board.holdManifest();
+    let tickFinished = false;
+    const unchangedTick = board.tick(false).then(() => { tickFinished = true; });
+    try {
+      await held.reached;
+      assert.equal(await page.evaluate(() => window.labRefreshChecks.pending.size), 1);
+      assert.equal(tickFinished, false, "tick waits for an in-flight unchanged manifest");
+    } finally { held.release(); }
+    await unchangedTick;
     assert.equal(await page.evaluate(() => window.savedBoardRow === document.querySelector("#table-body tr")), true);
     changeRankedValue(values.rankings, player.player, "Sleeper", 444.4);
     await board.tick();
@@ -181,7 +209,7 @@ test("rankings use only current injury badges and risk, retain news through an o
     assert.equal(await row(players[0]).locator(".tag-risk, .status-injury-risk").count(), 0);
     assert.match(await row(players[0]).locator(".status-history").textContent(), /Week 2/);
     const until = Date.parse(values.player_news.injury_context.valid_until);
-    await page.clock.fastForward(until - await page.evaluate(() => Date.now()) + 60001);
+    await board.tick(false, until - await page.evaluate(() => Date.now()) + 60001);
     await page.waitForFunction(name => [...document.querySelectorAll("#table-body tr")].find(row => row.querySelector(".player-name")?.textContent === name)?.querySelector(".status-history"), players[2].player);
     assert.equal(await row(players[2]).locator(".status-injury, .status-injury-risk").count(), 0, "A report expires even without a newer manifest");
     assert.deepEqual(errors, []);
@@ -256,6 +284,7 @@ test("rankings keep a drafted player when refreshed roster teams change without 
     const undone = JSON.parse(await page.evaluate(key => localStorage.getItem(key), draftedKey));
     assert.equal(undone.includes(oldKey), false); assert.equal(undone.includes(`${player.player.toLowerCase()}|${newTeam}`), false);
     await page.reload();
+    await waitForRefreshCheck(page);
     await page.waitForFunction(() => document.querySelectorAll("#table-body tr").length > 0);
     await page.fill("#search", player.player);
     assert.equal(await selectedRow(page).locator(".draft-toggle").getAttribute("aria-pressed"), "false");
@@ -286,6 +315,7 @@ test("special teams keep a uniquely identified drafted kicker after a team trans
     const undone = JSON.parse(await page.evaluate(key => localStorage.getItem(key), draftedKey));
     assert.equal(undone.includes(oldKey), false); assert.equal(undone.includes(`${player.toLowerCase()}|${newTeam}`), false);
     await page.reload();
+    await waitForRefreshCheck(page);
     await page.waitForFunction(() => document.querySelectorAll("#special-body tr").length > 0);
     await page.fill("#special-search", player);
     dataRow[columns.indexOf("adp")] = 765.4;
