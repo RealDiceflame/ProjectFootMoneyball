@@ -34,13 +34,19 @@ after(async () => { await browser?.close(); if (server) await new Promise(done =
 async function open(path, {fakeWorker = false} = {}) {
   const context = await browser.newContext({viewport: {width: 1440, height: 1000}});
   const values = structuredClone(originals), requests = {}, errors = [];
-  let revision = 0;
+  let revision = 0, manifestGate = null;
   await context.route("**/*", async route => {
     const url = new URL(route.request().url());
     if (url.origin !== base) return route.abort(); // Never contact upstream providers in tests.
     const key = /^\/data\/(.+)\.json$/.exec(url.pathname)?.[1];
     if (key) requests[key] = (requests[key] || 0) + 1;
-    if (key === "update_status") return route.fulfill({json: {completed_at: new Date(now + revision * 1000).toISOString()}});
+    if (key === "update_status") {
+      if (manifestGate) {
+        const gate = manifestGate; manifestGate = null;
+        gate.requested(); await gate.released;
+      }
+      return route.fulfill({json: {completed_at: new Date(now + revision * 1000).toISOString()}});
+    }
     if (Object.hasOwn(values, key)) {
       if (values[key] === "HTTP_ERROR") return route.fulfill({status: 503, body: "temporarily unavailable"});
       return route.fulfill({json: values[key]});
@@ -51,6 +57,20 @@ async function open(path, {fakeWorker = false} = {}) {
   page.setDefaultTimeout(15000);
   page.on("pageerror", error => errors.push(error.message));
   await page.clock.install({time: new Date(now)});
+  await page.addInitScript(() => {
+    // Observe the real poller's watchdog rather than guessing when its fetch /
+    // JSON / render chain has settled. The helper clears this timer in finally,
+    // including manifest-only checks and rejected snapshots. Keep the timer's
+    // behavior unchanged so aborted requests remain part of the test coverage.
+    const setTimeout = window.setTimeout.bind(window), clearTimeout = window.clearTimeout.bind(window);
+    const checks = window.labRefreshChecks = {started: 0, pending: new Set()};
+    window.setTimeout = (callback, delay, ...args) => {
+      const id = setTimeout(callback, delay, ...args);
+      if (delay === 15000) { checks.started++; checks.pending.add(id); }
+      return id;
+    };
+    window.clearTimeout = id => { checks.pending.delete(id); return clearTimeout(id); };
+  });
   if (fakeWorker) await page.addInitScript(() => {
     window.labWorkers = [];
     window.Worker = class {
@@ -60,9 +80,20 @@ async function open(path, {fakeWorker = false} = {}) {
     };
   });
   await page.goto(`${base}/${path}`);
-  return {context, page, values, requests, errors, tick: async (changed = true) => {
+  const settled = () => page.waitForFunction(() => window.labRefreshChecks.started > 0 && window.labRefreshChecks.pending.size === 0);
+  await settled();
+  return {context, page, values, requests, errors, holdNextManifest: () => {
+    let requested, release;
+    const started = new Promise(resolve => { requested = resolve; });
+    const released = new Promise(resolve => { release = resolve; });
+    manifestGate = {requested, released};
+    return {started, release};
+  }, tick: async (changed = true) => {
+    await settled();
+    const previousChecks = await page.evaluate(() => window.labRefreshChecks.started);
     if (changed) revision++;
     await page.clock.fastForward(60001);
+    await page.waitForFunction(previous => window.labRefreshChecks.started > previous && window.labRefreshChecks.pending.size === 0, previousChecks);
   }};
 }
 
@@ -80,7 +111,17 @@ test("projection replaces changed snapshots while retaining player, format, seas
     await page.locator("#model-player").focus();
     const count = await page.locator("#model-player option").count();
     await page.evaluate(() => { window.scrollTo({top: 250, behavior: "instant"}); window.originalChart = document.querySelector("#age-chart svg"); });
-    await lab.tick(false);
+    // Reproduce a slow manifest response without sleeping: a fake minute must
+    // not finish until its actual poll has settled, even with no changed data.
+    const heldManifest = lab.holdNextManifest();
+    let tickFinished = false;
+    const unchangedTick = lab.tick(false).then(() => { tickFinished = true; });
+    try {
+      await heldManifest.started;
+      assert.equal(await page.evaluate(() => window.labRefreshChecks.pending.size), 1);
+      assert.equal(tickFinished, false, "tick waits for the in-flight manifest check");
+    } finally { heldManifest.release(); }
+    await unchangedTick;
     assert.equal(await page.evaluate(() => window.originalChart === document.querySelector("#age-chart svg")), true, "unchanged manifest does not rebuild charts");
     values.rankings.projection_season++;
     await lab.tick();

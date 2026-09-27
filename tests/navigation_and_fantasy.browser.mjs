@@ -127,6 +127,8 @@ test("mobile navigation starts collapsed, expands full-width groups, and fits 32
       for (const name of ["Stats", "Fantasy", "Labs", "Betting"]) {
         const group = navGroup(page, name);
         await group.locator("summary").tap(); await waitForOpen(page, name, true);
+        // Native details emits toggle asynchronously after the open property changes.
+        await page.waitForFunction(() => document.querySelectorAll(".lab-navigation details[open]").length === 1);
         assert.equal(await page.locator(".lab-navigation details[open]").count(), 1);
         await assertNoOverflow(page, `${name} expanded at ${width}px`);
         if (width <= 720) {
@@ -174,6 +176,7 @@ test("mobile navigation keeps a tapped category in place until its click", async
       // A touch must reset keyboard modality before focus transfers categories.
       await page.keyboard.press("Shift");
       await navGroup(page, name).locator("summary").tap(); await waitForOpen(page, name, true);
+      await page.waitForFunction(() => document.querySelectorAll(".lab-navigation details[open]").length === 1);
       assert.equal(await page.locator(".lab-navigation details[open]").count(), 1);
     }
     const trace = await page.evaluate(() => window.navTapTrace);
