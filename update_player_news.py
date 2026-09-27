@@ -12,8 +12,9 @@ def main():
     parser.add_argument("--rankings", type=Path, default=Path("docs/data/rankings.json"))
     parser.add_argument("--destination", type=Path, default=Path("docs/data/player_news.json"))
     parser.add_argument("--season", type=int, default=PROJECTION_SEASON)
+    parser.add_argument("--schedule", type=Path, default=Path("docs/data/scores.json"))
     args = parser.parse_args()
-    return refresh_player_news(args.rankings, args.destination, season=args.season)
+    return refresh_player_news(args.rankings, args.destination, season=args.season, schedule_path=args.schedule)
 
 
 if __name__ == "__main__":

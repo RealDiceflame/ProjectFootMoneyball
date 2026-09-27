@@ -122,25 +122,70 @@ if (nav) {
   });
 }
 
+function refreshDate(value) {
+  if (!value) return "unknown";
+  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00` : value);
+  if (!Number.isFinite(date.getTime())) return "unknown";
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? date.toLocaleDateString() : date.toLocaleString();
+}
+
+function sourceHealthText(source = {}) {
+  const labels = {
+    success: "check completed", manual: "manual import", historical: "historical archive",
+    not_configured: "not configured", not_needed: "not needed for this run",
+    no_upcoming_markets: "no upcoming markets", fallback: "backup feed in use",
+    cached: "saved data retained after a failed refresh", failed: "refresh failed",
+    partial_failure: "some sources need attention", stale: "older data retained",
+    behind: "latest report is behind the expected week", unavailable: "unavailable",
+    unknown: "freshness unknown", saved: "saved snapshot reused",
+  };
+  let text = labels[source.status] || "freshness unknown";
+  if (source.status === "manual") text += "; updated only when a snapshot is imported";
+  else if (source.status === "historical") text += "; completed-season data, no live update expected";
+  else if (source.status === "not_configured") text += "; no provider request was made";
+  else if (source.status === "no_upcoming_markets") text += "; request succeeded with no matching markets";
+  else if (source.status === "fallback") text += source.selected_provider ? `; ${source.selected_provider}` : "; primary feed was not used";
+  if (source.execution_status === "success" && !["success", "historical"].includes(source.status)) text += "; refresh job completed";
+  if (source.execution_status === "failed") text += "; refresh job failed";
+  if (source.data_updated_at) text += `; ${source.timestamp_kind === "snapshot" || source.status === "manual" ? "snapshot captured" : source.timestamp_kind === "mixed" ? "latest available data timestamp" : "source data dated"} ${refreshDate(source.data_updated_at)}`;
+  if (source.last_success && !["manual", "historical", "not_needed", "not_configured"].includes(source.status)) text += `; last successful check ${refreshDate(source.last_success)}`;
+  if (source.expected_week != null) text += `; expected ${source.season ? `${source.season} ` : ""}week ${source.expected_week}${source.latest_report_week != null ? `, latest report ${source.latest_report_season ? `${source.latest_report_season} ` : ""}week ${source.latest_report_week}` : ", no report week available"}`;
+  return `${text}.`;
+}
+
+function sourceLabel(name) {
+  return ({rankings: "Player rankings", news: "Player news", headlines: "League headlines", history: "Player history", draft_capital: "Draft capital archive", odds: "Weekly odds", teams: "Team forecasts", stats: "Season statistics", primary_sportsbook: "The Odds API", sportsbook_backup: "SportsGameOdds", sportsbooks: "Sportsbook comparison", exchange: "Kalshi", prediction_markets: "Polymarket", schedule: "Schedule", weather: "Weather", injuries: "Injury reports"})[name] || name.replaceAll("_", " ");
+}
+
 const footer = document.querySelector("footer");
 if (footer && footer.dataset.compact !== "true") {
   const status = document.createElement("details"), title = document.createElement("summary"), info = document.createElement("div");
   status.className = "site-refresh-status"; title.textContent = "Data refresh: every 6 hours (Eastern time)"; status.append(title, info); footer.append(status);
-  let initial = null;
   const check = async () => {
     try {
       const response = await fetch("data/update_status.json", {cache: "no-store"}); if (!response.ok) throw new Error("No refresh status");
       const data = await response.json(), completed = Date.parse(data.completed_at);
       if (!Number.isFinite(completed)) throw new Error("Invalid refresh status");
       const stale = Date.now() - completed > 7 * 3600000;
-      title.textContent = `Data refresh: ${data.status === "success" ? "last run completed" : "some sources need attention"}${stale ? " · overdue" : ""}${initial && completed > initial ? " · newer snapshots available; reload to use them" : ""}`;
-      if (!initial) initial = completed;
+      const jobFailed = data.execution_status === "partial_failure" || data.execution_status === "failed";
+      title.textContent = `Data refresh: ${jobFailed ? "some refresh jobs failed" : data.status === "success" ? "last run completed" : "some sources need attention"}${stale ? " · overdue" : ""}`;
       info.replaceChildren();
-      const note = document.createElement("p"); note.textContent = `Scheduled at midnight, 6am, noon and 6pm Eastern. Last attempt: ${new Date(completed).toLocaleString()}. Provider outages and scheduling delays can leave older data; Yahoo imports remain manual. Reload to load published snapshots. Your draft selections are not automatically reset.`; info.append(note);
+      const note = document.createElement("p"); note.textContent = `Scheduled at midnight, 6am, noon and 6pm Eastern. Last attempt: ${refreshDate(data.completed_at)}. Open data pages check for published updates automatically and keep your selections. A completed job can still contain older provider data; manual imports and historical archives follow their own update rules.`; info.append(note);
       for (const [name, source] of Object.entries(data.sources || {})) {
-        const row = document.createElement("p"); row.textContent = `${name.replaceAll("_", " ")}: ${source.status}; last successful refresh ${source.last_success ? new Date(source.last_success).toLocaleString() : "unknown"}.`; info.append(row);
+        const row = document.createElement("p"); row.textContent = `${sourceLabel(name)}: ${sourceHealthText(source)}`; info.append(row);
+        const providers = Object.entries(source.providers || {});
+        if (providers.length) {
+          const list = document.createElement("ul");
+          for (const [provider, health] of providers) {
+            const item = document.createElement("li"); item.textContent = `${sourceLabel(provider)}: ${sourceHealthText(health)}`; list.append(item);
+          }
+          info.append(list);
+        }
       }
-    } catch { info.textContent = "Refresh status is unavailable. Use the timestamps displayed in each lab; missing status does not mean the data is current."; }
+    } catch {
+      title.textContent = "Data refresh: status unavailable";
+      info.textContent = "Refresh status is unavailable. Use the timestamps displayed in each lab; missing status does not mean the data is current. Update checks continue automatically.";
+    }
   };
   check(); setInterval(check, 10 * 60 * 1000);
 }

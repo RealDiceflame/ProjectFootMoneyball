@@ -1,11 +1,13 @@
 """One-command stats, ADP, rankings, and workbook refresh."""
 
 import argparse
+from datetime import datetime, timezone
+import json
 from pathlib import Path
 from urllib.request import Request, urlopen
 
 from config import (
-    ADP_DIR, ADP_FILENAME, ADP_SNAPSHOT_DATE, IS_FROZEN, OUTPUT_DIR, PROJECT_ROOT,
+    ADP_DIR, ADP_FILENAME, IS_FROZEN, OUTPUT_DIR, PROJECT_ROOT,
     PROJECTION_SEASON, STAT_SEASON, STATS_DIR, seed_packaged_data,
 )
 from data_fetcher.adp_importer import (
@@ -22,6 +24,39 @@ from pipeline.runner import run_pipeline
 
 NFLVERSE_URL = ("https://github.com/nflverse/nflverse-data/releases/download/"
                 "stats_player/stats_player_reg_{season}.csv")
+
+
+def saved_adp_health(path, *, state="cached", attempted_at=None):
+    """Describe retained values without claiming they were fetched this run."""
+    return {provider: {
+        "status": "manual" if provider == "Yahoo" else state,
+        "freshness": "manual" if provider == "Yahoo" or state == "manual" else "stale" if state == "cached" else "unknown",
+        "attempted_at": None if provider == "Yahoo" else attempted_at,
+        "last_success": date, "data_updated_at": date,
+        "timestamp_kind": "snapshot",
+        "note": "User-supplied Yahoo snapshot; date records its import." if provider == "Yahoo" else "Saved snapshot capture date; provider publication time is not supplied.",
+    } for provider, date in adp_source_dates(path).items()}
+
+
+def attach_source_health(destination, health, previous):
+    """Keep provider success times stable while publishing new diagnostics."""
+    for key, row in health.items():
+        old = previous.get(key, {})
+        if row.get("status") in {"cached", "failed", "saved"} and old.get("last_success"):
+            row["last_success"] = old["last_success"]
+    destination = Path(destination)
+    payload = json.loads(destination.read_text(encoding="utf-8"))
+    payload["source_health"] = health
+    temporary = destination.with_suffix(destination.suffix + ".tmp")
+    temporary.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    temporary.replace(destination)
+
+
+def existing_source_health(destination):
+    try:
+        return json.loads(Path(destination).read_text(encoding="utf-8")).get("source_health", {})
+    except (OSError, ValueError):
+        return {}
 
 
 def download_file(url, destination):
@@ -76,6 +111,13 @@ def refresh_draft_board(
     workbook = Path(workbook) if workbook else OUTPUT_DIR / "ProjectFootMoneyball_Draft_Board.xlsx"
     stats_path = STATS_DIR / f"nflverse_player_stats_{STAT_SEASON}.csv"
     special_teams_path = ADP_DIR / f"special_teams_adp_{PROJECTION_SEASON}.csv"
+    rankings_destination = PROJECT_ROOT / "docs" / "data" / "rankings.json"
+    special_destination = PROJECT_ROOT / "docs" / "data" / "special_teams.json"
+    previous_health = existing_source_health(rankings_destination)
+    previous_special_health = existing_source_health(special_destination)
+    attempted_at = datetime.now(timezone.utc).isoformat()
+    health = {}
+    special_health = saved_adp_health(special_teams_path, state="saved")
     if keep_stats:
         status(f"[1/4] Reusing {stats_path}")
     else:
@@ -87,17 +129,35 @@ def refresh_draft_board(
     if adp_source:
         status(f"[2/4] Refreshing {PROJECTION_SEASON} ADP...")
         build_combined_adp(adp_source, ADP_DIR / ADP_FILENAME)
+        health = saved_adp_health(ADP_DIR / ADP_FILENAME, state="manual")
     elif direct_adp:
         status(f"[2/4] Refreshing independent public ADP feeds...")
-        build_direct_adp(ADP_DIR / ADP_FILENAME, season=PROJECTION_SEASON)
+        refreshed = build_direct_adp(ADP_DIR / ADP_FILENAME, season=PROJECTION_SEASON)
+        health = refreshed.attrs.get("source_health", {})
         try:
             build_special_teams_adp(special_teams_path, season=PROJECTION_SEASON)
-        except RuntimeError as exc:
-            status(f"[WARN] Keeping the last K/DST market snapshot: {exc}")
+            special_health = {provider: {
+                "status": "success", "freshness": "current", "attempted_at": attempted_at,
+                "last_success": attempted_at, "data_updated_at": date,
+                "timestamp_kind": "snapshot",
+                "note": "Downloaded and validated on the snapshot date; provider publication time is not supplied.",
+            } for provider, date in adp_source_dates(special_teams_path).items()}
+        except RuntimeError:
+            status("[WARN] Keeping the last K/DST market snapshot; providers unavailable or invalid.")
+            special_health = saved_adp_health(special_teams_path, attempted_at=attempted_at)
+            if not special_health:
+                special_health = {"providers": {"status": "failed", "freshness": "unavailable", "attempted_at": attempted_at, "last_success": None, "note": "No usable K/DST snapshot."}}
     elif not (ADP_DIR / ADP_FILENAME).exists():
         raise FileNotFoundError("No ADP snapshot exists. Run without --saved-adp to fetch it.")
     else:
         status(f"[2/4] Reusing {ADP_DIR / ADP_FILENAME}")
+        health = saved_adp_health(ADP_DIR / ADP_FILENAME, state="saved")
+    health["stats"] = {
+        "status": "historical", "freshness": "historical", "season": STAT_SEASON,
+        "attempted_at": None if keep_stats else attempted_at,
+        "last_success": previous_health.get("stats", {}).get("last_success") if keep_stats else attempted_at,
+        "data_updated_at": None, "note": f"Completed {STAT_SEASON} season statistics; fixed historical baseline.",
+    }
     status("[3/4] Rebuilding projections and all 60 ranking formats...")
     run_pipeline()
     if skip_workbook:
@@ -111,18 +171,20 @@ def refresh_draft_board(
         adp_path = ADP_DIR / ADP_FILENAME
         export_web_rankings(
             OUTPUT_DIR,
-            PROJECT_ROOT / "docs" / "data" / "rankings.json",
+            rankings_destination,
             projection_season=PROJECTION_SEASON,
             stat_season=STAT_SEASON,
-            adp_updated=latest_adp_date(adp_path, ADP_SNAPSHOT_DATE),
+            adp_updated=latest_adp_date(adp_path),
             adp_sources=adp_source_dates(adp_path),
         )
+        attach_source_health(rankings_destination, health, previous_health)
         if special_teams_path.exists():
             export_special_teams(
                 special_teams_path,
-                PROJECT_ROOT / "docs" / "data" / "special_teams.json",
+                special_destination,
                 projection_season=PROJECTION_SEASON,
             )
+            attach_source_health(special_destination, special_health, previous_special_health)
     status(f"[OK] Draft board ready: {result}")
     return result
 

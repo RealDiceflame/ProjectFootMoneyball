@@ -1,11 +1,13 @@
 import {DIVISIONS} from "./league-model.mjs?v=20260913-home1";
 import {freshSeed, validSeed} from "./simulation-runs.mjs?v=20260913-home1";
+import {startAutoRefresh, fetchSnapshot, snapshotSignature} from "./auto-refresh.mjs?v=20260927-refresh1";
+import {canRefreshLabs, preserveLabView, validateTeamSnapshot} from "./lab-refresh.mjs?v=20260927-refresh1";
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; };
 const num = value => Number.isFinite(value) ? value.toFixed(1) : "—";
 const pct = value => `${num(value * 100)}%`;
 const date = value => new Date(value).toLocaleString(undefined, {dateStyle: "medium", timeStyle: "short"});
-let data, result, worker, runCount = 0;
+let data, result, worker, runCount = 0, busy = false, pendingSnapshot = null, currentSignature = "", resultSignature = "", snapshotStatus = "", refreshDelayed = false;
 const name = team => data.teams.find(row => row.team === team)?.name || team;
 function table(headers, rows, label) {
   const shell = el("div", undefined, "survivor-table-scroll"), output = el("table", undefined, "survivor-table"), head = el("thead"), heading = el("tr"), body = el("tbody");
@@ -85,7 +87,9 @@ function updateSeedMode() {
   $("league-run").textContent = fixed ? "Run with this seed" : "Run fresh simulations";
 }
 function run() {
-  if (!data) return;
+  if (!data || busy) return;
+  applyPendingSnapshot();
+  const runSignature = currentSignature;
   let seed = Number($("league-seed").value);
   const trials = Number($("league-trials").value), fixed = $("league-fixed-seed").checked;
   $("league-error").hidden = true;
@@ -94,10 +98,10 @@ function run() {
     if (!validSeed(seed)) throw new Error("Choose a whole-number seed between 1 and 2147483647.");
   } catch (error) { $("league-error").textContent = error.message; $("league-error").hidden = false; return; }
   $("league-seed").value = seed;
-  worker?.terminate(); setBusy(true); $("league-results").hidden = true;
+  worker?.terminate(); busy = true; setBusy(true); $("league-results").hidden = true;
   $("league-progress").textContent = "Simulating the schedule and playoffs…";
   let watchdog;
-  const fail = message => { clearTimeout(watchdog); worker?.terminate(); setBusy(false); $("league-progress").textContent = "Simulation did not finish; no partial run is shown."; $("league-error").textContent = message; $("league-error").hidden = false; };
+  const fail = message => { clearTimeout(watchdog); worker?.terminate(); busy = false; setBusy(false); $("league-progress").textContent = "Simulation did not finish; no partial run is shown."; $("league-error").textContent = message; $("league-error").hidden = false; applyPendingSnapshot(); };
   try {
     worker = new Worker(new URL("./league-worker.mjs?v=20260913-home1", import.meta.url), {type: "module"});
     const activeWorker = worker;
@@ -108,9 +112,10 @@ function run() {
         try {
           const completed = event.data.result;
           if (completed.trials !== trials || completed.games?.length !== 272 || !completed.examples?.length || completed.examples.some(example => example.games.length !== 272 || example.postseason.rounds.length !== 13)) throw new Error("The worker returned an incomplete run. Please try again.");
-          result = completed; render(); clearTimeout(watchdog); setBusy(false); runCount++;
+          result = completed; resultSignature = runSignature; render(); clearTimeout(watchdog); busy = false; setBusy(false); runCount++;
           $("league-progress").textContent = `Run ${runCount}: ${trials.toLocaleString()} complete seasons, each with the full schedule and playoffs. Seed ${seed} · ${fixed ? "fixed-seed mode" : "fresh draws"} · ${result.examples.length} complete examples available below.`;
           worker.terminate();
+          applyPendingSnapshot(); updateSnapshotStatus();
         } catch (error) { fail(error.message); }
       }
       else $("league-progress").textContent = `Simulating… ${Math.round(event.data.progress * 100)}%`;
@@ -120,20 +125,55 @@ function run() {
     watchdog = setTimeout(() => fail("This run took too long. Try fewer simulations or reload."), 90000);
   } catch (error) { fail(error.message); }
 }
-async function init() {
-  try {
-    const response = await fetch("data/survivor.json", {cache: "no-store"}); if (!response.ok) throw new Error("Team snapshot unavailable."); data = await response.json();
-    if (!Array.isArray(data.teams) || !Array.isArray(data.games) || !data.training) throw new Error("Invalid team snapshot.");
-    $("league-status").textContent = `${data.season} · saved ${date(data.generated_at)}`;
+function updateSnapshotStatus() {
+  $("league-status").textContent = `${snapshotStatus}${pendingSnapshot ? " · New snapshot ready after this run" : result && resultSignature !== currentSignature ? " · Results use the previous snapshot; run again for updated forecasts" : ""}${refreshDelayed ? " · Refresh delayed; showing saved data" : ""}`;
+}
+
+function applyPendingSnapshot() {
+  if (!pendingSnapshot || busy) return;
+  const {value, signature} = pendingSnapshot;
+  pendingSnapshot = null;
+  preserveLabView(() => {
+    const previousTeam = $("league-team").value, previousWeek = $("league-week").value;
+    const initial = !data;
+    data = value; currentSignature = signature;
+    snapshotStatus = `${data.season} · saved ${date(data.generated_at)}`;
     $("league-freshness").textContent = `Team strengths include results through ${date(data.training.training_last)}. ${data.training.current_season_games || 0} completed ${data.season} games in the fit. Injuries, lineups and weather are not modeled. ${Date.now() - Date.parse(data.generated_at) > 24 * 3600000 ? "Warning: snapshot over 24 hours old." : ""}`;
-    data.teams.forEach(team => { const option = el("option", team.name); option.value = team.team; $("league-team").append(option); });
-    for (let week = 1; week <= 18; week++) { const option = el("option", `Week ${week}`); option.value = week; $("league-week").append(option); }
-    const next = data.games.filter(game => Date.parse(game.kickoff) > Date.now()).sort((a, b) => Date.parse(a.kickoff) - Date.parse(b.kickoff))[0]; if (next) $("league-week").value = next.week;
+    $("league-team").replaceChildren(new Option("All teams", "all"), ...data.teams.map(team => new Option(team.name, team.team)));
+    $("league-team").value = previousTeam || "all";
+    if (!$("league-team").value) $("league-team").value = "all";
+    if (initial) {
+      $("league-week").replaceChildren(new Option("All weeks", "all"), ...Array.from({length: 18}, (_, index) => new Option(`Week ${index + 1}`, String(index + 1))));
+      const next = data.games.filter(game => Date.parse(game.kickoff) > Date.now()).sort((a, b) => Date.parse(a.kickoff) - Date.parse(b.kickoff))[0];
+      $("league-week").value = next ? String(next.week) : previousWeek || "all";
+    }
+    updateSnapshotStatus();
+  });
+}
+
+function connectControls() {
     $("league-team").addEventListener("change", renderGames); $("league-week").addEventListener("change", renderGames); $("league-run").addEventListener("click", run);
     $("league-fixed-seed").addEventListener("change", updateSeedMode);
     $("league-example-select").addEventListener("change", renderExample);
     $("league-next-example").addEventListener("click", () => { if (result) { $("league-example-select").value = (Number($("league-example-select").value) + 1) % result.examples.length; renderExample(); } });
-    updateSeedMode(); run();
-  } catch (error) { $("league-error").textContent = error.message; $("league-error").hidden = false; $("league-status").textContent = "Team data unavailable"; }
+    updateSeedMode();
 }
-init();
+
+connectControls();
+startAutoRefresh(async signal => {
+  const value = await fetchSnapshot("data/survivor.json", {signal, validate: validateTeamSnapshot});
+  signal.throwIfAborted();
+  const signature = snapshotSignature(value);
+  refreshDelayed = false;
+  if (signature !== currentSignature) pendingSnapshot = {value, signature};
+  else pendingSnapshot = null;
+  const initial = !data;
+  applyPendingSnapshot(); updateSnapshotStatus();
+  if (initial && data) { $("league-error").hidden = true; run(); }
+}, {
+  canRefresh: canRefreshLabs,
+  onError: error => {
+    if (data) { refreshDelayed = true; updateSnapshotStatus(); }
+    else { $("league-error").textContent = error.message; $("league-error").hidden = false; $("league-status").textContent = "Team data unavailable · retrying automatically"; }
+  },
+});

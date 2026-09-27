@@ -9,6 +9,8 @@ import {
   formatWeather,
   groupMarketRows,
 } from "./odds-board.mjs?v=20260906-odds3";
+import {startAutoRefresh, fetchSnapshot, snapshotSignature, preserveView} from "./auto-refresh.mjs?v=20260927-refresh1";
+import {validateOdds} from "./snapshot-validation.mjs?v=20260927-refresh1";
 
 const DATA_URL = "./data/nfl_odds.json";
 const MARKET_ORDER = ["Moneyline", "Spread", "Total"];
@@ -32,6 +34,44 @@ const ui = {
 };
 
 const state = { payload: null, rows: [], week: null, market: "ALL", provider: "ALL", search: "" };
+
+function sportsbookConnection(payload, {now = Date.now(), refreshFailed = false} = {}) {
+  const health = payload.source_health?.sportsbooks || {}, status = health.status;
+  const feed = health.selected_provider || payload.sources?.sportsbooks?.name || "Sportsbook feed";
+  const checked = Date.parse(health.last_success), age = now - checked;
+  const recent = Number.isFinite(checked) && age >= -5 * 60000 && age <= 7 * 3600000;
+  const retained = (payload.games || []).some(game => (game.rows || []).some(row => row.provider_kind === "sportsbook" && row.retained));
+  const current = payload.has_sportsbooks && ["success", "fallback"].includes(status)
+    && recent && !retained && !refreshFailed && !["stale", "unavailable", "unknown"].includes(health.freshness);
+  if (current) return {
+    connected: true,
+    title: status === "fallback" ? `${feed} backup comparison snapshot` : `${feed} comparison snapshot`,
+    detail: `${status === "fallback" ? "The backup feed supplied this snapshot. " : "The primary feed supplied this snapshot. "}Last successful check ${new Date(checked).toLocaleString()}. Published updates load automatically; displayed prices are saved quotes.`,
+  };
+  if (status === "not_configured") return {
+    connected: false, title: "Sportsbook comparison is not configured",
+    detail: "No licensed sportsbook feed was requested. Public market sources are reported separately in Data refresh.",
+  };
+  if (status === "no_upcoming_markets" && !payload.has_sportsbooks) return {
+    connected: false, title: "No upcoming sportsbook markets",
+    detail: `The provider request succeeded but found no matching upcoming markets.${refreshFailed ? " The latest site update could not load; checking again automatically." : " Published updates load automatically."}`,
+  };
+  if (payload.has_sportsbooks) return {
+    connected: false, title: "Saved sportsbook comparisons",
+    detail: `${status === "fallback" ? "Saved backup-feed quotes. " : ""}${refreshFailed ? "The latest site update could not load. " : status === "cached" || status === "failed" || retained ? "The provider refresh failed. " : recent ? "Current provider status is unavailable. " : "A recent successful provider check is not confirmed. "}Previous quotes remain visible${Number.isFinite(checked) ? `; last successful check ${new Date(checked).toLocaleString()}` : " with their original timestamps"}. Updates retry automatically.`,
+  };
+  return {
+    connected: false, title: ["failed", "cached", "partial_failure"].includes(status) ? "Sportsbook refresh unavailable" : "Sportsbook status unavailable",
+    detail: "No sportsbook comparisons are available in this snapshot. Public market sources may have different coverage; see Data refresh for provider details.",
+  };
+}
+
+function renderConnection(refreshFailed = false) {
+  const copy = sportsbookConnection(state.payload, {refreshFailed});
+  ui.connection.classList.toggle("connected", copy.connected);
+  ui.connection.querySelector("strong").textContent = copy.title;
+  ui.connection.querySelector("div > span").textContent = copy.detail;
+}
 
 function formatKickoff(value) {
   const date = new Date(value);
@@ -68,7 +108,7 @@ function renderLineCell(market, row) {
   const line = document.createElement("strong");
   line.textContent = market === "Moneyline" ? formatPrice(row) : formatLine(row);
   const price = document.createElement("span");
-  price.textContent = market === "Moneyline" ? "To win" : formatPrice(row);
+  price.textContent = `${row.retained ? "Saved · " : ""}${market === "Moneyline" ? "To win" : formatPrice(row)}`;
   cell.append(line, price);
   if (row.is_best) {
     const badge = document.createElement("span");
@@ -175,7 +215,7 @@ function renderGame(game) {
     detail("Stadium", game.stadium || "Venue to be announced"),
     detail("Field", [game.surface, game.roof].filter(Boolean).join(" · ") || "Details pending"),
   );
-  const weather = detail("Weather", formatWeather(game.weather), `weather-${game.weather?.status || "pending"}`);
+  const weather = detail("Weather", `${game.weather?.retained ? "Saved forecast · " : ""}${formatWeather(game.weather)}`, `weather-${game.weather?.status || "pending"}`);
   if (game.weather?.source_url) {
     const value = weather.querySelector("strong");
     const link = document.createElement("a");
@@ -228,7 +268,7 @@ function renderPredictionMarket(market) {
   const meta = document.createElement("div");
   meta.className = "prediction-meta";
   const source = document.createElement("strong");
-  source.textContent = "Polymarket ↗";
+  source.textContent = market.retained ? "Polymarket · saved ↗" : "Polymarket ↗";
   const volume = document.createElement("span");
   volume.textContent = formatMarketVolume(market.volume);
   meta.append(source, volume);
@@ -263,10 +303,13 @@ function render() {
 
 function populateControls() {
   ui.week.replaceChildren(...state.payload.weeks.map(week => new Option(`Week ${week}`, String(week))));
+  if (state.week !== null && !state.payload.weeks.includes(state.week)) ui.week.append(new Option(`Week ${state.week} (no saved data)`, String(state.week)));
   if (state.week !== null) ui.week.value = String(state.week);
   const providers = [...new Map(state.rows.map(row => [row.provider_key, row.provider])).entries()]
     .sort((left, right) => left[1].localeCompare(right[1]));
   ui.provider.replaceChildren(new Option("All sources", "ALL"), ...providers.map(([key, name]) => new Option(name, key)));
+  if (state.provider !== "ALL" && !providers.some(([key]) => key === state.provider)) ui.provider.append(new Option(`${state.provider} (no saved data)`, state.provider));
+  ui.provider.value = state.provider;
 }
 
 function clearFilters() {
@@ -279,36 +322,25 @@ function clearFilters() {
   render();
 }
 
-async function load() {
-  try {
-    const response = await fetch(DATA_URL);
-    if (!response.ok) throw new Error(`Odds request failed (${response.status})`);
-    state.payload = await response.json();
-    state.rows = flattenGames(state.payload.games);
-    state.week = defaultWeek(state.payload.weeks);
-    populateControls();
-    renderPredictionMarkets();
-    render();
+let loadedSignature = null, loadedStatus = "";
+async function load(signal) {
+    const next = await fetchSnapshot(DATA_URL, {signal, validate: validateOdds});
+    const rows = flattenGames(next.games), signature = snapshotSignature(next);
+    signal.throwIfAborted();
+    state.payload = next; state.rows = rows;
+    if (state.week === null) state.week = defaultWeek(state.payload.weeks);
+    if (signature !== loadedSignature) {
+      preserveView(() => {populateControls(); renderPredictionMarkets(); render();}, [ui.shell]);
+      loadedSignature = signature;
+    }
     const generated = new Date(state.payload.generated_at);
-    ui.status.textContent = Number.isNaN(generated.getTime())
+    loadedStatus = Number.isNaN(generated.getTime())
       ? "Weekly markets loaded"
-      : `Updated ${generated.toLocaleString()}`;
-    const sportsbookFeed = state.payload.sources?.sportsbooks?.name || "licensed feed";
-    ui.connection.classList.toggle("connected", state.payload.has_sportsbooks);
-    ui.connection.querySelector("strong").textContent = state.payload.has_sportsbooks
-      ? `${sportsbookFeed} comparison connected`
-      : "Sportsbook comparison awaiting a licensed feed";
-    ui.connection.querySelector("div > span").textContent = state.payload.has_sportsbooks
-      ? "The Odds API is primary; SportsGameOdds takes over automatically when the primary feed is unavailable."
-      : "The schedule, consensus, Kalshi, and public Polymarket cards are live. Add either licensed sportsbook API key to activate book-by-book rows.";
+      : `Snapshot built ${generated.toLocaleString()}`;
+    ui.status.textContent = loadedStatus;
+    renderConnection();
     ui.loading.classList.add("hidden");
     ui.shell.setAttribute("aria-busy", "false");
-  } catch (error) {
-    ui.connection.classList.remove("connected");
-    ui.connection.querySelector("strong").textContent = "Weekly data could not load";
-    ui.connection.querySelector("div > span").textContent = "Refresh once to retry the saved site data. No sportsbook API is called from this page.";
-    ui.loading.innerHTML = `<strong>Could not load weekly odds.</strong><span>${error.message}</span>`;
-  }
 }
 
 ui.week.addEventListener("change", event => { state.week = Number(event.target.value); render(); });
@@ -323,4 +355,13 @@ ui.markets.addEventListener("click", event => {
 });
 ui.clear.addEventListener("click", clearFilters);
 
-load();
+startAutoRefresh(load, {onError: () => {
+  ui.status.textContent = state.payload ? `${loadedStatus} · Refresh unavailable; keeping last loaded data` : "Weekly odds unavailable; retrying automatically";
+  if (state.payload) renderConnection(true);
+  if (!state.payload) {
+    ui.connection.classList.remove("connected");
+    ui.connection.querySelector("strong").textContent = "Weekly data could not load";
+    ui.connection.querySelector("div > span").textContent = "Retrying saved site data automatically. No sportsbook API is called from this page.";
+    ui.loading.textContent = "Could not load weekly odds. Retrying automatically.";
+  }
+}});

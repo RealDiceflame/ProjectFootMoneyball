@@ -1,0 +1,44 @@
+name: Test website reliability
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["docs/*.js", "docs/*.mjs", "docs/*.html", "docs/*.css", "app/player_news.py", "app/odds_board.py", "app/web_exporter.py", "data_fetcher/adp_importer.py", "refresh_draft_board.py", "update_player_news.py", "scripts/refresh_site.py", "requirements.txt", "tests/**", ".github/workflows/test-website.yml"]
+  pull_request:
+    paths: ["docs/*.js", "docs/*.mjs", "docs/*.html", "docs/*.css", "app/player_news.py", "app/odds_board.py", "app/web_exporter.py", "data_fetcher/adp_importer.py", "refresh_draft_board.py", "update_player_news.py", "scripts/refresh_site.py", "requirements.txt", "tests/**", ".github/workflows/test-website.yml"]
+permissions:
+  contents: read
+concurrency:
+  group: website-tests-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install test dependencies
+        run: |
+          python -m pip install -r requirements.txt pytest
+          npm install --no-save --package-lock=false playwright@1.62.1
+          npx playwright install --with-deps chromium webkit
+      - name: Test snapshot collection and source health
+        run: python -m pytest tests/test_player_news.py tests/test_site_refresh.py tests/test_adp_importer.py tests/test_odds_board.py tests/test_web_exporter.py tests/test_publish_scoreboard.py -q
+      - name: Test website models and data handling
+        run: node --test tests/*.test.mjs
+      - name: Test mobile navigation, saved selections, and automatic refresh
+        env:
+          BROWSER_CHANNEL: chromium
+        run: node --test tests/*.browser.mjs
+      - name: Test WebKit touch navigation
+        env:
+          BROWSER_ENGINE: webkit
+        run: node --test --test-name-pattern="mobile navigation (?!supports keyboard)" tests/navigation_and_fantasy.browser.mjs

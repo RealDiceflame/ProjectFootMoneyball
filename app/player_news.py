@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from html import unescape
 from io import BytesIO
@@ -13,6 +13,7 @@ import time
 from typing import Callable
 from urllib.parse import urlsplit
 from xml.etree import ElementTree
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import requests
@@ -330,14 +331,64 @@ def _position_changes(
     return events
 
 
-def _injury_event(player: dict, injuries: pd.DataFrame) -> tuple[dict | None, dict | None]:
+def _injury_context(injuries: pd.DataFrame, season: int, now: datetime, schedule: dict | None) -> dict:
+    """Establish the report week from dated games, never the newest injury row.
+
+    The league report week runs Tuesday through Monday in Eastern time. A team
+    that has already played still shares that week; a bye does not keep its old
+    report current. A missing schedule fails closed without asserting health.
+    """
+    context = {"season": season, "expected_week": None, "valid_from": None,
+               "valid_until": None, "basis": "unavailable", "checked_at": now.isoformat(),
+               "data_updated_at": None, "source_url": INJURY_URL.format(season=season),
+               "latest_report_season": None, "latest_report_week": None,
+               "teams": [], "status": "unknown", "note": "Current report week could not be verified."}
+    if not injuries.empty and {"season", "week"} <= set(injuries.columns):
+        periods = injuries[["season", "week"]].apply(pd.to_numeric, errors="coerce").dropna()
+        periods = periods[(periods["season"] > 0) & periods["week"].between(1, 22)]
+        if not periods.empty:
+            latest = periods.sort_values(["season", "week"]).iloc[-1]
+            context.update(latest_report_season=int(latest["season"]), latest_report_week=int(latest["week"]))
+    if isinstance(schedule, dict) and schedule.get("season") == season:
+        weeks = {}
+        games = schedule.get("games")
+        for game in games if isinstance(games, list) else []:
+            try:
+                week = int(game["week"])
+                day = datetime.strptime(game["gameday"], "%Y-%m-%d").date()
+                if not 1 <= week <= 22:
+                    continue
+                weeks.setdefault(week, []).append((day, game))
+            except (KeyError, TypeError, ValueError):
+                continue
+        for week, games in sorted(weeks.items()):
+            first_day = min(day for day, _ in games)
+            last_day = max(day for day, _ in games)
+            tuesday = first_day - timedelta(days=(first_day.weekday() - 1) % 7)
+            start = datetime.combine(tuesday, datetime.min.time(), ZoneInfo("America/New_York"))
+            end = max(start + timedelta(days=7), datetime.combine(last_day + timedelta(days=1), datetime.min.time(), ZoneInfo("America/New_York")))
+            if start <= now < end:
+                context.update(expected_week=week, valid_from=start.isoformat(), valid_until=end.isoformat(),
+                               basis="schedule", teams=sorted({game.get(side) for _, game in games for side in ("home", "away") if game.get(side)}))
+                break
+    if injuries.empty:
+        context.update(status="unavailable", note="No injury reports were supplied; current health is unknown.")
+    elif context["expected_week"] is not None:
+        matches = injuries[(injuries["season"] == season) & (injuries["week"] == context["expected_week"])]
+        context.update(status="current" if not matches.empty else "behind",
+                       note="Reports include the expected week; missing players have unknown health." if not matches.empty
+                       else "The injury source has no reports for the expected week; current health is unknown.")
+    return context
+
+
+def _injury_event(player: dict, injuries: pd.DataFrame, context: dict) -> tuple[dict | None, dict | None]:
     if injuries.empty:
         return None, None
     matches = _matching_roster_rows(injuries, player)
     matches = matches[matches["team"] == player["team"]]
     if matches.empty:
         return None, None
-    row = matches.sort_values("week").iloc[-1]
+    row = matches.sort_values(["season", "week"]).iloc[-1]
     injury_names = []
     seen_injuries = set()
     for column in (
@@ -361,7 +412,20 @@ def _injury_event(player: dict, injuries: pd.DataFrame) -> tuple[dict | None, di
     ]]
     if not values:
         return None, None
-    severity = "risk" if str(report).casefold() in {"out", "doubtful"} else "watch"
+    report_severity = "risk" if str(report).strip().casefold() in {"out", "doubtful", "ir", "injured reserve", "reserve/injured"} else "watch"
+    report_season, report_week = int(row["season"]), int(row["week"])
+    expected_week = context.get("expected_week")
+    current = (report_season == context["season"] and report_week == expected_week
+               and player["team"] in context.get("teams", []))
+    if current:
+        freshness = "current"
+    elif report_season < context["season"] or (report_season == context["season"] and expected_week is not None and report_week < expected_week):
+        freshness = "historical"
+    elif report_season > context["season"] or (report_season == context["season"] and expected_week is not None and report_week > expected_week):
+        freshness = "future"
+    else:
+        freshness = "unknown"
+    severity = report_severity if current else "info"
     clean_injury = ", ".join(injury_names) if injury_names else "Availability"
     clean_report = str(report).strip() if pd.notna(report) and str(report).strip() else None
     clean_practice = str(practice).strip() if pd.notna(practice) and str(practice).strip() else None
@@ -371,15 +435,19 @@ def _injury_event(player: dict, injuries: pd.DataFrame) -> tuple[dict | None, di
         "status": clean_report or clean_practice,
         "report_status": clean_report,
         "practice_status": clean_practice,
-        "week": int(row["week"]),
+        "season": report_season,
+        "week": report_week,
+        "current": current,
+        "freshness": freshness,
+        "report_severity": report_severity,
         "severity": severity,
     }
     return _event(
-        "Injury",
+        "Injury" if current else "Injury history",
         severity,
-        f"Week {int(row['week'])}",
-        f"Injury report: {clean_injury}",
-        "; ".join(str(value) for value in values),
+        f"{report_season} · Week {report_week}",
+        f"{'Injury report' if current else 'Saved injury report'}: {clean_injury}",
+        "; ".join(str(value) for value in values) + ("" if current else ". Current health is unknown."),
         _source(f"View {player['team']} injuries at ESPN", espn_team_url("injuries", player["team"])),
     ), snapshot
 
@@ -442,6 +510,7 @@ def build_player_news(
     previous_depth: pd.DataFrame,
     injuries: pd.DataFrame | None = None,
     headlines: list[dict] | None = None,
+    schedule: dict | None = None,
     now: datetime | None = None,
 ) -> Path:
     """Create a compact factual timeline for every ranked player."""
@@ -450,6 +519,25 @@ def build_player_news(
     current_depth = _latest_by_team(current_depth)
     previous_depth = _latest_by_team(previous_depth)
     injuries = injuries if injuries is not None else pd.DataFrame()
+    injuries = injuries.copy()
+    # The year-specific source URL establishes season for older provider files.
+    if not injuries.empty:
+        if "season" not in injuries:
+            injuries["season"] = season
+        injuries["season"] = pd.to_numeric(injuries["season"], errors="coerce").fillna(season)
+        injuries["week"] = pd.to_numeric(injuries["week"], errors="coerce")
+        injuries = injuries[injuries["week"].between(1, 22) & (injuries["week"] % 1 == 0)]
+    if schedule is None:
+        try:
+            schedule = json.loads(Path(destination).with_name("scores.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            schedule = None
+    injury_context = _injury_context(injuries, season, now, schedule)
+    try:
+        previous_payload = json.loads(Path(destination).read_text(encoding="utf-8"))
+        previous_reports = previous_payload.get("reports", {})
+    except (OSError, ValueError, AttributeError):
+        previous_payload, previous_reports = {}, {}
     players = {}
 
     ranked_players = load_ranked_players(rankings_path, DEFAULT_BOARD)
@@ -486,7 +574,19 @@ def build_player_news(
         position_events = _position_changes(current_player, current_depth, previous_depth, ranked_names)
         events.extend(position_events)
         severities.extend(event["severity"] for event in position_events)
-        injury_event, injury = _injury_event(current_player, injuries)
+        injury_event, injury = _injury_event(current_player, injuries, injury_context)
+        if injury is None:
+            previous_report = previous_reports.get(key, {}) if isinstance(previous_reports, dict) else {}
+            previous_injury = previous_report.get("injury") if isinstance(previous_report, dict) else None
+            if isinstance(previous_injury, dict) and previous_injury.get("week"):
+                injury = {**previous_injury, "season": previous_injury.get("season") or previous_payload.get("season"),
+                          "current": False, "carried_forward": True, "freshness": "unknown", "severity": "info"}
+                injury_event = _event(
+                    "Injury history", "info", f"{injury['season']} · Week {injury['week']}",
+                    f"Previous injury report: {injury.get('name') or 'Availability'}",
+                    f"{injury.get('status') or 'Status not provided'}. No new report supplied; current health is unknown.",
+                    _source(f"View {current_player['team']} injuries at ESPN", espn_team_url("injuries", current_player["team"])),
+                )
         if injury_event:
             events.insert(0, injury_event)
             severities.append(injury_event["severity"])
@@ -513,6 +613,8 @@ def build_player_news(
             "pos": player["pos"],
             "signal": signal,
             "injury": injury,
+            "current_injury": injury if injury and injury["current"] else None,
+            "health_status": "reported" if injury and injury["current"] else "unknown",
             "team_changed": team_changed,
             "only_team_change": only_team_change,
             "events": events,
@@ -527,6 +629,7 @@ def build_player_news(
         "attribution_url": "https://github.com/nflverse/nflverse-data",
         "news_attribution_url": league_news["source_url"],
         "league_news": league_news,
+        "injury_context": injury_context,
         "reports": players,
     }
     destination = Path(destination)
@@ -652,6 +755,7 @@ def refresh_player_news(
     destination: str | Path,
     *,
     season: int,
+    schedule_path: str | Path | None = None,
     status: Callable[[str], None] = print,
 ) -> Path:
     """Download the public source data and refresh the website timeline."""
@@ -677,12 +781,12 @@ def refresh_player_news(
     injuries = _download_csv(
         INJURY_URL.format(season=season),
         [
-            "team", "week", "gsis_id", "position", "full_name",
+            "season", "team", "week", "gsis_id", "position", "full_name",
             "report_primary_injury", "report_secondary_injury", "report_status",
             "practice_primary_injury", "practice_secondary_injury", "practice_status",
         ],
         optional=True,
-        optional_columns=("report_secondary_injury", "practice_secondary_injury"),
+        optional_columns=("season", "report_secondary_injury", "practice_secondary_injury"),
     )
     status("[5/5] Loading recent NFL RSS headlines...")
     try:
@@ -690,6 +794,12 @@ def refresh_player_news(
     except (requests.RequestException, ElementTree.ParseError, ValueError) as error:
         status(f"[WARN] Recent headlines are temporarily unavailable: {error}")
         headlines = None
+    schedule = None
+    if schedule_path is not None:
+        try:
+            schedule = json.loads(Path(schedule_path).read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            schedule = {}
     result = build_player_news(
         rankings_path,
         destination,
@@ -699,6 +809,7 @@ def refresh_player_news(
         previous_depth=previous_depth,
         injuries=injuries,
         headlines=headlines,
+        schedule=schedule,
     )
     status(f"[OK] Player news ready: {result}")
     return result

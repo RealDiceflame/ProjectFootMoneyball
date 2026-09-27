@@ -18,6 +18,48 @@ STAGES = [
     ("odds", ["update_odds_board.py"], ["docs/data/nfl_odds.json"]),
     ("teams", ["update_survivor_board.py"], ["docs/data/survivor.json"]),
 ]
+DEGRADED = {"failed", "cached", "partial_failure", "stale", "behind", "unavailable", "unknown"}
+
+
+def read_snapshot(path):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def source_result(name, ok, snapshot, previous, ended, *, extra_providers=None):
+    """Separate a completed build from the freshness of its underlying providers."""
+    result = {
+        "execution_status": "success" if ok else "failed", "attempted_at": ended,
+        "last_success": previous.get("last_success"),
+        "data_updated_at": snapshot.get("generated_at"),
+    }
+    if not ok:
+        return {**result, "status": "failed", "freshness": "stale", "note": "Refresh failed; last-good snapshot retained.", "providers": snapshot.get("source_health", {})}
+    if name in {"history", "draft_capital"}:
+        return {**result, "status": "historical", "freshness": "historical",
+                "last_success": previous.get("last_success") or snapshot.get("generated_at"),
+                "note": "Completed-season historical archive; not a live feed."}
+    providers = {**snapshot.get("source_health", {}), **(extra_providers or {})}
+    if providers:
+        degraded = any(row.get("status") in DEGRADED for row in providers.values())
+        result.update(status="partial_failure" if degraded else "success",
+                      freshness="mixed" if degraded else "current", providers=providers,
+                      note="Refresh completed with retained or unavailable provider data." if degraded else "Provider checks completed; manual and historical sources are labeled separately.")
+        if not degraded:
+            result["last_success"] = ended
+        dates = [row["data_updated_at"] for row in providers.values() if row.get("data_updated_at")]
+        result["data_updated_at"] = max(dates, default=None)
+        kinds = {row.get("timestamp_kind", "source") for row in providers.values() if row.get("data_updated_at")}
+        result["timestamp_kind"] = next(iter(kinds)) if len(kinds) == 1 else "mixed"
+    elif name in {"rankings", "odds"}:
+        result.update(status="unknown", freshness="unknown", data_updated_at=None,
+                      note="Snapshot built, but provider diagnostics were not supplied.")
+    else:
+        result.update(status="success", freshness="current", last_success=ended,
+                      note="Snapshot refreshed successfully.")
+    return result
 
 
 def refresh_stage(command, paths, *, root=ROOT, run=subprocess.run):
@@ -51,25 +93,44 @@ def refresh_stage(command, paths, *, root=ROOT, run=subprocess.run):
 
 
 def main():
-    previous = json.loads(STATUS.read_text(encoding="utf-8")) if STATUS.exists() else {}
+    previous = read_snapshot(STATUS)
     started = datetime.now(timezone.utc).isoformat()
     results = {}
     for name, command, paths in STAGES:
         print(f"Refreshing {name}…", flush=True)
         ok = refresh_stage(command, paths)
         ended = datetime.now(timezone.utc).isoformat()
-        results[name] = {"status": "success" if ok else "failed", "attempted_at": ended,
-                         "last_success": ended if ok else previous.get("sources", {}).get(name, {}).get("last_success"),
-                         "note": "Refreshed configured sources; individual provider coverage may vary." if ok else "Refresh failed; last-good snapshot retained."}
-        if name == "news" and ok:
-            headlines = json.loads((ROOT / "docs/data/player_news.json").read_text(encoding="utf-8")).get("league_news", {})
+        snapshot = read_snapshot(ROOT / paths[0])
+        extra = {}
+        if name == "rankings":
+            special = read_snapshot(ROOT / "docs/data/special_teams.json").get("source_health", {})
+            extra = {f"special_teams_{key}": value for key, value in special.items()}
+        if name == "news" and snapshot.get("injury_context"):
+            context = snapshot["injury_context"]
+            extra["injuries"] = {
+                "status": "success" if context.get("status") == "current" else context.get("status", "unknown"),
+                "freshness": context.get("status", "unknown"),
+                "attempted_at": context.get("checked_at"),
+                "data_updated_at": context.get("data_updated_at") or context.get("latest_report_date"),
+                "expected_week": context.get("expected_week"),
+                "season": context.get("season"),
+                "latest_report_week": context.get("latest_report_week"),
+                "latest_report_season": context.get("latest_report_season"),
+                "note": context.get("note", "Injury coverage requires current-week reports."),
+            }
+        results[name] = source_result(name, ok, snapshot, previous.get("sources", {}).get(name, {}), ended, extra_providers=extra)
+        if name == "news":
+            headlines = snapshot.get("league_news", {})
             ready = headlines.get("status") == "ok" and bool(headlines.get("items"))
-            results["headlines"] = {"status": "success" if ready else "failed", "attempted_at": ended,
-                "last_success": headlines.get("updated_at"), "note": headlines.get("source", "NFL RSS")
+            results["headlines"] = {"status": "success" if ready and ok else "cached" if headlines.get("items") else "failed", "attempted_at": ended,
+                "execution_status": "success" if ok else "failed", "freshness": "current" if ready and ok else "stale",
+                "last_success": headlines.get("updated_at") if ready and ok else previous.get("sources", {}).get("headlines", {}).get("last_success"),
+                "data_updated_at": headlines.get("updated_at"), "note": headlines.get("source", "NFL RSS")
                     if ready else "Headline providers failed; previous stories retained. Roster/injury refresh is independent."}
     payload = {"started_at": started, "completed_at": datetime.now(timezone.utc).isoformat(),
                "schedule": "00:00, 06:00, 12:00, 18:00 America/New_York; scheduling is best effort",
-               "status": "success" if all(row["status"] == "success" for row in results.values()) else "partial_failure",
+               "execution_status": "success" if all(row["execution_status"] == "success" for row in results.values()) else "partial_failure",
+               "status": "partial_failure" if any(row["status"] in DEGRADED for row in results.values()) else "success",
                "sources": results}
     STATUS.parent.mkdir(parents=True, exist_ok=True)
     temp = STATUS.with_suffix(".json.tmp")

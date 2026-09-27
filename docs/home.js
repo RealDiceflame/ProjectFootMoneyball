@@ -1,4 +1,4 @@
-import {injuryFeed, filterInjuries, snapshotFreshness, leagueHeadlineCards} from "./home-data.mjs?v=20260915-headlines1";
+import {injuryFeed, filterInjuries, snapshotFreshness, leagueHeadlineCards} from "./home-data.mjs?v=20260927-refresh1";
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; };
 let injuries = [], shown = 8, newsBundle = null, newsBusy = false, newsLastAttempt = 0, newsCardsKey = "";
@@ -19,6 +19,7 @@ function portrait(player) {
 
 function injuryDetails(body, row) {
   body.append(el("p", `${row.injury} · ${row.status}`, "home-injury-detail"));
+  body.append(el("p", row.currentnessLabel, "home-small"));
   if (row.practice && row.practice !== row.status) body.append(el("p", `Practice: ${row.practice}`));
   if (row.url) {
     const source = el("a", "Team injury source ↗"); source.href = row.url;
@@ -67,7 +68,7 @@ function renderInjuries() {
     const card = el("article", undefined, "home-injury"), body = el("div"), summary = el("div", undefined, "home-player-summary");
     body.append(el("span", `${row.team} · ${row.pos} · ${row.reportLabel}`, "home-small"), el("h3", row.player));
     injuryDetails(body, row); summary.append(portrait(row), body);
-    const badge = el("span", row.risk ? "RISK" : "REPORTED", `home-badge${row.risk ? " home-risk" : ""}`);
+    const badge = el("span", row.risk ? "RISK" : row.current ? "REPORTED" : row.freshness === "historical" ? "HISTORY" : "UNVERIFIED", `home-badge${row.risk ? " home-risk" : ""}`);
     card.append(summary, badge); return card;
   }));
   if (!rows.length) $("home-injury-list").append(el("p", injuries.length ? "No reports match these filters." : "No injury entries are available in this snapshot. Missing reports do not mean players are healthy.", "home-small"));
@@ -83,7 +84,7 @@ async function loadInjuries() {
     const bundle = await response.json(), nextInjuries = injuryFeed(bundle);
     if (!Number.isFinite(Date.parse(bundle.generated_at))) throw new Error("Invalid snapshot timestamp");
     const cardKey = JSON.stringify(leagueHeadlineCards(bundle).map(card=>[card.url,card.title]));
-    const changed = !newsBundle || newsBundle.generated_at !== bundle.generated_at
+    const changed = !newsBundle || JSON.stringify(nextInjuries) !== JSON.stringify(injuries) || newsBundle.generated_at !== bundle.generated_at
       || newsBundle.league_news?.attempted_at !== bundle.league_news?.attempted_at || cardKey !== newsCardsKey;
     newsCardsKey = cardKey;
     newsBundle = bundle; injuries = nextInjuries;
@@ -99,6 +100,7 @@ async function loadInjuries() {
     }
   } catch {
     if (newsBundle) {
+      injuries = injuryFeed(newsBundle); renderInjuries();
       const freshness = snapshotFreshness(newsBundle.generated_at);
       $("injury-freshness").textContent = `Updated ${freshness.label} · Refresh unavailable`;
       $("league-news-status").textContent = $("league-news-status").textContent.replace(/ · Refresh unavailable$/, "") + " · Refresh unavailable";

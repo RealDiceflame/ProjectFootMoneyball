@@ -1,4 +1,5 @@
 import pandas as pd
+import requests
 
 from data_fetcher.adp_importer import (
     adp_source_dates,
@@ -209,3 +210,30 @@ def test_update_yahoo_snapshot_replaces_provider_without_name_collisions(tmp_pat
     assert rookie["ADP"] == 14.0
     assert "NFL" not in result.columns
     assert adp_source_dates(output)["Yahoo"] == "2026-09-04"
+
+
+def test_failed_adp_downloads_keep_provider_dates_and_report_cached_state(tmp_path, capsys):
+    output = tmp_path / "combined.csv"
+    pd.DataFrame({
+        "Player": ["Josh Allen"], "Team": ["BUF"], "Position": ["QB"],
+        "Yahoo": [12], "Sleeper": [11], "MFL": [13],
+        "Yahoo_Updated": ["2026-08-29"], "Sleeper_Updated": ["2026-09-04"],
+        "MFL_Updated": ["2026-09-03"], "Source_Updated": ["2026-09-04"],
+    }).to_csv(output, index=False)
+    def unavailable(*args, **kwargs):
+        raise requests.RequestException("https://provider.test/?apiKey=private-secret")
+    result = build_direct_adp(output, season=2026, http_get=unavailable, update_date="2026-09-27")
+    assert result.loc[0, "Source_Updated"] == "2026-09-04"
+    assert result.loc[0, "Sleeper"] == 11
+    health = result.attrs["source_health"]
+    assert health["Yahoo"]["status"] == "manual"
+    assert health["Yahoo"]["attempted_at"] is None
+    assert health["Sleeper"]["status"] == "cached"
+    assert health["Sleeper"]["last_success"] == "2026-09-04"
+    assert "private-secret" not in capsys.readouterr().out
+
+
+def test_absent_provider_values_do_not_borrow_another_sources_date(tmp_path):
+    output = tmp_path / "combined.csv"
+    pd.DataFrame({"Player": ["Josh Allen"], "Sleeper": [10], "Yahoo": [None], "Source_Updated": ["2026-09-27"]}).to_csv(output, index=False)
+    assert adp_source_dates(output) == {"Sleeper": "2026-09-27"}

@@ -1,6 +1,10 @@
 from datetime import datetime, timezone
+import json
 
 import pandas as pd
+import requests
+import pytest
+import app.odds_board as odds_board
 
 from app.odds_board import (
     add_nws_weather,
@@ -321,3 +325,123 @@ def test_nws_hourly_forecast_is_added_near_kickoff():
         "source_url": "https://www.weather.gov/documentation/services-web-api",
         "valid_at": "2026-09-09T17:00:00-07:00",
     }
+
+
+@pytest.fixture
+def odds_refresh(monkeypatch):
+    class FixedDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2026, 9, 6, tzinfo=timezone.utc)
+    monkeypatch.setattr(odds_board, "datetime", FixedDatetime)
+    monkeypatch.delenv("ODDS_API_KEY", raising=False)
+    monkeypatch.delenv("SPORTSGAMEODDS_API_KEY", raising=False)
+    schedule = _schedule()
+    schedule.loc[0, "roof"] = "dome"
+
+    class Response:
+        def __init__(self, payload=None):
+            self.payload = payload
+            self.text = schedule.to_csv(index=False)
+        def raise_for_status(self):
+            return None
+        def json(self):
+            return self.payload
+
+    def fetch(overrides=None):
+        overrides = overrides or {}
+        def get(url, **kwargs):
+            if url in overrides:
+                value = overrides[url]
+                if isinstance(value, Exception):
+                    raise value
+                return Response(value)
+            if url == odds_board.SCHEDULE_URL:
+                return Response()
+            if url == f"{odds_board.KALSHI_API}/events":
+                return Response({"events": []})
+            if url == odds_board.POLYMARKET_EVENTS_API:
+                return Response([])
+            raise AssertionError(f"Unexpected request: {url}")
+        return get
+    return fetch
+
+
+def test_refresh_reports_intentionally_unconfigured_and_empty_markets(tmp_path, odds_refresh):
+    output = tmp_path / "odds.json"
+    odds_board.refresh_odds_board(output, season=2026, get=odds_refresh(), status=lambda _: None)
+    payload = json.loads(output.read_text())
+    health = payload["source_health"]
+    assert health["primary_sportsbook"]["status"] == "not_configured"
+    assert health["primary_sportsbook"]["attempted_at"] is None
+    assert health["sportsbooks"]["status"] == "not_configured"
+    assert health["exchange"]["status"] == "no_upcoming_markets"
+    assert health["weather"]["status"] == "not_needed"
+    assert all(row["updated_at"] is None for row in payload["games"][0]["rows"])
+
+
+def test_refresh_selects_backup_after_primary_failure_without_logging_key(tmp_path, odds_refresh):
+    output = tmp_path / "odds.json"
+    messages = []
+    get = odds_refresh({
+        odds_board.ODDS_API_URL: requests.HTTPError("https://api.test?apiKey=private-secret"),
+        odds_board.SPORTSGAMEODDS_API: {"data": [{
+            "teams": {"away": {"names": {"long": "New England Patriots"}}, "home": {"names": {"long": "Seattle Seahawks"}}},
+            "updatedAt": "2026-09-05T12:00:00Z",
+            "odds": {"points-away-game-ml-away": {"betTypeID": "ml", "sideID": "away", "byBookmaker": {"draftkings": {"odds": 150, "available": True}}}},
+        }]},
+    })
+    odds_board.refresh_odds_board(output, season=2026, odds_api_key="private-secret", sportsgameodds_api_key="backup-private", get=get, status=messages.append)
+    payload = json.loads(output.read_text())
+    assert payload["has_sportsbooks"]
+    assert payload["source_health"]["primary_sportsbook"]["status"] == "failed"
+    assert payload["source_health"]["sportsbooks"]["status"] == "fallback"
+    assert payload["source_health"]["sportsbooks"]["selected_provider"] == "SportsGameOdds"
+    assert payload["source_health"]["sportsbooks"]["data_updated_at"] == "2026-09-05T12:00:00Z"
+    assert "private-secret" not in output.read_text() + " ".join(messages)
+    assert "backup-private" not in output.read_text() + " ".join(messages)
+
+
+def test_failed_market_refresh_retains_upcoming_rows_and_original_success_time(tmp_path, odds_refresh):
+    output = tmp_path / "odds.json"
+    prior = build_odds_board(_schedule(), season=2026, kalshi_events=[{
+        "title": "New England vs Seattle", "markets": [{"subtitle": "Seattle", "yes_ask_dollars": "0.63", "last_price_ts": "2026-09-04T12:00:00Z"}],
+    }], now=datetime(2026, 9, 5, tzinfo=timezone.utc))
+    prior["source_health"] = {"exchange": {"status": "success", "last_success": "2026-09-05T12:00:00Z", "data_updated_at": "2026-09-04T12:00:00Z"}}
+    output.write_text(json.dumps(prior))
+    get = odds_refresh({f"{odds_board.KALSHI_API}/events": requests.Timeout("unavailable")})
+    odds_board.refresh_odds_board(output, season=2026, get=get, status=lambda _: None)
+    payload = json.loads(output.read_text())
+    health = payload["source_health"]["exchange"]
+    assert health["status"] == "cached"
+    assert health["last_success"] == "2026-09-05T12:00:00Z"
+    assert health["data_updated_at"] == "2026-09-04T12:00:00Z"
+    row = next(row for row in payload["games"][0]["rows"] if row["provider_key"] == "kalshi")
+    assert row["retained"]
+    assert row["updated_at"] == "2026-09-04T12:00:00Z"
+
+
+def test_successful_empty_primary_is_distinct_from_provider_failure(tmp_path, odds_refresh):
+    output = tmp_path / "odds.json"
+    odds_board.refresh_odds_board(output, season=2026, odds_api_key="test-key", get=odds_refresh({odds_board.ODDS_API_URL: []}), status=lambda _: None)
+    health = json.loads(output.read_text())["source_health"]
+    assert health["primary_sportsbook"]["status"] == "no_upcoming_markets"
+    assert health["sportsbooks"]["status"] == "no_upcoming_markets"
+    assert health["primary_sportsbook"]["last_success"] is not None
+
+
+def test_invalid_primary_payload_is_failed_and_preserves_saved_sportsbooks(tmp_path, odds_refresh):
+    output = tmp_path / "odds.json"
+    prior = build_odds_board(_schedule(), season=2026, sportsbook_events=[{
+        "away_team": "New England Patriots", "home_team": "Seattle Seahawks",
+        "bookmakers": [{"key": "draftkings", "title": "DraftKings", "last_update": "2026-09-04T12:00:00Z", "markets": [{"key": "h2h", "outcomes": [{"name": "Seattle Seahawks", "price": -170}]}]}],
+    }], now=datetime(2026, 9, 5, tzinfo=timezone.utc))
+    prior["source_health"] = {"sportsbooks": {"last_success": "2026-09-05T12:00:00Z"}}
+    output.write_text(json.dumps(prior))
+    odds_board.refresh_odds_board(output, season=2026, odds_api_key="test-key", get=odds_refresh({odds_board.ODDS_API_URL: {"message": "rate limit"}}), status=lambda _: None)
+    payload = json.loads(output.read_text())
+    assert payload["has_sportsbooks"]
+    assert payload["source_health"]["primary_sportsbook"]["status"] == "failed"
+    assert payload["source_health"]["sportsbooks"]["status"] == "cached"
+    assert payload["source_health"]["sportsbooks"]["last_success"] == "2026-09-05T12:00:00Z"
+    assert payload["source_health"]["sportsbooks"]["data_updated_at"] == "2026-09-04T12:00:00Z"

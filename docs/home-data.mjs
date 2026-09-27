@@ -1,3 +1,5 @@
+import {classifyInjury} from "./injury-status.mjs";
+
 // Older saved RSS titles may still contain HTML entities. Decode as plain text;
 // callers must keep using textContent, never interpret a headline as HTML.
 export function headlineText(value) {
@@ -44,7 +46,7 @@ function playerName(value) {
   return titleWords(value).replace(/(?:\s+(?:jr|sr|ii|iii|iv|v))+$/, "");
 }
 
-export function titlePlayers(bundle, title) {
+export function titlePlayers(bundle, title, now = Date.now()) {
   if (!bundle?.reports || typeof bundle.reports !== "object" || Array.isArray(bundle.reports)) return [];
   const reports = Object.values(bundle.reports).filter(row => row && typeof row.player === "string");
   const names = new Map(), seen = new Set(), words = ` ${titleWords(title)} `;
@@ -53,7 +55,7 @@ export function titlePlayers(bundle, title) {
     if (!names.has(name)) names.set(name, new Set());
     names.get(name).add(playerKey(report));
   }
-  const injuries = new Map(injuryFeed(bundle).map(row => [row.key, row]));
+  const injuries = new Map(injuryFeed(bundle, now).filter(row => row.current).map(row => [row.key, row]));
   return reports.flatMap(report => {
     const name = playerName(report.player), key = playerKey(report);
     // Fail closed on old snapshots or full-roster collisions (including defensive players).
@@ -84,13 +86,13 @@ export function leagueHeadlineCards(bundle, now = Date.now()) {
     if (!url || !["www.espn.com", "espn.com", "sports.yahoo.com"].includes(new URL(url).hostname) || new URL(url).port
         || (Number.isFinite(date) && (date > now + 86400000 || now - date > 7 * 86400000)) || cards.has(url)) continue;
     cards.set(url, {url, title, timestamp: Number.isFinite(date) ? timestamp : null,
-      players: titlePlayers(bundle, title), source: new URL(url).hostname === "sports.yahoo.com" ? "Yahoo Sports" : "ESPN",
+      players: titlePlayers(bundle, title, now), source: new URL(url).hostname === "sports.yahoo.com" ? "Yahoo Sports" : "ESPN",
       sortTime: Number.isFinite(date) ? date : 0});
   }
   return [...cards.values()].sort((a, b) => b.sortTime - a.sortTime).slice(0, 50);
 }
 
-export function injuryFeed(bundle) {
+export function injuryFeed(bundle, now = Date.now()) {
   if (!bundle?.reports || typeof bundle.reports !== "object" || Array.isArray(bundle.reports)) throw new Error("Injury feed unavailable.");
   const seen = new Set(), rows = [];
   for (const report of Object.values(bundle.reports)) {
@@ -98,20 +100,22 @@ export function injuryFeed(bundle) {
     const injury = report.injury, key = playerKey(report);
     if (seen.has(key)) continue;
     seen.add(key);
-    const event = Array.isArray(report.events) ? report.events.find(row => row?.category === "Injury") : null;
+    const event = Array.isArray(report.events) ? report.events.find(row => ["Injury", "Injury history"].includes(row?.category)) : null;
     const status = String(injury.report_status || injury.status || "Status not provided").trim();
-    // Practice participation and Questionable/Probable alone do not mean RISK.
-    const risk = /^(out|doubtful|ir|injured reserve|reserve\/injured)$/i.test(status);
+    const classification = classifyInjury(report, bundle, now);
     const week = Number.isInteger(injury.week) && injury.week > 0 ? injury.week : null;
     rows.push({
       key, player: report.player, playerId: report.player_id || null, pos: report.pos || "—",
       photoUrl: safePlayerPhoto(report.headshot_url),
       team: report.current_team || report.team || "—", injury: injury.name || "Injury details not supplied",
-      status, practice: injury.practice_status || "", risk, week,
-      reportLabel: week ? `Week ${week}` : "Report week unavailable", url: safeSourceUrl(event?.source?.url),
+      status, practice: injury.practice_status || "", risk: classification.risk, week,
+      season: injury.season || bundle.season || null, current: classification.current,
+      freshness: classification.state, healthStatus: classification.healthStatus, currentnessLabel: classification.label,
+      reportLabel: classification.reportLabel, url: safeSourceUrl(event?.source?.url),
     });
   }
-  return rows.sort((a, b) => (b.week || 0) - (a.week || 0) || Number(b.risk) - Number(a.risk) || a.player.localeCompare(b.player));
+  return rows.sort((a, b) => Number(b.current) - Number(a.current) || (b.season || 0) - (a.season || 0)
+    || (b.week || 0) - (a.week || 0) || Number(b.risk) - Number(a.risk) || a.player.localeCompare(b.player));
 }
 
 export function filterInjuries(rows, query = "", mode = "all") {

@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {headlineText, injuryFeed, filterInjuries, safeSourceUrl, snapshotFreshness, safePlayerPhoto, titlePlayers, leagueHeadlineCards} from "../docs/home-data.mjs";
 import {freshSeed, validSeed, MAX_SEED, exampleTrialIndices} from "../docs/simulation-runs.mjs";
+const injuryNow = Date.parse("2026-09-13T18:00:00Z");
+const injuryContext = {season: 2026, generated_at: "2026-09-13T12:00:00Z",
+  injury_context: {season: 2026, expected_week: 1, valid_from: "2026-09-08T04:00:00Z", valid_until: "2026-09-15T04:00:00Z"}};
 
 const report = (player, status, week = 1) => ({
   player, player_id: player, pos: "RB", team: "BUF", current_team: "KC",
@@ -11,9 +14,9 @@ const report = (player, status, week = 1) => ({
 });
 test("injury feed preserves all statuses, current team and report week without overstating risk", () => {
   const reports = ["Questionable", "Probable", "Full Participation in Practice", "Out", "Doubtful", "IR", " Injured Reserve "].map((status, i) => report(String(i), status));
-  const rows = injuryFeed({reports: Object.fromEntries(reports.map((r, i) => [i, r]))});
+  const rows = injuryFeed({...injuryContext, reports: Object.fromEntries(reports.map((r, i) => [i, r]))}, injuryNow);
   assert.equal(rows.length, 7); assert.equal(rows.filter(row => row.risk).length, 4);
-  assert.ok(rows.every(row => row.team === "KC" && row.reportLabel === "Week 1"));
+  assert.ok(rows.every(row => row.team === "KC" && row.reportLabel === "2026 · Week 1"));
   assert.equal(filterInjuries(rows, "", "risk").length, 4);
   assert.equal(filterInjuries(rows, " questionable ").length, 1);
   assert.equal(filterInjuries(rows, "knee").length, 7);
@@ -43,7 +46,7 @@ test("snapshot freshness distinguishes missing, future and overdue dates", () =>
 
 const portraitUrl = "https://static.www.nfl.com/image/upload/f_auto,q_auto,w_160,c_fill,g_face/league/example";
 const namedReport = (player, status = "Questionable") => ({...report(player, status), headline_name_ambiguous: false, headshot_url: portraitUrl});
-const newsBundle = (...players) => ({reports: Object.fromEntries(players.map((player, index) => [index, player]))});
+const newsBundle = (...players) => ({...injuryContext, reports: Object.fromEntries(players.map((player, index) => [index, player]))});
 
 test("headline punctuation decodes numeric, named and double-escaped entities as plain text", () => {
   for (const apostrophe of ["&#39;", "&#x27;", "&apos;", "&amp;#39;"]) {
@@ -81,10 +84,10 @@ test("preview title matches full names, punctuation, suffixes and multiple playe
   assert.deepEqual(titlePlayers(bundle, "Lamar Jackson’s pass sets up Derrick Henry").map(row => row.player), ["Lamar Jackson", "Derrick Henry"]);
   for (const title of ["Jackson throws a touchdown", "Will Levison scores", "QB scores a touchdown"]) assert.deepEqual(titlePlayers(bundle, title), []);
   for (const title of ["AJ Brown scores", "Brian Thomas runs free", "D’Andre Swift’s touchdown"]) assert.equal(titlePlayers(bundle, title).length, 1, title);
-  const preview = titlePlayers(bundle, "Lamar Jackson scores")[0];
+  const preview = titlePlayers(bundle, "Lamar Jackson scores", injuryNow)[0];
   assert.equal(preview.team, "KC"); assert.equal(preview.photoUrl, portraitUrl);
   assert.equal(preview.injury.status, "Questionable"); assert.equal(preview.injury.risk, false);
-  assert.equal(preview.injury.reportLabel, "Week 1");
+  assert.equal(preview.injury.reportLabel, "2026 · Week 1");
 });
 
 test("preview matching fails closed on full-roster ambiguity, duplicate identities and older snapshots", () => {

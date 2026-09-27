@@ -7,6 +7,10 @@ import {
 import { historyAnalytics, historyRows, historyWindow } from "./player-history.mjs?v=20260909-archive1";
 import { mergeSpecialTeams, specialTeamRows } from "./live-board.mjs";
 import { applyProjectionModel } from "./projection-model.mjs?v=20260909-archive1";
+import {startAutoRefresh, fetchSnapshot, snapshotSignature, preserveView} from "./auto-refresh.mjs?v=20260927-refresh1";
+import {validateRankings, validateReports, validateHistory, validateSpecialTeams} from "./snapshot-validation.mjs?v=20260927-refresh1";
+import {classifyInjury} from "./injury-status.mjs?v=20260927-refresh1";
+import {DRAFT_ALIASES_KEY, columnarDraftRows, validDraftAliases, migrateDraftedKeys, toggleDraftedKey} from "./draft-identity.mjs?v=20260927-refresh1";
 
 const DATA_URL = "./data/rankings.json";
 const INTEL_URL = "./data/player_intel.json";
@@ -99,6 +103,7 @@ const state = {
   specialTeams: { columns: [], rows: [] },
   settings: { ...defaultSettings, ...loadJson(SETTINGS_KEY, {}) },
   drafted: new Set(Array.isArray(savedDrafted) ? savedDrafted : []),
+  draftAliases: validDraftAliases(loadJson(DRAFT_ALIASES_KEY, [])),
   search: "",
   position: "ALL",
   filters: {},
@@ -151,8 +156,15 @@ function playerKey(row) {
   return `${String(row.player).trim().toLocaleLowerCase()}|${String(listedTeam).trim().toUpperCase()}`;
 }
 
+function currentNewsSignal(news) {
+  const injury = classifyInjury(news, state.news);
+  const signals = (news?.events || []).filter(event => event.category !== "Injury").map(event => event.severity);
+  if (injury.current) signals.push(injury.risk ? "risk" : "watch");
+  return signals.includes("risk") ? "risk" : signals.includes("watch") ? "watch" : "stable";
+}
+
 function effectiveDraftTag(row, news) {
-  if (news?.signal === "risk") return "RISK";
+  if (currentNewsSignal(news) === "risk") return "RISK";
   if (news?.only_team_change) return "NEW TEAM";
   return row.draft_tag;
 }
@@ -165,7 +177,8 @@ function rowsForCurrentBoard() {
     row.listed_team = String(row.team || "").toUpperCase();
     const news = state.news.reports?.[playerKey(row)];
     row.current_team = String(news?.current_team || row.listed_team).toUpperCase();
-    row.injury = news?.injury || null;
+    row.injuryStatus = classifyInjury(news, state.news);
+    row.injury = row.injuryStatus.currentInjury;
     row.is_rookie = row.is_rookie === true || String(row.is_rookie).toLocaleLowerCase() === "true";
     return row;
   });
@@ -475,6 +488,9 @@ function renderBody(rows) {
             description,
           ));
         }
+        if (!row.injury && row.injuryStatus?.injury) {
+          statuses.append(statusBadge(`Prior report · ${row.injuryStatus.reportLabel}`, "status-history", `${row.injuryStatus.label}. Current availability is unknown; an older injury report does not confirm today's status.`));
+        }
         if (statuses.children.length) labels.append(statuses);
         button.append(createPlayerPhoto(row.player, playerNews?.headshot_url), labels);
         td.append(button);
@@ -572,7 +588,7 @@ function appendNewsTimeline(container, news) {
   title.textContent = "Recent articles and factual updates";
   heading.append(eyebrow, title);
   const signal = document.createElement("span");
-  const safeSignal = ["stable", "watch", "risk"].includes(news.signal) ? news.signal : "watch";
+  const safeSignal = currentNewsSignal(news);
   signal.className = `news-signal signal-${safeSignal}`;
   signal.textContent = safeSignal;
   headingRow.append(heading, signal);
@@ -581,19 +597,20 @@ function appendNewsTimeline(container, news) {
   const list = document.createElement("div");
   list.className = "news-list";
   for (const event of news.events) {
+    const historicalInjury = event.category === "Injury" && !classifyInjury(news, state.news).current;
     const article = document.createElement("article");
-    article.className = `news-event severity-${["info", "watch", "risk", "stable"].includes(event.severity) ? event.severity : "info"}`;
+    article.className = `news-event severity-${!historicalInjury && ["info", "watch", "risk", "stable"].includes(event.severity) ? event.severity : "info"}`;
     const meta = document.createElement("div");
     meta.className = "news-meta";
     const category = document.createElement("span");
-    category.textContent = event.category || "Update";
+    category.textContent = historicalInjury ? "Previous injury report" : event.category || "Update";
     const eventDate = document.createElement("time");
     eventDate.textContent = event.date || "Current";
     meta.append(category, eventDate);
     const eventTitle = document.createElement("h4");
     eventTitle.textContent = event.title || "Player update";
     const detail = document.createElement("p");
-    detail.textContent = event.detail || "";
+    detail.textContent = `${event.detail || ""}${historicalInjury ? " Current availability is unknown; this is not a current-week report." : ""}`;
     article.append(meta, eventTitle, detail);
     const href = safeSourceUrl(event.source?.url);
     if (href) {
@@ -1263,8 +1280,7 @@ function clearFilters() {
 }
 
 function toggleDrafted(key) {
-  if (state.drafted.has(key)) state.drafted.delete(key);
-  else state.drafted.add(key);
+  state.drafted = toggleDraftedKey(state.drafted, key, state.draftAliases);
   saveJson(DRAFTED_KEY, [...state.drafted].sort());
   render();
 }
@@ -1308,6 +1324,7 @@ function bindEvents() {
   });
   const updateHeaderFilter = event => {
     if (!event.target.matches("[data-filter]")) return;
+    if ((state.filters[event.target.dataset.filter] || "") === event.target.value) return;
     state.filters[event.target.dataset.filter] = event.target.value;
     render();
   };
@@ -1342,35 +1359,43 @@ function bindEvents() {
   });
 }
 
-async function loadRankings() {
-  try {
-    const [response, intelResponse, newsResponse, historyResponse, specialTeamsResponse] = await Promise.all([
-      fetch(`${DATA_URL}?v=${Date.now()}`, { cache: "no-store" }),
-      fetch(`${INTEL_URL}?v=${Date.now()}`, { cache: "no-store" }).catch(() => null),
-      fetch(`${NEWS_URL}?v=${Date.now()}`, { cache: "no-store" }).catch(() => null),
-      fetch(`${HISTORY_URL}?v=${Date.now()}`, { cache: "no-store" }).catch(() => null),
-      fetch(`${SPECIAL_TEAMS_URL}?v=${Date.now()}`, { cache: "no-store" }).catch(() => null),
+let rankingsSignature = null, injuryClock = null;
+function injuryClockSignature(news) {
+  const now = Date.now();
+  return JSON.stringify([now >= Date.parse(news.injury_context?.valid_from),
+    now >= Date.parse(news.injury_context?.valid_until), now - Date.parse(news.generated_at) > 7 * 86400000]);
+}
+async function loadRankings(signal) {
+    const unavailable = [];
+    const optional = (url, validate, key, label) => fetchSnapshot(url, {signal, validate}).catch(() => {
+      if (key !== "intel" || state.intel.report_count) unavailable.push(label);
+      return state[key];
+    });
+    const [data, intel, news, history, specialTeams] = await Promise.all([
+      fetchSnapshot(DATA_URL, {signal, validate: validateRankings}),
+      optional(INTEL_URL, validateReports, "intel", "AI reports"),
+      optional(NEWS_URL, validateReports, "news", "injuries/news"),
+      optional(HISTORY_URL, validateHistory, "history", "player history"),
+      optional(SPECIAL_TEAMS_URL, validateSpecialTeams, "specialTeams", "K/DST market"),
     ]);
-    if (!response.ok) throw new Error(`Rankings request failed (${response.status})`);
-    const data = await response.json();
-    if (!data.boards || !data.columns) throw new Error("The rankings file is incomplete");
-    state.data = data;
-    if (intelResponse?.ok) {
-      const intel = await intelResponse.json();
-      if (intel.reports) state.intel = intel;
+    signal.throwIfAborted();
+    if (!data.boards[rankingSlug()] || (state.data && Object.keys(state.data.boards).some(key => !data.boards[key]))) throw new Error("League formats are missing from the updated rankings");
+    const next = {data, intel, news, history, specialTeams};
+    const signature = snapshotSignature([next, injuryClockSignature(news)]);
+    const changed = signature !== rankingsSignature;
+    const first = !state.data;
+    if (changed) {
+      const previousDrafted = snapshotSignature([...state.drafted].sort()), previousAliases = snapshotSignature(state.draftAliases);
+      const marketRows = bundle => specialTeamRows(bundle, {kickers: "Include", defenses: "Include"});
+      const migrated = migrateDraftedKeys(state.drafted,
+        [...columnarDraftRows(state.data), ...marketRows(state.specialTeams)],
+        [...columnarDraftRows(data), ...marketRows(specialTeams)], state.draftAliases);
+      state.drafted = migrated.drafted; state.draftAliases = migrated.aliases;
+      if (snapshotSignature([...state.drafted].sort()) !== previousDrafted) saveJson(DRAFTED_KEY, [...state.drafted].sort());
+      if (snapshotSignature(state.draftAliases) !== previousAliases) saveJson(DRAFT_ALIASES_KEY, state.draftAliases);
     }
-    if (newsResponse?.ok) {
-      const news = await newsResponse.json();
-      if (news.reports) state.news = news;
-    }
-    if (historyResponse?.ok) {
-      const history = await historyResponse.json();
-      if (history.players && history.columns) state.history = history;
-    }
-    if (specialTeamsResponse?.ok) {
-      const specialTeams = await specialTeamsResponse.json();
-      if (specialTeams.rows && specialTeams.columns) state.specialTeams = specialTeams;
-    }
+    Object.assign(state, next);
+    injuryClock = injuryClockSignature(news);
     const intelStatus = state.intel.report_count
       ? `${state.intel.report_count} intel reports updated ${formatTimestamp(state.intel.generated_at)}`
       : "intel reports awaiting first update";
@@ -1380,20 +1405,42 @@ async function loadRankings() {
     const historyStatus = state.history.player_count
       ? `${historyWindow(state.history).label} · ${state.history.player_count} player histories (${state.history.historical_player_count || 0} historical)`
       : "stat history awaiting update";
-    state.defaultSourceStatus = `${data.projection_season} Age Curve v1 · ${formatAdpStatus(data)} · ${newsStatus} · ${historyStatus} · ${intelStatus}`;
-    ui.sourceStatus.textContent = state.defaultSourceStatus;
+    state.defaultSourceStatus = `${data.projection_season} Age Curve v1 · ${formatAdpStatus(data)} · ${newsStatus} · ${historyStatus} · ${intelStatus}${unavailable.length ? ` · Update unavailable: ${unavailable.join(", ")}; keeping last loaded data` : ""}`;
+    updateAdpMode();
     ui.boardHeading.textContent = `${data.projection_season} player rankings`;
     ui.loadingState.classList.add("hidden");
-    renderHead();
-    restoreFilterInputs();
-    render();
-  } catch (error) {
-    ui.loadingState.innerHTML = `<strong>The rankings could not load.</strong><span>${error.message}</span><button class="button secondary" type="button" id="retry-load">Try again</button>`;
-    document.querySelector("#retry-load").addEventListener("click", () => location.reload());
-    ui.sourceStatus.textContent = "Rankings unavailable";
-  }
+    if (changed) {
+      preserveView(() => {
+      if (first) { renderHead(); restoreFilterInputs(); }
+      else {
+        const team = ui.tableHead.querySelector('[data-filter="team"]');
+        const teams = new Set([...selectableTeams(), state.filters.team].filter(Boolean));
+        const values = ["", ...[...teams].sort()];
+        if (snapshotSignature([...team.options].map(option => option.value)) !== snapshotSignature(values)) {
+          team.replaceChildren(new Option("All teams", ""), ...values.slice(1).map(value => new Option(value, value)));
+          team.value = state.filters.team || "";
+        }
+      }
+      render();
+      }, [ui.tableShell]);
+      rankingsSignature = signature;
+    }
+    // Retained optional data is useful, but must be retried rather than recording
+    // this manifest as completely handled until the missing source recovers.
+    if (unavailable.length) throw new Error(`Update unavailable: ${unavailable.join(", ")}`);
 }
 
 applySettingsToControls();
 bindEvents();
-loadRankings();
+startAutoRefresh(loadRankings, {
+  canRefresh: () => !document.querySelector("dialog[open]"),
+  onCheck: () => {
+    if (!state.data || injuryClock === injuryClockSignature(state.news)) return;
+    preserveView(render, [ui.tableShell]);
+    injuryClock = injuryClockSignature(state.news);
+  },
+  onError: () => {
+    ui.sourceStatus.textContent = state.data ? `${state.defaultSourceStatus} · Refresh unavailable; keeping last loaded data` : "Rankings unavailable; retrying automatically";
+    if (!state.data) ui.loadingState.textContent = "The rankings could not load. Retrying automatically when the connection is available.";
+  },
+});

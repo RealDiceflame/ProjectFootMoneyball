@@ -1,4 +1,6 @@
 import {upcomingGames, simulateMatchup, matchupMarkets} from "./matchup-model.mjs?v=20260909-matchup1";
+import {startAutoRefresh, fetchSnapshot, snapshotSignature} from "./auto-refresh.mjs?v=20260927-refresh1";
+import {canRefreshLabs, preserveLabView} from "./lab-refresh.mjs?v=20260927-refresh1";
 
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => {
@@ -124,19 +126,33 @@ function renderMarkets(data, odds, choice, loading) {
 }
 
 export function initMatchup(data) {
-  let odds = null, loading = true, lastResult = null;
-  const options = upcomingGames(data);
-  for (const game of options) {
-    const option = el("option", `Week ${game.week} · ${game.away} at ${game.home} · ${date(game.kickoff)}`);
-    option.value = game.game_id; $("matchup-game").append(option);
-  }
-  for (const team of [...data.teams].sort((a, b) => a.name.localeCompare(b.name))) {
-    for (const side of ["home", "away"]) { const option = el("option", team.name); option.value = team.team; $(`matchup-${side}`).append(option); }
-  }
-  if (!options.length) { $("matchup-mode").value = "custom"; $("matchup-mode").options[0].disabled = true; }
-  $("matchup-away").selectedIndex = 1;
+  let odds = null, loading = true, lastResult = null, oddsSignature = "", oddsDelayed = false;
+  const updateOptions = (initial = false) => {
+    const selected = $("matchup-game").value, selectedLabel = $("matchup-game").selectedOptions[0]?.textContent;
+    const options = upcomingGames(data);
+    $("matchup-game").replaceChildren(...options.map(game => new Option(`Week ${game.week} · ${game.away} at ${game.home} · ${date(game.kickoff)}`, game.game_id)));
+    if (selected) {
+      if (!options.some(game => game.game_id === selected)) $("matchup-game").append(new Option(`${selectedLabel || selected} · No longer available`, selected));
+      $("matchup-game").value = selected;
+    }
+    for (const side of ["home", "away"]) {
+      const control = $(`matchup-${side}`), team = control.value;
+      control.replaceChildren(...[...data.teams].sort((a, b) => a.name.localeCompare(b.name)).map(team => new Option(team.name, team.team)));
+      if (team) control.value = team;
+    }
+    $("matchup-mode").options[0].disabled = !options.length && !selected;
+    if (initial) {
+      if (!options.length) $("matchup-mode").value = "custom";
+      $("matchup-away").selectedIndex = 1;
+    }
+  };
+  updateOptions(true);
   const choice = () => ({home: $("matchup-home").value, away: $("matchup-away").value,
     neutral: $("matchup-venue").value === "neutral", ...($("matchup-mode").value === "schedule" ? {game_id: $("matchup-game").value} : {})});
+  const updateMarkets = () => {
+    renderMarkets(data, odds, choice(), loading);
+    if (oddsDelayed) $("matchup-market").append(el("p", "Odds refresh delayed; retaining the last available snapshot."));
+  };
   const run = () => {
     $("matchup-error").hidden = true; $("matchup-results").hidden = true; lastResult = null;
     const scheduled = $("matchup-mode").value === "schedule";
@@ -154,22 +170,38 @@ export function initMatchup(data) {
     try {
       lastResult = simulateMatchup(data, choice(), {seed: data.season}); renderResults(data, lastResult);
     } catch (error) { $("matchup-error").textContent = error.message; $("matchup-error").hidden = false; }
-    renderMarkets(data, odds, choice(), loading);
+    updateMarkets();
   };
   for (const id of ["mode", "game", "home", "away", "venue"]) $(`matchup-${id}`).addEventListener("change", run);
   $("simulate-matchup").addEventListener("click", run);
   $("matchup-chart-metric").addEventListener("change", () => { if (lastResult) drawDistribution(lastResult, $("matchup-chart-metric").value); });
   run();
-  fetch("data/nfl_odds.json", {cache: "no-cache"}).then(response => {
-    if (!response.ok) throw new Error("Odds unavailable"); return response.json();
-  }).then(value => { odds = value; }).catch(() => { odds = null; }).finally(() => { loading = false; renderMarkets(data, odds, choice(), loading); });
+  startAutoRefresh(async signal => {
+    const value = await fetchSnapshot("data/nfl_odds.json", {signal, validate: value => value && Number.isInteger(value.season)
+      && Number.isFinite(Date.parse(value.generated_at)) && Array.isArray(value.games)
+      && value.games.every(game => game && typeof game.game_id === "string" && Array.isArray(game.rows)
+        && game.rows.every(row => row && typeof row.provider === "string" && typeof row.market === "string" && typeof row.selection === "string"))});
+    signal.throwIfAborted();
+    const signature = snapshotSignature(value), changed = signature !== oddsSignature || oddsDelayed || loading;
+    odds = value; oddsSignature = signature; loading = false; oddsDelayed = false;
+    if (changed) preserveLabView(updateMarkets);
+  }, {canRefresh: canRefreshLabs, onError: () => {
+    loading = false; oddsDelayed = true; preserveLabView(updateMarkets);
+  }});
   // Expire quotes and pregame simulations even when a visitor leaves the tab open.
   let wasPlayable = true;
   setInterval(() => {
+    if (document.hidden || !canRefreshLabs()) return;
     const current = choice();
     const stillPlayable = !current.game_id || upcomingGames(data).some(game => game.game_id === current.game_id);
-    if (wasPlayable && !stillPlayable) run();
+    if (wasPlayable && !stillPlayable) preserveLabView(run);
     wasPlayable = stillPlayable;
-    renderMarkets(data, odds, current, loading);
+    preserveLabView(updateMarkets);
   }, 30000);
+  return {updateData(value) {
+    data = value;
+    preserveLabView(() => { updateOptions(); run(); });
+    const current = choice();
+    wasPlayable = !current.game_id || upcomingGames(data).some(game => game.game_id === current.game_id);
+  }};
 }

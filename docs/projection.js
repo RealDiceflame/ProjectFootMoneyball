@@ -2,6 +2,8 @@ import { historicalPlayers, historyAnalytics, historyKey, historyRows, historyWi
 import { historicalRoundExpectations } from "./draft-capital.mjs?v=20260909-capital1";
 import { draftTiming } from "./draft-timing.mjs?v=20260909-timing1";
 import {careerRelativeSamples, renderRoundChart} from "./lab-charts.mjs?v=20260909-labs2";
+import {startAutoRefresh, fetchSnapshot, snapshotSignature} from "./auto-refresh.mjs?v=20260927-refresh1";
+import {canRefreshLabs, preserveLabView} from "./lab-refresh.mjs?v=20260927-refresh1";
 import {
   applyProjectionModel,
   POSITIONS,
@@ -466,11 +468,18 @@ function renderSelectedPlayer() {
   syncUrl();
 }
 
-function render() {
+function render(preferredPlayer = null) {
   const modeled = applyProjectionModel(boardRows(), state.history, state.news, state.settings, state.data.projection_season);
   state.rows = modeled.rows;
   state.samples = modeled.samples;
   state.historical = historicalPlayers(state.history, state.rows);
+  if (preferredPlayer) {
+    const choices = [...state.rows, ...state.historical].filter(row => row.pos === state.position);
+    const samePlayer = choices.find(row => (row.history_key || historyKey(row)) === state.player)
+      || choices.find(row => preferredPlayer.player_id && row.player_id === preferredPlayer.player_id)
+      || choices.find(row => row.player === preferredPlayer.player);
+    if (samePlayer) state.player = samePlayer.history_key || historyKey(samePlayer);
+  }
   renderPlayerOptions();
   renderSelectedPlayer();
   renderPositionVariance();
@@ -512,21 +521,48 @@ function connectControls() {
   });
 }
 
-async function load() {
-  syncControls();
-  connectControls();
-  try {
-    const [rankingsResponse, historyResponse, newsResponse, capital] = await Promise.all([
-      fetch(DATA_URL, { cache: "no-store" }),
-      fetch(HISTORY_URL, { cache: "no-store" }),
-      fetch(NEWS_URL, { cache: "no-store" }),
-      fetch(CAPITAL_URL, { cache: "no-store" }).then(response => response.ok ? response.json() : null).catch(() => null),
+const isRecord = value => value !== null && typeof value === "object" && !Array.isArray(value);
+function validateRankings(value) {
+  return isRecord(value) && Number.isInteger(value.projection_season) && Array.isArray(value.columns)
+    && ["player", "pos", "team", "overall_rank", "projected_points"].every(column => value.columns.includes(column))
+    && isRecord(value.boards) && Array.isArray(value.boards[slug()]) && value.boards[slug()].length > 0
+    && Object.values(value.boards).every(rows => Array.isArray(rows) && rows.length > 0 && rows.every(row => Array.isArray(row) && row.length === value.columns.length
+      && typeof row[value.columns.indexOf("player")] === "string" && POSITIONS.includes(row[value.columns.indexOf("pos")])
+      && Number.isFinite(row[value.columns.indexOf("overall_rank")])));
+}
+function validateHistory(value) {
+  return isRecord(value) && Array.isArray(value.columns) && ["season", "games"].every(column => value.columns.includes(column))
+    && Array.isArray(value.seasons) && value.seasons.every(Number.isInteger) && isRecord(value.players) && Object.keys(value.players).length > 0
+    && Object.values(value.players).every(player => isRecord(player) && typeof player.player === "string" && Array.isArray(player.seasons)
+      && player.seasons.every(row => Array.isArray(row) && row.length === value.columns.length && Number.isInteger(row[value.columns.indexOf("season")])));
+}
+function validateCapital(value) {
+  return value?.schema_version === 1 && Array.isArray(value.seasons) && Array.isArray(value.columns) && isRecord(value.years)
+    && ["season", "player_id", "pos", "adp", "games"].every(column => value.columns.includes(column))
+    && value.seasons.every(year => Number.isInteger(year) && Array.isArray(value.years[year]?.rows) && isRecord(value.years[year]?.coverage)
+      && value.years[year].rows.every(row => Array.isArray(row) && row.length === value.columns.length));
+}
+let currentSignature = "", statusText = "";
+async function refreshProjection(signal) {
+    const [data, history, news, capital] = await Promise.all([
+      fetchSnapshot(DATA_URL, {signal, validate: validateRankings}),
+      fetchSnapshot(HISTORY_URL, {signal, validate: validateHistory}),
+      fetchSnapshot(NEWS_URL, {signal, validate: value => isRecord(value) && isRecord(value.reports)}),
+      fetchSnapshot(CAPITAL_URL, {signal, validate: validateCapital}).catch(error => {
+        if (state.data || signal.aborted) throw error;
+        return null; // Historical capital is optional only on the first load.
+      }),
     ]);
-    if (![rankingsResponse, historyResponse, newsResponse].every(response => response.ok)) throw new Error("One or more model inputs are unavailable");
-    [state.data, state.history, state.news] = await Promise.all([
-      rankingsResponse.json(), historyResponse.json(), newsResponse.json(),
-    ]);
-    state.capital = capital?.schema_version === 1 && Array.isArray(capital.seasons) && capital.years ? capital : null;
+    signal.throwIfAborted();
+    const nextSignature = snapshotSignature([data, history, news, capital]);
+    if (nextSignature === currentSignature) { ui.status.textContent = statusText; return; }
+    // Check derived inputs before replacing the last good view.
+    const rows = data.boards[slug()].map(values => Object.fromEntries(data.columns.map((column, index) => [column, values[index]])));
+    applyProjectionModel(rows, history, news, state.settings, data.projection_season);
+    if (capital) historicalRoundExpectations(capital, state.settings, "all");
+    preserveLabView(() => {
+    const preferredPlayer = state.data ? selectedPlayer() : null;
+    Object.assign(state, {data, history, news, capital});
     const seasonChoices = [];
     if (state.capital?.seasons.length) {
       const years = [...state.capital.seasons].sort((a, b) => b - a);
@@ -541,18 +577,26 @@ async function load() {
       ? `${historyCoverage.count}-season history (${historyCoverage.range})`
       : "available history";
     ui.historyCopy.textContent = `Compare current and historical players across the maintained ${historyPhrase}. Recent production sets the baseline, position-specific aging adjusts the scoring rate, and expected games turns it into a season projection.`;
-    render();
-    ui.status.textContent = `${state.data.projection_season} model · ${historyCoverage.label} · ${state.samples.length} qualifying player-seasons · ${state.historical.length} historical players`;
+    render(preferredPlayer);
+    statusText = `${state.data.projection_season} model · ${historyCoverage.label} · ${state.samples.length} qualifying player-seasons · ${state.historical.length} historical players`;
+    ui.status.textContent = statusText;
     ui.archiveNote.textContent = state.historical.length
       ? `The comparison pool includes ${state.historical.length} players outside today's draft board with NFL stats since ${state.history.historical_since_season}, including recently retired players. Select one under Historical players to explore their recorded production. Last recorded season does not confirm a retirement date. Age curves require a known birth date and at least four games in a season; aging changes require six games in each consecutive season. Seasons after a player stops playing are not treated as zero-point seasons.`
       : "Historical player records are awaiting the next data refresh.";
     ui.loading.classList.add("hidden");
     ui.content.classList.remove("hidden");
-  } catch (error) {
-    ui.loading.classList.add("hidden");
-    ui.error.classList.remove("hidden");
-    ui.status.textContent = "Projection data unavailable";
-  }
+    ui.error.classList.add("hidden");
+    });
+    currentSignature = nextSignature;
 }
 
-load();
+syncControls();
+connectControls();
+startAutoRefresh(refreshProjection, {
+  canRefresh: canRefreshLabs,
+  onError: () => {
+    ui.loading.classList.add("hidden");
+    if (currentSignature) ui.status.textContent = `${statusText} · Refresh delayed; showing saved data`;
+    else { ui.error.classList.remove("hidden"); ui.status.textContent = "Projection data unavailable · retrying automatically"; }
+  },
+});

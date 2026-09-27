@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import reduce
 from pathlib import Path
 import re
@@ -375,6 +375,8 @@ def _cached_provider(path: Path, column: str) -> tuple[pd.DataFrame | None, str 
         cached["Team"] = pd.NA
     cached[column] = pd.to_numeric(cached[column], errors="coerce")
     cached = cached[cached[column].notna()].copy()
+    if cached.empty:
+        return None, None
     cached["_key"] = [
         _player_key(name, position)
         for name, position in zip(cached["Player"], cached["Position"])
@@ -422,11 +424,20 @@ def build_direct_adp(
     providers: dict[str, pd.DataFrame] = {}
     source_dates: dict[str, str | None] = {}
     errors: list[str] = []
+    attempted_at = datetime.now(timezone.utc).isoformat()
+    health = {}
 
     yahoo, yahoo_date = _cached_provider(output_path, "Yahoo")
     if yahoo is not None:
         providers["Yahoo"] = yahoo
         source_dates["Yahoo"] = yahoo_date
+    health["Yahoo"] = {
+        "status": "manual", "freshness": "manual", "attempted_at": None,
+        "last_success": yahoo_date, "data_updated_at": yahoo_date,
+        "timestamp_kind": "snapshot",
+        "note": "User-supplied Yahoo snapshot; date records its import, not provider publication. No scheduled provider fetch.",
+        "row_count": len(yahoo) if yahoo is not None else 0,
+    }
 
     source_specs = (
         ("Sleeper", fetch_sleeper_adp, True),
@@ -436,18 +447,31 @@ def build_direct_adp(
         try:
             providers[column] = _validate_provider(fetcher(season, http_get=http_get), column)
             source_dates[column] = update_date
+            health[column] = {
+                "status": "success", "freshness": "current", "attempted_at": attempted_at,
+                "last_success": attempted_at, "data_updated_at": update_date,
+                "timestamp_kind": "snapshot",
+                "row_count": len(providers[column]), "note": "Downloaded and validated on the snapshot date; provider publication time is not supplied.",
+            }
         except (requests.RequestException, ValueError, TypeError, KeyError) as exc:
             cached, cached_date = _cached_provider(output_path, column)
+            health[column] = {
+                "status": "cached" if cached is not None else "failed", "freshness": "stale" if cached is not None else "unavailable",
+                "attempted_at": attempted_at, "last_success": cached_date, "data_updated_at": cached_date,
+                "timestamp_kind": "snapshot",
+                "row_count": len(cached) if cached is not None else 0,
+                "note": "Provider unavailable or invalid; saved data retained." if cached is not None else "Provider unavailable or invalid; no saved data.",
+            }
             if cached is None:
                 if required:
                     raise RuntimeError(
-                        f"{column} ADP failed and no saved snapshot exists: {exc}"
-                    ) from exc
-                errors.append(f"{column} skipped: {exc}")
+                        f"{column} ADP failed and no saved snapshot exists."
+                    ) from None
+                errors.append(f"{column} unavailable; no saved data")
                 continue
             providers[column] = cached
             source_dates[column] = cached_date
-            errors.append(f"{column}: {exc}")
+            errors.append(f"{column} unavailable; using saved data")
 
     if not providers:
         raise FileNotFoundError("No direct or saved ADP source is available.")
@@ -478,7 +502,7 @@ def build_direct_adp(
         .reset_index(drop=True)
     )
     output["MFL_Source"] = "MyFantasyLeague recent PPR, 12-team redraft"
-    output["Source_Updated"] = update_date
+    output["Source_Updated"] = max((value for value in source_dates.values() if value), default=None)
     for column in ADP_PROVIDERS:
         output[f"{column}_Updated"] = source_dates.get(column)
 
@@ -486,6 +510,7 @@ def build_direct_adp(
     temporary = output_path.with_suffix(output_path.suffix + ".tmp")
     output.to_csv(temporary, index=False)
     temporary.replace(output_path)
+    output.attrs["source_health"] = health
     if errors:
         print("[WARN] Used last-good provider data for " + "; ".join(errors))
     counts = ", ".join(
@@ -543,7 +568,7 @@ def build_special_teams_adp(
             )
             frames.append(_special_provider_for_merge(provider, column))
         except (requests.RequestException, ValueError, TypeError, KeyError) as exc:
-            errors.append(f"{column}: {exc}")
+            errors.append(f"{column}: provider unavailable or invalid")
 
     if len(frames) < 2:
         detail = "; ".join(errors) or "fewer than two sources returned data"
@@ -595,6 +620,8 @@ def adp_source_dates(path) -> dict[str, str]:
     frame = pd.read_csv(path, nrows=MAX_PUBLISHED_PLAYERS)
     result: dict[str, str] = {}
     for column in ADP_PROVIDERS:
+        if column not in frame or not pd.to_numeric(frame[column], errors="coerce").notna().any():
+            continue
         date_column = f"{column}_Updated"
         if date_column in frame.columns:
             values = frame[date_column].dropna().astype(str)

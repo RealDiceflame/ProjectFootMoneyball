@@ -226,7 +226,7 @@ def _reference_rows(row: pd.Series, generated_at: str) -> list[dict]:
         "provider_key": "nflverse",
         "provider_kind": "reference",
         "provider_url": NFLVERSE_SOURCE_URL,
-        "updated_at": generated_at,
+        "updated_at": None,
     }
     away, home = str(row["away_team"]), str(row["home_team"])
     for team, price in ((away, _american(row.get("away_moneyline"))), (home, _american(row.get("home_moneyline")))):
@@ -320,7 +320,7 @@ def add_kalshi_markets(games: list[dict], events: list[dict], generated_at: str)
                 selection=selection,
                 price=probability_to_american(ask),
                 contract_price=int(ask * 100 + 0.5),
-                updated_at=str(market.get("last_price_ts") or generated_at),
+                updated_at=market.get("last_price_ts") or None,
             ))
 
 
@@ -592,7 +592,7 @@ def add_polymarket_game_markets(games: list[dict], events: list[dict], generated
                     line=line,
                     price=probability_to_american(probability),
                     contract_price=int(probability * 100 + 0.5),
-                    updated_at=str(market.get("updatedAt") or event.get("updatedAt") or generated_at),
+                    updated_at=market.get("updatedAt") or event.get("updatedAt") or None,
                 ))
 
 
@@ -780,14 +780,42 @@ def refresh_odds_board(
 ) -> Path:
     """Download current documented sources and atomically refresh the public board."""
     now = datetime.now(timezone.utc)
+    attempted_at = now.isoformat()
+    destination = Path(destination)
+    try:
+        previous = json.loads(destination.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        previous = {}
+    health = {}
+
+    def record(source, state, note, *, attempted=True, rows=None):
+        old = previous.get("source_health", {}).get(source, {})
+        succeeded = state in {"success", "no_upcoming_markets"}
+        health[source] = {
+            "status": state,
+            "freshness": "current" if succeeded else "unavailable" if state == "failed" else state,
+            "attempted_at": attempted_at if attempted else None,
+            "last_success": attempted_at if succeeded else old.get("last_success"),
+            "data_updated_at": old.get("data_updated_at") if not succeeded else None,
+            "note": note,
+        }
+        if rows is not None:
+            health[source]["row_count"] = rows
+
+    def market_list(value):
+        if not isinstance(value, list) or any(not isinstance(item, dict) for item in value):
+            raise ValueError("Invalid market response")
+        return value
+
     status(f"[1/6] Loading the {season} NFL schedule and market consensus...")
     response = get(SCHEDULE_URL, headers={"User-Agent": "OutlierBaseline/0.2"}, timeout=180)
     response.raise_for_status()
     schedule = pd.read_csv(StringIO(response.text), low_memory=False)
+    record("schedule", "success", "Schedule downloaded; provider publication time is not supplied.")
 
     status("[2/6] Loading public Kalshi NFL winner markets...")
     try:
-        kalshi = _get_json(
+        kalshi = market_list(_get_json(
             f"{KALSHI_API}/events",
             params={
                 "series_ticker": "KXNFLGAME",
@@ -796,9 +824,11 @@ def refresh_odds_board(
                 "limit": 200,
             },
             get=get,
-        ).get("events", [])
-    except (requests.RequestException, ValueError) as error:
-        status(f"[WARN] Kalshi markets are temporarily unavailable: {error}")
+        )["events"])
+        record("exchange", "success", "Public exchange request succeeded.")
+    except (requests.RequestException, ValueError, TypeError, KeyError, AttributeError):
+        status("[WARN] Kalshi markets are temporarily unavailable.")
+        record("exchange", "failed", "Public exchange request failed or returned invalid data.")
         kalshi = []
 
     key = odds_api_key or os.getenv("ODDS_API_KEY")
@@ -806,7 +836,7 @@ def refresh_odds_board(
     if key:
         status("[3/6] Loading The Odds API sportsbook comparisons...")
         try:
-            sportsbooks = _get_json(
+            sportsbooks = market_list(_get_json(
                 ODDS_API_URL,
                 params={
                     "apiKey": key,
@@ -816,15 +846,23 @@ def refresh_odds_board(
                     "dateFormat": "iso",
                 },
                 get=get,
-            )
-        except (requests.RequestException, ValueError) as error:
-            status(f"[WARN] Sportsbook comparisons are temporarily unavailable: {error}")
+            ))
+            record("primary_sportsbook", "success", "The Odds API request succeeded.")
+        except (requests.RequestException, ValueError, TypeError, KeyError):
+            status("[WARN] Sportsbook comparisons are temporarily unavailable.")
+            record("primary_sportsbook", "failed", "The Odds API request failed or returned invalid data.")
     else:
         status("[3/6] ODDS_API_KEY is not set; checking the backup sportsbook feed.")
+        record("primary_sportsbook", "not_configured", "The Odds API is not configured.", attempted=False)
+
+    primary_board = build_odds_board(schedule, season=season, sportsbook_events=sportsbooks, now=now)
+    primary_available = primary_board["has_sportsbooks"]
+    if health["primary_sportsbook"]["status"] == "success" and not primary_available:
+        record("primary_sportsbook", "no_upcoming_markets", "Request succeeded; no matching upcoming sportsbook markets.", rows=0)
 
     backup_key = sportsgameodds_api_key or os.getenv("SPORTSGAMEODDS_API_KEY")
     sports_game_odds = []
-    if not sportsbooks and backup_key:
+    if not primary_available and backup_key:
         status("[4/6] Loading SportsGameOdds as the backup sportsbook feed...")
 
         def sports_game_odds_get(url, **kwargs):
@@ -843,17 +881,21 @@ def refresh_odds_board(
                 },
                 get=sports_game_odds_get,
             )
-            sports_game_odds = response.get("data", []) if isinstance(response, dict) else []
-        except (requests.RequestException, ValueError) as error:
-            status(f"[WARN] Backup sportsbook comparisons are temporarily unavailable: {error}")
-    elif sportsbooks:
+            sports_game_odds = market_list(response["data"])
+            record("sportsbook_backup", "success", "SportsGameOdds backup request succeeded.")
+        except (requests.RequestException, ValueError, TypeError, KeyError):
+            status("[WARN] Backup sportsbook comparisons are temporarily unavailable.")
+            record("sportsbook_backup", "failed", "SportsGameOdds request failed or returned invalid data.")
+    elif primary_available:
         status("[4/6] The Odds API returned data; the SportsGameOdds backup was not needed.")
+        record("sportsbook_backup", "not_needed", "Primary provider has upcoming markets; backup was not requested.", attempted=False)
     else:
         status("[4/6] SPORTSGAMEODDS_API_KEY is not set; no licensed sportsbook fallback is available.")
+        record("sportsbook_backup", "not_configured", "SportsGameOdds is not configured.", attempted=False)
 
     status("[5/6] Loading public Polymarket NFL prediction markets...")
     try:
-        polymarket = _get_json(
+        polymarket = market_list(_get_json(
             POLYMARKET_EVENTS_API,
             params={
                 "active": "true",
@@ -866,24 +908,80 @@ def refresh_odds_board(
                 "end_date_max": (now + timedelta(days=15)).isoformat(),
             },
             get=get,
-        )
-        if not isinstance(polymarket, list):
-            polymarket = []
-    except (requests.RequestException, ValueError) as error:
-        status(f"[WARN] Polymarket NFL markets are temporarily unavailable: {error}")
+        ))
+        record("prediction_markets", "success", "Public prediction market request succeeded.")
+    except (requests.RequestException, ValueError, TypeError, KeyError):
+        status("[WARN] Polymarket NFL markets are temporarily unavailable.")
+        record("prediction_markets", "failed", "Public prediction market request failed or returned invalid data.")
         polymarket = []
 
     payload = build_odds_board(
         schedule,
         season=season,
         kalshi_events=kalshi,
-        sportsbook_events=sportsbooks,
+        sportsbook_events=sportsbooks if primary_available else [],
         sportsgameodds_events=sports_game_odds,
         polymarket_events=polymarket,
         now=now,
     )
+    selected = "primary_sportsbook" if primary_available else "sportsbook_backup"
+    if health["sportsbook_backup"]["status"] == "success" and not payload["has_sportsbooks"]:
+        record("sportsbook_backup", "no_upcoming_markets", "Request succeeded; no matching upcoming sportsbook markets.", rows=0)
+
+    # Keep only still-upcoming saved rows for failed sources, with original timestamps.
+    prior_games = {game["game_id"]: game for game in previous.get("games", [])}
+    sportsbook_failed = not payload["has_sportsbooks"] and any(
+        health[key]["status"] == "failed" for key in ("primary_sportsbook", "sportsbook_backup")
+    )
+    for game in payload["games"]:
+        for old_row in prior_games.get(game["game_id"], {}).get("rows", []):
+            source = "exchange" if old_row.get("provider_key") == "kalshi" else "prediction_markets" if old_row.get("provider_key") == "polymarket" else None
+            if (source and health[source]["status"] == "failed") or (old_row.get("provider_kind") == "sportsbook" and sportsbook_failed):
+                game["rows"].append({**old_row, "retained": True, "is_best": False})
+
+    if health["prediction_markets"]["status"] == "failed":
+        payload["prediction_markets"] = [{**card, "retained": True} for card in previous.get("prediction_markets", [])]
+    for source, provider in (("exchange", "kalshi"), ("prediction_markets", "polymarket")):
+        rows = [row for game in payload["games"] for row in game["rows"] if row["provider_key"] == provider]
+        count = len(rows) + (len(payload["prediction_markets"]) if source == "prediction_markets" else 0)
+        if health[source]["status"] == "failed" and count:
+            health[source].update(status="cached", freshness="stale", note="Provider failed; last-good data retained with original timestamps.")
+        elif health[source]["status"] == "success" and not count:
+            record(source, "no_upcoming_markets", "Request succeeded; no matching upcoming markets.", rows=0)
+        health[source]["row_count"] = count
+        dates = [row["updated_at"] for row in rows if row.get("updated_at")]
+        if dates:
+            health[source]["data_updated_at"] = max(dates)
+
+    book_rows = [row for game in payload["games"] for row in game["rows"] if row["provider_kind"] == "sportsbook"]
+    if payload["has_sportsbooks"]:
+        record("sportsbooks", "success" if primary_available else "fallback", "The Odds API markets available." if primary_available else "SportsGameOdds fallback markets available.", rows=len(book_rows))
+        health["sportsbooks"].update(last_success=attempted_at, freshness="current", selected_provider="The Odds API" if primary_available else "SportsGameOdds")
+        health[selected]["row_count"] = len(book_rows)
+    elif sportsbook_failed:
+        record("sportsbooks", "cached" if book_rows else "failed", "Configured sportsbook request failed; saved upcoming rows retained when available.", rows=len(book_rows))
+        health["sportsbooks"]["freshness"] = "stale" if book_rows else "unavailable"
+        if book_rows:
+            payload["sources"]["sportsbooks"] = previous.get("sources", {}).get("sportsbooks", payload["sources"]["sportsbooks"])
+    else:
+        state = "no_upcoming_markets" if any(health[key]["status"] == "no_upcoming_markets" for key in ("primary_sportsbook", "sportsbook_backup")) else "not_configured"
+        record("sportsbooks", state, "No matching upcoming sportsbook markets." if state == "no_upcoming_markets" else "Licensed sportsbook feeds are not configured.", attempted=state != "not_configured", rows=0)
+    book_dates = [row["updated_at"] for row in book_rows if row.get("updated_at")]
+    if book_dates:
+        health["sportsbooks"]["data_updated_at"] = max(book_dates)
+        if payload["has_sportsbooks"]:
+            health[selected]["data_updated_at"] = max(book_dates)
+    payload["has_sportsbooks"] = bool(book_rows)
     status("[6/6] Loading kickoff weather for upcoming outdoor games...")
-    weather_count = add_nws_weather(payload["games"], get=get)
+    eligible = [game for game in payload["games"] if game["weather"]["status"] == "pending" and datetime.fromisoformat(game["kickoff"]) <= now + timedelta(days=7) and game.get("stadium_id") in STADIUM_COORDINATES]
+    weather_count = add_nws_weather(payload["games"], now=now, get=get)
+    weather_state = "not_needed" if not eligible else "success" if weather_count == len(eligible) else "partial_failure" if weather_count else "failed"
+    record("weather", weather_state, "Kickoff weather checked where forecasts are available." if eligible else "No outdoor games within the supported forecast window.", attempted=bool(eligible), rows=weather_count)
+    for game in eligible:
+        old_weather = prior_games.get(game["game_id"], {}).get("weather", {})
+        if game["weather"]["status"] == "unavailable" and old_weather.get("status") == "forecast":
+            game["weather"] = {**old_weather, "retained": True}
+    payload["source_health"] = health
     status(f"[OK] Added {weather_count} National Weather Service forecasts.")
     destination = Path(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)

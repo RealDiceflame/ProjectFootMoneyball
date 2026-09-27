@@ -82,8 +82,10 @@ const statsBundle=JSON.parse(readFileSync(new URL("../docs/data/game_stats/2026/
 const catalogue={seasons:[2026]};
 test("stats page links every available game and leaders respond to week/category changes",async()=>{
   const games=await page("stats.js","",[catalogue,statsBundle]);
-  assert.equal(games.nodes.get("stats-results").children.length,16);
-  assert.ok(games.nodes.get("stats-results").children.every(node=>node.href.startsWith("game.html?game=2026_01_")));
+  const latestWeek=String(Math.max(...statsBundle.games.filter(game=>game.stats_available).map(game=>game.week)));
+  const expected=statsData.selectedGames(statsBundle,latestWeek);
+  assert.equal(games.nodes.get("stats-results").children.length,expected.length);
+  assert.deepEqual(games.nodes.get("stats-results").children.map(node=>node.href).sort(),expected.map(game=>`game.html?game=${game.game_id}`).sort());
   const view=await page("stats.js","?view=leaders",[catalogue,statsBundle]);
   assert.equal(view.nodes.get("stats-week").value,"all");
   assert.equal(view.nodes.get("stats-category-label").hidden,false);
@@ -91,9 +93,9 @@ test("stats page links every available game and leaders respond to week/category
   view.nodes.get("stats-category").value="Defense";view.nodes.get("stats-category").events.change();
   assert.match(view.nodes.get("stats-results").textContent,/Sacks/);
   assert.doesNotMatch(view.nodes.get("stats-results").textContent,/Passing yards/);
-  view.nodes.get("stats-week").value="2";view.nodes.get("stats-week").events.change();
-  assert.match(view.nodes.get("stats-status").textContent,/0 game box scores/);
-  assert.match(view.nodes.get("stats-results").textContent,/No nonzero totals/);
+  view.nodes.get("stats-week").value=latestWeek;view.nodes.get("stats-week").events.change();
+  assert.match(view.nodes.get("stats-status").textContent,new RegExp(`${statsBundle.periods[latestWeek].game_count} game box score`));
+  assert.match(view.nodes.get("stats-results").textContent,/Sacks/);
 });
 
 test("stats refresh recovers catalogue failure and retains loaded leaders after an outage",async()=>{

@@ -3,7 +3,7 @@ import json
 
 import pandas as pd
 
-from app.player_news import build_player_news, espn_team_url, match_headlines, normalize_name, _download_headlines, _league_news_snapshot, _parse_headlines
+from app.player_news import build_player_news, espn_team_url, match_headlines, normalize_name, _download_headlines, _league_news_snapshot, _parse_headlines, _injury_context, _injury_event
 from types import SimpleNamespace
 import pytest
 
@@ -380,7 +380,8 @@ def test_current_injury_is_published_as_structured_interface_data(tmp_path):
         current_depth=depth,
         previous_depth=depth,
         injuries=injuries,
-        now=datetime(2026, 9, 4, 15, 0, tzinfo=timezone.utc),
+        schedule={"season": 2026, "games": [{"week": 1, "gameday": "2026-09-13", "home": "BUF", "away": "KC"}]},
+        now=datetime(2026, 9, 10, 15, 0, tzinfo=timezone.utc),
     )
 
     report = json.loads(destination.read_text(encoding="utf-8"))["reports"]["injured runner|BUF"]
@@ -392,6 +393,10 @@ def test_current_injury_is_published_as_structured_interface_data(tmp_path):
         "report_status": "Doubtful",
         "practice_status": "Did Not Participate",
         "week": 1,
+        "season": 2026,
+        "current": True,
+        "freshness": "current",
+        "report_severity": "risk",
         "severity": "risk",
     }
 
@@ -429,7 +434,8 @@ def test_questionable_player_shows_primary_and_secondary_injuries_without_risk(t
         current_depth=depth,
         previous_depth=depth,
         injuries=injuries,
-        now=datetime(2026, 9, 4, 15, 0, tzinfo=timezone.utc),
+        schedule={"season": 2026, "games": [{"week": 1, "gameday": "2026-09-13", "home": "BUF", "away": "KC"}]},
+        now=datetime(2026, 9, 10, 15, 0, tzinfo=timezone.utc),
     )
 
     report = json.loads(destination.read_text(encoding="utf-8"))["reports"]["injured runner|BUF"]
@@ -471,3 +477,81 @@ def test_roster_exemption_is_a_risk(tmp_path):
     assert report["signal"] == "risk"
     availability = next(event for event in report["events"] if event["category"] == "Availability")
     assert availability["severity"] == "risk"
+
+
+INJURY_SCHEDULE = {"season": 2026, "games": [
+    {"week": 3, "gameday": "2026-09-24", "home": "BUF", "away": "KC"},
+    {"week": 3, "gameday": "2026-09-28", "home": "PHI", "away": "NYG"},
+    {"week": 4, "gameday": "2026-10-01", "home": "BUF", "away": "KC"},
+]}
+
+
+def _injury_rows(season=2026, week=3, status="Out"):
+    return pd.DataFrame([{"season": season, "week": week, "full_name": "Starter Runner", "team": "BUF",
+                          "position": "RB", "report_status": status, "report_primary_injury": "Knee"}])
+
+
+@pytest.mark.parametrize("season,week,freshness,current", [
+    (2025, 18, "historical", False), (2026, 2, "historical", False),
+    (2026, 4, "future", False), (2027, 1, "future", False), (2026, 3, "current", True),
+])
+def test_report_currentness_uses_schedule_season_and_week(season, week, freshness, current):
+    rows = _injury_rows(season, week)
+    context = _injury_context(rows, 2026, datetime(2026, 9, 27, tzinfo=timezone.utc), INJURY_SCHEDULE)
+    event, injury = _injury_event({"player": "Starter Runner", "team": "BUF", "pos": "RB"}, rows, context)
+    assert context["expected_week"] == 3
+    assert injury["season"] == season and injury["week"] == week
+    assert injury["current"] == current and injury["freshness"] == freshness
+    assert event["severity"] == ("risk" if current else "info")
+    assert event["category"] == ("Injury" if current else "Injury history")
+
+
+def test_same_league_week_does_not_advance_after_a_team_game_and_expires_tuesday():
+    rows = _injury_rows()
+    monday = _injury_context(rows, 2026, datetime(2026, 9, 29, 3, 59, tzinfo=timezone.utc), INJURY_SCHEDULE)
+    tuesday = _injury_context(rows, 2026, datetime(2026, 9, 29, 4, tzinfo=timezone.utc), INJURY_SCHEDULE)
+    assert monday["expected_week"] == 3 and monday["status"] == "current"
+    assert tuesday["expected_week"] == 4 and tuesday["status"] == "behind"
+    assert tuesday["latest_report_week"] == 3
+    assert tuesday["valid_from"] == "2026-09-29T00:00:00-04:00"
+
+
+def test_byes_and_unverified_weeks_never_make_latest_reports_current():
+    rows = _injury_rows()
+    now = datetime(2026, 9, 27, tzinfo=timezone.utc)
+    missing = _injury_context(rows, 2026, now, None)
+    assert missing["expected_week"] is None and missing["status"] == "unknown"
+    assert missing["latest_report_week"] == 3
+    event, injury = _injury_event({"player": "Starter Runner", "team": "BUF", "pos": "RB"}, rows, missing)
+    assert injury["current"] is False and event["severity"] == "info"
+    bye = _injury_context(rows, 2026, now, {"season": 2026, "games": [INJURY_SCHEDULE["games"][1]]})
+    _, injury = _injury_event({"player": "Starter Runner", "team": "BUF", "pos": "RB"}, rows, bye)
+    assert injury["current"] is False
+    assert _injury_context(pd.DataFrame(), 2026, now, INJURY_SCHEDULE)["status"] == "unavailable"
+
+
+def test_build_retains_history_during_missing_reports_without_carrying_forward_risk(tmp_path):
+    rankings, destination = tmp_path / "rankings.json", tmp_path / "player_news.json"
+    _rankings(rankings)
+    roster = pd.DataFrame([{"team": "BUF", "status": "ACT", "full_name": "Starter Runner", "position": "RB"},
+                           {"team": "KC", "status": "ACT", "full_name": "Reserve Receiver", "position": "WR"}])
+    depth = pd.DataFrame([{"dt": "2026-09-27T00:00:00Z", "team": "BUF", "player_name": "Starter Runner", "pos_abb": "RB", "pos_rank": 1},
+                          {"dt": "2026-09-27T00:00:00Z", "team": "KC", "player_name": "Reserve Receiver", "pos_abb": "WR", "pos_rank": 1}])
+    arguments = {"season": 2026, "current_roster": roster, "current_depth": depth, "previous_depth": depth,
+                 "schedule": INJURY_SCHEDULE, "now": datetime(2026, 9, 27, 12, tzinfo=timezone.utc)}
+    build_player_news(rankings, destination, injuries=_injury_rows(2026, 2), **arguments)
+    payload = json.loads(destination.read_text())
+    player = payload["reports"]["starter runner|BUF"]
+    assert player["signal"] == "stable" and player["current_injury"] is None
+    assert player["health_status"] == "unknown" and player["injury"]["week"] == 2
+    assert payload["injury_context"]["status"] == "behind"
+    build_player_news(rankings, destination, injuries=_injury_rows(), **arguments)
+    player = json.loads(destination.read_text())["reports"]["starter runner|BUF"]
+    assert player["signal"] == "risk" and player["current_injury"]["week"] == 3
+    build_player_news(rankings, destination, injuries=pd.DataFrame(), **arguments)
+    payload = json.loads(destination.read_text())
+    player = payload["reports"]["starter runner|BUF"]
+    assert player["signal"] == "stable" and player["current_injury"] is None
+    assert player["health_status"] == "unknown" and player["injury"]["carried_forward"] is True
+    assert player["injury"]["week"] == 3 and payload["injury_context"]["status"] == "unavailable"
+    assert any(event["category"] == "Injury history" for event in player["events"])

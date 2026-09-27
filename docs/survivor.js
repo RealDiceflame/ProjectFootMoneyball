@@ -1,5 +1,7 @@
 import {fixture, playable, probability, sanitizeState, validatePlan, suggestPlan, survivalPath, simulatePlans} from "./survivor-model.mjs?v=1";
-import {initMatchup} from "./matchup.js?v=20260909-matchup1";
+import {initMatchup} from "./matchup.js?v=20260927-refresh1";
+import {startAutoRefresh, fetchSnapshot, snapshotSignature} from "./auto-refresh.mjs?v=20260927-refresh1";
+import {canRefreshLabs, preserveLabView, validateTeamSnapshot} from "./lab-refresh.mjs?v=20260927-refresh1";
 
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => {
@@ -11,7 +13,7 @@ const el = (tag, text, className) => {
 const pct = p => Number.isFinite(p) ? `${(100 * p).toFixed(1)}%` : "—";
 const signed = n => `${n > 0 ? "+" : ""}${n.toFixed(1)}`;
 const date = value => new Date(value).toLocaleString(undefined, {dateStyle: "medium", timeStyle: "short"});
-let data, state, storageKey;
+let data, state, storageKey, matchup, currentSignature = "", lockSignature = "", statusText = "";
 
 function save() {
   try {
@@ -137,13 +139,14 @@ function renderPath() {
   }
 }
 
-function render() {
+function render({keepSimulation = false} = {}) {
   $("start-week").value = state.start; $("end-week").value = state.end;
   $("tie-rule").value = state.ties ? "survive" : "lose";
-  $("simulation-results").replaceChildren();
+  if (!keepSimulation) $("simulation-results").replaceChildren();
   renderUsed(); renderMatrix(); renderPath();
   const hours = (Date.now() - Date.parse(data.generated_at)) / 3600000;
-  $("survivor-status").textContent = `${data.season} · Updated ${date(data.generated_at)}${hours > 24 ? " · Snapshot over 24 hours old" : ""}`;
+  statusText = `${data.season} · Updated ${date(data.generated_at)}${hours > 24 ? " · Snapshot over 24 hours old" : ""}`;
+  $("survivor-status").textContent = statusText;
 }
 
 function chart(result) {
@@ -201,20 +204,7 @@ function renderEvidence() {
   );
 }
 
-async function init() {
-  try {
-    const response = await fetch("data/survivor.json", {cache: "no-cache"});
-    if (!response.ok) throw new Error(`Snapshot unavailable (${response.status}).`);
-    data = await response.json();
-    if (!Array.isArray(data.teams) || data.teams.length !== 32 || !Array.isArray(data.games) || !Number.isInteger(data.season) || !data.training || !Number.isFinite(Date.parse(data.generated_at))) throw new Error("Snapshot format is invalid.");
-    for (const game of data.games) if (game.model) {
-      const values = [game.model.home_win, game.model.away_win, game.model.tie];
-      if (values.some(p => !Number.isFinite(p) || p < 0 || p > 1) || Math.abs(values.reduce((a, b) => a + b, 0) - 1) > .00001) throw new Error("Invalid probability in snapshot.");
-    }
-    storageKey = `outlierbaseline-survivor-v1-${data.season}`;
-    let raw;
-    try { raw = JSON.parse(localStorage.getItem(storageKey)); } catch { raw = null; }
-    state = sanitizeState(raw, data);
+function connectControls() {
     ["start-week", "end-week"].forEach(id => {
       for (let w = 1; w <= 18; w++) { const option = el("option", `Week ${w}`); option.value = w; $(id).append(option); }
       $(id).addEventListener("change", () => {
@@ -234,20 +224,60 @@ async function init() {
       save(); render();
     });
     $("simulate-plan").addEventListener("click", runSimulation);
-    renderEvidence(); render(); save();
-    $("survivor-content").hidden = false;
-    initMatchup(data);
-    // Only redraw when kickoff locks change, preserving focus during normal use.
-    let lockSignature = data.games.map(g => playable(g)).join();
-    setInterval(() => {
-      const next = data.games.map(g => playable(g)).join();
-      if (next !== lockSignature) { lockSignature = next; render(); }
-    }, 30000);
-  } catch (error) {
-    $("survivor-status").textContent = "Survivor data unavailable";
-    $("survivor-error").hidden = false;
-    $("survivor-error").textContent = `${error.message} Your saved picks have not been cleared. Please try again after the next site update.`;
+}
+
+function markPreviousSimulation() {
+  const target = $("simulation-results");
+  if (target.childElementCount && !target.querySelector("[data-refresh-note]")) {
+    const note = el("p", "These simulation results use the previous snapshot. Simulate your plan again to use the updated forecasts.");
+    note.dataset.refreshNote = "true"; target.prepend(note);
   }
 }
 
-init();
+startAutoRefresh(async signal => {
+  const value = await fetchSnapshot("data/survivor.json", {signal, validate: validateTeamSnapshot});
+  signal.throwIfAborted();
+  const signature = snapshotSignature(value);
+  if (signature === currentSignature) { $("survivor-status").textContent = statusText; return; }
+  const initial = !data;
+  if (data && value.season !== data.season) throw new Error("A new season is available. Reload when you are ready to switch seasons.");
+  preserveLabView(() => {
+    data = value;
+    if (initial) {
+      storageKey = `outlierbaseline-survivor-v1-${data.season}`;
+      let raw;
+      try { raw = JSON.parse(localStorage.getItem(storageKey)); } catch { raw = null; }
+      state = sanitizeState(raw, data);
+      connectControls();
+    }
+    // A refreshed forecast must not silently remove a pick that has since locked.
+    renderEvidence(); render({keepSimulation: !initial});
+    if (initial) { save(); matchup = initMatchup(data); }
+    else { markPreviousSimulation(); matchup.updateData(data); }
+    lockSignature = data.games.map(game => playable(game)).join();
+    $("survivor-content").hidden = false;
+    $("survivor-error").hidden = true;
+  });
+  currentSignature = signature;
+}, {
+  canRefresh: canRefreshLabs,
+  onError: error => {
+    if (currentSignature) {
+      $("survivor-status").textContent = `${statusText} · ${error.message.startsWith("A new season") ? error.message : "Refresh delayed; showing saved data"}`;
+      return;
+    }
+    $("survivor-status").textContent = "Survivor data unavailable · retrying automatically";
+    $("survivor-error").hidden = false;
+    $("survivor-error").textContent = `${error.message} Your saved picks have not been cleared. Please try again after the next site update.`;
+  },
+});
+
+// A kickoff can lock between published snapshots; keep picks and focus intact.
+setInterval(() => {
+  if (!data || document.hidden || !canRefreshLabs()) return;
+  const next = data.games.map(game => playable(game)).join();
+  if (next !== lockSignature) {
+    lockSignature = next;
+    preserveLabView(() => { render({keepSimulation: true}); markPreviousSimulation(); });
+  }
+}, 30000);

@@ -1,3 +1,6 @@
+import {startAutoRefresh, fetchSnapshot, snapshotSignature, preserveView} from "./auto-refresh.mjs?v=20260927-refresh1";
+import {validateSpecialTeams} from "./snapshot-validation.mjs?v=20260927-refresh1";
+import {DRAFT_ALIASES_KEY, validDraftAliases, migrateDraftedKeys, toggleDraftedKey} from "./draft-identity.mjs?v=20260927-refresh1";
 const DATA_URL = "./data/special_teams.json";
 const DRAFTED_KEY = "project-foot-moneyball:drafted:v1";
 
@@ -38,11 +41,17 @@ function loadDrafted() {
   }
 }
 
+function loadDraftAliases() {
+  try { return validDraftAliases(JSON.parse(localStorage.getItem(DRAFT_ALIASES_KEY))); }
+  catch { return []; }
+}
+
 const state = {
   data: null,
   rows: [],
   visible: [],
   drafted: loadDrafted(),
+  draftAliases: loadDraftAliases(),
   search: "",
   position: "ALL",
   filters: {},
@@ -215,8 +224,7 @@ function clearFilters() {
 }
 
 function toggleDrafted(key) {
-  if (state.drafted.has(key)) state.drafted.delete(key);
-  else state.drafted.add(key);
+  state.drafted = toggleDraftedKey(state.drafted, key, state.draftAliases);
   try { localStorage.setItem(DRAFTED_KEY, JSON.stringify([...state.drafted].sort())); } catch { /* in-memory still works */ }
   render();
 }
@@ -238,22 +246,32 @@ function exportRows() {
   URL.revokeObjectURL(url);
 }
 
-async function load() {
-  try {
-    const response = await fetch(`${DATA_URL}?v=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) throw new Error(`K/DST request failed (${response.status})`);
-    state.data = await response.json();
-    state.rows = state.data.rows.map(values => Object.fromEntries(state.data.columns.map((column, index) => [column, values[index]])));
+let loadedSignature = null, loadedStatus = "";
+async function load(signal) {
+    const next = await fetchSnapshot(DATA_URL, {signal, validate: validateSpecialTeams});
+    const signature = snapshotSignature(next), first = !state.data;
+    signal.throwIfAborted();
+    const rows = next.rows.map(values => Object.fromEntries(next.columns.map((column, index) => [column, values[index]])));
+    if (signature !== loadedSignature) {
+      const previousDrafted = snapshotSignature([...state.drafted].sort()), previousAliases = snapshotSignature(state.draftAliases);
+      const migrated = migrateDraftedKeys(state.drafted, state.rows, rows, state.draftAliases);
+      state.drafted = migrated.drafted; state.draftAliases = migrated.aliases;
+      try {
+        if (snapshotSignature([...state.drafted].sort()) !== previousDrafted) localStorage.setItem(DRAFTED_KEY, JSON.stringify([...state.drafted].sort()));
+        if (snapshotSignature(state.draftAliases) !== previousAliases) localStorage.setItem(DRAFT_ALIASES_KEY, JSON.stringify(state.draftAliases));
+      } catch { /* in-memory still works */ }
+    }
+    state.data = next; state.rows = rows;
     const dates = Object.entries(state.data.source_dates || {}).map(([source, date]) => `${source} ${date}`);
-    ui.status.textContent = dates.length ? dates.join(" · ") : "K/DST market loaded";
-    renderHead();
-    render();
+    loadedStatus = dates.length ? dates.join(" · ") : "K/DST market loaded";
+    ui.status.textContent = loadedStatus;
+    if (signature !== loadedSignature) {
+      preserveView(() => {if (first) renderHead(); render();}, [ui.shell]);
+      loadedSignature = signature;
+    }
     ui.loading.classList.add("hidden");
     ui.shell.setAttribute("aria-busy", "false");
     ui.export.disabled = false;
-  } catch (error) {
-    ui.loading.innerHTML = `<strong>Could not load the K/DST market.</strong><span>${error.message}</span>`;
-  }
 }
 
 ui.search.addEventListener("input", event => { state.search = event.target.value; render(); });
@@ -266,11 +284,13 @@ ui.positions.addEventListener("click", event => {
 });
 ui.head.addEventListener("input", event => {
   if (!event.target.matches("[data-filter]")) return;
+  if ((state.filters[event.target.dataset.filter] || "") === event.target.value) return;
   state.filters[event.target.dataset.filter] = event.target.value;
   render();
 });
 ui.head.addEventListener("change", event => {
   if (!event.target.matches("[data-filter]")) return;
+  if ((state.filters[event.target.dataset.filter] || "") === event.target.value) return;
   state.filters[event.target.dataset.filter] = event.target.value;
   render();
 });
@@ -288,4 +308,7 @@ ui.body.addEventListener("click", event => {
 ui.clear.addEventListener("click", clearFilters);
 ui.export.addEventListener("click", exportRows);
 
-load();
+startAutoRefresh(load, {onError: () => {
+  ui.status.textContent = state.data ? `${loadedStatus} · Refresh unavailable; keeping last loaded data` : "K/DST market unavailable; retrying automatically";
+  if (!state.data) ui.loading.textContent = "Could not load the K/DST market. Retrying automatically.";
+}});

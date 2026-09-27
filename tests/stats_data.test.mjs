@@ -6,20 +6,22 @@ const source=JSON.parse(readFileSync(new URL("../docs/data/game_stats/2026/summa
 
 test("saved stats cover published games, defaults and every linked box score",()=>{
   const data=statsSummary(source,2026);
-  assert.equal(defaultStatsWeek(data),"1");assert.equal(defaultStatsWeek(data,true),"all");
-  const games=selectedGames(data,"1",Date.parse("2026-09-15T18:00:00Z"));
-  assert.equal(games.length,16);
-  for(const game of games)assert.ok(existsSync(new URL(`../docs/data/game_stats/2026/${game.game_id}.json`,import.meta.url)));
-  assert.match(coverageText(data,"all"),/16 game box scores/);
-  assert.equal(selectedGames(data,"2",Date.parse("2026-09-15T18:00:00Z")).length,0);
+  const available = data.games.filter(game=>game.stats_available);
+  assert.equal(defaultStatsWeek(data),String(Math.max(1,...available.map(game=>game.week))));
+  assert.equal(defaultStatsWeek(data,true),"all");
+  for(const game of available)assert.ok(existsSync(new URL(`../docs/data/game_stats/2026/${game.game_id}.json`,import.meta.url)));
+  assert.ok(coverageText(data,"all").includes(`${available.length} game box score`));
+  const week = defaultStatsWeek(data);
+  assert.ok(selectedGames(data,week).every(game=>String(game.week)===week));
 });
 
 test("a reported score without stats stays visible and is marked pending",()=>{
-  const data=structuredClone(source), game=data.games.find(row=>row.week===2);
+  const data=structuredClone(source), game={...data.games[0],stats_available:false};
+  data.games=[game]; data.periods[String(game.week)]={game_count:0};
   game.home_score=21;game.away_score=14;
   const now=Date.parse(game.kickoff)+4*3600000;
-  assert.ok(selectedGames(data,"2",now).includes(game));
-  assert.match(coverageText(data,"2",now),/0 game box scores · 1 reported game awaiting stats/);
+  assert.ok(selectedGames(data,String(game.week),now).includes(game));
+  assert.match(coverageText(data,String(game.week),now),/0 game box scores · 1 reported game awaiting stats/);
 });
 
 test("malformed seasons, identities and leaders cannot render a false snapshot",()=>{
