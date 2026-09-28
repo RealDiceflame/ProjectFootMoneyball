@@ -75,9 +75,9 @@ test("roster totals exclude bench and IR from starters; unknown properties are n
 });
 
 test("all site pages use the same cache-busted shared navigation and explicit prototype labels", () => {
-  for (const page of ["index", "rankings", "projection", "survivor", "special-teams", "odds", "league", "fantasy", "stats", "game"]) {
+  for (const page of ["index", "rankings", "projection", "survivor", "special-teams", "odds", "league", "fantasy", "stats", "game", "values"]) {
     const html = readFileSync(new URL(`../docs/${page}.html`, import.meta.url), "utf8");
-    assert.match(html, /site-nav.js\?v=20260928-layout1/); assert.match(html, /site-nav.css\?v=20260928-layout1/);
+    assert.match(html, /site-nav.js\?v=20260928-values1/); assert.match(html, /site-nav.css\?v=20260928-layout1/);
   }
   const html = readFileSync(new URL("../docs/fantasy.html", import.meta.url), "utf8");
   assert.match(html, /Browser-only prototype/); assert.match(html, /not playable, shared leagues/);

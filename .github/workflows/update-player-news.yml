@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["scripts/refresh_site.py", "scripts/push_snapshot.py", "app/player_news.py", ".github/workflows/update-player-news.yml"]
+    paths: ["scripts/refresh_site.py", "scripts/push_snapshot.py", "app/player_news.py", "app/player_history.py", "app/odds_board.py", "data_fetcher/adp_importer.py", "refresh_draft_board.py", ".github/workflows/update-player-news.yml"]
   schedule:
     - cron: "0 0,6,12,18 * * *"
       timezone: "America/New_York"

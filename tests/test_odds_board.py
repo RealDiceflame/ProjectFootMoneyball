@@ -389,7 +389,7 @@ def test_refresh_selects_backup_after_primary_failure_without_logging_key(tmp_pa
     messages = []
     get = odds_refresh({
         odds_board.ODDS_API_URL: requests.HTTPError("https://api.test?apiKey=private-secret"),
-        odds_board.SPORTSGAMEODDS_API: {"data": [{
+        odds_board.SPORTSGAMEODDS_API: {"success": True, "data": [{
             "teams": {"away": {"names": {"long": "New England Patriots"}}, "home": {"names": {"long": "Seattle Seahawks"}}},
             "updatedAt": "2026-09-05T12:00:00Z",
             "odds": {"points-away-game-ml-away": {"betTypeID": "ml", "sideID": "away", "byBookmaker": {"draftkings": {"odds": 150, "available": True}}}},
@@ -449,3 +449,46 @@ def test_invalid_primary_payload_is_failed_and_preserves_saved_sportsbooks(tmp_p
     assert payload["source_health"]["sportsbooks"]["status"] == "cached"
     assert payload["source_health"]["sportsbooks"]["last_success"] == "2026-09-05T12:00:00Z"
     assert payload["source_health"]["sportsbooks"]["data_updated_at"] == "2026-09-04T12:00:00Z"
+
+
+@pytest.mark.parametrize("envelope", [
+    {"success": False, "data": [], "error": "https://provider.test?apiKey=private-secret"},
+    {"data": []},
+    {"success": "true", "data": []},
+    {"success": True, "data": None},
+])
+def test_invalid_backup_envelope_preserves_saved_sportsbooks(tmp_path, odds_refresh, envelope):
+    output = tmp_path / "odds.json"
+    prior = build_odds_board(_schedule(), season=2026, sportsbook_events=[{
+        "away_team": "New England Patriots", "home_team": "Seattle Seahawks",
+        "bookmakers": [{"key": "draftkings", "title": "DraftKings", "last_update": "2026-09-04T12:00:00Z", "markets": [{"key": "h2h", "outcomes": [{"name": "Seattle Seahawks", "price": -170}]}]}],
+    }], now=datetime(2026, 9, 5, tzinfo=timezone.utc))
+    prior["source_health"] = {"sportsbooks": {"last_success": "2026-09-05T12:00:00Z"}}
+    output.write_text(json.dumps(prior))
+    messages = []
+    odds_board.refresh_odds_board(
+        output, season=2026, sportsgameodds_api_key="backup-private",
+        get=odds_refresh({odds_board.SPORTSGAMEODDS_API: envelope}), status=messages.append,
+    )
+    payload = json.loads(output.read_text())
+    assert payload["source_health"]["sportsbook_backup"]["status"] == "failed"
+    health = payload["source_health"]["sportsbooks"]
+    assert health["status"] == "cached"
+    assert health["last_success"] == "2026-09-05T12:00:00Z"
+    assert health["data_updated_at"] == "2026-09-04T12:00:00Z"
+    assert payload["has_sportsbooks"]
+    combined = output.read_text() + " ".join(messages)
+    assert "private-secret" not in combined
+    assert "backup-private" not in combined
+
+
+def test_successful_empty_backup_is_not_reported_as_failed(tmp_path, odds_refresh):
+    output = tmp_path / "odds.json"
+    odds_board.refresh_odds_board(
+        output, season=2026, sportsgameodds_api_key="test-key",
+        get=odds_refresh({odds_board.SPORTSGAMEODDS_API: {"success": True, "data": []}}),
+        status=lambda _: None,
+    )
+    health = json.loads(output.read_text())["source_health"]
+    assert health["sportsbook_backup"]["status"] == "no_upcoming_markets"
+    assert health["sportsbooks"]["status"] == "no_upcoming_markets"

@@ -162,6 +162,9 @@ def test_build_direct_adp_merges_live_feeds_and_preserves_yahoo(tmp_path):
         "Sleeper": "2026-09-04",
         "MFL": "2026-09-04",
     }
+    assert result.attrs["source_health"]["MFL"]["status"] == "success"
+    assert result.attrs["source_health"]["MFL"]["actual_period"] == "RECENT"
+    assert result["MFL_Period"].eq("RECENT").all()
 
 
 def test_update_yahoo_snapshot_replaces_provider_without_name_collisions(tmp_path):
@@ -241,7 +244,7 @@ def test_absent_provider_values_do_not_borrow_another_sources_date(tmp_path):
     assert adp_source_dates(output) == {"Sleeper": "2026-09-27"}
 
 
-def test_mfl_empty_recent_window_is_explained_without_downloading_player_directory():
+def test_mfl_empty_both_windows_is_explained_without_downloading_player_directory():
     calls = []
     def get(url, **kwargs):
         calls.append(kwargs["params"])
@@ -249,8 +252,116 @@ def test_mfl_empty_recent_window_is_explained_without_downloading_player_directo
     with pytest.raises(importer.ProviderDataUnavailable) as failure:
         importer.fetch_mfl_adp(2026, http_get=get)
     assert failure.value.reason_code == "no_recent_drafts"
-    assert len(calls) == 1
-    assert calls[0]["PERIOD"] == "RECENT"
+    assert [call["PERIOD"] for call in calls] == ["RECENT", "ALL"]
+
+
+def test_mfl_uses_labeled_all_window_only_after_confirmed_empty_recent():
+    calls = []
+    def get(url, **kwargs):
+        params = kwargs["params"]
+        calls.append(params)
+        if params["TYPE"] == "players":
+            return _FakeResponse({"players": {"player": [{"id": "1", "name": "Player, Example", "position": "QB", "team": "BUF"}]}})
+        if params["PERIOD"] == "RECENT":
+            return _FakeResponse({"adp": {"totalDrafts": "0"}})
+        return _FakeResponse({"adp": {"totalDrafts": "746", "player": [{"id": "1", "averagePick": "14.2"}]}})
+    result = importer.fetch_mfl_adp(2026, http_get=get)
+    assert result.iloc[0]["MFL"] == 14.2
+    assert result.attrs["mfl_provenance"]["actual_period"] == "ALL"
+    assert [call.get("PERIOD") for call in calls] == ["RECENT", "ALL", None]
+    assert {key: value for key, value in calls[0].items() if key != "PERIOD"} == {
+        key: value for key, value in calls[1].items() if key != "PERIOD"
+    }
+
+
+@pytest.mark.parametrize("payload", [{}, {"adp": None}, {"adp": {"totalDrafts": "0", "player": {}}}])
+def test_mfl_malformed_recent_does_not_trigger_a_broader_window(payload):
+    calls = []
+    def get(url, **kwargs):
+        calls.append(kwargs["params"])
+        return _FakeResponse(payload)
+    with pytest.raises(ValueError):
+        importer.fetch_mfl_adp(2026, http_get=get)
+    assert [call["PERIOD"] for call in calls] == ["RECENT"]
+
+
+def test_mfl_recent_transport_error_does_not_trigger_a_broader_window():
+    calls = []
+    def get(url, **kwargs):
+        calls.append(kwargs["params"])
+        raise requests.Timeout("unavailable")
+    with pytest.raises(requests.Timeout):
+        importer.fetch_mfl_adp(2026, http_get=get)
+    assert [call["PERIOD"] for call in calls] == ["RECENT"]
+
+
+@pytest.mark.parametrize("periods, expected", [(["ALL", "RECENT"], "UNKNOWN"), (["ALL", "ALL"], "ALL")])
+def test_saved_mfl_provenance_does_not_guess_mixed_windows(tmp_path, periods, expected):
+    output = tmp_path / "combined.csv"
+    pd.DataFrame({
+        "Player": ["One", "Two"], "Team": "BUF", "Position": "QB", "MFL": [13, 20],
+        "MFL_Period": periods, "MFL_Source": importer.MFL_SOURCE_LABELS["RECENT"],
+    }).to_csv(output, index=False)
+    assert importer.saved_mfl_provenance(output)["actual_period"] == expected
+
+
+def test_direct_adp_preserves_season_window_through_cache_and_manual_exports(tmp_path, monkeypatch):
+    from refresh_draft_board import saved_adp_health
+
+    output = tmp_path / "combined.csv"
+    fresh = pd.DataFrame({
+        "Player": [f"Player {index}" for index in range(120)],
+        "Team": "BUF", "Position": "QB", "Sleeper": range(1, 121), "MFL": range(2, 122),
+    })
+    fresh.attrs["mfl_provenance"] = {"actual_period": "ALL"}
+    monkeypatch.setattr(importer, "fetch_sleeper_adp", lambda *a, **k: fresh)
+    monkeypatch.setattr(importer, "fetch_mfl_adp", lambda *a, **k: fresh)
+    result = build_direct_adp(output, season=2026, update_date="2026-09-28")
+    health = result.attrs["source_health"]["MFL"]
+    assert health["status"] == "fallback"
+    assert health["freshness"] == "season_aggregate"
+    assert health["actual_period"] == "ALL"
+    assert health["requested_period"] == "RECENT"
+    assert health["timestamp_kind"] == "snapshot"
+    assert result["MFL_Period"].eq("ALL").all()
+    assert result["MFL_Source"].str.contains("season aggregate").all()
+    assert saved_adp_health(output, state="manual")["MFL"]["actual_period"] == "ALL"
+
+    def fail(*args, **kwargs):
+        raise requests.Timeout("unavailable")
+    monkeypatch.setattr(importer, "fetch_mfl_adp", fail)
+    retained = build_direct_adp(output, season=2026, update_date="2026-09-29")
+    health = retained.attrs["source_health"]["MFL"]
+    assert health["status"] == "cached"
+    assert health["actual_period"] == "ALL"
+    assert health["data_updated_at"] == "2026-09-28"
+    assert health["last_success"] == "2026-09-28"
+    assert retained["MFL_Updated"].eq("2026-09-28").all()
+    assert retained["MFL_Period"].eq("ALL").all()
+    assert retained["MFL_Source"].str.contains("season aggregate").all()
+
+
+def test_failed_all_window_retains_original_mfl_values_and_capture_date(tmp_path):
+    output = tmp_path / "combined.csv"
+    pd.DataFrame({
+        "Player": ["Josh Allen"], "Team": ["BUF"], "Position": ["QB"],
+        "Sleeper": [11], "MFL": [13], "Sleeper_Updated": ["2026-09-24"],
+        "MFL_Updated": ["2026-09-24"], "MFL_Period": ["RECENT"],
+    }).to_csv(output, index=False)
+    calls = []
+    def get(url, **kwargs):
+        if "myfantasyleague.com" not in url:
+            raise requests.Timeout("unavailable")
+        calls.append(kwargs["params"]["PERIOD"])
+        if calls[-1] == "RECENT":
+            return _FakeResponse({"adp": {"totalDrafts": "0"}})
+        return _FakeResponse({"adp": None})
+    result = build_direct_adp(output, season=2026, http_get=get, update_date="2026-09-28")
+    assert calls == ["RECENT", "ALL"]
+    assert result.iloc[0]["MFL"] == 13
+    assert result.iloc[0]["MFL_Updated"] == "2026-09-24"
+    assert result.iloc[0]["MFL_Period"] == "RECENT"
+    assert result.attrs["source_health"]["MFL"]["status"] == "cached"
 
 
 def _special_snapshot(path):
@@ -302,6 +413,25 @@ def test_special_teams_keeps_original_dates_when_both_providers_fail(tmp_path, m
     result = importer.build_special_teams_adp(output, season=2026, update_date="2026-09-27")
     assert result["Source_Updated"].eq("2026-09-24").all()
     assert all(row["status"] == "cached" for row in result.attrs["source_health"].values())
+
+
+def test_special_teams_preserves_season_aggregate_provenance_on_failure(tmp_path, monkeypatch):
+    output = tmp_path / "special.csv"
+    fresh = _special_snapshot(output)
+    fresh.attrs["mfl_provenance"] = {"actual_period": "ALL"}
+    monkeypatch.setattr(importer, "fetch_sleeper_adp", lambda *a, **k: fresh)
+    monkeypatch.setattr(importer, "fetch_mfl_adp", lambda *a, **k: fresh)
+    result = importer.build_special_teams_adp(output, season=2026, update_date="2026-09-28")
+    assert result.attrs["source_health"]["MFL"]["status"] == "fallback"
+    assert result["MFL_Period"].eq("ALL").all()
+    def fail(*args, **kwargs):
+        raise requests.Timeout("unavailable")
+    monkeypatch.setattr(importer, "fetch_mfl_adp", fail)
+    result = importer.build_special_teams_adp(output, season=2026, update_date="2026-09-29")
+    assert result.attrs["source_health"]["MFL"]["status"] == "cached"
+    assert result.attrs["source_health"]["MFL"]["actual_period"] == "ALL"
+    assert result["MFL_Period"].eq("ALL").all()
+    assert result["MFL_Updated"].eq("2026-09-28").all()
 
 
 def test_special_teams_cannot_replace_valid_snapshot_with_incomplete_provider_data(tmp_path, monkeypatch):

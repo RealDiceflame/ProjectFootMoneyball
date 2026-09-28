@@ -48,7 +48,7 @@ const columns = [
   { key: "value_vs_adp", label: "ADP Value", width: 78, kind: "number", description: "Composite ADP minus this board's rank; positive means the board ranks the player earlier" },
   { key: "Yahoo", label: "Yahoo", width: 70, kind: "number", description: "Yahoo ADP from the last authorized snapshot; its date is shown above the board" },
   { key: "Sleeper", label: "Sleeper", width: 74, kind: "number", description: "Half-PPR ADP pulled directly from Sleeper" },
-  { key: "MFL", label: "MFL", width: 68, kind: "number", description: "Recent 12-team PPR redraft ADP from MyFantasyLeague" },
+  { key: "MFL", label: "MFL", width: 68, kind: "number", description: "MyFantasyLeague 12-team PPR redraft ADP; source health identifies recent drafts or the broader season aggregate" },
   { key: "draft_tag", label: "Draft Tag", width: 94, kind: "category", description: "RISK and NEW TEAM come from current news; market tags appear when at least one ADP source has a value" },
 ];
 

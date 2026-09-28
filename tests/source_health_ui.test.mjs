@@ -55,6 +55,18 @@ test("an empty recent draft window is explained without calling it a failed requ
   assert.match(view.sourceHealthText({status: "failed", reason_code: "no_recent_drafts"}), /no ADP snapshot available/);
 });
 
+test("MFL season aggregate takes precedence over the empty recent-window label", () => {
+  const view = nav();
+  for (const status of ["fallback", "cached"]) {
+    const text = view.sourceHealthText({status, actual_period: "ALL", reason_code: "no_recent_drafts",
+      data_updated_at: "2026-09-28", timestamp_kind: "snapshot"});
+    assert.match(text, status === "cached" ? /saved season-aggregate ADP retained/ : /^season-aggregate ADP/);
+    assert.match(text, /recent drafts unavailable/);
+    assert.match(text, /snapshot captured/);
+    assert.doesNotMatch(text, /no ADP snapshot available|backup feed|primary feed was not used|source data dated/);
+  }
+});
+
 test("forecast coverage and provider failures remain separate", () => {
   const view = nav();
   const pending = view.sourceHealthText({status: "success", pending_count: 2, failed_count: 0});

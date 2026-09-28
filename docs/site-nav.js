@@ -1,6 +1,6 @@
 const menus = [
   ["Stats", [[null, [["Game results", "stats.html"], ["League leaders", "stats.html?view=leaders"]]]]],
-  ["Fantasy", [[null, [["Player rankings", "rankings.html"], ["Kickers & D/ST", "special-teams.html"], ["My leagues · prototype", "fantasy.html"]]]]],
+  ["Fantasy", [[null, [["Player rankings", "rankings.html"], ["Kickers & D/ST", "special-teams.html"], ["Player values", "values.html"], ["My leagues · prototype", "fantasy.html"]]]]],
   ["Labs", [
     ["Projection Lab", [["Player age & scoring", "projection.html"], ["Draft capital map", "projection.html#round-map-heading"]]],
     ["Simulation Lab", [["Head-to-head matchup", "survivor.html#matchup-heading"], ["Team game forecasts", "league.html#team-games-heading"], ["League, playoffs & Super Bowl", "league.html"], ["Survivor planner", "survivor.html#rules-heading"]]],
@@ -150,14 +150,17 @@ function sourceHealthText(source = {}) {
     unknown: "freshness unknown", saved: "saved snapshot reused",
   };
   let text = labels[source.status] || "freshness unknown";
-  if (source.reason_code === "no_recent_drafts") text = source.status === "cached"
+  if (source.actual_period === "ALL") text = source.status === "cached"
+    ? "saved season-aggregate ADP retained; recent drafts unavailable"
+    : "season-aggregate ADP; recent drafts unavailable";
+  else if (source.reason_code === "no_recent_drafts") text = source.status === "cached"
     ? "no recent qualifying drafts; keeping the previous ADP snapshot"
     : "no recent qualifying drafts; no ADP snapshot available";
   if (source.status === "manual") text += "; updated only when a snapshot is imported";
   else if (source.status === "historical") text += "; completed-season data, no live update expected";
   else if (source.status === "not_configured") text += "; no provider request was made";
   else if (source.status === "no_upcoming_markets") text += "; request succeeded with no matching markets";
-  else if (source.status === "fallback") text += source.selected_provider ? `; ${source.selected_provider}` : "; primary feed was not used";
+  else if (source.status === "fallback" && source.actual_period !== "ALL") text += source.selected_provider ? `; ${source.selected_provider}` : "; primary feed was not used";
   if (source.execution_status === "success" && !["success", "historical"].includes(source.status)) text += "; refresh job completed";
   if (source.execution_status === "failed") text += "; refresh job failed";
   if (source.data_updated_at) text += `; ${source.timestamp_kind === "snapshot" || source.status === "manual" ? "snapshot captured" : source.timestamp_kind === "mixed" ? "latest available data timestamp" : "source data dated"} ${refreshDate(source.data_updated_at)}`;

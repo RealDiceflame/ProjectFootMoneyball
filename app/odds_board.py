@@ -941,6 +941,11 @@ def refresh_odds_board(
                 },
                 get=sports_game_odds_get,
             )
+            # HTTP success alone is not enough: the documented API envelope can
+            # report a rejected request. Never publish its error text or call it
+            # an empty market, because it may contain sensitive request details.
+            if not isinstance(response, dict) or response.get("success") is not True:
+                raise ValueError("SportsGameOdds returned an unsuccessful response.")
             sports_game_odds = market_list(response["data"])
             record("sportsbook_backup", "success", "SportsGameOdds backup request succeeded.")
         except (requests.RequestException, ValueError, TypeError, KeyError):

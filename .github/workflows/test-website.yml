@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["docs/*.js", "docs/*.mjs", "docs/*.html", "docs/*.css", "app/player_news.py", "app/odds_board.py", "app/web_exporter.py", "data_fetcher/adp_importer.py", "refresh_draft_board.py", "update_player_news.py", "scripts/refresh_site.py", "requirements.txt", "tests/**", ".github/workflows/test-website.yml"]
+    paths: ["docs/*.js", "docs/*.mjs", "docs/*.html", "docs/*.css", "app/player_news.py", "app/player_history.py", "app/player_values.py", "app/game_stats.py", "app/scoreboard.py", "app/odds_board.py", "app/web_exporter.py", "data_fetcher/adp_importer.py", "refresh_draft_board.py", "update_player_news.py", "update_player_history.py", "update_player_values.py", "scripts/record_player_values.mjs", "scripts/refresh_site.py", "requirements.txt", "tests/**", ".github/workflows/test-website.yml", ".github/workflows/update-player-values.yml"]
   pull_request:
-    paths: ["docs/*.js", "docs/*.mjs", "docs/*.html", "docs/*.css", "app/player_news.py", "app/odds_board.py", "app/web_exporter.py", "data_fetcher/adp_importer.py", "refresh_draft_board.py", "update_player_news.py", "scripts/refresh_site.py", "requirements.txt", "tests/**", ".github/workflows/test-website.yml"]
+    paths: ["docs/*.js", "docs/*.mjs", "docs/*.html", "docs/*.css", "app/player_news.py", "app/player_history.py", "app/player_values.py", "app/game_stats.py", "app/scoreboard.py", "app/odds_board.py", "app/web_exporter.py", "data_fetcher/adp_importer.py", "refresh_draft_board.py", "update_player_news.py", "update_player_history.py", "update_player_values.py", "scripts/record_player_values.mjs", "scripts/refresh_site.py", "requirements.txt", "tests/**", ".github/workflows/test-website.yml", ".github/workflows/update-player-values.yml"]
 permissions:
   contents: read
 concurrency:
@@ -31,16 +31,16 @@ jobs:
           npm install --no-save --package-lock=false playwright@1.62.1
           npx playwright install --with-deps chromium webkit
       - name: Test snapshot collection and source health
-        run: python -m pytest tests/test_player_news.py tests/test_site_refresh.py tests/test_adp_importer.py tests/test_odds_board.py tests/test_weather_refresh.py tests/test_web_exporter.py tests/test_publish_scoreboard.py -q
+        run: python -m pytest tests/test_player_news.py tests/test_player_history.py tests/test_player_values.py tests/test_site_refresh.py tests/test_adp_importer.py tests/test_odds_board.py tests/test_weather_refresh.py tests/test_web_exporter.py tests/test_publish_scoreboard.py -q
       - name: Test website models and data handling
         run: node --test tests/*.test.mjs
       - name: Test mobile navigation, saved selections, and automatic refresh
         env:
           BROWSER_CHANNEL: chromium
         run: node --test tests/*.browser.mjs
-      - name: Test WebKit touch navigation and responsive layouts
+      - name: Test WebKit touch navigation, responsive layouts, and player values
         env:
           BROWSER_ENGINE: webkit
         run: |
           node --test --test-name-pattern="mobile navigation (?!supports keyboard)" tests/navigation_and_fantasy.browser.mjs
-          node --test tests/site_layout.browser.mjs tests/lab_layout.browser.mjs
+          node --test tests/site_layout.browser.mjs tests/lab_layout.browser.mjs tests/player_values.browser.mjs tests/source_health.browser.mjs

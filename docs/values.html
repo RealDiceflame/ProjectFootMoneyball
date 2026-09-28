@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071d18">
+  <meta name="description" content="Explore explainable rest-of-season and three-year fantasy player values, current-season production, and genuinely saved daily value history.">
+  <link rel="canonical" href="https://outlierbaseline.com/values.html">
+  <title>Player Value Lab | OutlierBaseline</title>
+  <link rel="stylesheet" href="styles.css?v=20260928-layout2">
+  <link rel="stylesheet" href="values.css?v=20260928-values1">
+  <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
+</head>
+<body class="values-page">
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="OutlierBaseline home"><span class="brand-mark" aria-hidden="true">OB</span><span><strong>OutlierBaseline</strong><small>Football intelligence lab</small></span></a>
+    <nav class="topnav" aria-label="Analytics pages"><a href="rankings.html">Player rankings</a><a href="values.html" aria-current="page">Player values</a><a href="projection.html">Projection Lab</a></nav>
+    <span class="source-status">Player Value Lab · Experimental</span>
+  </header>
+  <main>
+    <section class="values-hero" aria-labelledby="values-heading">
+      <div><p class="eyebrow">Player Value Lab</p><h1 id="values-heading">What comes next<br>is what counts.</h1><p>Compare remaining production and a three-year outlook. Current-season scoring, prior seasons, and verified availability inform an explainable player-value index.</p></div>
+      <aside class="values-scale" aria-label="How to read the value index"><span>RELATIVE VALUE · 0–10,000</span><strong>Production, in perspective.</strong><p>The highest modeled surplus sets the scale. Zero means no projected edge over replacement—not a worthless player.</p><small>Original analysis. Not KTC consensus, a trade price, or an additive trade calculator.</small></aside>
+    </section>
+
+    <section class="values-panel values-controls" aria-labelledby="values-format-heading">
+      <div class="values-section-heading"><div><p class="eyebrow">Your reference format</p><h2 id="values-format-heading">One board. Two horizons.</h2></div><p>Fixed 12-team reference. No account or draft changes.</p></div>
+      <div class="values-horizons" role="group" aria-label="Value horizon"><button type="button" data-horizon="ros" aria-pressed="true">Rest of season</button><button type="button" data-horizon="dynasty" aria-pressed="false">Dynasty · 3 years</button></div>
+      <div class="values-format-grid">
+        <label>Quarterbacks<select id="values-quarterbacks"><option value="1QB">1 quarterback</option><option value="2QB">2 quarterbacks</option></select></label>
+        <label>Reception scoring<select id="values-ppr"><option>Standard</option><option selected>Half PPR</option><option>Full PPR</option></select></label>
+        <label>Tight end premium<select id="values-te-premium"><option value="None">None</option><option value="+0.5">+0.5 per reception</option></select></label>
+      </div>
+      <p class="values-status" id="values-status" role="status">Loading saved player inputs…</p>
+      <p id="values-error" class="values-warning" role="alert" hidden></p>
+    </section>
+
+    <section class="values-panel" aria-labelledby="values-board-heading">
+      <div class="values-section-heading"><div><p class="eyebrow">The comparison</p><h2 id="values-board-heading">Rest-of-season values</h2></div><p id="values-count">Preparing the board…</p></div>
+      <div class="values-filters"><label>Find a player<input id="values-search" type="search" placeholder="Name or team" autocomplete="off"></label><label>Position<select id="values-position"><option value="all">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select></label></div>
+      <p class="values-table-hint" id="values-table-help">Select a player, then <a href="#values-player-heading">open their notebook below ↓</a>. Scroll inside the table to compare every column.</p>
+      <div id="values-table-region" class="values-table-scroll" tabindex="0" role="region" aria-label="Player values — scroll to compare every column" aria-describedby="values-table-help" aria-busy="true">
+        <table class="values-table"><caption class="sr-only">Player value comparison, fixed 12-team reference</caption><thead><tr><th scope="col">Rank</th><th scope="col">Player</th><th scope="col">Pos.</th><th scope="col">Value index</th><th scope="col">Proj. PPG</th><th scope="col" id="values-points-heading">ROS points</th><th scope="col">Games left</th><th scope="col">Availability</th></tr></thead><tbody id="values-rows"></tbody></table>
+      </div>
+      <p id="values-empty" class="values-empty" hidden>No players match. Try a different name or position.</p>
+      <p class="values-footnote">A dash means unavailable, not zero. Values are relative to this model, format, and horizon; changing the comparison group can move the index.</p>
+    </section>
+
+    <section class="values-panel values-notebook" aria-labelledby="values-player-heading">
+      <div class="values-section-heading"><div><p class="eyebrow">Player notebook</p><h2 id="values-player-heading">Choose a player</h2><p id="values-player-meta"></p></div><label class="values-player-picker">Player<select id="values-player" disabled><option>Loading players…</option></select></label></div>
+      <div id="values-player-content" hidden>
+        <div id="values-player-metrics" class="values-metrics"></div>
+        <p id="values-player-note" class="values-footnote"></p>
+        <div class="values-chart-grid">
+          <figure><figcaption><h3>Current-season production</h3><p>Observed game points in the selected scoring format. Missing games are not filled with zeros.</p></figcaption><div class="values-chart-scroll" tabindex="0" role="region" aria-label="Weekly fantasy points chart — scroll horizontally"><div id="values-weekly-chart"></div></div><p id="values-weekly-note" class="values-footnote"></p></figure>
+          <figure><figcaption><h3>Saved value history</h3><p id="values-history-context">Genuine dated captures, using the same season, model, and league format.</p></figcaption><div class="values-chart-scroll" tabindex="0" role="region" aria-label="Saved player value history chart — scroll horizontally"><div id="values-history-chart"></div></div><p id="values-history-note" class="values-footnote">Checking saved daily captures…</p></figure>
+        </div>
+        <details class="values-data-details"><summary>Read the chart values</summary><div class="values-chart-grid"><div class="values-table-scroll" tabindex="0" role="region" aria-label="Observed weekly fantasy points"><table class="values-table values-data-table"><caption>Observed weekly points</caption><thead><tr><th>Week</th><th>Game</th><th>Points</th></tr></thead><tbody id="values-weekly-data"></tbody></table></div><div class="values-table-scroll" tabindex="0" role="region" aria-label="Saved daily player values"><table class="values-table values-data-table"><caption>Saved daily value index</caption><thead><tr><th>Capture date</th><th>Value index</th></tr></thead><tbody id="values-history-data"></tbody></table></div></div></details>
+      </div>
+    </section>
+
+    <details class="values-panel values-method"><summary>How the values work · sources &amp; limitations</summary>
+      <p id="values-model-version"></p>
+      <h3>Rate, opportunity, then replacement</h3><p>Current-season observations update a prior-season scoring baseline. The model estimates remaining production from the actual remaining schedule, then compares it with a replacement player at the same position. This fixed 12-team reference uses QB13 in 1QB or QB25 in 2QB, RB25, WR37, and TE13.</p>
+      <h3>Two different horizons</h3><p>Rest of season covers remaining regular-season fixtures. The three-year dynasty view includes that remainder plus two future 17-game seasons, discounted by 0.85 and 0.85². Experimental position-and-age adjustments are not a career-survival or retirement model. Injuries do not become invented long-term recovery forecasts.</p>
+      <h3>Availability is time-sensitive</h3><p>Only current, schedule-matched injury information can affect the model. Historical, future, Questionable, Probable, or missing reports must not be mistaken for confirmed missed games. “Unknown” does not mean healthy. Missing news is shown explicitly and is not replaced with a made-up diagnosis.</p>
+      <h3>What the charts actually record</h3><p>Weekly points come from saved game statistics. Dated index history begins when this model first saves a capture; it is not a reconstructed KTC chart. Only matching model, season, and format captures are shown, up to the latest 30 available dates. A single capture is one point, not a fabricated trend.</p>
+      <p>Current-game scoring and legacy historical scoring may have different coverage; player notes identify limitations. The model is experimental and has not been validated as a trade-pricing or prediction system. A higher index is not a guarantee and scores should not be added to price a multi-player trade.</p>
+      <ul id="values-assumptions"></ul>
+      <p><a href="https://github.com/nflverse/nflverse-data" target="_blank" rel="noopener noreferrer">Source: nflverse saved player and game data ↗</a> · <a href="projection.html">Explore the underlying age curves</a></p>
+      <p id="values-coverage" class="values-footnote"></p>
+    </details>
+    <noscript>This board needs JavaScript to calculate player values from saved data.</noscript>
+  </main>
+  <footer><p>OutlierBaseline · Research, not certainty.</p></footer>
+  <script type="module" src="values.js?v=20260928-values1"></script>
+  <script type="module" src="site-nav.js?v=20260928-values1"></script>
+</body>
+</html>

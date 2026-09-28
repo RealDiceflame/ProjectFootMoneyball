@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import hashlib
 from io import BytesIO
 import json
+import math
 from pathlib import Path
 from typing import Callable, Iterable
 
@@ -39,7 +41,13 @@ STAT_COLUMNS = (
     "receiving_tds",
     "fumbles_total",
 )
-HISTORY_COLUMNS = ("season", "team", *STAT_COLUMNS, "pos")
+# Keep every legacy column at its existing index. New scoring inputs are optional
+# because older releases may not report them; unknown is not an observed zero.
+OPTIONAL_STAT_COLUMNS = (
+    "fumbles_lost_total", "passing_2pt_conversions", "rushing_2pt_conversions",
+    "receiving_2pt_conversions", "special_teams_tds",
+)
+HISTORY_COLUMNS = ("season", "team", *STAT_COLUMNS, "pos", *OPTIONAL_STAT_COLUMNS)
 SOURCE_COLUMNS = (
     "player_id",
     "player_display_name",
@@ -76,6 +84,20 @@ def _number(value):
         return 0
     number = float(value)
     return int(number) if number.is_integer() else round(number, 2)
+
+
+def _optional_number(value):
+    if value is None or pd.isna(value) or value == "":
+        return None
+    if isinstance(value, bool):
+        raise ValueError("Invalid optional scoring statistic")
+    try:
+        number = float(value)
+    except (ValueError, TypeError) as error:
+        raise ValueError("Invalid optional scoring statistic") from error
+    if not math.isfinite(number) or number < 0 or not number.is_integer():
+        raise ValueError("Invalid optional scoring statistic")
+    return int(number)
 
 
 def _team(value) -> str:
@@ -128,6 +150,7 @@ def _history_record(player: dict, matched: pd.DataFrame, births: dict, *, ranked
             _team(values.get("recent_team")),
             *[_number(values.get(column)) for column in STAT_COLUMNS],
             _position(values.get("position")),
+            *[_optional_number(values.get(column)) for column in OPTIONAL_STAT_COLUMNS],
         ])
     matched_ids = matched["player_id"].map(_text).replace("", pd.NA).dropna().unique()
     player_id = _text(player.get("player_id")) or (matched_ids[0] if len(matched_ids) == 1 else "")
@@ -198,6 +221,15 @@ def build_player_history(
         players[key] = _history_record(player, matched, births, ranked=False)
 
     ordered_seasons = seasons
+    scoring_coverage = {}
+    optional_indices = {column: HISTORY_COLUMNS.index(column) for column in OPTIONAL_STAT_COLUMNS}
+    for season in seasons:
+        rows = [row for player in players.values() for row in player["seasons"] if row[0] == season]
+        scoring_coverage[str(season)] = {
+            "player_season_rows": len(rows),
+            "complete_optional_rows": sum(all(row[index] is not None for index in optional_indices.values()) for row in rows),
+            "missing": {column: sum(row[index] is None for row in rows) for column, index in optional_indices.items()},
+        }
     payload = {
         "generated_at": now.isoformat(),
         "seasons": ordered_seasons,
@@ -213,6 +245,12 @@ def build_player_history(
         "player_season_count": sum(len(player["seasons"]) for player in players.values()),
         "source": "nflverse player stats and player identities",
         "attribution_url": "https://github.com/nflverse/nflverse-data",
+        "season_sources": [frame.attrs["source"] for frame in frames if frame.attrs.get("source")],
+        "scoring_coverage": {
+            "optional_columns": list(OPTIONAL_STAT_COLUMNS),
+            "missing_policy": "Optional scoring inputs are null when unreported; fumbles_total is not fumbles_lost_total.",
+            "by_season": scoring_coverage,
+        },
         "columns": list(HISTORY_COLUMNS),
         "players": players,
     }
@@ -220,7 +258,7 @@ def build_player_history(
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = destination.with_suffix(destination.suffix + ".tmp")
     temporary.write_text(
-        json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
+        json.dumps(payload, ensure_ascii=False, separators=(",", ":"), allow_nan=False),
         encoding="utf-8",
     )
     temporary.replace(destination)
@@ -234,7 +272,17 @@ def _download_season(season: int, *, get: Callable = requests.get) -> pd.DataFra
         timeout=180,
     )
     response.raise_for_status()
-    return pd.read_csv(BytesIO(response.content), usecols=list(SOURCE_COLUMNS))
+    selected = set(SOURCE_COLUMNS) | set(OPTIONAL_STAT_COLUMNS)
+    frame = pd.read_csv(BytesIO(response.content), usecols=lambda column: column in selected)
+    if not set(SOURCE_COLUMNS).issubset(frame.columns):
+        raise ValueError("Season history source is missing required columns")
+    if frame.empty or not frame["season"].eq(season).all() or not frame["season_type"].eq("REG").all():
+        raise ValueError("Season history source has no matching regular-season records")
+    frame.attrs["source"] = {"season": season, "url": STATS_URL.format(season=season),
+                             "retrieved_at": datetime.now(timezone.utc).isoformat(),
+                             "http_last_modified": getattr(response, "headers", {}).get("Last-Modified"),
+                             "sha256": hashlib.sha256(response.content).hexdigest()}
+    return frame
 
 
 def _download_players(*, get: Callable = requests.get) -> pd.DataFrame:

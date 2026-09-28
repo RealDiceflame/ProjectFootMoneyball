@@ -216,7 +216,7 @@ test("mobile navigation preserves the link through pointerdown and null-relatedT
   } finally { await context.close(); }
 });
 
-test("mobile navigation follows all 13 native destinations with actual taps", async () => {
+test("mobile navigation follows all 14 native destinations with actual taps", async () => {
   const {context, page} = await openPage(mobileOptions);
   const errors = [];
   page.on("pageerror", error => errors.push(error.message));
@@ -225,6 +225,7 @@ test("mobile navigation follows all 13 native destinations with actual taps", as
     ["Stats", "League leaders", "stats.html?view=leaders", "/stats.html"],
     ["Fantasy", "Player rankings", "rankings.html"],
     ["Fantasy", "Kickers & D/ST", "special-teams.html"],
+    ["Fantasy", "Player values", "values.html"],
     ["Fantasy", "My leagues · prototype", "fantasy.html"],
     ["Labs", "Player age & scoring", "projection.html"],
     ["Labs", "Draft capital map", "projection.html#round-map-heading", "/projection.html"],

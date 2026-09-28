@@ -4,7 +4,8 @@ import json
 import pandas as pd
 import pytest
 
-from app.player_history import build_player_history, history_key, refresh_player_history
+from app.player_history import (HISTORY_COLUMNS, OPTIONAL_STAT_COLUMNS, STAT_COLUMNS,
+                                _download_season, build_player_history, history_key, refresh_player_history)
 
 
 def _rankings(path):
@@ -140,4 +141,97 @@ def test_failed_identity_download_preserves_published_history(tmp_path, monkeypa
     monkeypatch.setattr("app.player_history._download_players", unavailable)
     with pytest.raises(RuntimeError, match="Identity source unavailable"):
         refresh_player_history(tmp_path / "rankings.json", destination, start_season=2025, end_season=2025)
+    assert json.loads(destination.read_text()) == {"previous": True}
+
+
+def test_optional_scoring_columns_append_without_changing_legacy_order(tmp_path):
+    rankings, destination = tmp_path / "rankings.json", tmp_path / "history.json"
+    _rankings(rankings)
+    newer = _stats(2025)
+    for column in OPTIONAL_STAT_COLUMNS:
+        newer[column] = [0, 1]
+    newer.loc[1, "receiving_2pt_conversions"] = None
+    build_player_history(rankings, destination, season_frames=[_stats(2024), newer])
+    payload = json.loads(destination.read_text())
+    legacy = ["season", "team", *STAT_COLUMNS, "pos"]
+    assert payload["columns"][:len(legacy)] == legacy
+    assert payload["columns"][len(legacy):] == list(OPTIONAL_STAT_COLUMNS)
+    records = payload["players"]["id:00-0036912"]["seasons"]
+    assert records[0][-5:] == [0, 0, 0, 0, 0]
+    assert records[1][-5:] == [None] * 5
+    # The old scoring field stays intact and is never relabeled as lost fumbles.
+    assert records[0][payload["columns"].index("fumbles_total")] == 1
+    coverage = payload["scoring_coverage"]["by_season"]
+    assert coverage["2024"]["complete_optional_rows"] == 0
+    assert coverage["2024"]["missing"]["fumbles_lost_total"] == 2
+    assert coverage["2025"]["complete_optional_rows"] == 1
+    assert coverage["2025"]["missing"]["receiving_2pt_conversions"] == 1
+    assert all(len(row) == len(HISTORY_COLUMNS) for record in payload["players"].values() for row in record["seasons"])
+
+
+@pytest.mark.parametrize("optional", [False, True])
+def test_season_download_accepts_legacy_and_optional_columns_and_preserves_provenance(optional):
+    frame = _stats(2025)
+    if optional:
+        for column in OPTIONAL_STAT_COLUMNS:
+            frame[column] = [0, 1]
+
+    class Response:
+        content = frame.to_csv(index=False).encode()
+        headers = {"Last-Modified": "source-date"}
+
+        def raise_for_status(self):
+            pass
+
+    downloaded = _download_season(2025, get=lambda *args, **kwargs: Response())
+    assert all((column in downloaded.columns) is optional for column in OPTIONAL_STAT_COLUMNS)
+    assert downloaded.attrs["source"]["season"] == 2025
+    assert downloaded.attrs["source"]["http_last_modified"] == "source-date"
+    assert len(downloaded.attrs["source"]["sha256"]) == 64
+
+
+@pytest.mark.parametrize("fault", ["missing_required", "wrong_season", "empty"])
+def test_season_download_rejects_incomplete_or_wrong_season_sources(fault):
+    frame = _stats(2025)
+    if fault == "missing_required":
+        frame = frame.drop(columns=["fumbles_total"])
+    elif fault == "wrong_season":
+        frame["season"] = 2024
+    else:
+        frame = frame.iloc[:0]
+
+    class Response:
+        content = frame.to_csv(index=False).encode()
+
+        def raise_for_status(self):
+            pass
+
+    with pytest.raises(ValueError, match="Season history source"):
+        _download_season(2025, get=lambda *args, **kwargs: Response())
+
+
+@pytest.mark.parametrize("value", [float("inf"), -1, 1.5, "broken", True])
+def test_invalid_optional_statistic_preserves_last_good_history(tmp_path, value):
+    rankings, destination = tmp_path / "rankings.json", tmp_path / "history.json"
+    _rankings(rankings)
+    destination.write_text('{"previous":true}')
+    frame = _stats(2025)
+    frame["fumbles_lost_total"] = pd.Series([value, 0], dtype=object)
+    with pytest.raises(ValueError, match="optional scoring statistic"):
+        build_player_history(rankings, destination, season_frames=[frame])
+    assert json.loads(destination.read_text()) == {"previous": True}
+
+
+def test_failed_middle_season_download_preserves_last_good_history(tmp_path, monkeypatch):
+    destination = tmp_path / "history.json"
+    destination.write_text('{"previous":true}')
+
+    def download(season):
+        if season == 2020:
+            raise OSError("Season unavailable")
+        return _stats(season)
+
+    monkeypatch.setattr("app.player_history._download_season", download)
+    with pytest.raises(OSError, match="Season unavailable"):
+        refresh_player_history(tmp_path / "rankings.json", destination, start_season=2016, end_season=2025)
     assert json.loads(destination.read_text()) == {"previous": True}

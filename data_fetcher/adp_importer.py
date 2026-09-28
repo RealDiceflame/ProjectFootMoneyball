@@ -19,6 +19,11 @@ MIN_PROVIDER_ROWS = 100
 MAX_PUBLISHED_PLAYERS = 350
 SLEEPER_PROJECTIONS_URL = "https://api.sleeper.com/projections/nfl/{season}"
 MFL_EXPORT_URL = "https://api.myfantasyleague.com/{season}/export"
+MFL_SOURCE_LABELS = {
+    "RECENT": "MyFantasyLeague recent PPR, 12-team redraft",
+    "ALL": "MyFantasyLeague season aggregate PPR, 12-team redraft",
+    "UNKNOWN": "MyFantasyLeague PPR, 12-team redraft (sampling window unknown)",
+}
 ADP_PROVIDERS = ("Yahoo", "Sleeper", "MFL")
 
 
@@ -41,6 +46,53 @@ def _failure_health(error, cached, cached_date, attempted_at):
         "reason_code": "no_recent_drafts" if empty_recent else "provider_unavailable",
         "note": reason + (" Saved snapshot retained with its original capture date." if cached is not None else " No saved snapshot is available."),
     }
+
+
+def _mfl_provenance(frame):
+    """Recover the sampled window independently of when the CSV was captured."""
+    if frame is None:
+        return {}
+    metadata = frame.attrs.get("mfl_provenance", {})
+    period = metadata.get("actual_period")
+    if period not in MFL_SOURCE_LABELS:
+        values = frame.get("MFL_Period", pd.Series(dtype=str)).dropna().astype(str).unique()
+        period = values[0] if len(values) == 1 and values[0] in MFL_SOURCE_LABELS else "UNKNOWN"
+        if "MFL_Period" not in frame.columns:
+            labels = frame.get("MFL_Source", pd.Series(dtype=str)).dropna().astype(str).unique()
+            if len(labels) == 1:
+                period = next((key for key, label in MFL_SOURCE_LABELS.items() if label == labels[0]), "UNKNOWN")
+    return {"actual_period": period, "sample_basis": {
+        "RECENT": "recent_drafts", "ALL": "season_aggregate", "UNKNOWN": "unknown",
+    }[period]}
+
+
+def saved_mfl_provenance(path):
+    """Return non-secret CSV provenance for manual/skip-refresh exports."""
+    frame, _ = _cached_provider(Path(path), "MFL")
+    return _mfl_provenance(frame)
+
+
+def _describe_mfl_health(health, frame, *, fetched=False):
+    health.update(_mfl_provenance(frame))
+    period = health.get("actual_period")
+    if fetched:
+        health["requested_period"] = "RECENT"
+    if period == "ALL":
+        if fetched:
+            health.update(status="fallback", freshness="season_aggregate", reason_code="no_recent_drafts")
+            health["note"] = "No recent qualifying MFL drafts; downloaded and validated the broader season aggregate. "
+        else:
+            health["note"] += " Saved MFL values use the broader season aggregate. "
+        health["note"] += "This is not recent-draft ADP; the date is its capture, not provider publication."
+    elif period == "UNKNOWN":
+        health["note"] += " The saved MFL sampling window is unknown."
+
+
+def _write_mfl_provenance(output, health):
+    period = health.get("actual_period", "UNKNOWN")
+    output["MFL_Period"] = period
+    output["MFL_Source"] = MFL_SOURCE_LABELS.get(period, MFL_SOURCE_LABELS["UNKNOWN"])
+
 
 TEAM_CODES = {
     "ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE",
@@ -287,7 +339,7 @@ def _mfl_display_name(value) -> str:
 
 
 def parse_mfl_adp(adp_payload, players_payload, *, positions=SKILL_POSITIONS) -> pd.DataFrame:
-    """Normalize recent 12-team PPR redraft ADP from MyFantasyLeague."""
+    """Normalize 12-team PPR redraft ADP; the fetcher records its sample window."""
     player_records = (
         players_payload.get("players", {}).get("player", [])
         if isinstance(players_payload, dict)
@@ -336,38 +388,52 @@ def fetch_mfl_adp(
     season: int, *, http_get=requests.get, positions=SKILL_POSITIONS
 ) -> pd.DataFrame:
     common = {"JSON": 1}
-    adp_response = http_get(
-        MFL_EXPORT_URL.format(season=season),
-        params={
-            **common,
-            "TYPE": "adp",
-            "PERIOD": "RECENT",
-            "FCOUNT": 12,
-            "IS_PPR": 1,
-            "IS_KEEPER": "N",
-            "IS_MOCK": -1,
-            "CUTOFF": 5,
-        },
-        timeout=60,
-    )
-    adp_response.raise_for_status()
-    adp_payload = adp_response.json()
-    adp = adp_payload.get("adp") if isinstance(adp_payload, dict) else None
-    if not isinstance(adp, dict):
-        raise ValueError("MFL ADP response is invalid.")
-    # RECENT is a distinct market window. Do not silently replace it with ALL
-    # after drafting activity stops, or redownload the player directory for no rows.
+
+    def fetch_window(period):
+        response = http_get(
+            MFL_EXPORT_URL.format(season=season),
+            params={
+                **common,
+                "TYPE": "adp",
+                "PERIOD": period,
+                "FCOUNT": 12,
+                "IS_PPR": 1,
+                "IS_KEEPER": "N",
+                "IS_MOCK": -1,
+                "CUTOFF": 5,
+            },
+            timeout=60,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        adp = payload.get("adp") if isinstance(payload, dict) else None
+        if not isinstance(adp, dict):
+            raise ValueError("MFL ADP response is invalid.")
+        records = adp.get("player", [])
+        if not isinstance(records, list) or any(not isinstance(record, dict) for record in records):
+            raise ValueError("MFL ADP player records are invalid.")
+        return payload, adp
+
+    period = "RECENT"
+    adp_payload, adp = fetch_window(period)
+    # A genuine empty recent window may use a clearly labeled broader sample.
+    # Transport errors, invalid payloads, and thin samples never trigger this.
     if not adp.get("player") and str(adp.get("totalDrafts")) == "0":
-        raise ProviderDataUnavailable("no_recent_drafts", "MFL reports no recent qualifying drafts.")
+        period = "ALL"
+        adp_payload, adp = fetch_window(period)
+        if not adp.get("player") and str(adp.get("totalDrafts")) == "0":
+            raise ProviderDataUnavailable("no_recent_drafts", "MFL reports no qualifying drafts in either window.")
     players_response = http_get(
         MFL_EXPORT_URL.format(season=season),
         params={**common, "TYPE": "players"},
         timeout=60,
     )
     players_response.raise_for_status()
-    return parse_mfl_adp(
+    frame = parse_mfl_adp(
         adp_payload, players_response.json(), positions=positions
     )
+    frame.attrs["mfl_provenance"] = {"actual_period": period}
+    return frame
 
 
 def _validate_provider(frame: pd.DataFrame, column: str) -> pd.DataFrame:
@@ -482,9 +548,13 @@ def build_direct_adp(
                 "timestamp_kind": "snapshot",
                 "row_count": len(providers[column]), "note": "Downloaded and validated on the snapshot date; provider publication time is not supplied.",
             }
+            if column == "MFL":
+                _describe_mfl_health(health[column], providers[column], fetched=True)
         except (requests.RequestException, ValueError, TypeError, KeyError) as exc:
             cached, cached_date = _cached_provider(output_path, column)
             health[column] = _failure_health(exc, cached, cached_date, attempted_at)
+            if column == "MFL":
+                _describe_mfl_health(health[column], cached)
             if cached is None:
                 if required:
                     raise RuntimeError(
@@ -524,7 +594,7 @@ def build_direct_adp(
         .head(MAX_PUBLISHED_PLAYERS)
         .reset_index(drop=True)
     )
-    output["MFL_Source"] = "MyFantasyLeague recent PPR, 12-team redraft"
+    _write_mfl_provenance(output, health.get("MFL", {}))
     output["Source_Updated"] = max((value for value in source_dates.values() if value), default=None)
     for column in ADP_PROVIDERS:
         output[f"{column}_Updated"] = source_dates.get(column)
@@ -600,6 +670,8 @@ def build_special_teams_adp(
                 "timestamp_kind": "snapshot", "row_count": len(frames[-1]),
                 "note": "Downloaded and validated on the snapshot date; provider publication time is not supplied.",
             }
+            if column == "MFL":
+                _describe_mfl_health(health[column], provider, fetched=True)
         except (requests.RequestException, ValueError, TypeError, KeyError) as exc:
             cached, cached_date = _cached_provider(output_path, column)
             try:
@@ -610,6 +682,8 @@ def build_special_teams_adp(
                 frames.append(saved_frame)
                 source_dates[column] = cached_date
             health[column] = _failure_health(exc, cached, cached_date, attempted_at)
+            if column == "MFL":
+                _describe_mfl_health(health[column], cached)
             errors.append(f"{column}: {health[column]['note']}")
 
     if len(frames) < 2:
@@ -640,6 +714,7 @@ def build_special_teams_adp(
         output["Position"] + output["Position_Rank"].astype(str)
     )
     output = output.sort_values(["Position", "ADP", "Player"], kind="stable")
+    _write_mfl_provenance(output, health.get("MFL", {}))
     output["Source_Updated"] = max((date for date in source_dates.values() if date), default=None)
     for column in provider_order:
         output[f"{column}_Updated"] = source_dates.get(column)
