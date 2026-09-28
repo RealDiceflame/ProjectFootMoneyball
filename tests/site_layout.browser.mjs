@@ -78,6 +78,8 @@ async function measure(page) {
       return box.width >= 43.5 && box.height >= 43.5 ? [] : [{selector: label(element), name: name(element).slice(0, 65), width: Math.round(box.width * 10) / 10, height: Math.round(box.height * 10) / 10}];
     });
     const unlabeled = controls.filter(element => element.matches("input,select,textarea,button") && !name(element)).map(label);
+    const nativeOverflow = controls.filter(element => element.matches("select") && element.scrollWidth > element.clientWidth + 1)
+      .map(element => ({selector: label(element), width: element.clientWidth, contentWidth: element.scrollWidth}));
     const tables = [...scope.querySelectorAll('table, [role="table"]')].filter(visible).map(table => {
       const box = table.getBoundingClientRect(), parent = scrollParent(table), width = parent?.clientWidth ?? innerWidth;
       const overflowing = table.scrollWidth > width + 2 || box.width > width + 2;
@@ -108,14 +110,14 @@ async function measure(page) {
     }).filter(Boolean);
     const modalBox = modal?.getBoundingClientRect();
     return {viewport: innerWidth, documentWidth: document.documentElement.scrollWidth, offenders,
-      smallControlCount: smallControls.length, smallControls: smallControls.slice(0, 30), unlabeled, tables, boards,
+      smallControlCount: smallControls.length, smallControls: smallControls.slice(0, 30), unlabeled, nativeOverflow, tables, boards,
       modal: modal && {left: modalBox.left, right: modalBox.right, clientWidth: modal.clientWidth, scrollWidth: modal.scrollWidth}};
   });
 }
 
 function assertLayout(result, {boardColumns = true} = {}) {
   const {page: name, width} = result;
-  assert.ok(result.documentWidth <= result.viewport + 1, `${name} at ${width}px overflows: ${JSON.stringify(result.offenders)}`);
+  assert.ok(result.documentWidth <= result.viewport + 1, `${name} at ${width}px overflows to ${result.documentWidth}px: ${JSON.stringify({elements: result.offenders, nativeSelects: result.nativeOverflow})}`);
   assert.deepEqual(result.unlabeled, [], "Every visible form control needs an accessible name");
   assert.deepEqual(result.tables.filter(table => !table.reachable || !table.keyboard), [], "Wide tables must scroll to the last column and be reachable by keyboard");
   if (width <= 1024) assert.equal(result.smallControlCount, 0, `Touch targets must be at least 44×44px: ${JSON.stringify(result.smallControls)}`);

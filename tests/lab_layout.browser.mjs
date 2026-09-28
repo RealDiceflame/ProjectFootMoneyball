@@ -92,6 +92,34 @@ test("Projection keeps wide graphs and its capital table inside labeled regions 
   } finally { await context.close(); }
 });
 
+test("Projection native dropdowns contain long labels across platform fonts without losing choices", async () => {
+  const {page, context, errors} = await open("projection");
+  try {
+    await page.locator("#age-chart svg").waitFor();
+    await page.selectOption("#model-position", "WR");
+    const selections = [];
+    for (const selector of ["#model-player", "#age-view", "#round-map-season"]) {
+      const options = await page.locator(`${selector} option`).evaluateAll(items => items.map(option => ({value: option.value, label: option.textContent})));
+      const longest = options.reduce((chosen, option) => option.label.length > chosen.label.length ? option : chosen);
+      await page.selectOption(selector, longest.value);
+      selections.push({selector, options, value: longest.value});
+    }
+    // Linux and Windows native controls measure the same labels differently.
+    // Exercise wider glyphs as well as the platform default, without reducing
+    // text size or relaxing the whole-page overflow assertion.
+    for (const font of ["system-ui", "Arial", "monospace"]) {
+      const fontStyle = await page.addStyleTag({content: `.projection-page select { font-family: ${font}; }`});
+      for (const width of [320, 390]) await layout(page, `projection-select-${font}`, width);
+      await fontStyle.evaluate(element => element.remove());
+    }
+    for (const {selector, options, value} of selections) {
+      assert.equal(await page.inputValue(selector), value);
+      assert.deepEqual(await page.locator(`${selector} option`).evaluateAll(items => items.map(option => ({value: option.value, label: option.textContent}))), options);
+    }
+    assert.deepEqual(errors, []);
+  } finally { await context.close(); }
+});
+
 test("Survivor and matchup controls, expanded sections, and simulated results remain usable on phones", async () => {
   const {page, context, errors} = await open("survivor");
   try {
