@@ -21,6 +21,27 @@ SLEEPER_PROJECTIONS_URL = "https://api.sleeper.com/projections/nfl/{season}"
 MFL_EXPORT_URL = "https://api.myfantasyleague.com/{season}/export"
 ADP_PROVIDERS = ("Yahoo", "Sleeper", "MFL")
 
+
+class ProviderDataUnavailable(ValueError):
+    """An explained empty provider response, safe to expose without request details."""
+
+    def __init__(self, reason_code, message):
+        super().__init__(message)
+        self.reason_code = reason_code
+
+
+def _failure_health(error, cached, cached_date, attempted_at):
+    empty_recent = isinstance(error, ProviderDataUnavailable) and error.reason_code == "no_recent_drafts"
+    reason = "MFL reports no recent qualifying drafts." if empty_recent else "Provider unavailable or invalid."
+    return {
+        "status": "cached" if cached is not None else "failed",
+        "freshness": "stale" if cached is not None else "unavailable",
+        "attempted_at": attempted_at, "last_success": cached_date, "data_updated_at": cached_date,
+        "timestamp_kind": "snapshot", "row_count": len(cached) if cached is not None else 0,
+        "reason_code": "no_recent_drafts" if empty_recent else "provider_unavailable",
+        "note": reason + (" Saved snapshot retained with its original capture date." if cached is not None else " No saved snapshot is available."),
+    }
+
 TEAM_CODES = {
     "ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE",
     "DAL", "DEN", "DET", "GB", "HOU", "IND", "JAX", "KC",
@@ -330,6 +351,14 @@ def fetch_mfl_adp(
         timeout=60,
     )
     adp_response.raise_for_status()
+    adp_payload = adp_response.json()
+    adp = adp_payload.get("adp") if isinstance(adp_payload, dict) else None
+    if not isinstance(adp, dict):
+        raise ValueError("MFL ADP response is invalid.")
+    # RECENT is a distinct market window. Do not silently replace it with ALL
+    # after drafting activity stops, or redownload the player directory for no rows.
+    if not adp.get("player") and str(adp.get("totalDrafts")) == "0":
+        raise ProviderDataUnavailable("no_recent_drafts", "MFL reports no recent qualifying drafts.")
     players_response = http_get(
         MFL_EXPORT_URL.format(season=season),
         params={**common, "TYPE": "players"},
@@ -337,7 +366,7 @@ def fetch_mfl_adp(
     )
     players_response.raise_for_status()
     return parse_mfl_adp(
-        adp_response.json(), players_response.json(), positions=positions
+        adp_payload, players_response.json(), positions=positions
     )
 
 
@@ -455,13 +484,7 @@ def build_direct_adp(
             }
         except (requests.RequestException, ValueError, TypeError, KeyError) as exc:
             cached, cached_date = _cached_provider(output_path, column)
-            health[column] = {
-                "status": "cached" if cached is not None else "failed", "freshness": "stale" if cached is not None else "unavailable",
-                "attempted_at": attempted_at, "last_success": cached_date, "data_updated_at": cached_date,
-                "timestamp_kind": "snapshot",
-                "row_count": len(cached) if cached is not None else 0,
-                "note": "Provider unavailable or invalid; saved data retained." if cached is not None else "Provider unavailable or invalid; no saved data.",
-            }
+            health[column] = _failure_health(exc, cached, cached_date, attempted_at)
             if cached is None:
                 if required:
                     raise RuntimeError(
@@ -551,11 +574,14 @@ def build_special_teams_adp(
     http_get=requests.get,
     update_date: str | None = None,
 ) -> pd.DataFrame:
-    """Build a transparent K/DST market board without inventing projections."""
+    """Refresh each K/DST provider independently, preserving its last-good values."""
     output_path = Path(output_path)
     update_date = update_date or _today()
     frames = []
     errors = []
+    source_dates = {}
+    health = {}
+    attempted_at = datetime.now(timezone.utc).isoformat()
     for column, fetcher in (
         ("Sleeper", fetch_sleeper_adp),
         ("MFL", fetch_mfl_adp),
@@ -567,8 +593,24 @@ def build_special_teams_adp(
                 positions=SPECIAL_TEAM_POSITIONS,
             )
             frames.append(_special_provider_for_merge(provider, column))
+            source_dates[column] = update_date
+            health[column] = {
+                "status": "success", "freshness": "current", "attempted_at": attempted_at,
+                "last_success": attempted_at, "data_updated_at": update_date,
+                "timestamp_kind": "snapshot", "row_count": len(frames[-1]),
+                "note": "Downloaded and validated on the snapshot date; provider publication time is not supplied.",
+            }
         except (requests.RequestException, ValueError, TypeError, KeyError) as exc:
-            errors.append(f"{column}: provider unavailable or invalid")
+            cached, cached_date = _cached_provider(output_path, column)
+            try:
+                saved_frame = _special_provider_for_merge(cached, column) if cached is not None else None
+            except (ValueError, TypeError, KeyError):
+                cached, saved_frame, cached_date = None, None, None
+            if saved_frame is not None:
+                frames.append(saved_frame)
+                source_dates[column] = cached_date
+            health[column] = _failure_health(exc, cached, cached_date, attempted_at)
+            errors.append(f"{column}: {health[column]['note']}")
 
     if len(frames) < 2:
         detail = "; ".join(errors) or "fewer than two sources returned data"
@@ -598,14 +640,15 @@ def build_special_teams_adp(
         output["Position"] + output["Position_Rank"].astype(str)
     )
     output = output.sort_values(["Position", "ADP", "Player"], kind="stable")
-    output["Source_Updated"] = update_date
+    output["Source_Updated"] = max((date for date in source_dates.values() if date), default=None)
     for column in provider_order:
-        output[f"{column}_Updated"] = update_date if column in merged else pd.NA
+        output[f"{column}_Updated"] = source_dates.get(column)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     temporary = output_path.with_suffix(output_path.suffix + ".tmp")
     output.to_csv(temporary, index=False)
     temporary.replace(output_path)
+    output.attrs["source_health"] = health
     if errors:
         print("[WARN] K/DST sources skipped: " + "; ".join(errors))
     print(f"[OK] Saved {len(output)} K/DST market rows to {output_path}")

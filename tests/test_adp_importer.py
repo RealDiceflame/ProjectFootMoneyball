@@ -1,5 +1,7 @@
 import pandas as pd
 import requests
+import pytest
+import data_fetcher.adp_importer as importer
 
 from data_fetcher.adp_importer import (
     adp_source_dates,
@@ -237,3 +239,79 @@ def test_absent_provider_values_do_not_borrow_another_sources_date(tmp_path):
     output = tmp_path / "combined.csv"
     pd.DataFrame({"Player": ["Josh Allen"], "Sleeper": [10], "Yahoo": [None], "Source_Updated": ["2026-09-27"]}).to_csv(output, index=False)
     assert adp_source_dates(output) == {"Sleeper": "2026-09-27"}
+
+
+def test_mfl_empty_recent_window_is_explained_without_downloading_player_directory():
+    calls = []
+    def get(url, **kwargs):
+        calls.append(kwargs["params"])
+        return _FakeResponse({"adp": {"timestamp": "1790552841", "totalDrafts": "0", "totalPicks": "0"}})
+    with pytest.raises(importer.ProviderDataUnavailable) as failure:
+        importer.fetch_mfl_adp(2026, http_get=get)
+    assert failure.value.reason_code == "no_recent_drafts"
+    assert len(calls) == 1
+    assert calls[0]["PERIOD"] == "RECENT"
+
+
+def _special_snapshot(path):
+    teams = ["ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", "DAL", "DEN"]
+    frame = pd.DataFrame({
+        "Player": [f"Kicker {index}" for index in range(10)] + [f"Defense {team}" for team in teams],
+        "Position": ["K"] * 10 + ["DST"] * 10,
+        "Team": teams * 2, "Sleeper": list(range(130, 150)), "MFL": list(range(140, 160)),
+        "Sleeper_Updated": "2026-09-24", "MFL_Updated": "2026-09-24", "Source_Updated": "2026-09-24",
+    })
+    frame.to_csv(path, index=False)
+    return frame
+
+
+def test_special_teams_refreshes_good_provider_while_retaining_empty_mfl_snapshot(tmp_path, monkeypatch):
+    output = tmp_path / "special.csv"
+    saved = _special_snapshot(output)
+    fresh = saved.copy()
+    fresh["Sleeper"] += 3
+    fresh.loc[fresh["Position"] == "DST", "Player"] = "Updated defense names"
+    monkeypatch.setattr(importer, "fetch_sleeper_adp", lambda *args, **kwargs: fresh)
+    def empty(*args, **kwargs):
+        raise importer.ProviderDataUnavailable("no_recent_drafts", "MFL reports no recent qualifying drafts.")
+    monkeypatch.setattr(importer, "fetch_mfl_adp", empty)
+    result = importer.build_special_teams_adp(output, season=2026, update_date="2026-09-27")
+    assert len(result) == 20  # D/ST identity is the team, even when provider display names differ.
+    assert result["Source_Count"].eq(2).all()
+    assert result["Sleeper_Updated"].eq("2026-09-27").all()
+    assert result["MFL_Updated"].eq("2026-09-24").all()
+    assert result["Source_Updated"].eq("2026-09-27").all()
+    row = result[result["Player"] == "Kicker 0"].iloc[0]
+    assert row["Sleeper"] == 133
+    assert row["MFL"] == 140
+    assert row["ADP"] == 136.5
+    health = result.attrs["source_health"]
+    assert health["Sleeper"]["status"] == "success"
+    assert health["MFL"]["status"] == "cached"
+    assert health["MFL"]["reason_code"] == "no_recent_drafts"
+    assert health["MFL"]["last_success"] == "2026-09-24"
+
+
+def test_special_teams_keeps_original_dates_when_both_providers_fail(tmp_path, monkeypatch):
+    output = tmp_path / "special.csv"
+    _special_snapshot(output)
+    def fail(*args, **kwargs):
+        raise requests.Timeout("unavailable")
+    monkeypatch.setattr(importer, "fetch_sleeper_adp", fail)
+    monkeypatch.setattr(importer, "fetch_mfl_adp", fail)
+    result = importer.build_special_teams_adp(output, season=2026, update_date="2026-09-27")
+    assert result["Source_Updated"].eq("2026-09-24").all()
+    assert all(row["status"] == "cached" for row in result.attrs["source_health"].values())
+
+
+def test_special_teams_cannot_replace_valid_snapshot_with_incomplete_provider_data(tmp_path, monkeypatch):
+    output = tmp_path / "special.csv"
+    saved = _special_snapshot(output)
+    saved["MFL"] = None
+    saved.to_csv(output, index=False)
+    before = output.read_bytes()
+    monkeypatch.setattr(importer, "fetch_sleeper_adp", lambda *args, **kwargs: saved)
+    monkeypatch.setattr(importer, "fetch_mfl_adp", lambda *args, **kwargs: pd.DataFrame())
+    with pytest.raises(RuntimeError, match="two usable sources"):
+        importer.build_special_teams_adp(output, season=2026, update_date="2026-09-27")
+    assert output.read_bytes() == before

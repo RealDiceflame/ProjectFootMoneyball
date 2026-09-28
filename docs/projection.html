@@ -7,9 +7,9 @@
   <meta name="description" content="Explore OutlierBaseline fantasy football age curves, player season projections, positional variance, and draft-round scoring expectations.">
   <link rel="canonical" href="https://outlierbaseline.com/projection.html">
   <title>Projection Lab | OutlierBaseline</title>
-  <link rel="stylesheet" href="styles.css?v=20260927-refresh1">
+  <link rel="stylesheet" href="styles.css?v=20260928-layout1">
 </head>
-<body>
+<body class="projection-page">
   <header class="topbar">
     <a class="brand" href="./" aria-label="OutlierBaseline home">
       <span class="brand-mark" aria-hidden="true">OB</span>
@@ -71,7 +71,8 @@
         </div>
         <label class="age-view-control">Age comparison<select id="age-view"><option value="ppg">Points per game · position peers</option><option value="season">Season points · position peers</option><option value="career">Career-relative · best observed season = 100</option></select></label>
         <p id="age-view-note" class="model-caveat"></p>
-        <div class="age-chart-shell" id="age-chart"></div>
+        <p class="lab-scroll-hint" id="age-chart-help">Scroll inside the chart to explore every age. Hover over a point for its season details.</p>
+        <div class="age-chart-shell" id="age-chart" tabindex="0" role="region" aria-label="Player age and scoring chart; scroll horizontally" aria-describedby="age-chart-help"></div>
         <div class="projection-card-grid" id="player-projection-cards"></div>
       </section>
 
@@ -102,6 +103,7 @@
         <p id="round-map-basis" class="round-map-note"></p>
         <label class="age-view-control">Graph position<select id="round-chart-position"><option value="all">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select></label>
         <p class="round-chart-legend"><span class="legend-qb">● QB</span> <span class="legend-rb">● RB</span> <span class="legend-wr">● WR</span> <span class="legend-te">● TE</span> · Choose one position to show average ± one scoring SD.</p>
+        <p class="lab-scroll-hint">Scroll inside the graph or the table below to compare all rounds and positions.</p>
         <div id="round-points-chart" class="age-chart-shell" tabindex="0" role="region" aria-label="Round scoring graph; scroll horizontally"></div>
         <p class="round-map-note">Lines show scoring averages, not a promise of availability or the best roster strategy. Gaps mean missing data. Historical variation is not a calibrated forecast interval.</p>
         <section class="draft-timing" aria-labelledby="draft-timing-heading">
@@ -141,7 +143,7 @@
 
   <footer><span>OutlierBaseline · Age Curve v1</span><a href="rankings.html">Use these projections on the live rankings board</a></footer>
   <script type="module" src="projection.js?v=20260927-refresh1"></script>
-  <link rel="stylesheet" href="site-nav.css?v=20260927-refresh1">
-  <script type="module" src="site-nav.js?v=20260927-refresh2"></script>
+  <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
+  <script type="module" src="site-nav.js?v=20260928-layout1"></script>
 </body>
 </html>

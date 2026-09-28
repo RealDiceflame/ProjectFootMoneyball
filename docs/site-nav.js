@@ -8,6 +8,16 @@ const menus = [
   ["Betting", [[null, [["Weekly odds", "odds.html"]]]]],
 ];
 const nav = document.querySelector(".topnav"), page = location.pathname.split("/").pop() || "index.html";
+const mainContent = document.querySelector("main");
+if (mainContent && !document.querySelector(".home-skip, .site-skip")) {
+  if (!mainContent.id) mainContent.id = "main-content";
+  mainContent.tabIndex = -1;
+  const skip = document.createElement("a");
+  skip.className = "site-skip";
+  skip.href = `#${mainContent.id}`;
+  skip.textContent = "Skip to content";
+  document.body.prepend(skip);
+}
 if (nav) {
   nav.classList.add("lab-navigation");
   const hover = matchMedia("(any-hover: hover) and (any-pointer: fine)");
@@ -140,6 +150,9 @@ function sourceHealthText(source = {}) {
     unknown: "freshness unknown", saved: "saved snapshot reused",
   };
   let text = labels[source.status] || "freshness unknown";
+  if (source.reason_code === "no_recent_drafts") text = source.status === "cached"
+    ? "no recent qualifying drafts; keeping the previous ADP snapshot"
+    : "no recent qualifying drafts; no ADP snapshot available";
   if (source.status === "manual") text += "; updated only when a snapshot is imported";
   else if (source.status === "historical") text += "; completed-season data, no live update expected";
   else if (source.status === "not_configured") text += "; no provider request was made";
@@ -150,6 +163,9 @@ function sourceHealthText(source = {}) {
   if (source.data_updated_at) text += `; ${source.timestamp_kind === "snapshot" || source.status === "manual" ? "snapshot captured" : source.timestamp_kind === "mixed" ? "latest available data timestamp" : "source data dated"} ${refreshDate(source.data_updated_at)}`;
   if (source.last_success && !["manual", "historical", "not_needed", "not_configured"].includes(source.status)) text += `; last successful check ${refreshDate(source.last_success)}`;
   if (source.expected_week != null) text += `; expected ${source.season ? `${source.season} ` : ""}week ${source.expected_week}${source.latest_report_week != null ? `, latest report ${source.latest_report_season ? `${source.latest_report_season} ` : ""}week ${source.latest_report_week}` : ", no report week available"}`;
+  if (source.pending_count > 0) text += `; ${source.pending_count} kickoff forecasts not yet published`;
+  if (source.failed_count > 0) text += `; ${source.failed_count} forecast requests failed`;
+  if (source.retained_count > 0) text += `; ${source.retained_count} saved kickoff forecasts retained`;
   return `${text}.`;
 }
 

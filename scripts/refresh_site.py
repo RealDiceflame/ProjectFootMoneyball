@@ -35,13 +35,24 @@ def source_result(name, ok, snapshot, previous, ended, *, extra_providers=None):
         "last_success": previous.get("last_success"),
         "data_updated_at": snapshot.get("generated_at"),
     }
+    providers = {**snapshot.get("source_health", {}), **(extra_providers or {})}
     if not ok:
-        return {**result, "status": "failed", "freshness": "stale", "note": "Refresh failed; last-good snapshot retained.", "providers": snapshot.get("source_health", {})}
+        retained = {}
+        for key, row in providers.items():
+            intentional = row.get("status") in {"manual", "historical", "not_configured", "not_needed"}
+            retained[key] = {
+                **row,
+                "previous_status": row.get("status"),
+                "status": row.get("status") if intentional else "saved",
+                "freshness": row.get("freshness", row.get("status")) if intentional else "stale",
+                "retained": True,
+                "note": "Retained snapshot metadata; provider checks were not confirmed during this failed stage. " + row.get("note", ""),
+            }
+        return {**result, "status": "failed", "freshness": "stale", "note": "Refresh failed; last-good snapshot retained.", "providers": retained}
     if name in {"history", "draft_capital"}:
         return {**result, "status": "historical", "freshness": "historical",
                 "last_success": previous.get("last_success") or snapshot.get("generated_at"),
                 "note": "Completed-season historical archive; not a live feed."}
-    providers = {**snapshot.get("source_health", {}), **(extra_providers or {})}
     if providers:
         degraded = any(row.get("status") in DEGRADED for row in providers.values())
         result.update(status="partial_failure" if degraded else "success",

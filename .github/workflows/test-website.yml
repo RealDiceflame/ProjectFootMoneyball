@@ -31,14 +31,16 @@ jobs:
           npm install --no-save --package-lock=false playwright@1.62.1
           npx playwright install --with-deps chromium webkit
       - name: Test snapshot collection and source health
-        run: python -m pytest tests/test_player_news.py tests/test_site_refresh.py tests/test_adp_importer.py tests/test_odds_board.py tests/test_web_exporter.py tests/test_publish_scoreboard.py -q
+        run: python -m pytest tests/test_player_news.py tests/test_site_refresh.py tests/test_adp_importer.py tests/test_odds_board.py tests/test_weather_refresh.py tests/test_web_exporter.py tests/test_publish_scoreboard.py -q
       - name: Test website models and data handling
         run: node --test tests/*.test.mjs
       - name: Test mobile navigation, saved selections, and automatic refresh
         env:
           BROWSER_CHANNEL: chromium
         run: node --test tests/*.browser.mjs
-      - name: Test WebKit touch navigation
+      - name: Test WebKit touch navigation and responsive layouts
         env:
           BROWSER_ENGINE: webkit
-        run: node --test --test-name-pattern="mobile navigation (?!supports keyboard)" tests/navigation_and_fantasy.browser.mjs
+        run: |
+          node --test --test-name-pattern="mobile navigation (?!supports keyboard)" tests/navigation_and_fantasy.browser.mjs
+          node --test tests/site_layout.browser.mjs tests/lab_layout.browser.mjs

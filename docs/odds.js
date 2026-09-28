@@ -126,6 +126,9 @@ function renderMarket(game, market, rows) {
   heading.textContent = market;
   const scroll = document.createElement("div");
   scroll.className = "odds-comparison-scroll";
+  scroll.tabIndex = 0;
+  scroll.setAttribute("role", "region");
+  scroll.setAttribute("aria-label", `${market} odds — scroll to compare both teams`);
   const table = document.createElement("div");
   table.className = "odds-comparison-table";
   table.setAttribute("role", "table");

@@ -46,6 +46,25 @@ test("cached provider status is independent from a successfully executed job", (
   assert.match(view.sourceHealthText({status: "behind", season: 2026, expected_week: 4, latest_report_season: 2025, latest_report_week: 18}), /expected 2026 week 4, latest report 2025 week 18/);
 });
 
+test("an empty recent draft window is explained without calling it a failed request", () => {
+  const view = nav();
+  const saved = view.sourceHealthText({status: "cached", reason_code: "no_recent_drafts", data_updated_at: "2026-09-24", timestamp_kind: "snapshot"});
+  assert.match(saved, /no recent qualifying drafts; keeping the previous ADP snapshot/);
+  assert.match(saved, /snapshot captured/);
+  assert.doesNotMatch(saved, /failed refresh/);
+  assert.match(view.sourceHealthText({status: "failed", reason_code: "no_recent_drafts"}), /no ADP snapshot available/);
+});
+
+test("forecast coverage and provider failures remain separate", () => {
+  const view = nav();
+  const pending = view.sourceHealthText({status: "success", pending_count: 2, failed_count: 0});
+  assert.match(pending, /2 kickoff forecasts not yet published/);
+  assert.doesNotMatch(pending, /requests failed/);
+  const failed = view.sourceHealthText({status: "partial_failure", pending_count: 1, failed_count: 3, retained_count: 2});
+  assert.match(failed, /3 forecast requests failed/);
+  assert.match(failed, /2 saved kickoff forecasts retained/);
+});
+
 test("collapsible status renders per-provider details without reload advice and recovers from errors", async () => {
   const footer = new Element("footer"), callbacks = [];
   let fail = false;

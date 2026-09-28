@@ -1,5 +1,6 @@
 import {startAutoRefresh, fetchSnapshot, snapshotSignature, preserveView} from "./auto-refresh.mjs?v=20260927-refresh1";
 import {validateSpecialTeams} from "./snapshot-validation.mjs?v=20260927-refresh1";
+import {observeBoardColumns} from "./board-layout.mjs?v=20260928-layout1";
 import {DRAFT_ALIASES_KEY, validDraftAliases, migrateDraftedKeys, toggleDraftedKey} from "./draft-identity.mjs?v=20260927-refresh1";
 const DATA_URL = "./data/special_teams.json";
 const DRAFTED_KEY = "project-foot-moneyball:drafted:v1";
@@ -148,6 +149,7 @@ function renderHead() {
     if (column.key === "drafted") {
       const select = document.createElement("select");
       select.dataset.filter = column.key;
+      select.setAttribute("aria-label", "Filter Drafted");
       select.append(new Option("All", ""), new Option("Open", "no"), new Option("Drafted", "yes"));
       filterCell.append(select);
     } else {
@@ -308,6 +310,7 @@ ui.body.addEventListener("click", event => {
 ui.clear.addEventListener("click", clearFilters);
 ui.export.addEventListener("click", exportRows);
 
+observeBoardColumns(ui.shell);
 startAutoRefresh(load, {onError: () => {
   ui.status.textContent = state.data ? `${loadedStatus} · Refresh unavailable; keeping last loaded data` : "K/DST market unavailable; retrying automatically";
   if (!state.data) ui.loading.textContent = "Could not load the K/DST market. Retrying automatically.";

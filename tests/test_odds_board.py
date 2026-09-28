@@ -324,6 +324,10 @@ def test_nws_hourly_forecast_is_added_near_kickoff():
         "wind_direction": "NW",
         "source_url": "https://www.weather.gov/documentation/services-web-api",
         "valid_at": "2026-09-09T17:00:00-07:00",
+        "valid_until": "2026-09-09T18:00:00-07:00",
+        "issued_at": None,
+        "checked_at": "2026-09-06T00:00:00+00:00",
+        "captured_at": "2026-09-06T00:00:00+00:00",
     }
 
 

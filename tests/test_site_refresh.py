@@ -113,3 +113,40 @@ def test_injury_provider_manifest_retains_season_and_week_context(tmp_path, monk
     assert injuries["latest_report_season"] == 2025
     assert injuries["latest_report_week"] == 18
     assert injuries["data_updated_at"] is None
+
+
+def test_failed_stage_marks_retained_provider_metadata_saved_without_inventing_provider_failure():
+    weather = {
+        "status": "success", "freshness": "current", "row_count": 3,
+        "attempted_at": "2026-09-27T12:00:00Z", "last_success": "2026-09-27T12:00:00Z",
+        "data_updated_at": "2026-09-27T11:00:00Z", "note": "Three forecasts available.",
+    }
+    result = source_result("odds", False, {"source_health": {"weather": weather}},
+                           {"last_success": "2026-09-27T12:00:00Z"}, "2026-09-28T12:00:00Z",
+                           extra_providers={"other": {"status": "success", "freshness": "current"}})
+    saved = result["providers"]["weather"]
+    assert result["status"] == "failed"
+    assert saved["status"] == "saved"
+    assert saved["freshness"] == "stale"
+    assert saved["previous_status"] == "success"
+    assert saved["retained"] is True
+    assert "provider checks were not confirmed" in saved["note"]
+    for key in ("attempted_at", "last_success", "data_updated_at", "row_count"):
+        assert saved[key] == weather[key]
+    assert result["providers"]["other"]["status"] == "saved"
+    assert weather["status"] == "success"  # The retained snapshot itself is not mutated.
+    assert weather["freshness"] == "current"
+
+
+@pytest.mark.parametrize("state", ["manual", "historical", "not_configured", "not_needed"])
+def test_failed_stage_keeps_intentional_provider_states_and_original_dates(state):
+    row = {"status": state, "freshness": state, "attempted_at": None,
+           "last_success": "2026-08-29", "data_updated_at": "2026-08-29"}
+    result = source_result("rankings", False, {"source_health": {"provider": row}}, {}, "2026-09-28")
+    saved = result["providers"]["provider"]
+    assert saved["status"] == state
+    assert saved["freshness"] == state
+    assert saved["attempted_at"] is None
+    assert saved["last_success"] == "2026-08-29"
+    assert saved["data_updated_at"] == "2026-08-29"
+    assert saved["retained"] is True

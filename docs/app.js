@@ -10,6 +10,7 @@ import { applyProjectionModel } from "./projection-model.mjs?v=20260909-archive1
 import {startAutoRefresh, fetchSnapshot, snapshotSignature, preserveView} from "./auto-refresh.mjs?v=20260927-refresh1";
 import {validateRankings, validateReports, validateHistory, validateSpecialTeams} from "./snapshot-validation.mjs?v=20260927-refresh1";
 import {classifyInjury} from "./injury-status.mjs?v=20260927-refresh1";
+import {observeBoardColumns} from "./board-layout.mjs?v=20260928-layout1";
 import {DRAFT_ALIASES_KEY, columnarDraftRows, validDraftAliases, migrateDraftedKeys, toggleDraftedKey} from "./draft-identity.mjs?v=20260927-refresh1";
 
 const DATA_URL = "./data/rankings.json";
@@ -824,6 +825,9 @@ function renderSeasonScoringChart(analytics, player) {
   });
   const shell = document.createElement("div");
   shell.className = "history-chart-shell";
+  shell.tabIndex = 0;
+  shell.setAttribute("role", "region");
+  shell.setAttribute("aria-label", "Year-by-year scoring chart — scroll to see every season");
   shell.append(svg);
   const figure = document.createElement("figure");
   const caption = document.createElement("figcaption");
@@ -880,6 +884,9 @@ function renderExpectedRangeChart(analytics, player) {
   ].forEach(([value, label]) => svg.append(svgNode("text", { class: "range-label", x: scale(value), y: 132, "text-anchor": "middle" }, label)));
   const shell = document.createElement("div");
   shell.className = "history-chart-shell";
+  shell.tabIndex = 0;
+  shell.setAttribute("role", "region");
+  shell.setAttribute("aria-label", "Expected scoring range chart");
   shell.append(svg);
   const figure = document.createElement("figure");
   const caption = document.createElement("figcaption");
@@ -949,6 +956,9 @@ function appendPlayerHistory(container, player) {
       ];
   const wrapper = document.createElement("div");
   wrapper.className = "history-table-shell";
+  wrapper.tabIndex = 0;
+  wrapper.setAttribute("role", "region");
+  wrapper.setAttribute("aria-label", "Historical player statistics — scroll to compare every statistic");
   const table = document.createElement("table");
   const head = document.createElement("thead");
   const headingCells = document.createElement("tr");
@@ -1432,6 +1442,7 @@ async function loadRankings(signal) {
 
 applySettingsToControls();
 bindEvents();
+observeBoardColumns(ui.tableShell);
 startAutoRefresh(loadRankings, {
   canRefresh: () => !document.querySelector("dialog[open]"),
   onCheck: () => {

@@ -7,8 +7,8 @@
   <meta name="description" content="Simulate NFL team matchups, explore score distributions and weekly odds, and plan your survivor picks with a full-season matrix.">
   <link rel="canonical" href="https://outlierbaseline.com/survivor.html">
   <title>Survivor Lab | OutlierBaseline</title>
-  <link rel="stylesheet" href="styles.css?v=20260927-refresh1">
-  <link rel="stylesheet" href="survivor.css?v=20260909-matchup1">
+  <link rel="stylesheet" href="styles.css?v=20260928-layout1">
+  <link rel="stylesheet" href="survivor.css?v=20260928-layout1">
 </head>
 <body class="survivor-page">
   <header class="topbar">
@@ -45,6 +45,7 @@
           <div class="survivor-table-scroll" role="region" tabindex="0" aria-label="Expected scoring statistics"><table class="survivor-table" id="matchup-stats"></table></div>
           <p>SD (standard deviation) describes the spread of simulated game outcomes—not how precisely we know the average. The middle 80% range runs from the 10th to the 90th percentile; outcomes outside it are still possible.</p>
           <div class="survivor-heading"><h3>Outcome distribution</h3><label class="matchup-chart-label">Show distribution<select id="matchup-chart-metric"><option value="margin">Point margin · A minus B</option><option value="home">Team A points</option><option value="away">Team B points</option><option value="total">Combined points</option></select></label></div>
+          <p class="lab-scroll-hint">Scroll inside the chart to see the full scoring range.</p>
           <div id="matchup-chart"></div><p id="matchup-chart-description"></p>
           <h3>How might the game finish?</h3><div id="matchup-outcomes" class="matchup-outcomes"></div>
           <details><summary>Current-season results &amp; team strengths</summary><div class="survivor-table-scroll" role="region" tabindex="0" aria-label="Team scoring context"><table class="survivor-table" id="matchup-team-stats"></table></div><p>Season averages describe completed games, not this matchup's prediction. Before a team has played, those averages stay blank.</p></details>
@@ -98,8 +99,8 @@
     </div>
   </main>
   <footer><p>OutlierBaseline · Research, not certainty. No guaranteed outcomes. If you play for money, set a limit you can afford to lose.</p></footer>
-  <script type="module" src="survivor.js?v=20260927-refresh1"></script>
-  <link rel="stylesheet" href="site-nav.css?v=20260927-refresh1">
-  <script type="module" src="site-nav.js?v=20260927-refresh2"></script>
+  <script type="module" src="survivor.js?v=20260928-layout1"></script>
+  <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
+  <script type="module" src="site-nav.js?v=20260928-layout1"></script>
 </body>
 </html>

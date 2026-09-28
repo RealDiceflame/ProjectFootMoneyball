@@ -168,7 +168,9 @@ function chart(result) {
     svg.append(svgEl("polyline", {points, fill: "none", stroke: index ? "#8cc6ff" : "#d7ff54", "stroke-width": 3, ...(index ? {"stroke-dasharray": "6 5"} : {})}));
   });
   svg.append(svgEl("text", {x: 60, y: 230}, `Before week ${state.start}`), svgEl("text", {x: 610, y: 230}, `After week ${state.end}`));
-  const shell = el("div", undefined, "survivor-table-scroll"); shell.append(svg); return shell;
+  const shell = el("div", undefined, "survivor-table-scroll");
+  shell.tabIndex = 0; shell.setAttribute("role", "region"); shell.setAttribute("aria-label", "Survival simulation chart; scroll horizontally");
+  shell.append(svg); return shell;
 }
 
 function runSimulation() {
@@ -181,6 +183,7 @@ function runSimulation() {
     target.replaceChildren(el("h3", "Simulated survival—not odds of winning your pool"), summary,
       el("p", "Lime: your plan. Dashed blue: a fresh suggested path, keeping used teams and picks outside this window reserved. Identical plans give identical results. Random sampling can vary slightly from the exact model product; team-strength uncertainty is not simulated."), chart(result));
     const scroll = el("div", undefined, "survivor-table-scroll"), output = el("table", undefined, "survivor-table");
+    scroll.tabIndex = 0; scroll.setAttribute("role", "region"); scroll.setAttribute("aria-label", "Survival simulation results; scroll horizontally");
     output.id = "simulation-table"; scroll.append(output); target.append(scroll);
     const body = table("simulation-table", ["Week", "Your pick", "Your survival", "Suggested pick", "Suggested survival"]);
     result.plans[0].byWeek.forEach((p, i) => {

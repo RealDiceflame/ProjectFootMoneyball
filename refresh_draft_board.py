@@ -135,13 +135,8 @@ def refresh_draft_board(
         refreshed = build_direct_adp(ADP_DIR / ADP_FILENAME, season=PROJECTION_SEASON)
         health = refreshed.attrs.get("source_health", {})
         try:
-            build_special_teams_adp(special_teams_path, season=PROJECTION_SEASON)
-            special_health = {provider: {
-                "status": "success", "freshness": "current", "attempted_at": attempted_at,
-                "last_success": attempted_at, "data_updated_at": date,
-                "timestamp_kind": "snapshot",
-                "note": "Downloaded and validated on the snapshot date; provider publication time is not supplied.",
-            } for provider, date in adp_source_dates(special_teams_path).items()}
+            special = build_special_teams_adp(special_teams_path, season=PROJECTION_SEASON)
+            special_health = special.attrs.get("source_health", {})
         except RuntimeError:
             status("[WARN] Keeping the last K/DST market snapshot; providers unavailable or invalid.")
             special_health = saved_adp_health(special_teams_path, attempted_at=attempted_at)

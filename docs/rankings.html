@@ -16,7 +16,7 @@
   <meta name="twitter:description" content="Find the value the market missed.">
   <meta name="twitter:image" content="https://outlierbaseline.com/og.png">
   <title>Player Rankings | OutlierBaseline</title>
-  <link rel="stylesheet" href="styles.css?v=20260927-refresh1">
+  <link rel="stylesheet" href="styles.css?v=20260928-layout1">
 </head>
 <body>
   <header class="topbar">
@@ -53,8 +53,8 @@
         <label><span>Quarterbacks</span><select id="quarterbacks"><option value="1QB">1QB</option><option value="2QB" selected>2QB</option></select></label>
         <label><span>Reception scoring</span><select id="ppr"><option value="Standard">Standard</option><option value="Half PPR" selected>Half PPR</option><option value="Full PPR">Full PPR</option></select></label>
         <label><span>TE premium</span><select id="te-premium"><option value="Off">Off</option><option value="+0.5" selected>+0.5 PPR</option></select></label>
-        <label><span>Kickers</span><select id="kickers"><option value="Off" selected>Off</option><option value="Include">Include on board</option></select></label>
-        <label><span>Team defenses</span><select id="defenses"><option value="Off" selected>Off</option><option value="Include">Include on board</option></select></label>
+        <label><span>Kickers</span><select id="kickers"><option value="Off" selected>Off</option><option value="Include">Include</option></select></label>
+        <label><span>Team defenses</span><select id="defenses"><option value="Off" selected>Off</option><option value="Include">Include</option></select></label>
       </div>
     </section>
 
@@ -101,7 +101,7 @@
 
       <p class="mobile-scroll-hint" role="note"><span aria-hidden="true">↔</span> Swipe across the table to see projections, market value, ADP, volatility, and draft tags.</p>
 
-      <div class="table-shell" id="table-shell" aria-busy="true">
+      <div class="table-shell" id="table-shell" aria-busy="true" tabindex="0" role="region" aria-label="Player rankings — scroll to compare every column">
         <table><thead id="table-head"></thead><tbody id="table-body"></tbody></table>
         <div class="loading-state" id="loading-state"><div class="football-loader" aria-hidden="true"></div><strong>Building your board</strong><span>Loading every league format...</span></div>
         <div class="empty-state hidden" id="empty-state"><strong>No players match those filters.</strong><button type="button" id="empty-clear">Show every player</button></div>
@@ -178,8 +178,8 @@
   </dialog>
 
   <noscript>This draft board needs JavaScript enabled in your browser.</noscript>
-  <script type="module" src="app.js?v=20260927-refresh1"></script>
-  <link rel="stylesheet" href="site-nav.css?v=20260927-refresh1">
-  <script type="module" src="site-nav.js?v=20260927-refresh2"></script>
+  <script type="module" src="app.js?v=20260928-layout1"></script>
+  <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
+  <script type="module" src="site-nav.js?v=20260928-layout1"></script>
 </body>
 </html>

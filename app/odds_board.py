@@ -646,29 +646,59 @@ def _nws_forecast(game: dict, *, get: Callable = requests.get) -> dict | None:
         timeout=60,
     )
     point.raise_for_status()
-    forecast_url = point.json().get("properties", {}).get("forecastHourly")
+    point_payload = point.json()
+    if not isinstance(point_payload, dict) or not isinstance(point_payload.get("properties"), dict):
+        raise ValueError("Invalid NWS point response")
+    forecast_url = point_payload["properties"].get("forecastHourly")
     if not forecast_url:
-        return None
+        raise ValueError("NWS hourly forecast link is unavailable")
     forecast = get(forecast_url, headers=headers, timeout=60)
     forecast.raise_for_status()
-    periods = forecast.json().get("properties", {}).get("periods", [])
+    forecast_payload = forecast.json()
+    if not isinstance(forecast_payload, dict) or not isinstance(forecast_payload.get("properties"), dict):
+        raise ValueError("Invalid NWS forecast response")
+    properties = forecast_payload["properties"]
+    periods = properties.get("periods")
+    if not isinstance(periods, list) or not periods:
+        raise ValueError("Invalid NWS hourly forecast periods")
+    issued_at = properties.get("updateTime")
+    try:
+        if not isinstance(issued_at, str) or datetime.fromisoformat(issued_at).tzinfo is None:
+            issued_at = None
+    except ValueError:
+        issued_at = None
     kickoff = datetime.fromisoformat(game["kickoff"])
     eligible = []
+    ends = []
     for period in periods:
+        if not isinstance(period, dict):
+            continue
         try:
             start = datetime.fromisoformat(str(period.get("startTime")))
             end = datetime.fromisoformat(str(period["endTime"])) if period.get("endTime") else start + timedelta(hours=1)
-            if start.tzinfo is None or end.tzinfo is None:
+            if start.tzinfo is None or end.tzinfo is None or end <= start:
                 continue
         except (TypeError, ValueError):
             continue
+        ends.append(end)
         if start <= kickoff < end:
-            eligible.append((abs((start.astimezone(timezone.utc) - kickoff).total_seconds()), period))
+            eligible.append((abs((start.astimezone(timezone.utc) - kickoff).total_seconds()), period, end))
     if not eligible:
-        return None
-    distance, period = min(eligible, key=lambda item: item[0])
+        if not ends:
+            raise ValueError("No valid NWS hourly periods")
+        if kickoff >= max(ends):
+            return {
+                "status": "pending", "reason_code": "outside_forecast_window",
+                "summary": "Kickoff forecast has not been published yet",
+                "temperature": None, "wind_speed": None, "wind_direction": None,
+                "source_url": NWS_SOURCE_URL,
+                "forecast_through": max(ends).isoformat(),
+                "issued_at": issued_at,
+            }
+        raise ValueError("Kickoff hour is missing from the NWS forecast")
+    distance, period, end = min(eligible, key=lambda item: item[0])
     if distance > 2 * 60 * 60:
-        return None
+        raise ValueError("NWS response is not an hourly kickoff forecast")
     temperature = _number(period.get("temperature"))
     if temperature is not None and period.get("temperatureUnit") == "C":
         temperature = temperature * 9 / 5 + 32
@@ -680,6 +710,8 @@ def _nws_forecast(game: dict, *, get: Callable = requests.get) -> dict | None:
         "wind_direction": _text(period.get("windDirection")),
         "source_url": NWS_SOURCE_URL,
         "valid_at": period["startTime"],
+        "valid_until": end.isoformat(),
+        "issued_at": issued_at,
     }
 
 
@@ -703,15 +735,43 @@ def add_nws_weather(
         if cache_key not in cache:
             try:
                 cache[cache_key] = _nws_forecast(game, get=get)
-            except (requests.RequestException, ValueError, TypeError):
+            except (requests.RequestException, ValueError, TypeError, KeyError):
                 cache[cache_key] = None
         if cache[cache_key]:
-            game["weather"] = cache[cache_key]
-            updated += 1
+            game["weather"] = {**cache[cache_key], "checked_at": now.isoformat()}
+            if game["weather"]["status"] == "forecast":
+                game["weather"]["captured_at"] = now.isoformat()
+                updated += 1
         else:
             game["weather"]["status"] = "unavailable"
             game["weather"]["summary"] = "Forecast temporarily unavailable"
+            game["weather"]["reason_code"] = "provider_unavailable"
+            game["weather"]["checked_at"] = now.isoformat()
     return updated
+
+
+def retain_nws_weather(games: list[dict], prior_games: dict[str, dict]) -> int:
+    """Retain a failed game's forecast only when its venue and valid hour still match."""
+    retained = 0
+    for game in games:
+        previous = prior_games.get(game["game_id"], {})
+        saved = previous.get("weather", {})
+        if (game["weather"].get("reason_code") != "provider_unavailable"
+                or saved.get("status") != "forecast"
+                or previous.get("stadium_id") != game.get("stadium_id")):
+            continue
+        try:
+            kickoff = datetime.fromisoformat(game["kickoff"])
+            start = datetime.fromisoformat(saved["valid_at"])
+            end = datetime.fromisoformat(saved["valid_until"]) if saved.get("valid_until") else start + timedelta(hours=1)
+            if start.tzinfo is None or end.tzinfo is None or not start <= kickoff < end:
+                continue
+        except (ValueError, TypeError, KeyError):
+            continue
+        game["weather"] = {**saved, "retained": True, "reason_code": "provider_unavailable",
+                           "checked_at": game["weather"].get("checked_at")}
+        retained += 1
+    return retained
 
 
 def build_odds_board(
@@ -975,12 +1035,22 @@ def refresh_odds_board(
     status("[6/6] Loading kickoff weather for upcoming outdoor games...")
     eligible = [game for game in payload["games"] if game["weather"]["status"] == "pending" and datetime.fromisoformat(game["kickoff"]) <= now + timedelta(days=7) and game.get("stadium_id") in STADIUM_COORDINATES]
     weather_count = add_nws_weather(payload["games"], now=now, get=get)
-    weather_state = "not_needed" if not eligible else "success" if weather_count == len(eligible) else "partial_failure" if weather_count else "failed"
-    record("weather", weather_state, "Kickoff weather checked where forecasts are available." if eligible else "No outdoor games within the supported forecast window.", attempted=bool(eligible), rows=weather_count)
-    for game in eligible:
-        old_weather = prior_games.get(game["game_id"], {}).get("weather", {})
-        if game["weather"]["status"] == "unavailable" and old_weather.get("status") == "forecast":
-            game["weather"] = {**old_weather, "retained": True}
+    pending_count = sum(game["weather"]["status"] == "pending" for game in eligible)
+    failure_count = sum(game["weather"]["status"] == "unavailable" for game in eligible)
+    weather_state = "not_needed" if not eligible else "success" if not failure_count else "partial_failure" if weather_count or pending_count else "failed"
+    weather_note = (f"{weather_count} kickoff forecasts available; {pending_count} kickoff hours not yet published; {failure_count} provider failures."
+                    if eligible else "No outdoor games within the supported forecast window.")
+    record("weather", weather_state, weather_note, attempted=bool(eligible), rows=weather_count)
+    retained_count = retain_nws_weather(eligible, prior_games)
+    health["weather"].update(pending_count=pending_count, failed_count=failure_count, retained_count=retained_count)
+    issued = [game["weather"]["issued_at"] for game in eligible if game["weather"].get("issued_at")]
+    if issued:
+        health["weather"]["data_updated_at"] = max(issued)
+    health["weather"]["games"] = {game["game_id"]: {
+        "status": "cached" if game["weather"].get("retained") else "success" if game["weather"]["status"] == "forecast" else "pending" if game["weather"]["status"] == "pending" else "failed",
+        "reason_code": game["weather"].get("reason_code"),
+        "valid_at": game["weather"].get("valid_at"), "forecast_through": game["weather"].get("forecast_through"),
+    } for game in eligible}
     payload["source_health"] = health
     status(f"[OK] Added {weather_count} National Weather Service forecasts.")
     destination = Path(destination)
