@@ -45,7 +45,7 @@ const pages = [
   ["projection", "#projection-content:not(.hidden)"], ["survivor", "#survivor-content:not([hidden])"],
   ["league", "#league-results:not([hidden])"], ["odds", '#odds-games-shell[aria-busy="false"]'],
   ["stats", "#stats-results > *"], ["stats-leaders", "#stats-results table", "stats.html?view=leaders"],
-  ["game", "#game-stats table"], ["fantasy", "#roster-fields input"],
+  ["game", "#game-stats table"],
 ];
 
 async function measure(page) {
@@ -201,9 +201,9 @@ for (const [name, ready, route] of pages) test(`${name}: responsive layout and r
         assert.equal(editorial.readable, true, "News headlines wrap without clipping at every width");
         assert.equal(editorial.updatesReadable, true, "Compact announcements keep their copy and links fully visible");
         assert.deepEqual(await page.locator(".home-updates article h3").allTextContents(),
-          ["A fresh run. A complete story.", "Your league starts here.", "Put the past in perspective."], "Announcement titles remain unchanged");
+          ["League simulations", "Put the past in perspective."], "Approved announcements remain without the archived league prototype");
         assert.deepEqual(await page.locator(".home-updates article a").evaluateAll(links => links.map(link => link.getAttribute("href"))),
-          ["league.html#bracket-heading", "fantasy.html", "projection.html#round-map-heading"], "Announcement destinations remain unchanged");
+          ["league.html#bracket-heading", "projection.html#round-map-heading"], "Remaining announcement destinations are unchanged");
         assert.deepEqual(await page.locator(".home-feed-grid > *").evaluateAll(sections => sections.map(section => section.getAttribute("aria-labelledby"))),
           ["highlights-heading", "injury-heading", "explore-heading"], "Document and keyboard reading order is news, injuries, then tools");
         assert.deepEqual(await page.locator("#explore .home-tool-grid > a").evaluateAll(links => links.map(link => link.getAttribute("href"))),

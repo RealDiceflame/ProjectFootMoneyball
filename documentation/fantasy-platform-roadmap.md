@@ -2,20 +2,22 @@
 
 ## Product direction
 
-One **My Leagues** hub supports two eventual modes:
+The planned **My Leagues** hub will support two eventual modes:
 
 - **Hosted leagues:** people create and play their leagues on OutlierBaseline.
 - **Connected leagues:** people view existing outside leagues and use OutlierBaseline for draft preparation, draft assistance and lineup recommendations.
 
 Do not describe a local setup or external league import as a shared/hosted league. Do not promise automated lineup submission for a read-only integration.
 
-## Implemented foundation
+## Archived foundation — local removal draft
 
-`docs/fantasy.html` is an explicitly labeled local prototype. It supports multiple saved league setups, 8/10/12/14/16 teams, team names, PPR, additive TE premium, passing-TD preferences, and QB/RB/WR/TE/FLEX/superflex/K/DST/bench/IR slot counts. Settings do not yet change the rankings board, calculate scores, or assign players.
+This local draft removes the Fantasy Leagues / My Leagues page and its public entry points while the platform is developed. The prototype files are preserved in [`archive/fantasy-platform-prototype/web/`](../archive/fantasy-platform-prototype/README.md), outside the public `docs/` hosting root. This change has not been pushed or deployed. Removing the page does not clear saved league setups or any other browser storage.
 
-`docs/fantasy-leagues.mjs` owns the versioned schema, validation, setup creation, edits and backup import. The page handles forms and persistence, not the rules. League and team IDs are stable through edits; importing a backup creates independent IDs. Unknown properties are discarded, malformed/future-version data is not silently overwritten, and a stale browser tab cannot overwrite another tab's saved changes. Draft markers and other existing browser storage are untouched.
+The archived `web/fantasy.html` is a browser-only prototype. It supports multiple saved league setups, 8/10/12/14/16 teams, team names, PPR, additive TE premium, passing-TD preferences, and QB/RB/WR/TE/FLEX/superflex/K/DST/bench/IR slot counts. Settings do not change the rankings board, calculate scores, or assign players. The archive preserves the original source and references to shared site assets; it is not a standalone deployed application.
 
-This is not account security: local storage is editable and visible to users of that browser profile. No passwords, tokens, payment details or real account ownership should be stored here. There are no external connections or write calls in this prototype.
+The archived `web/fantasy-leagues.mjs` owns the versioned schema, validation, setup creation, edits and backup import. The page handles forms and persistence, not the rules. League and team IDs are stable through edits; importing a backup creates independent IDs. Unknown properties are discarded, malformed/future-version data is not silently overwritten, and a stale browser tab cannot overwrite another tab's saved changes. Draft markers and other existing browser storage are untouched.
+
+There are no production accounts, shared hosted leagues or external account connections. Local storage is editable and visible to users of that browser profile; it provides no account security. No passwords, tokens, payment details or real account ownership should be stored here. The prototype makes no external write calls.
 
 ## Next useful milestone: accounts and read-only league hub
 
@@ -45,6 +47,6 @@ For any future permitted lineup write: request the minimum permissions, store en
 
 ## Checks
 
-`node --test tests/fantasy_leagues.test.mjs` tests validation and persistence payloads. `node --test tests/navigation_and_fantasy.browser.mjs` uses Playwright for desktop hover, keyboard, mobile tap, create/edit/reload, backup round-trip, invalid data and stale-tab behavior. Navigation checks cover all 13 destinations, touch focus loss, category switching, phone menu dismissal and responsive resizing. Install Playwright for browser checks or provide its module through `PLAYWRIGHT_MODULE`; `BROWSER_CHANNEL` defaults to `msedge` (`chromium` uses the bundled Chromium build). Set `BROWSER_ENGINE=webkit` to run the same checks with Playwright's installed WebKit engine; this is browser emulation, not a physical iPhone test. Use `--test-name-pattern="desktop hover|keyboard links|mobile navigation"` to run just navigation checks.
+`node --test tests/fantasy_leagues.test.mjs` tests the archived module's validation and persistence payloads. `node --test tests/navigation_and_fantasy.browser.mjs` uses Playwright to check the remaining public navigation and prototype removal. Navigation checks cover desktop hover, keyboard, mobile tap, touch focus loss, category switching, phone menu dismissal and responsive resizing. Install Playwright for browser checks or provide its module through `PLAYWRIGHT_MODULE`; `BROWSER_CHANNEL` defaults to `msedge` (`chromium` uses the bundled Chromium build). Set `BROWSER_ENGINE=webkit` to run the same checks with Playwright's installed WebKit engine; this is browser emulation, not a physical iPhone test. Use `--test-name-pattern="desktop hover|keyboard links|mobile navigation"` to run just navigation checks.
 
 Windows Playwright WebKit skips ordinary links with Tab even without navigation code. Its focus-management checks explicitly focus the first link, then verify Escape and Tab exit; Chromium checks the actual Tab entry order. Touch checks use real browser taps in both engines.

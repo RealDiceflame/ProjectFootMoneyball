@@ -5,43 +5,64 @@ import {test, before, after} from "node:test";
 import assert from "node:assert/strict";
 import {createRequire} from "node:module";
 import {createServer} from "node:http";
-import {readFile, mkdir} from "node:fs/promises";
+import {readFile, readdir, mkdir} from "node:fs/promises";
 import {fileURLToPath} from "node:url";
 import {resolve, extname, sep} from "node:path";
-import {STORAGE_KEY} from "../docs/fantasy-leagues.mjs";
+import {STORAGE_KEY, DEFAULT_ROSTER, createLeague, emptyStore} from "../archive/fantasy-platform-prototype/web/fantasy-leagues.mjs";
 
 const engines = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || "playwright");
 const root = fileURLToPath(new URL("../docs/", import.meta.url));
-let browser, server, base;
+const prototypeRoot = fileURLToPath(new URL("../archive/fantasy-platform-prototype/web/", import.meta.url));
+const prototypeFiles = ["fantasy.html", "fantasy.js", "fantasy.css", "fantasy-leagues.mjs"];
+const sharedPrototypeFiles = ["styles.css", "site-nav.css", "site-nav.js"];
+const types = {".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".mjs": "text/javascript", ".json": "application/json", ".png": "image/png"};
+let browser, server, base, prototypeServer, prototypeBase;
 before(async () => {
   server = createServer(async (request, response) => {
     try {
       const path = resolve(root, `.${decodeURIComponent(new URL(request.url, "http://localhost").pathname)}`);
       if (path !== resolve(root) && !path.startsWith(resolve(root) + sep)) { response.writeHead(403).end(); return; }
       const target = path === resolve(root) ? resolve(root, "index.html") : path;
-      const types = {".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".mjs": "text/javascript", ".json": "application/json", ".png": "image/png"};
       response.setHeader("Content-Type", types[extname(target)] || "application/octet-stream");
       response.end(await readFile(target));
-    } catch { response.writeHead(404).end(); }
+    } catch { response.writeHead(404, {"Content-Type": "text/plain"}).end("Not found"); }
   });
   await new Promise(done => server.listen(0, "127.0.0.1", done));
   base = `http://127.0.0.1:${server.address().port}`;
+  // An isolated test-only origin keeps archived UI coverage out of the public
+  // fixture. Only the four archived files and their shared assets are served.
+  prototypeServer = createServer(async (request, response) => {
+    try {
+      const pathname = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
+      const file = pathname.startsWith("/__prototype__/") ? pathname.slice("/__prototype__/".length) : "";
+      const directory = prototypeFiles.includes(file) ? prototypeRoot : sharedPrototypeFiles.includes(file) ? root : null;
+      if (!directory) { response.writeHead(404).end(); return; }
+      response.setHeader("Content-Type", types[extname(file)]);
+      response.end(await readFile(resolve(directory, file)));
+    } catch { response.writeHead(404, {"Content-Type": "text/plain"}).end("Not found"); }
+  });
+  await new Promise(done => prototypeServer.listen(0, "127.0.0.1", done));
+  prototypeBase = `http://127.0.0.1:${prototypeServer.address().port}`;
   const engine = process.env.BROWSER_ENGINE || "chromium";
   assert.ok(["chromium", "webkit"].includes(engine), `Unsupported browser engine: ${engine}`);
   const channel = process.env.BROWSER_CHANNEL || "msedge";
   browser = await engines[engine].launch({headless: true, ...(engine === "chromium" && channel !== "chromium" ? {channel} : {})});
 });
-after(async () => { await browser?.close(); if (server) await new Promise(done => server.close(done)); });
+after(async () => {
+  await browser?.close();
+  for (const fixture of [server, prototypeServer]) if (fixture) await new Promise(done => fixture.close(done));
+});
 
-async function openPage(options = {}, pathname = "/fantasy.html") {
+async function openPage(options = {}, pathname = "/rankings.html", origin = base) {
   const context = await browser.newContext({viewport: {width: 1440, height: 1000}, ...options});
-  await context.route("**/*", route => new URL(route.request().url()).origin === base ? route.continue() : route.abort());
+  await context.route("**/*", route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
   const page = await context.newPage();
   page.setDefaultTimeout(7000);
-  await page.goto(`${base}${pathname}`);
+  await page.goto(`${origin}${pathname}`);
   await page.locator(".lab-navigation").waitFor();
   return {context, page};
 }
+const openPrototype = () => openPage({}, "/__prototype__/fantasy.html", prototypeBase);
 const isOpen = locator => locator.evaluate(element => element.open);
 const navGroup = (page, name) => page.locator(".lab-navigation details").filter({has: page.locator("summary", {hasText: new RegExp(`^${name}$`)})});
 const waitForOpen = (page, name, open) => page.waitForFunction(({name, open}) => [...document.querySelectorAll(".lab-navigation details")].find(group => group.querySelector("summary").textContent === name)?.open === open, {name, open});
@@ -66,6 +87,48 @@ async function screenshot(page, name) {
   await page.screenshot({path: resolve(process.env.BROWSER_SCREENSHOTS, name), fullPage: true});
 }
 
+test("public prototype routes return 404 and cannot reach the archived test fixture", async () => {
+  const context = await browser.newContext();
+  try {
+    for (const file of prototypeFiles) {
+      for (const pathname of [`/${file}`, `/__prototype__/${file}`, `/archive/fantasy-platform-prototype/web/${file}`]) {
+        assert.equal((await context.request.get(base + pathname)).status(), 404, `${pathname} is unavailable on the public site`);
+      }
+    }
+    assert.equal((await context.request.get(prototypeBase + "/fantasy.html")).status(), 404);
+    assert.equal((await context.request.get(prototypeBase + "/__prototype__/rankings.html")).status(), 404,
+      "The archive fixture serves only its explicit file allowlist");
+  } finally { await context.close(); }
+});
+
+test("public pages omit My leagues while retaining Fantasy tools and existing saved league data", async () => {
+  const {context, page} = await openPage();
+  const pages = (await readdir(root)).filter(name => name.endsWith(".html"));
+  let sequence = 0;
+  const saved = JSON.stringify({...emptyStore(), leagues: [createLeague({
+    name: "Keep my saved league", season: 2026, team_count: 12,
+    scoring: {ppr: 0.5, te_premium: 0, passing_td: 4}, roster: {...DEFAULT_ROSTER},
+  }, {id: () => `retained-${++sequence}`, now: "2026-09-30T12:00:00Z"})]});
+  try {
+    assert.equal(STORAGE_KEY, "outlierbaseline:fantasy-leagues:v1");
+    await page.evaluate(({key, saved}) => localStorage.setItem(key, saved), {key: STORAGE_KEY, saved});
+    for (const name of pages) {
+      const response = await page.goto(`${base}/${name}`);
+      assert.equal(response.status(), 200, name);
+      await page.locator(".lab-navigation").waitFor();
+      assert.equal(await page.getByRole("link", {name: /My leagues|Try a local league setup/i}).count(), 0, name);
+      const prototypeLinks = await page.locator("a[href], script[src], link[href]").evaluateAll(elements => elements
+        .map(element => element.getAttribute("href") || element.getAttribute("src"))
+        .filter(value => /(?:fantasy\.(?:html|js|css)|fantasy-leagues\.mjs)(?:[?#]|$)/i.test(value)));
+      assert.deepEqual(prototypeLinks, [], `${name} has no prototype links or assets`);
+      assert.deepEqual(await navGroup(page, "Fantasy").locator("a").allTextContents(), ["Player rankings", "Kickers & D/ST", "Player values"]);
+      assert.equal(await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY), saved, `${name} preserves the saved league verbatim`);
+    }
+    assert.equal((await page.goto(base + "/fantasy.html")).status(), 404);
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY), saved, "An old bookmark does not erase saved league data");
+  } finally { await context.close(); }
+});
+
 test("desktop hover menus group all labs, stay open over links, switch and dismiss", async () => {
   const {context, page} = await openPage();
   try {
@@ -79,12 +142,12 @@ test("desktop hover menus group all labs, stay open over links, switch and dismi
     assert.equal(await labs.locator("a").count(), 6);
     await labs.getByRole("link", {name: "Head-to-head matchup"}).hover();
     assert.equal(await isOpen(labs), true);
-    await page.getByRole("heading", {name: "Your leagues. One home."}).hover({position: {x: 10, y: 10}});
+    await page.locator("h1").hover({position: {x: 10, y: 10}});
     await waitForOpen(page, "Labs", false);
     await labs.locator("summary").hover();
     await navGroup(page, "Betting").locator("summary").hover();
     await waitForOpen(page, "Betting", true); await waitForOpen(page, "Labs", false);
-    await page.getByRole("heading", {name: "Your leagues. One home."}).click();
+    await page.locator("h1").click();
     await waitForOpen(page, "Betting", false);
     // Mouse-click focus on a previous tab must not disable later hover navigation.
     await navGroup(page, "Stats").locator("summary").click();
@@ -99,7 +162,7 @@ test("keyboard links keep their focus, Escape closes without reopening, and Tab 
     await summary.focus(); await page.keyboard.press("Enter"); await waitForOpen(page, "Labs", true);
     await focusFirstNavLink(page, labs);
     assert.equal(await page.evaluate(() => document.activeElement.textContent), "Player age & scoring");
-    await page.getByRole("heading", {name: "Your leagues. One home."}).hover({position: {x: 10, y: 10}});
+    await page.locator("h1").hover({position: {x: 10, y: 10}});
     // Focused keyboard links must not disappear when the mouse leaves.
     await page.waitForTimeout(300); assert.equal(await isOpen(labs), true);
     await page.keyboard.press("Escape"); await waitForOpen(page, "Labs", false);
@@ -216,7 +279,7 @@ test("mobile navigation preserves the link through pointerdown and null-relatedT
   } finally { await context.close(); }
 });
 
-test("mobile navigation follows all 14 native destinations with actual taps", async () => {
+test("mobile navigation follows all 13 native destinations with actual taps", async () => {
   const {context, page} = await openPage(mobileOptions);
   const errors = [];
   page.on("pageerror", error => errors.push(error.message));
@@ -226,7 +289,6 @@ test("mobile navigation follows all 14 native destinations with actual taps", as
     ["Fantasy", "Player rankings", "rankings.html"],
     ["Fantasy", "Kickers & D/ST", "special-teams.html"],
     ["Fantasy", "Player values", "values.html"],
-    ["Fantasy", "My leagues · prototype", "fantasy.html"],
     ["Labs", "Player age & scoring", "projection.html"],
     ["Labs", "Draft capital map", "projection.html#round-map-heading", "/projection.html"],
     ["Labs", "Head-to-head matchup", "survivor.html#matchup-heading", "/survivor.html"],
@@ -238,7 +300,7 @@ test("mobile navigation follows all 14 native destinations with actual taps", as
   ];
   try {
     assert.equal(await page.locator(".lab-navigation a").count(), destinations.length);
-    for (const [category, name, href, start = "/fantasy.html"] of destinations) {
+    for (const [category, name, href, start = "/rankings.html"] of destinations) {
       await page.goto(base + start); await page.locator(".lab-navigation").waitFor();
       await page.locator(".site-nav-toggle").tap(); await waitForMobileMenu(page, true);
       if (category) { await navGroup(page, category).locator("summary").tap(); await waitForOpen(page, category, true); }
@@ -257,11 +319,11 @@ test("mobile navigation follows all 14 native destinations with actual taps", as
 });
 
 test("mobile navigation ignores scrolling and cancelled touches and preserves outside link activation", async () => {
-  const {context, page} = await openPage(mobileOptions);
+  const {context, page} = await openPage(mobileOptions, "/special-teams.html");
   try {
     await page.locator(".site-nav-toggle").tap();
     await navGroup(page, "Labs").locator("summary").tap(); await waitForOpen(page, "Labs", true);
-    const heading = page.getByRole("heading", {name: "Your leagues. One home."});
+    const heading = page.locator("h1");
     const start = {pointerType: "touch", pointerId: 11, clientX: 30, clientY: 30, bubbles: true};
     await heading.dispatchEvent("pointerdown", start);
     await heading.dispatchEvent("pointermove", {...start, clientY: 55});
@@ -271,7 +333,7 @@ test("mobile navigation ignores scrolling and cancelled touches and preserves ou
     await heading.dispatchEvent("pointercancel", start);
     await heading.dispatchEvent("pointerup", start);
     await waitForMobileMenu(page, true); assert.equal(await isOpen(navGroup(page, "Labs")), true);
-    const link = page.locator("footer").getByRole("link", {name: "Return to player rankings"});
+    const link = page.locator("footer").getByRole("link", {name: "Back to player rankings"});
     assert.equal(await link.getAttribute("href"), "rankings.html");
     await link.evaluate(element => element.addEventListener("pointerup", () => {
       sessionStorage.setItem("nav-test-panel-at-outside-link-pointerup", document.querySelector(".site-nav-toggle").getAttribute("aria-expanded"));
@@ -297,7 +359,7 @@ test("mobile navigation supports keyboard Escape, outside dismissal, and respons
     await page.keyboard.press("Escape"); await waitForMobileMenu(page, false);
     assert.equal(await toggle.evaluate(element => element === document.activeElement), true);
     await toggle.tap(); await summary.tap(); await waitForOpen(page, "Labs", true);
-    await page.getByRole("heading", {name: "Your leagues. One home."}).tap();
+    await page.locator("h1").tap();
     await waitForMobileMenu(page, false); await waitForOpen(page, "Labs", false);
     await toggle.focus(); await page.keyboard.press("Enter");
     await navGroup(page, "Betting").locator("summary").focus();
@@ -314,8 +376,8 @@ test("mobile navigation supports keyboard Escape, outside dismissal, and respons
   } finally { await context.close(); }
 });
 
-test("create, edit, reload and copy a league without changing draft-board storage", async () => {
-  const {context, page} = await openPage();
+test("archived prototype can create, edit, reload and copy a league without changing draft-board storage", async () => {
+  const {context, page} = await openPrototype();
   try {
     await page.evaluate(() => localStorage.setItem("project-foot-moneyball:drafted:v1", '["keep-this-pick"]'));
     await page.getByLabel("League name", {exact: true}).fill("Sunday friends");
@@ -347,8 +409,8 @@ test("create, edit, reload and copy a league without changing draft-board storag
   } finally { await context.close(); }
 });
 
-test("bad stored data and cross-tab conflicts are not overwritten", async () => {
-  const {context, page} = await openPage();
+test("archived prototype does not overwrite bad stored data or cross-tab conflicts", async () => {
+  const {context, page} = await openPrototype();
   try {
     await page.evaluate(key => localStorage.setItem(key, "broken saved data"), STORAGE_KEY);
     await page.reload(); await page.locator("#hub-error").waitFor({state: "visible"});

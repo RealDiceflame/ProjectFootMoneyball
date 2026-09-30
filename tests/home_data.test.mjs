@@ -172,6 +172,11 @@ test("homepage controls and rankings route are wired with unique identifiers", (
   const css = readFileSync(new URL("../docs/home.css", import.meta.url), "utf8");
   assert.match(css, /\.home-news-scroll\s*\{[^}]*max-height:[^}]*overflow-y: auto/);
   const updates = html.indexOf('aria-labelledby="updates-heading"');
+  const firstUpdate = html.slice(updates).match(/<article>([\s\S]*?)<\/article>/)?.[1] || "";
+  assert.match(firstUpdate, /<h3>League simulations<\/h3>/, "The first announcement uses the approved direct title");
+  assert.match(firstUpdate, /<p>Simulate the NFL season and explore possible playoff and Super Bowl outcomes\.<\/p>/, "The first announcement uses the approved description");
+  assert.match(firstUpdate, /<a href="league\.html#bracket-heading">View simulations ↗<\/a>/, "The approved link wording retains its destination");
+  assert.doesNotMatch(html, /fantasy\.html|Your league starts here\.|Try a local league setup/, "The prototype is absent from homepage navigation and announcements");
   assert.ok(updates > html.indexOf('aria-labelledby="explore-heading"'));
   assert.ok(updates > html.indexOf('aria-labelledby="highlights-heading"'));
   assert.ok(updates < html.indexOf("</main>"));

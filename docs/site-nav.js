@@ -1,6 +1,6 @@
 const menus = [
   ["Stats", [[null, [["Game results", "stats.html"], ["League leaders", "stats.html?view=leaders"]]]]],
-  ["Fantasy", [[null, [["Player rankings", "rankings.html"], ["Kickers & D/ST", "special-teams.html"], ["Player values", "values.html"], ["My leagues · prototype", "fantasy.html"]]]]],
+  ["Fantasy", [[null, [["Player rankings", "rankings.html"], ["Kickers & D/ST", "special-teams.html"], ["Player values", "values.html"]]]]],
   ["Labs", [
     ["Projection Lab", [["Player age & scoring", "projection.html"], ["Draft capital map", "projection.html#round-map-heading"]]],
     ["Simulation Lab", [["Head-to-head matchup", "survivor.html#matchup-heading"], ["Team game forecasts", "league.html#team-games-heading"], ["League, playoffs & Super Bowl", "league.html"], ["Survivor planner", "survivor.html#rules-heading"]]],

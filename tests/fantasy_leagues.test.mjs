@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {readFileSync} from "node:fs";
-import {DEFAULT_ROSTER, TEAM_COUNTS, createLeague, updateLeague, validateLeague, validateStore, emptyStore, parseBackup, importCopies, rosterSummary} from "../docs/fantasy-leagues.mjs";
+import {existsSync, readFileSync, readdirSync} from "node:fs";
+import {DEFAULT_ROSTER, TEAM_COUNTS, createLeague, updateLeague, validateLeague, validateStore, emptyStore, parseBackup, importCopies, rosterSummary} from "../archive/fantasy-platform-prototype/web/fantasy-leagues.mjs";
 
 const settings = {name: "Sunday league", season: 2026, team_count: 12, scoring: {ppr: 0.5, te_premium: 0.5, passing_td: 4}, roster: {...DEFAULT_ROSTER}};
 let sequence = 0;
@@ -74,12 +74,26 @@ test("roster totals exclude bench and IR from starters; unknown properties are n
   assert.equal(validateLeague({...league, scoring: {...league.scoring, unknown: 123}}).scoring.unknown, undefined);
 });
 
-test("all site pages use the same cache-busted shared navigation and explicit prototype labels", () => {
-  for (const page of ["index", "rankings", "projection", "survivor", "special-teams", "odds", "league", "fantasy", "stats", "game", "values"]) {
-    const html = readFileSync(new URL(`../docs/${page}.html`, import.meta.url), "utf8");
-    assert.match(html, /site-nav.js\?v=20260928-values1/); assert.match(html, /site-nav.css\?v=20260928-layout1/);
+test("all public site pages use the same cache-busted navigation without prototype links", () => {
+  const root = new URL("../docs/", import.meta.url);
+  const pages = readdirSync(root).filter(name => name.endsWith(".html"));
+  assert.equal(pages.length, 10);
+  for (const page of pages) {
+    const html = readFileSync(new URL(page, root), "utf8");
+    assert.match(html, /site-nav.js\?v=20260930-no-leagues1/); assert.match(html, /site-nav.css\?v=20260928-layout1/);
+    assert.doesNotMatch(html, /(?:href|src)\s*=\s*["'][^"']*(?:fantasy\.(?:html|js|css)|fantasy-leagues\.mjs)/i, page);
+    assert.doesNotMatch(html, /My leagues|Your league starts here|Try a local league setup/i, page);
   }
-  const html = readFileSync(new URL("../docs/fantasy.html", import.meta.url), "utf8");
+  const navigation = readFileSync(new URL("site-nav.js", root), "utf8");
+  assert.doesNotMatch(navigation, /fantasy\.html|My leagues/i);
+  for (const file of ["fantasy.html", "fantasy.js", "fantasy.css", "fantasy-leagues.mjs"]) {
+    assert.equal(existsSync(new URL(file, root)), false, `${file} must stay outside the published docs tree`);
+    assert.equal(existsSync(new URL(`../archive/fantasy-platform-prototype/web/${file}`, import.meta.url)), true, `${file} remains archived`);
+  }
+});
+
+test("the archived prototype retains its explicit limitations and unique element IDs", () => {
+  const html = readFileSync(new URL("../archive/fantasy-platform-prototype/web/fantasy.html", import.meta.url), "utf8");
   assert.match(html, /Browser-only prototype/); assert.match(html, /not playable, shared leagues/);
   const ids = [...html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
   assert.equal(ids.length, new Set(ids).size);
