@@ -434,7 +434,7 @@ test("homepage links, injury filters, automatic X loading and mobile layout work
     page.on("request", request => { if (new URL(request.url()).origin !== base) external.push(request.url()); });
     await page.reload(); await page.locator("#home-injury-list article").first().waitFor();
     assert.deepEqual(errors, []);
-    await page.waitForFunction(() => document.querySelector("#social-status").textContent.includes("X feed unavailable"));
+    await page.waitForFunction(() => document.querySelector("#social-status").textContent === "NFL posts couldn’t load. View them on X.");
     assert.equal(external.filter(url => url === "https://platform.x.com/widgets.js").length, 1);
     assert.ok(external.every(url => ["platform.x.com", "static.www.nfl.com", "a.espncdn.com"].includes(new URL(url).hostname)));
     assert.equal(await page.locator("#load-x-feed").count(), 0);
@@ -453,14 +453,17 @@ test("homepage links, injury filters, automatic X loading and mobile layout work
     const player = await page.locator("#home-injury-list h3").first().textContent();
     await page.locator("#injury-search").fill(player);
     assert.equal(await page.locator("#home-injury-list article").count(), 1);
+    assert.equal(await page.locator("#injury-count").textContent(), "1 report");
     const source = page.locator("#home-injury-list article a").first();
     assert.match(await source.getAttribute("href"), /^https:\/\/www.espn.com\//);
     assert.equal(await source.getAttribute("target"), "_blank");
+    assert.equal(await source.textContent(), "View source ↗");
     await page.locator("#injury-search").fill("");
     await page.locator("#injury-filter").selectOption("risk");
     assert.ok((await page.locator("#home-injury-list .home-badge").allTextContents()).every(value => value === "RISK"));
     await page.locator("#injury-search").fill("no-such-player");
-    assert.match(await page.locator("#home-injury-list").textContent(), /No reports match/);
+    assert.equal(await page.locator("#home-injury-list").textContent(), "No reports match your filters.");
+    assert.equal(await page.locator("#injury-count").textContent(), "0 reports");
     await page.locator("#injury-search").fill(""); await page.locator("#injury-filter").selectOption("all");
     const internal = await page.locator('a[href]').evaluateAll(links => [...new Set(links.filter(a => a.origin === location.origin).map(a => a.href))]);
     for (const url of internal) {
@@ -477,7 +480,7 @@ test("homepage links, injury filters, automatic X loading and mobile layout work
     await page.setViewportSize({width: 390, height: 844}); await screenshot(page, "home-mobile.png");
     assert.equal(external.filter(url => url === "https://platform.x.com/widgets.js").length, 1);
     assert.ok(external.every(url => ["platform.x.com", "static.www.nfl.com", "a.espncdn.com"].includes(new URL(url).hostname)));
-    assert.equal(await page.getByRole("link", {name: "Open NFL on X ↗", exact: true}).getAttribute("href"), "https://x.com/NFL");
+    assert.equal(await page.getByRole("link", {name: "View NFL on X ↗", exact: true}).getAttribute("href"), "https://x.com/NFL");
   } finally { await context.close(); }
 });
 
@@ -541,10 +544,10 @@ test("homepage editorial lead follows the newest valid story while preserving so
     assert.equal(await named.locator(".home-portrait").count(), 1, "A matched player retains the portrait fallback");
     assert.doesNotMatch(await list.locator(".home-card-players").allTextContents().then(rows => rows.join(" ")), /Knee|Questionable|RISK/);
     const injury = page.locator("#home-injury-list article").first();
-    for (const detail of ["Lamar Jackson", "BAL · QB", "Knee · Questionable", "Current report", "Practice: Limited", "2026 · Week 1", "REPORTED"]) {
+    for (const detail of ["Lamar Jackson", "BAL · QB", "Knee · Questionable", "Current report", "Practice: Limited", "2026 · Week 1", "CURRENT REPORT"]) {
       assert.ok((await injury.innerText()).includes(detail), `Compact injury rows preserve ${detail}`);
     }
-    assert.equal(await injury.getByRole("link", {name: "Team injury source ↗", exact: true}).getAttribute("href"), "https://www.espn.com/nfl/team/injuries/_/name/bal");
+    assert.equal(await injury.getByRole("link", {name: "View source ↗", exact: true}).getAttribute("href"), "https://www.espn.com/nfl/team/injuries/_/name/bal");
     assert.equal(await list.locator(".home-clip").evaluateAll(links => links.every(link => link.target === "_blank"
       && link.relList.contains("noopener") && link.relList.contains("noreferrer"))), true);
 
@@ -564,17 +567,64 @@ test("homepage editorial lead follows the newest valid story while preserving so
     await screenshot(page, "home-editorial-matched-lead-390.png");
     newsUnavailable = true;
     await page.clock.fastForward(60001);
-    await page.waitForFunction(() => document.querySelector("#league-news-status")?.textContent.includes("Refresh unavailable"));
+    await page.waitForFunction(() => document.querySelector("#league-news-status")?.textContent.includes("Couldn’t refresh · Showing saved data"));
     assert.equal(await lead.count(), 1, "A refresh outage retains the saved lead");
     assert.equal(await lead.locator(".home-clip").getAttribute("href"), newest.url);
     newsUnavailable = false;
     bundle.generated_at = bundle.league_news.updated_at = bundle.league_news.attempted_at = "2026-09-13T18:02:00Z";
     bundle.league_news.items = [];
     await page.clock.fastForward(60001);
-    await page.waitForFunction(() => document.querySelector("#league-news-status")?.textContent === "No recent stories available");
+    await page.waitForFunction(() => document.querySelector("#league-news-status")?.textContent === "News unavailable.");
     assert.equal(await lead.count(), 0, "An empty feed does not retain an outdated featured story");
     assert.equal(await list.locator(".home-source-card").count(), 0);
     assert.deepEqual(errors, []);
+  } finally { await context.close(); }
+});
+
+test("homepage report badges fit all widths and saved reports lose current status when their valid window ends", async () => {
+  const {context, page} = await openPage({}, "/");
+  let unavailable = false;
+  const report = (player, status, week) => ({player, player_id:player, pos:"RB", team:"BUF",
+    injury:{name:"Knee", report_status:status, week},
+    events:[{category:"Injury",source:{url:"https://www.espn.com/nfl/team/injuries/_/name/buf"}}]});
+  const bundle = {season:2026, generated_at:"2026-09-20T18:00:00Z",
+    injury_context:{season:2026, expected_week:2, valid_from:"2026-09-20T00:00:00Z", valid_until:"2026-09-20T18:02:00Z"},
+    reports:{current:report("Current Player", "Questionable", 2), past:report("Past Player", "Out", 1),
+      unknown:report("Unknown Player", "Doubtful", null), risk:report("Risk Player", "Out", 2)},
+    league_news:{status:"ok",updated_at:"2026-09-20T18:00:00Z",items:[{title:"Saved headline",url:"https://www.espn.com/nfl/story/saved"}]}};
+  const card = name => page.locator("#home-injury-list article").filter({has:page.getByRole("heading", {name, exact:true})});
+  try {
+    await context.route("**/data/player_news.json", route => unavailable
+      ? route.fulfill({status:503,body:"unavailable"}) : route.fulfill({json:bundle}));
+    await page.clock.install({time:new Date("2026-09-20T18:00:00Z")});
+    await page.reload(); await card("Current Player").waitFor();
+    for (const [name, badge] of [["Current Player","CURRENT REPORT"],["Past Player","PAST REPORT"],["Unknown Player","UNVERIFIED"],["Risk Player","RISK"]]) {
+      assert.equal(await card(name).locator(".home-badge").textContent(), badge);
+      assert.equal(await card(name).getByRole("link", {name:"View source ↗",exact:true}).getAttribute("href"), "https://www.espn.com/nfl/team/injuries/_/name/buf");
+    }
+    assert.match(await card("Past Player").innerText(), /Current health unknown/);
+    assert.match(await card("Unknown Player").innerText(), /Current health unknown/);
+    for (const width of [320,390,768,1024,1440]) {
+      await page.setViewportSize({width,height:1000});
+      assert.equal(await page.locator("#home-injury-list .home-badge").evaluateAll(badges => badges.every(badge => {
+        const box=badge.getBoundingClientRect(), parent=badge.parentElement.getBoundingClientRect(), range=document.createRange();
+        range.selectNodeContents(badge);
+        return box.left>=parent.left-1 && box.right<=parent.right+1 && box.left>=-1 && box.right<=innerWidth+1
+          && badge.scrollWidth<=badge.clientWidth+1 && [...range.getClientRects()].every(rect=>rect.left>=box.left-1 && rect.right<=box.right+1);
+      })), true, `Report badges remain visible at ${width}px`);
+    }
+    const savedStatuses = await page.locator("#injury-freshness, #league-news-status").allTextContents();
+    unavailable = true;
+    for (let attempt=0;attempt<2;attempt++) {
+      await page.clock.fastForward(60001);
+      await page.waitForFunction(() => document.querySelector("#injury-freshness").textContent.includes("Couldn’t refresh"));
+      assert.deepEqual(await page.locator("#injury-freshness, #league-news-status").allTextContents(),
+        savedStatuses.map(status=>`${status} · Couldn’t refresh · Showing saved data`), "Repeated outages retain saved times with one warning");
+    }
+    await page.waitForFunction(() => [...document.querySelectorAll("#home-injury-list .home-badge")].every(badge=>!["CURRENT REPORT","RISK"].includes(badge.textContent)));
+    assert.equal(await card("Current Player").locator(".home-badge").textContent(), "PAST REPORT");
+    assert.equal(await card("Risk Player").locator(".home-badge").textContent(), "PAST REPORT");
+    assert.match(await card("Risk Player").innerText(), /Current health unknown/);
   } finally { await context.close(); }
 });
 
@@ -645,7 +695,7 @@ test("homepage injury paging shows four at a time, resets filters, and preserves
     await page.clock.install({time: new Date("2026-09-13T18:00:00Z")});
     await page.reload(); await reports.first().waitFor();
     assert.equal(await reports.count(), 4, "Initial view shows only four reports");
-    assert.equal(await page.locator("#injury-count").textContent(), "13 matching reports", "Total count still includes every report");
+    assert.equal(await page.locator("#injury-count").textContent(), "13 reports", "Total count still includes every report");
     assert.equal(await more.isVisible(), true);
     await more.focus(); await page.keyboard.press("Enter");
     assert.equal(await reports.count(), 8, "The keyboard can reveal the next four reports");
@@ -660,7 +710,7 @@ test("homepage injury paging shows four at a time, resets filters, and preserves
     await clickMoreReports(8); assert.equal(await reports.count(), 8);
     await page.locator("#injury-filter").selectOption("risk");
     assert.equal(await reports.count(), 4, "Changing availability resets the visible page");
-    assert.equal(await page.locator("#injury-count").textContent(), "7 matching reports");
+    assert.equal(await page.locator("#injury-count").textContent(), "7 reports");
     assert.deepEqual(await page.locator("#home-injury-list .home-badge").allTextContents(), Array(4).fill("RISK"));
     await clickMoreReports(7); assert.equal(await reports.count(), 7);
     assert.equal(await more.isVisible(), false);
@@ -676,13 +726,13 @@ test("homepage injury paging shows four at a time, resets filters, and preserves
     assert.equal(await reports.count(), 8, "A new saved snapshot preserves the expanded count");
     unavailable = true;
     await page.clock.fastForward(60001);
-    await page.waitForFunction(() => document.querySelector("#injury-freshness")?.textContent.includes("Refresh unavailable"));
+    await page.waitForFunction(() => document.querySelector("#injury-freshness")?.textContent.includes("Couldn’t refresh · Showing saved data"));
     assert.equal(await reports.count(), 8, "A failed refresh retains the expanded reports");
     assert.deepEqual(await page.locator("#home-injury-list h3").allTextContents(), names.slice(0, 8));
     assert.equal(await more.isEnabled(), true, "Saved reports remain usable during an outage");
     unavailable = false;
     await page.clock.fastForward(60001);
-    await page.waitForFunction(() => !document.querySelector("#injury-freshness")?.textContent.includes("Refresh unavailable"));
+    await page.waitForFunction(() => !document.querySelector("#injury-freshness")?.textContent.includes("Couldn’t refresh"));
     assert.equal(await reports.count(), 8, "Recovery with an unchanged snapshot also retains the expanded count");
     await clickMoreReports(12); assert.equal(await reports.count(), 12, "Paging continues from the retained position");
     assert.deepEqual(errors, []);
@@ -717,7 +767,8 @@ test("homepage gracefully isolates an unavailable injury snapshot", async () => 
     assert.equal(await page.locator("#home-injury-list article").count(), 0);
     assert.equal(await page.locator("#injury-filter").isDisabled(), true);
     assert.equal(await page.locator("#league-news-list .home-clip").count(), 0);
-    assert.match(await page.locator("#league-news-status").textContent(), /temporarily unavailable/);
+    assert.equal(await page.locator("#league-news-status").textContent(), "News unavailable.");
+    assert.equal(await page.locator("#home-injury-list").textContent(), "No injury reports available. Missing reports do not mean players are healthy.");
     assert.equal(await page.getByRole("link", {name: "ESPN NFL ↗", exact: true}).getAttribute("href"), "https://www.espn.com/nfl/");
     assert.ok(await page.locator("#explore").getByRole("link", {name: /Player rankings/}).isVisible());
     assert.ok(await page.locator("#explore").getByRole("link", {name: /League simulations/}).isVisible());

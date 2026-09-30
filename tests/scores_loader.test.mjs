@@ -74,7 +74,8 @@ async function page(...initialResponses) {
     static now() {return clock.now;}
   }
   const context = vm.createContext({
-    document, Date:ClockDate, TEAM_NAMES, scoreboardGames, gameConditions,
+    document, Date:ClockDate, TEAM_NAMES, scoreboardGames,
+    gameConditions: game => gameConditions(game, clock.now),
     teamMark: team => new ElementStub("img"),
     defaultScoreWeek: games => defaultScoreWeek(games, clock.now),
     scoreDisplay: game => scoreDisplay(game, clock.now),
@@ -186,7 +187,7 @@ for (const [kind, failure] of [
     assert.deepEqual(scores(cards(view)[0]), ["14", "0"]);
     assert.equal(view.select.disabled, false);
     assert.equal(view.select.value, "1");
-    assert.match(view.status.textContent, /Refresh unavailable/);
+    assert.match(view.status.textContent, /Couldn’t refresh · Showing saved data/);
     assert.equal(view.status.classList.contains("stale"), true);
   });
 }
@@ -259,5 +260,42 @@ test("null and malformed games are ignored on first load and refresh", async () 
   view.queue.push(response(snapshot(malformed)));
   await view.refresh();
   assert.deepEqual(scores(cards(view)[0]), ["14", "10"], "An all-invalid response must retain good scores");
-  assert.match(view.status.textContent, /Refresh unavailable/);
+  assert.match(view.status.textContent, /Couldn’t refresh · Showing saved data/);
+});
+
+test("homepage score and forecast wording preserves shared score and weather distinctions", async () => {
+  const missing = {...firstGame, home_score:null, away_score:null};
+  const upcoming = {...missing, game_id:"2026_01_KC_DEN", away:"KC", home:"DEN", kickoff:"2026-09-13T21:00:00Z"};
+  const view = await page(response(snapshot([missing, upcoming])));
+  assert.deepEqual(cards(view).map(card => card.children[0].textContent), ["Score unavailable", "Scheduled"]);
+  assert.match(cards(view)[0].title, /Game weather unavailable/);
+  assert.match(cards(view)[1].title, /Kickoff forecast unavailable/);
+  assert.doesNotMatch(view.list.textContent, /Awaiting score|Kickoff forecast pending|Final|Live/);
+  assert.equal(scoreDisplay(missing, initialNow).label, "Awaiting score", "Other pages retain the shared helper's wording");
+  assert.equal(gameConditions(upcoming, initialNow).weather, "Kickoff forecast pending");
+  const forecast = {...missing, weather:{status:"forecast", checked_at:"2026-09-13T16:00:00Z", summary:"Sunny", temperature:72}};
+  const forecastView = await page(response(snapshot([forecast])));
+  assert.match(cards(forecastView)[0].title, /Pre-game forecast · Sunny · 72°F/);
+  assert.doesNotMatch(cards(forecastView)[0].title, /Reported game weather/);
+});
+
+test("repeated scoreboard failures keep one saved-data warning and the saved timestamp", async () => {
+  const view = await page(response(snapshot()));
+  const checked = view.status.textContent;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    view.queue.push(new Error("Offline"));
+    await view.refresh();
+    assert.equal(view.status.textContent, `${checked} · Couldn’t refresh · Showing saved data`);
+    assert.equal(cards(view).length, 1);
+  }
+  view.queue.push(response(snapshot()));
+  await view.refresh();
+  assert.equal(view.status.textContent, checked);
+});
+
+test("a future score update time is unavailable and never presented as current", async () => {
+  const view = await page(response(snapshot([firstGame], initialNow + 86400000)));
+  assert.equal(view.status.textContent, "Update time unavailable · Update delayed");
+  assert.equal(view.status.classList.contains("stale"), true);
+  assert.equal(cards(view).length, 1, "Useful score data remains visible with an explicit time warning");
 });

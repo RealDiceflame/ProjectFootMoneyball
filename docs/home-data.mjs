@@ -125,6 +125,6 @@ export function filterInjuries(rows, query = "", mode = "all") {
 
 export function snapshotFreshness(value, now = Date.now()) {
   const time = Date.parse(value);
-  if (!Number.isFinite(time) || time > now + 5 * 60000) return {label: "Snapshot time unavailable", stale: true};
+  if (!Number.isFinite(time) || time > now + 5 * 60000) return {label: "Update time unavailable", stale: true};
   return {label: new Date(time).toLocaleString(undefined, {dateStyle: "medium", timeStyle: "short"}), stale: now - time > 7 * 3600000};
 }

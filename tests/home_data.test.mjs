@@ -41,7 +41,7 @@ test("snapshot freshness distinguishes missing, future and overdue dates", () =>
   const now = Date.parse("2026-09-13T12:00:00Z");
   assert.equal(snapshotFreshness("2026-09-13T06:00:00Z", now).stale, false);
   assert.equal(snapshotFreshness("2026-09-12T18:00:00Z", now).stale, true);
-  for (const value of ["bad", null, "2026-09-14T00:00:00Z"]) assert.deepEqual(snapshotFreshness(value, now), {label: "Snapshot time unavailable", stale: true});
+  for (const value of ["bad", null, "2026-09-14T00:00:00Z"]) assert.deepEqual(snapshotFreshness(value, now), {label: "Update time unavailable", stale: true});
 });
 
 const portraitUrl = "https://static.www.nfl.com/image/upload/f_auto,q_auto,w_160,c_fill,g_face/league/example";
@@ -150,6 +150,53 @@ test("example indices cover the full batch without extra random draws", () => {
   }
   assert.throws(() => exampleTrialIndices(0)); assert.throws(() => exampleTrialIndices(5, 0));
 });
+test("homepage copy keeps the approved tool destinations, metadata, labels and source links", () => {
+  const html = readFileSync(new URL("../docs/index.html", import.meta.url), "utf8");
+  const text = value => value.replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&#39;|&apos;/g, "'").replace(/\s+/g, " ").trim();
+  const title = "OutlierBaseline | Football Analytics";
+  assert.equal(html.match(/<title>(.*?)<\/title>/)?.[1], title);
+  for (const property of ['property="og:title"', 'name="twitter:title"']) {
+    assert.ok(html.includes(`<meta ${property} content="${title}">`));
+  }
+  assert.ok(html.includes('name="description" content="NFL news, scores, injury reports, fantasy rankings, player projections, game simulations and sportsbook odds."'));
+  for (const property of ['property="og:description"', 'name="twitter:description"']) {
+    assert.ok(html.includes(`<meta ${property} content="Be an Outlier. Know your Baseline.">`));
+  }
+  const tools = html.match(/<div class="home-tool-grid">([\s\S]*?)<\/div>/)?.[1] || "";
+  assert.deepEqual([...tools.matchAll(/<a href="([^"]+)"><h3>(.*?)<\/h3><p>(.*?)<\/p><\/a>/g)]
+    .map(([, href, heading, description]) => [href, text(heading), text(description)]), [
+    ["rankings.html", "Player rankings ↗", "Compare players for your league’s scoring."],
+    ["special-teams.html", "Kickers & D/ST ↗", "Compare where kickers and defenses are drafted."],
+    ["projection.html", "Projection Lab ↗", "Compare player history and season projections."],
+    ["survivor.html", "Matchups & Survivor ↗", "Simulate matchups and plan survivor picks."],
+    ["league.html", "League simulations ↗", "Explore possible season, playoff and Super Bowl outcomes."],
+    ["odds.html", "Weekly odds ↗", "Compare the latest available sportsbook odds and spreads."],
+  ]);
+  assert.match(html, /href="stats\.html">Game results &amp; stats<\/a>/);
+  assert.match(html, /<label>Report status<select id="injury-filter" title="Only current Out, Doubtful and Injured Reserve reports receive a Risk label\.">/);
+  assert.match(html, /<option value="all">All statuses<\/option><option value="risk">Out \/ doubtful \/ injured reserve<\/option>/);
+  assert.match(html, /<label>Search reports<input[^>]*placeholder="Player, team, injury…"/);
+  assert.match(html, /href="https:\/\/x\.com\/NFL"[^>]*>View NFL on X ↗<\/a>/);
+  const footer = html.slice(html.indexOf("<footer"));
+  assert.equal((footer.match(/<details\b/g) || []).length, 1);
+  assert.doesNotMatch(footer, /<details[^>]*\bopen\b/, "Sources and privacy remain collapsed by default");
+  assert.deepEqual([...footer.matchAll(/<a href="([^"]+)"[^>]*>/g)].map(match => match[1]).sort(), [
+    "https://github.com/nflverse/nflverse-data/releases/tag/schedules",
+    "https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md",
+    "https://github.com/nflverse/nflverse-data",
+    "https://sports.yahoo.com/syndication/",
+    "https://help.x.com/en/x-for-websites-ads-info-and-privacy",
+    "https://www.weather.gov/documentation/services-web-api",
+  ].sort(), "Every existing source, license and privacy destination is preserved");
+  for (const sentence of [
+    "Reported scores may be delayed and are not confirmation of a final result.",
+    "Missing reports do not confirm health.",
+    "Questionable, Probable and practice participation alone do not trigger Risk.",
+    "Forecasts remain labeled as forecasts.",
+    "The X feed may share browsing information with X and use cookies.",
+    "Team marks belong to their respective owners.",
+  ]) assert.ok(text(footer).includes(sentence), sentence);
+});
 test("homepage controls and rankings route are wired with unique identifiers", () => {
   const html = readFileSync(new URL("../docs/index.html", import.meta.url), "utf8");
   const js = readFileSync(new URL("../docs/home.js", import.meta.url), "utf8");
@@ -176,6 +223,10 @@ test("homepage controls and rankings route are wired with unique identifiers", (
   assert.match(firstUpdate, /<h3>League simulations<\/h3>/, "The first announcement uses the approved direct title");
   assert.match(firstUpdate, /<p>Simulate the NFL season and explore possible playoff and Super Bowl outcomes\.<\/p>/, "The first announcement uses the approved description");
   assert.match(firstUpdate, /<a href="league\.html#bracket-heading">View simulations ↗<\/a>/, "The approved link wording retains its destination");
+  const projectionUpdate = [...html.slice(updates).matchAll(/<article>([\s\S]*?)<\/article>/g)][1]?.[1] || "";
+  assert.match(projectionUpdate, /<h3>Player history and draft analysis<\/h3>/, "The Projection Lab announcement uses the approved direct title");
+  assert.match(projectionUpdate, /<p>Compare historical player performance by age and position\.<\/p>/, "The Projection Lab description uses the approved age-and-position wording");
+  assert.match(projectionUpdate, /<a href="projection\.html">View player history ↗<\/a>/, "The approved player-history link opens the Projection Lab without a draft-round jump");
   assert.doesNotMatch(html, /fantasy\.html|Your league starts here\.|Try a local league setup/, "The prototype is absent from homepage navigation and announcements");
   assert.ok(updates > html.indexOf('aria-labelledby="explore-heading"'));
   assert.ok(updates > html.indexOf('aria-labelledby="highlights-heading"'));

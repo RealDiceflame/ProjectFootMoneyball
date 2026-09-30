@@ -201,9 +201,11 @@ for (const [name, ready, route] of pages) test(`${name}: responsive layout and r
         assert.equal(editorial.readable, true, "News headlines wrap without clipping at every width");
         assert.equal(editorial.updatesReadable, true, "Compact announcements keep their copy and links fully visible");
         assert.deepEqual(await page.locator(".home-updates article h3").allTextContents(),
-          ["League simulations", "Put the past in perspective."], "Approved announcements remain without the archived league prototype");
+          ["League simulations", "Player history and draft analysis"], "Approved announcements remain without the archived league prototype");
         assert.deepEqual(await page.locator(".home-updates article a").evaluateAll(links => links.map(link => link.getAttribute("href"))),
-          ["league.html#bracket-heading", "projection.html#round-map-heading"], "Remaining announcement destinations are unchanged");
+          ["league.html#bracket-heading", "projection.html"], "Announcements use the approved destinations without a draft-round jump");
+        assert.deepEqual(await page.locator(".home-updates article a").allTextContents(),
+          ["View simulations ↗", "View player history ↗"], "Announcements use the approved link labels");
         assert.deepEqual(await page.locator(".home-feed-grid > *").evaluateAll(sections => sections.map(section => section.getAttribute("aria-labelledby"))),
           ["highlights-heading", "injury-heading", "explore-heading"], "Document and keyboard reading order is news, injuries, then tools");
         assert.deepEqual(await page.locator("#explore .home-tool-grid > a").evaluateAll(links => links.map(link => link.getAttribute("href"))),
@@ -294,6 +296,22 @@ for (const [name, ready, route] of pages) test(`${name}: responsive layout and r
         assert.equal(await page.locator("#injury-search").evaluate(element => element === document.activeElement), true,
           "Keyboard focus moves from news to the injury search");
         await page.locator("#injury-search").evaluate(element => element.blur());
+        const sources = page.locator(".home-source-details");
+        assert.equal(await sources.evaluate(element => element.open), false, "Sources and privacy starts collapsed");
+        await sources.locator("summary").focus(); await page.keyboard.press("Enter");
+        assert.equal(await sources.evaluate(element => {
+          const paragraphs = [...element.querySelectorAll("p")];
+          return element.open && paragraphs.length === 4 && paragraphs.every(paragraph => {
+            const box = paragraph.getBoundingClientRect(), range = document.createRange();
+            range.selectNodeContents(paragraph);
+            return box.width > 0 && box.height > 0 && paragraph.scrollWidth <= paragraph.clientWidth + 1
+              && [...range.getClientRects()].every(rect => rect.left >= box.left - 1 && rect.right <= box.right + 1
+                && rect.top >= box.top - 1 && rect.bottom <= box.bottom + 1);
+          });
+        }), true, "Expanded source, license and privacy paragraphs remain readable without clipping");
+        assert.equal(await sources.locator("a").count(), 6, "All existing attribution and privacy destinations remain available");
+        assertLayout({page: "index-sources-expanded", width, ...await measure(page)});
+        await page.keyboard.press("Enter");
         await page.evaluate(() => scrollTo(0, 0));
       }
       assert.deepEqual(errors, [], "No browser errors while laying out the page");

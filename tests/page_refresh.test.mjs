@@ -46,11 +46,55 @@ test("homepage shows decoded quotes while HTML-looking headlines stay inert text
 test("homepage retains reports through failure, recovers, and pauses hidden polling",async()=>{
   const responses=[news(),new Error("offline"),news("2026-09-15T13:00:00Z")];
   const view=await page("home.js","",responses);
-  await view.refresh();assert.match(view.nodes.get("injury-freshness").textContent,/Refresh unavailable/);
+  await view.refresh();assert.match(view.nodes.get("injury-freshness").textContent,/Couldn’t refresh · Showing saved data/);
   view.doc.hidden=true;await view.refresh();assert.equal(view.calls.length,2);
   view.doc.hidden=false;await view.refresh();
-  assert.doesNotMatch(view.nodes.get("injury-freshness").textContent,/Refresh unavailable/);
+  assert.doesNotMatch(view.nodes.get("injury-freshness").textContent,/Couldn’t refresh|Showing saved data/);
   assert.equal(view.nodes.get("injury-search").disabled,false);
+});
+
+test("homepage repeated outages retain saved timestamps and never duplicate status warnings", async()=>{
+  const bundle=news(undefined,[{title:"Saved source story",url:"https://www.espn.com/nfl/story/saved"}]);
+  const view=await page("home.js","",[bundle,new Error("offline"),new Error("offline"),bundle]);
+  const original=Object.fromEntries(["injury-freshness","league-news-status"].map(id=>[id,view.nodes.get(id).textContent]));
+  const stories=view.nodes.get("league-news-list").children;
+  for(let attempt=0;attempt<2;attempt++){
+    await view.refresh();
+    for(const [id,status] of Object.entries(original)) assert.equal(view.nodes.get(id).textContent,`${status} · Couldn’t refresh · Showing saved data`);
+    assert.equal(view.nodes.get("league-news-list").children,stories,"A failed refresh preserves rendered source stories");
+  }
+  await view.refresh();
+  for(const [id,status] of Object.entries(original)) assert.equal(view.nodes.get(id).textContent,status);
+});
+
+test("homepage distinguishes loaded empty reports from initial failure without inferring health", async()=>{
+  const warning="No injury reports available. Missing reports do not mean players are healthy.";
+  const empty=await page("home.js","",[news(),new Error("offline")]);
+  assert.equal(empty.nodes.get("injury-count").textContent,"0 reports");
+  assert.equal(empty.nodes.get("home-injury-list").textContent,warning);
+  assert.equal(empty.nodes.get("injury-filter").disabled,false);
+  assert.equal(empty.nodes.get("league-news-status").textContent,"News unavailable.");
+  await empty.refresh();
+  assert.equal(empty.nodes.get("league-news-status").textContent,"News unavailable.","An empty news feed does not claim saved stories during an outage");
+  const failed=await page("home.js","",[new Error("offline")]);
+  assert.equal(failed.nodes.get("injury-count").textContent,"Reports unavailable");
+  assert.equal(failed.nodes.get("injury-freshness").textContent,"Injury reports temporarily unavailable");
+  assert.equal(failed.nodes.get("home-injury-list").textContent,warning);
+  assert.equal(failed.nodes.get("injury-filter").disabled,true);
+  assert.equal(failed.nodes.get("league-news-status").textContent,"News unavailable.");
+  assert.doesNotMatch(failed.nodes.get("injury-freshness").textContent,/Showing saved data/);
+});
+
+test("homepage invalid news timestamps avoid an Updated prefix and provider failures disclose saved stories", async()=>{
+  const bundle=news(undefined,[{title:"Source story",url:"https://www.espn.com/nfl/story/saved"}]);
+  bundle.league_news.updated_at="invalid";
+  const unavailable={...bundle,league_news:{...bundle.league_news,status:"unavailable",attempted_at:"2026-09-15T13:00:00Z"}};
+  const view=await page("home.js","",[bundle,unavailable]);
+  assert.equal(view.nodes.get("league-news-status").textContent,"1 story · Update time unavailable · Update delayed");
+  assert.doesNotMatch(view.nodes.get("league-news-status").textContent,/Updated (Snapshot|Update) time unavailable/);
+  await view.refresh();
+  assert.equal(view.nodes.get("league-news-status").textContent,"1 story · Update time unavailable · Update delayed · Couldn’t refresh · Showing saved data");
+  assert.match(view.nodes.get("league-news-list").textContent,/Source story/);
 });
 
 test("homepage unchanged news refresh preserves rendered stories and reading position",async()=>{

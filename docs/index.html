@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#071d18">
-  <meta name="description" content="OutlierBaseline brings together fantasy football rankings, player injury reports, projection research, team simulations and weekly odds.">
+  <meta name="description" content="NFL news, scores, injury reports, fantasy rankings, player projections, game simulations and sportsbook odds.">
   <link rel="canonical" href="https://outlierbaseline.com/">
-  <meta property="og:title" content="OutlierBaseline · Football intelligence">
+  <meta property="og:title" content="OutlierBaseline | Football Analytics">
   <meta property="og:description" content="Be an Outlier. Know your Baseline.">
   <meta property="og:type" content="website"><meta property="og:url" content="https://outlierbaseline.com/">
   <meta property="og:image" content="https://outlierbaseline.com/og.png">
-  <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="OutlierBaseline">
+  <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="OutlierBaseline | Football Analytics">
   <meta name="twitter:description" content="Be an Outlier. Know your Baseline.">
   <meta name="twitter:image" content="https://outlierbaseline.com/og.png">
-  <title>OutlierBaseline · Football Intelligence</title>
+  <title>OutlierBaseline | Football Analytics</title>
   <link rel="stylesheet" href="styles.css?v=20260928-layout2">
   <link rel="stylesheet" href="home.css?v=20260930-home-release1">
   <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
@@ -29,7 +29,7 @@
     <section class="home-section home-scores" aria-labelledby="scores-heading">
       <div class="home-section-heading">
         <h2 id="scores-heading">NFL scores</h2>
-        <a class="home-score-stats" href="stats.html">All game stats</a>
+        <a class="home-score-stats" href="stats.html">Game results &amp; stats</a>
         <div class="home-score-controls">
           <label>Week <select id="score-week" disabled aria-label="Scoreboard week"></select></label>
           <div class="home-score-arrows" role="group" aria-label="Scroll games">
@@ -51,25 +51,25 @@
         <div class="home-source-links"><a class="home-text-link" href="https://www.nfl.com/videos/" target="_blank" rel="noopener noreferrer">NFL highlights ↗</a><a class="home-text-link" href="https://www.espn.com/nfl/" target="_blank" rel="noopener noreferrer">ESPN NFL ↗</a><a class="home-text-link" href="https://www.cbssports.com/watch/nfl" target="_blank" rel="noopener noreferrer">CBS Sports NFL ↗</a></div>
         <div class="home-social"><h3>NFL on X</h3>
           <p id="social-status" class="home-small" role="status"></p><div id="x-feed"></div>
-          <p class="home-small"><a href="https://x.com/NFL" target="_blank" rel="noopener noreferrer">Open NFL on X ↗</a> · <a href="https://help.x.com/en/x-for-websites-ads-info-and-privacy" target="_blank" rel="noopener noreferrer">X privacy information ↗</a></p>
+          <p class="home-small"><a href="https://x.com/NFL" target="_blank" rel="noopener noreferrer">View NFL on X ↗</a> · <a href="https://help.x.com/en/x-for-websites-ads-info-and-privacy" target="_blank" rel="noopener noreferrer">X privacy information ↗</a></p>
         </div>
       </section>
       <aside class="home-section home-injuries" aria-labelledby="injury-heading">
         <div class="home-section-heading"><h2 id="injury-heading">Injury Report</h2><span id="injury-count" class="home-small"></span></div>
         <p id="injury-freshness" class="home-feed-status" role="status">Loading reports…</p>
-        <div class="home-filters"><label>Search reports<input id="injury-search" type="search" placeholder="Player, team, injury…" autocomplete="off"></label><label>Availability<select id="injury-filter" title="Questionable, probable and practice participation alone do not receive a Risk label."><option value="all">All reported statuses</option><option value="risk">Out / doubtful / injured reserve</option></select></label></div>
+        <div class="home-filters"><label>Search reports<input id="injury-search" type="search" placeholder="Player, team, injury…" autocomplete="off"></label><label>Report status<select id="injury-filter" title="Only current Out, Doubtful and Injured Reserve reports receive a Risk label."><option value="all">All statuses</option><option value="risk">Out / doubtful / injured reserve</option></select></label></div>
         <div id="home-injury-list" aria-live="polite"></div><button id="injury-more" type="button" class="home-secondary" hidden>Show more reports</button>
         <noscript>Enable JavaScript to view the saved reports. <a href="rankings.html">Open player rankings</a>.</noscript>
       </aside>
       <section class="home-section" id="explore" tabindex="-1" aria-labelledby="explore-heading">
         <div class="home-section-heading"><h2 id="explore-heading">Explore tools</h2></div>
         <div class="home-tool-grid">
-          <a href="rankings.html"><h3>Player rankings ↗</h3><p>Compare players for your format.</p></a>
-          <a href="special-teams.html"><h3>Kickers &amp; D/ST ↗</h3><p>Compare kicker and defense ADP.</p></a>
-          <a href="projection.html"><h3>Projection Lab ↗</h3><p>Explore player history and projections.</p></a>
-          <a href="survivor.html"><h3>Matchups &amp; Survivor ↗</h3><p>Simulate games and plan survivor picks.</p></a>
-          <a href="league.html"><h3>League simulations ↗</h3><p>Simulate seasons and playoff paths.</p></a>
-          <a href="odds.html"><h3>Weekly odds ↗</h3><p>Compare saved sportsbook lines.</p></a>
+          <a href="rankings.html"><h3>Player rankings ↗</h3><p>Compare players for your league’s scoring.</p></a>
+          <a href="special-teams.html"><h3>Kickers &amp; D/ST ↗</h3><p>Compare where kickers and defenses are drafted.</p></a>
+          <a href="projection.html"><h3>Projection Lab ↗</h3><p>Compare player history and season projections.</p></a>
+          <a href="survivor.html"><h3>Matchups &amp; Survivor ↗</h3><p>Simulate matchups and plan survivor picks.</p></a>
+          <a href="league.html"><h3>League simulations ↗</h3><p>Explore possible season, playoff and Super Bowl outcomes.</p></a>
+          <a href="odds.html"><h3>Weekly odds ↗</h3><p>Compare the latest available sportsbook odds and spreads.</p></a>
         </div>
       </section>
     </div>
@@ -77,16 +77,16 @@
       <div class="home-section-heading"><h2 id="updates-heading">New at OutlierBaseline</h2></div>
       <div class="home-updates">
         <article><div class="home-update-meta"><time datetime="2026-09-13">SEPTEMBER 13, 2026</time><span class="home-badge">SIMULATION LAB</span></div><div class="home-update-copy"><h3>League simulations</h3><p>Simulate the NFL season and explore possible playoff and Super Bowl outcomes.</p></div><a href="league.html#bracket-heading">View simulations ↗</a></article>
-        <article><div class="home-update-meta"><time datetime="2026-09-09">SEPTEMBER 9, 2026</time><span class="home-badge">PROJECTION LAB</span></div><div class="home-update-copy"><h3>Put the past in perspective.</h3><p>Compare historical scoring by position and draft round, alongside age and career-relative curves.</p></div><a href="projection.html#round-map-heading">Open the draft capital map ↗</a></article>
+        <article><div class="home-update-meta"><time datetime="2026-09-09">SEPTEMBER 9, 2026</time><span class="home-badge">PROJECTION LAB</span></div><div class="home-update-copy"><h3>Player history and draft analysis</h3><p>Compare historical player performance by age and position.</p></div><a href="projection.html">View player history ↗</a></article>
       </div>
     </section>
   </main>
   <footer data-compact="true"><span>OutlierBaseline</span><details class="home-source-details"><summary>Sources &amp; privacy</summary>
-    <p>Scores: <a href="https://github.com/nflverse/nflverse-data/releases/tag/schedules" target="_blank" rel="noopener noreferrer">Lee Sharpe / nflverse</a>, <a href="https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Selected and formatted by OutlierBaseline. Reported scores are not a live game clock or confirmation of a final result. Checks run about every 15 minutes near games and every six hours otherwise; source and publishing delays can occur.</p>
-    <p>Injuries: <a href="https://github.com/nflverse/nflverse-data" target="_blank" rel="noopener noreferrer">nflverse</a>. Covered fantasy players only; a missing report does not mean healthy. Questionable, Probable and practice participation alone do not earn a Risk label. News: ESPN NFL RSS, with <a href="https://sports.yahoo.com/syndication/" target="_blank" rel="noopener noreferrer">Yahoo Sports RSS</a> as a fallback. News, injury and game-stat collection runs every six hours; this page checks for saved updates each minute. Team marks belong to their respective owners.</p>
-    <p id="social-privacy">The NFL feed connects to X, which may receive browsing information and use cookies. <a href="https://help.x.com/en/x-for-websites-ads-info-and-privacy" target="_blank" rel="noopener noreferrer">X privacy information</a>. OutlierBaseline is independent and not affiliated with the featured platforms.</p>
-    <p>Game weather: reported stadium temperature and wind from nflverse, or a saved <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noopener noreferrer">National Weather Service</a> kickoff forecast. Forecasts refresh with the six-hour data update and remain labeled as forecasts after games. Missing weather stays unavailable; indoor venues are marked separately.</p>
+    <p>Scores from <a href="https://github.com/nflverse/nflverse-data/releases/tag/schedules" target="_blank" rel="noopener noreferrer">Lee Sharpe / nflverse</a>, adapted by OutlierBaseline under <a href="https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Reported scores may be delayed and are not confirmation of a final result.</p>
+    <p>Injury reports from <a href="https://github.com/nflverse/nflverse-data" target="_blank" rel="noopener noreferrer">nflverse</a> cover selected fantasy players. Missing reports do not confirm health. Questionable, Probable and practice participation alone do not trigger Risk. News comes from ESPN, with <a href="https://sports.yahoo.com/syndication/" target="_blank" rel="noopener noreferrer">Yahoo Sports</a> as a backup.</p>
+    <p>Scores are checked more often near games; news, injuries and game stats are collected every six hours. Delays can occur. Weather comes from nflverse or <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noopener noreferrer">National Weather Service</a> forecasts. Forecasts remain labeled as forecasts.</p>
+    <p id="social-privacy">The X feed may share browsing information with X and use cookies. OutlierBaseline is independent of the featured platforms. Team marks belong to their respective owners. <a href="https://help.x.com/en/x-for-websites-ads-info-and-privacy" target="_blank" rel="noopener noreferrer">X privacy information</a>.</p>
   </details></footer>
-  <script type="module" src="site-nav.js?v=20260930-no-leagues1"></script><script type="module" src="home.js?v=20260930-home-release1"></script><script type="module" src="scores.js?v=20260915-ticker1"></script>
+  <script type="module" src="site-nav.js?v=20260930-no-leagues1"></script><script type="module" src="home.js?v=20260930-home-copy1"></script><script type="module" src="scores.js?v=20260930-home-copy1"></script>
 </body>
 </html>

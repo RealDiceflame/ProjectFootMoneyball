@@ -1,7 +1,9 @@
-import {injuryFeed, filterInjuries, snapshotFreshness, leagueHeadlineCards} from "./home-data.mjs?v=20260927-refresh1";
+import {injuryFeed, filterInjuries, snapshotFreshness, leagueHeadlineCards} from "./home-data.mjs?v=20260930-home-copy1";
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; };
 const INJURY_PAGE_SIZE = 4;
+const SAVED_DATA_STATUS = "Couldn’t refresh · Showing saved data";
+const NO_INJURY_REPORTS = "No injury reports available. Missing reports do not mean players are healthy.";
 let injuries = [], shown = INJURY_PAGE_SIZE, newsBundle = null, newsBusy = false, newsLastAttempt = 0, newsCardsKey = "";
 
 function portrait(player) {
@@ -25,7 +27,7 @@ function injuryDetails(body, row) {
   const sources = el("div", undefined, "home-injury-source");
   sources.append(el("span", row.reportLabel));
   if (row.url) {
-    const source = el("a", "Team injury source ↗"); source.href = row.url;
+    const source = el("a", "View source ↗"); source.href = row.url;
     source.target = "_blank"; source.rel = "noopener noreferrer"; sources.append(source);
   }
   body.append(sources);
@@ -37,12 +39,17 @@ function playerSummary(player) {
   summary.append(portrait(player), body); return summary;
 }
 
-function updateNewsStatus(bundle, cards = leagueHeadlineCards(bundle)) {
+function freshnessText(freshness) {
+  const label = freshness.label === "Update time unavailable" ? freshness.label : `Updated ${freshness.label}`;
+  return `${label}${freshness.stale ? " · Update delayed" : ""}`;
+}
+
+function updateNewsStatus(bundle, cards = leagueHeadlineCards(bundle), refreshFailed = false) {
   const freshness = snapshotFreshness(bundle?.league_news?.updated_at || (!bundle?.league_news ? bundle?.generated_at : null));
-  const unavailable = !bundle || bundle.league_news?.status === "unavailable";
+  const unavailable = refreshFailed || !bundle || bundle.league_news?.status === "unavailable";
   $("league-news-status").textContent = cards.length
-    ? `${cards.length} stories · Updated ${freshness.label}${unavailable ? " · Refresh unavailable" : freshness.stale ? " · Update delayed" : ""}`
-    : unavailable ? "News temporarily unavailable" : "No recent stories available";
+    ? `${cards.length} ${cards.length === 1 ? "story" : "stories"} · ${freshnessText(freshness)}${unavailable ? ` · ${SAVED_DATA_STATUS}` : ""}`
+    : "News unavailable.";
   $("league-news-status").classList.toggle("stale", unavailable || freshness.stale);
 }
 
@@ -68,15 +75,15 @@ function renderSourcePlayers(bundle) {
 
 function renderInjuries() {
   const rows = filterInjuries(injuries, $("injury-search").value, $("injury-filter").value);
-  $("injury-count").textContent = `${rows.length} matching report${rows.length === 1 ? "" : "s"}`;
+  $("injury-count").textContent = `${rows.length} report${rows.length === 1 ? "" : "s"}`;
   $("home-injury-list").replaceChildren(...rows.slice(0, shown).map(row => {
     const card = el("article", undefined, "home-injury"), body = el("div"), heading = el("div", undefined, "home-injury-heading");
     body.append(el("h3", row.player), el("span", `${row.team} · ${row.pos}`, "home-small"));
-    const badge = el("span", row.risk ? "RISK" : row.current ? "REPORTED" : row.freshness === "historical" ? "HISTORY" : "UNVERIFIED", `home-badge${row.risk ? " home-risk" : ""}`);
+    const badge = el("span", row.risk ? "RISK" : row.current ? "CURRENT REPORT" : row.freshness === "historical" ? "PAST REPORT" : "UNVERIFIED", `home-badge${row.risk ? " home-risk" : ""}`);
     heading.append(portrait(row), body, badge);
     card.append(heading); injuryDetails(card, row); return card;
   }));
-  if (!rows.length) $("home-injury-list").append(el("p", injuries.length ? "No reports match these filters." : "No injury entries are available in this snapshot. Missing reports do not mean players are healthy.", "home-small"));
+  if (!rows.length) $("home-injury-list").append(el("p", injuries.length ? "No reports match your filters." : NO_INJURY_REPORTS, "home-small"));
   $("injury-more").hidden = rows.length <= shown;
 }
 
@@ -94,7 +101,7 @@ async function loadInjuries() {
     newsCardsKey = cardKey;
     newsBundle = bundle; injuries = nextInjuries;
     const freshness = snapshotFreshness(bundle.generated_at);
-    $("injury-freshness").textContent = `Updated ${freshness.label}${freshness.stale ? " · Update delayed" : ""}`;
+    $("injury-freshness").textContent = freshnessText(freshness);
     $("injury-freshness").classList.toggle("stale", freshness.stale);
     for (const id of ["injury-search", "injury-filter", "injury-more"]) $(id).disabled = false;
     if (changed) {
@@ -107,8 +114,8 @@ async function loadInjuries() {
     if (newsBundle) {
       injuries = injuryFeed(newsBundle); renderInjuries();
       const freshness = snapshotFreshness(newsBundle.generated_at);
-      $("injury-freshness").textContent = `Updated ${freshness.label} · Refresh unavailable`;
-      $("league-news-status").textContent = $("league-news-status").textContent.replace(/ · Refresh unavailable$/, "") + " · Refresh unavailable";
+      $("injury-freshness").textContent = `${freshnessText(freshness)} · ${SAVED_DATA_STATUS}`;
+      updateNewsStatus(newsBundle, undefined, true);
       $("injury-freshness").classList.add("stale"); $("league-news-status").classList.add("stale");
       return;
     }
@@ -116,7 +123,7 @@ async function loadInjuries() {
     $("injury-count").textContent = "Reports unavailable";
     $("injury-freshness").textContent = "Injury reports temporarily unavailable";
     $("injury-freshness").classList.add("stale");
-    $("home-injury-list").replaceChildren();
+    $("home-injury-list").replaceChildren(el("p", NO_INJURY_REPORTS, "home-small"));
     renderSourcePlayers(null);
   } finally { newsBusy = false; }
 }
@@ -140,7 +147,7 @@ async function loadXFeed() {
     });
     $("social-status").textContent = "";
   } catch {
-    $("social-status").textContent = "X feed unavailable. Open NFL on X below.";
+    $("social-status").textContent = "NFL posts couldn’t load. View them on X.";
   }
 }
 loadInjuries();

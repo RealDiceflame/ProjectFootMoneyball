@@ -22,7 +22,7 @@ function render() {
       const card = el("a", undefined, "home-score-card"), display = scoreDisplay(game);
       card.dataset.gameId = game.game_id;
       card.href = `game.html?game=${encodeURIComponent(game.game_id)}`;
-      card.append(el("span", display.label, "home-score-label"));
+      card.append(el("span", display.label === "Awaiting score" ? "Score unavailable" : display.label, "home-score-label"));
       for (const side of ["away", "home"]) {
         const row = el("div", undefined, "home-score-team");
         const team = el("span", undefined, "home-score-name"); team.title = game[side];
@@ -34,9 +34,10 @@ function render() {
         {weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit"}) : `${game.gameday || "Date TBD"} · Time TBD`);
       if (Number.isFinite(kickoff)) time.dateTime = game.kickoff;
       const conditions = gameConditions(game);
+      const weather = conditions.weather === "Kickoff forecast pending" ? "Kickoff forecast unavailable" : conditions.weather;
       const fullTime = Number.isFinite(kickoff) ? new Date(kickoff).toLocaleString(undefined,
         {month:"short",day:"numeric",hour:"numeric",minute:"2-digit",timeZoneName:"short"}) : "Time TBD";
-      const details = `${fullTime}. ${game.stadium || conditions.location}. ${conditions.location}. ${conditions.weather}. View game stats.`;
+      const details = `${fullTime}. ${game.stadium || conditions.location}. ${conditions.location}. ${weather}. View game stats.`;
       card.title = details;
       card.append(time, el("span", details, "home-score-extra")); return card;
     });
@@ -48,7 +49,10 @@ function render() {
   if (!list.children.length) list.append(el("p", "No games available for this week."));
   updateTickerControls();
   const stale = scoreboardStale(bundle);
-  status.textContent = `Checked ${new Date(bundle.checked_at).toLocaleString(undefined, {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}${stale ? " · Update delayed" : ""}`;
+  const checked = Date.parse(bundle.checked_at);
+  const checkedLabel = !Number.isFinite(checked) || checked > Date.now() + 5 * 60000 ? "Update time unavailable"
+    : `Checked ${new Date(checked).toLocaleString(undefined, {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}`;
+  status.textContent = `${checkedLabel}${stale ? " · Update delayed" : ""}`;
   status.classList.toggle("stale", stale);
 }
 
@@ -70,7 +74,7 @@ async function load() {
     select.value = String(weeks.includes(previousWeek) ? previousWeek : defaultScoreWeek(games));
     select.disabled = false; render();
   } catch {
-    if (bundle) {render(); status.textContent += " · Refresh unavailable";}
+    if (bundle) {render(); status.textContent += " · Couldn’t refresh · Showing saved data";}
     else {status.textContent = "Scores temporarily unavailable"; list.replaceChildren(el("p", "Please try again later."));}
     status.classList.add("stale");
   } finally {busy = false;}
