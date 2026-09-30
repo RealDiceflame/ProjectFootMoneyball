@@ -30,9 +30,12 @@ test("bad rows do not break the board and stale checks use game windows", () => 
   assert.equal(scoreboardStale({...bundle,checked_at:"2026-09-14T17:00:00Z"},now),true);
   assert.throws(()=>scoreboardGames({}),/unavailable/);
 });
-test("homepage uses the user's exact headline, compact footer and independent score module", () => {
+test("homepage keeps the exact brand subtitle, compact footer and independent score module", () => {
   const html = readFileSync(new URL("../docs/index.html",import.meta.url),"utf8");
-  assert.match(html, /Be an Outlier\.<br><em>Know your Baseline\.<\/em>/);
+  assert.match(html, /<small>Be an Outlier\. Know your Baseline\.<\/small>/);
+  assert.doesNotMatch(html, /class="home-hero"/);
+  assert.equal([...html.matchAll(/<h1\b/g)].length, 1);
+  assert.match(html, /<h1\b[^>]*id="home-title"[^>]*>OutlierBaseline<\/h1>/);
   assert.doesNotMatch(html, /Saved data ·|class="home-start"|class="home-intro"/);
   assert.match(html, /<footer data-compact="true">/);
   assert.match(html, /<summary>Sources &amp; privacy<\/summary>/);
@@ -45,7 +48,7 @@ test("homepage uses the user's exact headline, compact footer and independent sc
   assert.equal(scoreboardGames(data).length,272);
 });
 
-test("compact score ticker is a manually scrolling single row above the headline", () => {
+test("compact score ticker is a manually scrolling single row before news and injuries", () => {
   const css=readFileSync(new URL("../docs/home.css",import.meta.url),"utf8");
   const grid=css.match(/\.home-score-grid\s*\{([^}]+)\}/)[1];
   assert.match(grid,/grid-auto-flow: column/);
@@ -54,7 +57,10 @@ test("compact score ticker is a manually scrolling single row above the headline
   const html=readFileSync(new URL("../docs/index.html",import.meta.url),"utf8");
   assert.match(html,/aria-label="Previous games"/);
   assert.match(html,/aria-label="Next games"/);
-  assert.ok(html.indexOf('class="home-section home-scores"')<html.indexOf('class="home-hero"'));
+  const scores = html.indexOf('class="home-section home-scores"');
+  const news = html.indexOf('class="home-section home-highlights"');
+  const injuries = html.indexOf('class="home-section home-injuries"');
+  assert.ok(scores >= 0 && scores < news && news < injuries, "News precedes injuries after the score ticker in reading order");
 });
 
 test("venue and weather labels separate forecasts from reported game conditions", () => {

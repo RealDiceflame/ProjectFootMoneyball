@@ -1,7 +1,8 @@
 import {injuryFeed, filterInjuries, snapshotFreshness, leagueHeadlineCards} from "./home-data.mjs?v=20260927-refresh1";
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; };
-let injuries = [], shown = 8, newsBundle = null, newsBusy = false, newsLastAttempt = 0, newsCardsKey = "";
+const INJURY_PAGE_SIZE = 4;
+let injuries = [], shown = INJURY_PAGE_SIZE, newsBundle = null, newsBusy = false, newsLastAttempt = 0, newsCardsKey = "";
 
 function portrait(player) {
   const wrapper = el("span", undefined, "home-portrait");
@@ -19,12 +20,15 @@ function portrait(player) {
 
 function injuryDetails(body, row) {
   body.append(el("p", `${row.injury} · ${row.status}`, "home-injury-detail"));
-  body.append(el("p", row.currentnessLabel, "home-small"));
-  if (row.practice && row.practice !== row.status) body.append(el("p", `Practice: ${row.practice}`));
+  body.append(el("p", row.currentnessLabel, "home-injury-context"));
+  if (row.practice && row.practice !== row.status) body.append(el("p", `Practice: ${row.practice}`, "home-injury-context"));
+  const sources = el("div", undefined, "home-injury-source");
+  sources.append(el("span", row.reportLabel));
   if (row.url) {
     const source = el("a", "Team injury source ↗"); source.href = row.url;
-    source.target = "_blank"; source.rel = "noopener noreferrer"; body.append(source);
+    source.target = "_blank"; source.rel = "noopener noreferrer"; sources.append(source);
   }
+  body.append(sources);
 }
 
 function playerSummary(player) {
@@ -44,15 +48,16 @@ function updateNewsStatus(bundle, cards = leagueHeadlineCards(bundle)) {
 
 function renderSourcePlayers(bundle) {
   const cards = leagueHeadlineCards(bundle);
-  $("league-news-list").replaceChildren(...cards.map(card => {
-    const article = el("article", undefined, "home-source-card"), link = el("a", undefined, "home-clip");
+  $("league-news-list").replaceChildren(...cards.map((card, index) => {
+    // Preserve chronological order; a missing portrait never changes the lead story.
+    const article = el("article", undefined, `home-source-card${index === 0 ? " home-lead-story" : ""}`), link = el("a", undefined, "home-clip");
     link.href = card.url; link.target = "_blank"; link.rel = "noopener noreferrer";
     const title = el("div"), metadata = el("small", `${card.source} · `);
     if (card.timestamp) {
       const time = el("time", new Date(card.timestamp).toLocaleString(undefined, {dateStyle: "medium", ...(card.timestamp.includes("T") ? {timeStyle: "short"} : {})}));
       time.dateTime = card.timestamp; metadata.append(time);
     } else metadata.append(el("span", "Publication time unavailable"));
-    title.append(metadata, el("strong", card.title));
+    title.append(metadata, el("h3", card.title));
     const arrow = el("b", "↗"); arrow.setAttribute("aria-hidden", "true"); link.append(title, arrow);
     const players = el("div", undefined, "home-card-players"); players.append(...card.players.map(playerSummary));
     article.append(link); if (card.players.length) article.append(players); return article;
@@ -65,11 +70,11 @@ function renderInjuries() {
   const rows = filterInjuries(injuries, $("injury-search").value, $("injury-filter").value);
   $("injury-count").textContent = `${rows.length} matching report${rows.length === 1 ? "" : "s"}`;
   $("home-injury-list").replaceChildren(...rows.slice(0, shown).map(row => {
-    const card = el("article", undefined, "home-injury"), body = el("div"), summary = el("div", undefined, "home-player-summary");
-    body.append(el("span", `${row.team} · ${row.pos} · ${row.reportLabel}`, "home-small"), el("h3", row.player));
-    injuryDetails(body, row); summary.append(portrait(row), body);
+    const card = el("article", undefined, "home-injury"), body = el("div"), heading = el("div", undefined, "home-injury-heading");
+    body.append(el("h3", row.player), el("span", `${row.team} · ${row.pos}`, "home-small"));
     const badge = el("span", row.risk ? "RISK" : row.current ? "REPORTED" : row.freshness === "historical" ? "HISTORY" : "UNVERIFIED", `home-badge${row.risk ? " home-risk" : ""}`);
-    card.append(summary, badge); return card;
+    heading.append(portrait(row), body, badge);
+    card.append(heading); injuryDetails(card, row); return card;
   }));
   if (!rows.length) $("home-injury-list").append(el("p", injuries.length ? "No reports match these filters." : "No injury entries are available in this snapshot. Missing reports do not mean players are healthy.", "home-small"));
   $("injury-more").hidden = rows.length <= shown;
@@ -115,9 +120,9 @@ async function loadInjuries() {
     renderSourcePlayers(null);
   } finally { newsBusy = false; }
 }
-$("injury-search").addEventListener("input", () => { shown = 8; renderInjuries(); });
-$("injury-filter").addEventListener("change", () => { shown = 8; renderInjuries(); });
-$("injury-more").addEventListener("click", () => { shown += 8; renderInjuries(); });
+$("injury-search").addEventListener("input", () => { shown = INJURY_PAGE_SIZE; renderInjuries(); });
+$("injury-filter").addEventListener("change", () => { shown = INJURY_PAGE_SIZE; renderInjuries(); });
+$("injury-more").addEventListener("click", () => { shown += INJURY_PAGE_SIZE; renderInjuries(); });
 
 // Load the official embed asynchronously so an X outage cannot block the page.
 async function loadXFeed() {

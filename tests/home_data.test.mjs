@@ -156,9 +156,16 @@ test("homepage controls and rankings route are wired with unique identifiers", (
   const sourceSummary = js.slice(js.indexOf("function playerSummary("), js.indexOf("function renderSourcePlayers("));
   assert.match(sourceSummary, /portrait\(player\)/);
   assert.doesNotMatch(sourceSummary, /injury|RISK|home-badge/i);
-  assert.match(js.slice(js.indexOf("function renderInjuries(")), /injuryDetails\(body, row\)/);
+  assert.match(js.slice(js.indexOf("function renderInjuries(")), /injuryDetails\(card, row\)/);
+  assert.match(html, /<h2 id="highlights-heading">Around the NFL<\/h2>/);
+  assert.match(html, /<h2 id="injury-heading">Injury Report<\/h2>/);
   const ids = [...html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
   assert.equal(ids.length, new Set(ids).size);
+  const headerLink = html.match(/<a\b[^>]*class="home-header-link"[^>]*>[\s\S]*?<\/a>/)?.[0] || "";
+  assert.match(headerLink, /href="#explore"/);
+  assert.match(headerLink, />Explore tools\s*<span aria-hidden="true">↓<\/span>/);
+  const explore = html.match(/<section\b[^>]*\bid="explore"[^>]*>/)?.[0] || "";
+  assert.match(explore, /tabindex="-1"/, "The section accepts native fragment-link keyboard focus");
   for (const [, id] of js.matchAll(/\$\("([^"]+)"\)/g)) assert.ok(ids.includes(id), id);
   assert.doesNotMatch(html, /manually curated|selected-source-cards|recent-headline-list/);
   assert.match(html, /id="league-news-list"[^>]+tabindex="0"[^>]+role="region"/);

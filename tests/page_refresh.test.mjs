@@ -37,7 +37,7 @@ test("homepage shows decoded quotes while HTML-looking headlines stay inert text
   const title="Player&#39;s &quot;big play&quot; &lt;img src=x onerror=alert(1)&gt;";
   const view=await page("home.js","",[news(undefined,[{title,url:"https://sports.yahoo.com/nfl/article/update.html"}])]);
   const content=view.nodes.get("league-news-list");
-  const heading=descendants(content).find(node=>node.tagName==="strong");
+  const heading=descendants(content).find(node=>node.tagName==="h3");
   assert.equal(heading.textContent, 'Player\'s "big play" <img src=x onerror=alert(1)>');
   assert.equal(heading.children.length,0);
   assert.equal(descendants(content).filter(node=>["img","script"].includes(node.tagName)).length,0);
@@ -51,6 +51,16 @@ test("homepage retains reports through failure, recovers, and pauses hidden poll
   view.doc.hidden=false;await view.refresh();
   assert.doesNotMatch(view.nodes.get("injury-freshness").textContent,/Refresh unavailable/);
   assert.equal(view.nodes.get("injury-search").disabled,false);
+});
+
+test("homepage unchanged news refresh preserves rendered stories and reading position",async()=>{
+  const bundle=news(undefined,[{title:"Saved lead story",url:"https://www.espn.com/nfl/story/saved-lead"}]);
+  const view=await page("home.js","",[bundle,bundle]);
+  const content=view.nodes.get("league-news-list"),rendered=content.children;
+  content.scrollTop=84;
+  await view.refresh();
+  assert.equal(content.children,rendered,"Unchanged polling must not rebuild or detach news links");
+  assert.equal(content.scrollTop,84,"Unchanged polling keeps the reader's position");
 });
 
 test("unchanged news snapshot removes stories once they age out",async()=>{

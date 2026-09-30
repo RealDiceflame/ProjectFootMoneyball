@@ -14,44 +14,37 @@
   <meta name="twitter:image" content="https://outlierbaseline.com/og.png">
   <title>OutlierBaseline · Football Intelligence</title>
   <link rel="stylesheet" href="styles.css?v=20260928-layout2">
-  <link rel="stylesheet" href="home.css?v=20260915-ticker1">
+  <link rel="stylesheet" href="home.css?v=20260930-home-release1">
   <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
 </head>
 <body class="home-page">
   <a class="home-skip" href="#home-main">Skip to content</a>
   <header class="topbar">
-    <a class="brand" href="./" aria-label="OutlierBaseline home"><span class="brand-mark" aria-hidden="true">OB</span><span><strong>OutlierBaseline</strong><small>Football intelligence</small></span></a>
+    <a class="brand" href="./" aria-label="OutlierBaseline home"><span class="brand-mark" aria-hidden="true">OB</span><span><strong>OutlierBaseline</strong><small>Be an Outlier. Know your Baseline.</small></span></a>
     <nav class="topnav" aria-label="Analytics pages"><a href="./" aria-current="page">Home</a><a href="rankings.html">Player rankings</a><a href="special-teams.html">Kickers &amp; D/ST</a><a href="projection.html">Projection Lab</a><a href="survivor.html">Survivor Lab</a><a href="league.html">League simulations</a><a href="odds.html">Weekly odds</a></nav>
-    <a class="home-header-link" href="rankings.html">Open rankings <span aria-hidden="true">↗</span></a>
+    <a class="home-header-link" href="#explore">Explore tools <span aria-hidden="true">↓</span></a>
   </header>
-  <main id="home-main">
+  <main id="home-main" tabindex="-1">
+    <h1 id="home-title" class="sr-only">OutlierBaseline</h1>
     <section class="home-section home-scores" aria-labelledby="scores-heading">
       <div class="home-section-heading">
         <h2 id="scores-heading">NFL scores</h2>
+        <a class="home-score-stats" href="stats.html">All game stats</a>
         <div class="home-score-controls">
-          <a href="stats.html">All game stats</a>
           <label>Week <select id="score-week" disabled aria-label="Scoreboard week"></select></label>
-          <button id="score-prev" type="button" aria-label="Previous games" aria-controls="score-games" disabled>←</button>
-          <button id="score-next" type="button" aria-label="Next games" aria-controls="score-games" disabled>→</button>
+          <div class="home-score-arrows" role="group" aria-label="Scroll games">
+            <button id="score-prev" type="button" aria-label="Previous games" aria-controls="score-games" disabled>←</button>
+            <button id="score-next" type="button" aria-label="Next games" aria-controls="score-games" disabled>→</button>
+          </div>
         </div>
         <p id="score-status" class="home-small" role="status">Loading scores…</p>
       </div>
       <div id="score-games" class="home-score-grid" tabindex="0" role="region" aria-label="Weekly games, scroll horizontally or use the arrow buttons"></div>
       <noscript>Enable JavaScript to view the scoreboard.</noscript>
     </section>
-    <section class="home-hero" aria-labelledby="home-title">
-      <h1 id="home-title">Be an Outlier.<br><em>Know your Baseline.</em></h1>
-    </section>
     <div class="home-feed-grid">
-      <section class="home-section home-injuries" aria-labelledby="injury-heading">
-        <div class="home-section-heading"><h2 id="injury-heading">Injury watch</h2><span id="injury-count" class="home-small"></span></div>
-        <p id="injury-freshness" class="home-feed-status" role="status">Loading reports…</p>
-        <div class="home-filters"><label>Search reports<input id="injury-search" type="search" placeholder="Player, team, injury…" autocomplete="off"></label><label>Availability<select id="injury-filter" title="Questionable, probable and practice participation alone do not receive a Risk label."><option value="all">All reported statuses</option><option value="risk">Out / doubtful / injured reserve</option></select></label></div>
-        <div id="home-injury-list" aria-live="polite"></div><button id="injury-more" type="button" class="home-secondary" hidden>Show more reports</button>
-        <noscript>Enable JavaScript to view the saved reports. <a href="rankings.html">Open player rankings</a>.</noscript>
-      </section>
-      <aside class="home-section home-highlights" aria-labelledby="highlights-heading">
-        <h2 id="highlights-heading">Around the league</h2>
+      <section class="home-section home-highlights" aria-labelledby="highlights-heading">
+        <h2 id="highlights-heading">Around the NFL</h2>
         <p id="league-news-status" class="home-feed-status" role="status">Loading stories…</p>
         <div id="league-news-list" class="home-news-scroll" tabindex="0" role="region" aria-label="Scrollable league news"></div>
         <noscript><p class="home-small">Enable JavaScript to view saved headlines, or open ESPN NFL below.</p></noscript>
@@ -60,25 +53,32 @@
           <p id="social-status" class="home-small" role="status"></p><div id="x-feed"></div>
           <p class="home-small"><a href="https://x.com/NFL" target="_blank" rel="noopener noreferrer">Open NFL on X ↗</a> · <a href="https://help.x.com/en/x-for-websites-ads-info-and-privacy" target="_blank" rel="noopener noreferrer">X privacy information ↗</a></p>
         </div>
+      </section>
+      <aside class="home-section home-injuries" aria-labelledby="injury-heading">
+        <div class="home-section-heading"><h2 id="injury-heading">Injury Report</h2><span id="injury-count" class="home-small"></span></div>
+        <p id="injury-freshness" class="home-feed-status" role="status">Loading reports…</p>
+        <div class="home-filters"><label>Search reports<input id="injury-search" type="search" placeholder="Player, team, injury…" autocomplete="off"></label><label>Availability<select id="injury-filter" title="Questionable, probable and practice participation alone do not receive a Risk label."><option value="all">All reported statuses</option><option value="risk">Out / doubtful / injured reserve</option></select></label></div>
+        <div id="home-injury-list" aria-live="polite"></div><button id="injury-more" type="button" class="home-secondary" hidden>Show more reports</button>
+        <noscript>Enable JavaScript to view the saved reports. <a href="rankings.html">Open player rankings</a>.</noscript>
       </aside>
+      <section class="home-section" id="explore" tabindex="-1" aria-labelledby="explore-heading">
+        <div class="home-section-heading"><h2 id="explore-heading">Explore tools</h2></div>
+        <div class="home-tool-grid">
+          <a href="rankings.html"><h3>Player rankings ↗</h3><p>Compare players for your format.</p></a>
+          <a href="special-teams.html"><h3>Kickers &amp; D/ST ↗</h3><p>Compare kicker and defense ADP.</p></a>
+          <a href="projection.html"><h3>Projection Lab ↗</h3><p>Explore player history and projections.</p></a>
+          <a href="survivor.html"><h3>Matchups &amp; Survivor ↗</h3><p>Simulate games and plan survivor picks.</p></a>
+          <a href="league.html"><h3>League simulations ↗</h3><p>Simulate seasons and playoff paths.</p></a>
+          <a href="odds.html"><h3>Weekly odds ↗</h3><p>Compare saved sportsbook lines.</p></a>
+        </div>
+      </section>
     </div>
-    <section class="home-section" id="explore" aria-labelledby="explore-heading">
-      <div class="home-section-heading"><h2 id="explore-heading">Explore tools</h2></div>
-      <div class="home-tool-grid">
-        <a href="rankings.html"><span>FANTASY</span><h3>Player rankings ↗</h3><p>PPR, 2QB, TE premium, ADP comparisons and drafted markers.</p></a>
-        <a href="special-teams.html"><span>FANTASY</span><h3>Kickers &amp; D/ST ↗</h3><p>Compare the special-teams market without filling gaps with guesses.</p></a>
-        <a href="projection.html"><span>LABS</span><h3>Projection Lab ↗</h3><p>Player history, age curves and historical draft-round scoring.</p></a>
-        <a href="survivor.html"><span>LABS</span><h3>Matchups &amp; Survivor ↗</h3><p>Simulate two teams or plan a no-repeat survivor path.</p></a>
-        <a href="league.html"><span>LABS</span><h3>League simulations ↗</h3><p>From regular-season records to a complete Super Bowl path.</p></a>
-        <a href="odds.html"><span>MARKETS</span><h3>Weekly odds ↗</h3><p>Compare available saved lines and their source timestamps.</p></a>
-      </div>
-    </section>
-    <section class="home-section" aria-labelledby="updates-heading">
+    <section class="home-section home-announcements" aria-labelledby="updates-heading">
       <div class="home-section-heading"><h2 id="updates-heading">New at OutlierBaseline</h2></div>
       <div class="home-updates">
-        <article><time datetime="2026-09-13">SEPTEMBER 13, 2026</time><span class="home-badge">SIMULATION LAB</span><h3>A fresh run. A complete story.</h3><p>Generate new seasons, replay a fixed seed, and explore 20 complete finishes from each batch.</p><a href="league.html#bracket-heading">Explore possible finishes ↗</a></article>
-        <article><time datetime="2026-09-13">SEPTEMBER 13, 2026</time><span class="home-badge">FANTASY · PROTOTYPE</span><h3>Your league starts here.</h3><p>Try league settings, roster slots and team names. Browser-only for now; shared leagues and sign-ins are not open.</p><a href="fantasy.html">Try a local league setup ↗</a></article>
-        <article><time datetime="2026-09-09">SEPTEMBER 9, 2026</time><span class="home-badge">PROJECTION LAB</span><h3>Put the past in perspective.</h3><p>Compare historical scoring by position and draft round, alongside age and career-relative curves.</p><a href="projection.html#round-map-heading">Open the draft capital map ↗</a></article>
+        <article><div class="home-update-meta"><time datetime="2026-09-13">SEPTEMBER 13, 2026</time><span class="home-badge">SIMULATION LAB</span></div><div class="home-update-copy"><h3>A fresh run. A complete story.</h3><p>Generate new seasons, replay a fixed seed, and explore 20 complete finishes from each batch.</p></div><a href="league.html#bracket-heading">Explore possible finishes ↗</a></article>
+        <article><div class="home-update-meta"><time datetime="2026-09-13">SEPTEMBER 13, 2026</time><span class="home-badge">FANTASY · PROTOTYPE</span></div><div class="home-update-copy"><h3>Your league starts here.</h3><p>Try league settings, roster slots and team names. Browser-only for now; shared leagues and sign-ins are not open.</p></div><a href="fantasy.html">Try a local league setup ↗</a></article>
+        <article><div class="home-update-meta"><time datetime="2026-09-09">SEPTEMBER 9, 2026</time><span class="home-badge">PROJECTION LAB</span></div><div class="home-update-copy"><h3>Put the past in perspective.</h3><p>Compare historical scoring by position and draft round, alongside age and career-relative curves.</p></div><a href="projection.html#round-map-heading">Open the draft capital map ↗</a></article>
       </div>
     </section>
   </main>
@@ -88,6 +88,6 @@
     <p id="social-privacy">The NFL feed connects to X, which may receive browsing information and use cookies. <a href="https://help.x.com/en/x-for-websites-ads-info-and-privacy" target="_blank" rel="noopener noreferrer">X privacy information</a>. OutlierBaseline is independent and not affiliated with the featured platforms.</p>
     <p>Game weather: reported stadium temperature and wind from nflverse, or a saved <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noopener noreferrer">National Weather Service</a> kickoff forecast. Forecasts refresh with the six-hour data update and remain labeled as forecasts after games. Missing weather stays unavailable; indoor venues are marked separately.</p>
   </details></footer>
-  <script type="module" src="site-nav.js?v=20260928-values1"></script><script type="module" src="home.js?v=20260927-refresh1"></script><script type="module" src="scores.js?v=20260915-ticker1"></script>
+  <script type="module" src="site-nav.js?v=20260928-values1"></script><script type="module" src="home.js?v=20260930-home-release1"></script><script type="module" src="scores.js?v=20260915-ticker1"></script>
 </body>
 </html>
