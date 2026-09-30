@@ -77,7 +77,7 @@ Shared navigation groups **Stats**, **Fantasy** (player rankings, kickers/DST an
 
 ### Fantasy platform prototype archive
 
-This local draft removes **Fantasy Leagues / My Leagues** from the public `docs/` site while the standalone fantasy platform is developed. The four browser-only prototype files are preserved under [archive/fantasy-platform-prototype/web](archive/fantasy-platform-prototype/README.md), outside the public hosting root. This removal has not been pushed or deployed. It does not clear browser storage, saved league setups, rankings preferences or draft markers.
+**Fantasy Leagues / My Leagues** is removed from the public `docs/` site while the standalone fantasy platform is developed. The four browser-only prototype files are preserved under [archive/fantasy-platform-prototype/web](archive/fantasy-platform-prototype/README.md), outside the public hosting root. The removal does not clear browser storage, saved league setups, rankings preferences or draft markers.
 
 The archived prototype contains local setup forms and JSON backup logic; it does not provide production accounts, playable hosted leagues, player rosters, live drafts, scoring or lineup submissions. The intended platform supports native OutlierBaseline leagues and authorized outside-league integrations. See [the fantasy platform roadmap](documentation/fantasy-platform-roadmap.md) for the server/security boundary, provider permission checks and staged implementation. Archived module tests: `node --test tests/fantasy_leagues.test.mjs`; public navigation/removal checks: `node --test tests/navigation_and_fantasy.browser.mjs` (requires Playwright).
 

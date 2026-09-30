@@ -1,6 +1,6 @@
 # Fantasy platform prototype archive
 
-The local removal draft preserves the former Fantasy Leagues / My Leagues prototype here while the future platform is developed. This change has not been pushed or deployed. Only `docs/` is the public hosting root; keep this archive outside that root.
+The former Fantasy Leagues / My Leagues prototype is preserved here while the future platform is developed. It is no longer part of the public site. Only `docs/` is the public hosting root; keep this archive outside that root.
 
 `web/` contains the unchanged `fantasy.html`, `fantasy.js`, `fantasy.css` and `fantasy-leagues.mjs` source. Its HTML still refers to the original shared site assets and URLs, so this is a source archive, not a standalone application. Do not copy it into `docs/` to preview the public site.
 

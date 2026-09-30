@@ -9,9 +9,9 @@ The planned **My Leagues** hub will support two eventual modes:
 
 Do not describe a local setup or external league import as a shared/hosted league. Do not promise automated lineup submission for a read-only integration.
 
-## Archived foundation — local removal draft
+## Archived foundation
 
-This local draft removes the Fantasy Leagues / My Leagues page and its public entry points while the platform is developed. The prototype files are preserved in [`archive/fantasy-platform-prototype/web/`](../archive/fantasy-platform-prototype/README.md), outside the public `docs/` hosting root. This change has not been pushed or deployed. Removing the page does not clear saved league setups or any other browser storage.
+The Fantasy Leagues / My Leagues page and its public entry points are removed while the platform is developed. The prototype files are preserved in [`archive/fantasy-platform-prototype/web/`](../archive/fantasy-platform-prototype/README.md), outside the public `docs/` hosting root. Removing the page does not clear saved league setups or any other browser storage.
 
 The archived `web/fantasy.html` is a browser-only prototype. It supports multiple saved league setups, 8/10/12/14/16 teams, team names, PPR, additive TE premium, passing-TD preferences, and QB/RB/WR/TE/FLEX/superflex/K/DST/bench/IR slot counts. Settings do not change the rankings board, calculate scores, or assign players. The archive preserves the original source and references to shared site assets; it is not a standalone deployed application.
 
