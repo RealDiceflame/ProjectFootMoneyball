@@ -1,21 +1,21 @@
 {
   "season": 2026,
-  "generated_at": "2026-10-04T22:18:19.686977+00:00",
+  "generated_at": "2026-10-05T04:28:32.610245+00:00",
   "model_version": "Team Baseline v1",
   "source": {
     "name": "nflverse schedules and results",
     "url": "https://github.com/nflverse/nfldata/blob/master/data/games.csv"
   },
   "training": {
-    "training_games": 866,
-    "current_season_games": 50,
+    "training_games": 878,
+    "current_season_games": 62,
     "training_first": "2023-09-08T00:20:00+00:00",
-    "training_last": "2026-10-04T13:30:00+00:00",
-    "margin_sd": 12.88961214149096,
-    "tie_probability": 0.001876172607879925
+    "training_last": "2026-10-04T20:25:00+00:00",
+    "margin_sd": 12.69823970376048,
+    "tie_probability": 0.0018552875695732839
   },
-  "league_points": 22.82,
-  "home_advantage": 1.91,
+  "league_points": 22.81,
+  "home_advantage": 1.87,
   "backtest": {
     "games": 544,
     "seasons": [
@@ -30,19 +30,19 @@
     {
       "team": "ARI",
       "name": "Arizona Cardinals",
-      "offense": -0.64,
-      "defense": -2.24,
+      "offense": -0.54,
+      "defense": -2.68,
       "current_season": {
-        "games": 3,
-        "points_for": 21.0,
-        "points_against": 27.0
+        "games": 4,
+        "points_for": 21.75,
+        "points_against": 29.25
       }
     },
     {
       "team": "ATL",
       "name": "Atlanta Falcons",
-      "offense": -1.73,
-      "defense": -0.83,
+      "offense": -1.7,
+      "defense": -0.85,
       "current_season": {
         "games": 3,
         "points_for": 17.0,
@@ -52,30 +52,30 @@
     {
       "team": "BAL",
       "name": "Baltimore Ravens",
-      "offense": 3.23,
-      "defense": 0.42,
+      "offense": 3.05,
+      "defense": 0.4,
       "current_season": {
-        "games": 3,
-        "points_for": 30.67,
-        "points_against": 26.0
+        "games": 4,
+        "points_for": 29.0,
+        "points_against": 24.0
       }
     },
     {
       "team": "BUF",
       "name": "Buffalo Bills",
-      "offense": 4.74,
-      "defense": 0.38,
+      "offense": 4.7,
+      "defense": 0.08,
       "current_season": {
-        "games": 3,
-        "points_for": 33.67,
-        "points_against": 26.0
+        "games": 4,
+        "points_for": 31.75,
+        "points_against": 26.75
       }
     },
     {
       "team": "CAR",
       "name": "Carolina Panthers",
-      "offense": -2.12,
-      "defense": -2.04,
+      "offense": -2.09,
+      "defense": -2.05,
       "current_season": {
         "games": 3,
         "points_for": 29.67,
@@ -85,30 +85,30 @@
     {
       "team": "CHI",
       "name": "Chicago Bears",
-      "offense": 1.02,
-      "defense": 0.44,
+      "offense": 0.93,
+      "defense": 0.64,
       "current_season": {
-        "games": 3,
-        "points_for": 29.67,
-        "points_against": 17.67
+        "games": 4,
+        "points_for": 28.0,
+        "points_against": 16.25
       }
     },
     {
       "team": "CIN",
       "name": "Cincinnati Bengals",
-      "offense": 2.04,
-      "defense": -2.3,
+      "offense": 1.78,
+      "defense": -2.19,
       "current_season": {
-        "games": 3,
-        "points_for": 26.67,
-        "points_against": 21.0
+        "games": 4,
+        "points_for": 24.25,
+        "points_against": 21.25
       }
     },
     {
       "team": "CLE",
       "name": "Cleveland Browns",
-      "offense": -3.71,
-      "defense": -0.09,
+      "offense": -3.67,
+      "defense": -0.14,
       "current_season": {
         "games": 4,
         "points_for": 20.25,
@@ -118,30 +118,30 @@
     {
       "team": "DAL",
       "name": "Dallas Cowboys",
-      "offense": 2.33,
-      "defense": -3.61,
+      "offense": 2.75,
+      "defense": -3.7,
       "current_season": {
-        "games": 3,
-        "points_for": 29.33,
-        "points_against": 27.33
+        "games": 4,
+        "points_for": 30.5,
+        "points_against": 28.0
       }
     },
     {
       "team": "DEN",
       "name": "Denver Broncos",
-      "offense": 0.37,
-      "defense": 1.8,
+      "offense": 0.08,
+      "defense": 1.86,
       "current_season": {
-        "games": 3,
-        "points_for": 20.0,
-        "points_against": 23.33
+        "games": 4,
+        "points_for": 18.5,
+        "points_against": 23.5
       }
     },
     {
       "team": "DET",
       "name": "Detroit Lions",
-      "offense": 4.98,
-      "defense": -0.91,
+      "offense": 5.02,
+      "defense": -0.94,
       "current_season": {
         "games": 3,
         "points_for": 31.0,
@@ -151,30 +151,30 @@
     {
       "team": "GB",
       "name": "Green Bay Packers",
-      "offense": 0.42,
-      "defense": 0.52,
+      "offense": 0.24,
+      "defense": 0.82,
       "current_season": {
-        "games": 3,
-        "points_for": 18.67,
-        "points_against": 30.33
+        "games": 4,
+        "points_for": 18.25,
+        "points_against": 26.25
       }
     },
     {
       "team": "HOU",
       "name": "Houston Texans",
-      "offense": -0.6,
-      "defense": 2.38,
+      "offense": -0.48,
+      "defense": 1.93,
       "current_season": {
-        "games": 3,
-        "points_for": 18.0,
-        "points_against": 25.0
+        "games": 4,
+        "points_for": 21.0,
+        "points_against": 27.25
       }
     },
     {
       "team": "IND",
       "name": "Indianapolis Colts",
-      "offense": 2.07,
-      "defense": -1.76,
+      "offense": 2.04,
+      "defense": -1.75,
       "current_season": {
         "games": 4,
         "points_for": 25.5,
@@ -184,95 +184,95 @@
     {
       "team": "JAX",
       "name": "Jacksonville Jaguars",
-      "offense": 1.61,
-      "defense": 1.49,
+      "offense": 1.45,
+      "defense": 1.75,
       "current_season": {
-        "games": 3,
-        "points_for": 27.33,
-        "points_against": 12.0
+        "games": 4,
+        "points_for": 26.0,
+        "points_against": 13.25
       }
     },
     {
       "team": "KC",
       "name": "Kansas City Chiefs",
-      "offense": -0.14,
-      "defense": 2.86,
+      "offense": 0.11,
+      "defense": 2.53,
       "current_season": {
-        "games": 3,
-        "points_for": 29.33,
-        "points_against": 16.67
+        "games": 4,
+        "points_for": 29.5,
+        "points_against": 19.25
       }
     },
     {
       "team": "LA",
       "name": "Los Angeles Rams",
-      "offense": 2.44,
-      "defense": 1.32,
+      "offense": 2.5,
+      "defense": 1.41,
       "current_season": {
-        "games": 3,
-        "points_for": 20.33,
-        "points_against": 21.0
+        "games": 4,
+        "points_for": 21.25,
+        "points_against": 20.75
       }
     },
     {
       "team": "LAC",
       "name": "Los Angeles Chargers",
-      "offense": -1.36,
-      "defense": 1.15,
+      "offense": -1.23,
+      "defense": 0.98,
       "current_season": {
-        "games": 3,
-        "points_for": 14.67,
-        "points_against": 25.33
+        "games": 4,
+        "points_for": 16.75,
+        "points_against": 26.5
       }
     },
     {
       "team": "LV",
       "name": "Las Vegas Raiders",
-      "offense": -2.96,
-      "defense": -0.87,
+      "offense": -2.65,
+      "defense": -1.12,
       "current_season": {
-        "games": 3,
-        "points_for": 29.33,
-        "points_against": 18.0
+        "games": 4,
+        "points_for": 28.75,
+        "points_against": 21.0
       }
     },
     {
       "team": "MIA",
       "name": "Miami Dolphins",
-      "offense": -1.9,
-      "defense": -1.17,
+      "offense": -2.16,
+      "defense": -0.84,
       "current_season": {
-        "games": 3,
-        "points_for": 12.0,
-        "points_against": 28.67
+        "games": 4,
+        "points_for": 11.5,
+        "points_against": 25.25
       }
     },
     {
       "team": "MIN",
       "name": "Minnesota Vikings",
-      "offense": -0.66,
-      "defense": 3.31,
+      "offense": -0.94,
+      "defense": 3.51,
       "current_season": {
-        "games": 3,
-        "points_for": 23.67,
-        "points_against": 13.67
+        "games": 4,
+        "points_for": 21.5,
+        "points_against": 12.75
       }
     },
     {
       "team": "NE",
       "name": "New England Patriots",
-      "offense": -0.92,
-      "defense": 1.66,
+      "offense": -0.62,
+      "defense": 1.65,
       "current_season": {
-        "games": 3,
-        "points_for": 12.0,
-        "points_against": 17.0
+        "games": 4,
+        "points_for": 16.25,
+        "points_against": 19.25
       }
     },
     {
       "team": "NO",
       "name": "New Orleans Saints",
-      "offense": -1.82,
+      "offense": -1.81,
       "defense": -0.24,
       "current_season": {
         "games": 3,
@@ -283,41 +283,41 @@
     {
       "team": "NYG",
       "name": "New York Giants",
-      "offense": -2.92,
-      "defense": -0.7,
+      "offense": -2.45,
+      "defense": -0.74,
       "current_season": {
-        "games": 3,
-        "points_for": 15.33,
-        "points_against": 18.33
+        "games": 4,
+        "points_for": 20.5,
+        "points_against": 19.75
       }
     },
     {
       "team": "NYJ",
       "name": "New York Jets",
-      "offense": -3.09,
-      "defense": -1.94,
+      "offense": -3.29,
+      "defense": -1.83,
       "current_season": {
-        "games": 3,
-        "points_for": 21.33,
-        "points_against": 20.33
+        "games": 4,
+        "points_for": 19.0,
+        "points_against": 21.0
       }
     },
     {
       "team": "PHI",
       "name": "Philadelphia Eagles",
-      "offense": -0.16,
-      "defense": 2.04,
+      "offense": -0.22,
+      "defense": 2.01,
       "current_season": {
-        "games": 3,
-        "points_for": 18.33,
-        "points_against": 23.0
+        "games": 4,
+        "points_for": 18.75,
+        "points_against": 23.25
       }
     },
     {
       "team": "PIT",
       "name": "Pittsburgh Steelers",
       "offense": -0.95,
-      "defense": 0.9,
+      "defense": 0.88,
       "current_season": {
         "games": 4,
         "points_for": 19.25,
@@ -327,52 +327,52 @@
     {
       "team": "SEA",
       "name": "Seattle Seahawks",
-      "offense": 1.69,
-      "defense": 2.89,
+      "offense": 1.89,
+      "defense": 2.7,
       "current_season": {
-        "games": 3,
-        "points_for": 25.0,
-        "points_against": 16.67
+        "games": 4,
+        "points_for": 26.25,
+        "points_against": 18.25
       }
     },
     {
       "team": "SF",
       "name": "San Francisco 49ers",
-      "offense": 2.55,
-      "defense": 0.89,
+      "offense": 2.52,
+      "defense": 1.16,
       "current_season": {
-        "games": 3,
-        "points_for": 32.67,
-        "points_against": 16.67
+        "games": 4,
+        "points_for": 30.5,
+        "points_against": 16.0
       }
     },
     {
       "team": "TB",
       "name": "Tampa Bay Buccaneers",
-      "offense": 0.41,
-      "defense": -0.67,
+      "offense": 0.08,
+      "defense": -0.47,
       "current_season": {
-        "games": 3,
-        "points_for": 20.67,
-        "points_against": 26.33
+        "games": 4,
+        "points_for": 19.0,
+        "points_against": 24.0
       }
     },
     {
       "team": "TEN",
       "name": "Tennessee Titans",
       "offense": -4.07,
-      "defense": -2.22,
+      "defense": -2.03,
       "current_season": {
-        "games": 3,
-        "points_for": 12.33,
-        "points_against": 19.67
+        "games": 4,
+        "points_for": 13.75,
+        "points_against": 20.75
       }
     },
     {
       "team": "WAS",
       "name": "Washington Commanders",
-      "offense": -0.18,
-      "defense": -2.86,
+      "offense": -0.19,
+      "defense": -2.8,
       "current_season": {
         "games": 4,
         "points_for": 22.0,
@@ -1138,11 +1138,11 @@
       "kickoff": "2026-10-04T17:00:00+00:00",
       "home": "BAL",
       "away": "TEN",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 24.0,
+      "away_score": 18.0,
       "neutral": false,
       "stadium": "M&T Bank Stadium",
-      "status": "locked",
+      "status": "final",
       "model": null,
       "market": null
     },
@@ -1153,11 +1153,11 @@
       "kickoff": "2026-10-04T17:00:00+00:00",
       "home": "BUF",
       "away": "NE",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 26.0,
+      "away_score": 29.0,
       "neutral": false,
       "stadium": "Highmark Stadium",
-      "status": "locked",
+      "status": "final",
       "model": null,
       "market": null
     },
@@ -1168,11 +1168,11 @@
       "kickoff": "2026-10-04T17:00:00+00:00",
       "home": "CHI",
       "away": "NYJ",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 23.0,
+      "away_score": 12.0,
       "neutral": false,
       "stadium": "Soldier Field",
-      "status": "locked",
+      "status": "final",
       "model": null,
       "market": null
     },
@@ -1183,11 +1183,11 @@
       "kickoff": "2026-10-04T17:00:00+00:00",
       "home": "CIN",
       "away": "JAX",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 17.0,
+      "away_score": 22.0,
       "neutral": false,
       "stadium": "Paycor Stadium",
-      "status": "locked",
+      "status": "final",
       "model": null,
       "market": null
     },
@@ -1198,11 +1198,11 @@
       "kickoff": "2026-10-04T17:00:00+00:00",
       "home": "HOU",
       "away": "DAL",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 30.0,
+      "away_score": 34.0,
       "neutral": false,
       "stadium": "Reliant Stadium",
-      "status": "locked",
+      "status": "final",
       "model": null,
       "market": null
     },
@@ -1213,11 +1213,11 @@
       "kickoff": "2026-10-04T17:00:00+00:00",
       "home": "NYG",
       "away": "ARI",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 36.0,
+      "away_score": 24.0,
       "neutral": false,
       "stadium": "MetLife Stadium",
-      "status": "locked",
+      "status": "final",
       "model": null,
       "market": null
     },
@@ -1228,11 +1228,11 @@
       "kickoff": "2026-10-04T17:00:00+00:00",
       "home": "PHI",
       "away": "LA",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 20.0,
+      "away_score": 24.0,
       "neutral": false,
       "stadium": "Lincoln Financial Field",
-      "status": "locked",
+      "status": "final",
       "model": null,
       "market": null
     },
@@ -1243,11 +1243,11 @@
       "kickoff": "2026-10-04T17:00:00+00:00",
       "home": "TB",
       "away": "GB",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 14.0,
+      "away_score": 17.0,
       "neutral": false,
       "stadium": "Raymond James Stadium",
-      "status": "locked",
+      "status": "final",
       "model": null,
       "market": null
     },
@@ -1258,11 +1258,11 @@
       "kickoff": "2026-10-04T20:05:00+00:00",
       "home": "MIN",
       "away": "MIA",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 15.0,
+      "away_score": 10.0,
       "neutral": false,
       "stadium": "U.S. Bank Stadium",
-      "status": "locked",
+      "status": "final",
       "model": null,
       "market": null
     },
@@ -1273,11 +1273,11 @@
       "kickoff": "2026-10-04T20:25:00+00:00",
       "home": "LV",
       "away": "KC",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 27.0,
+      "away_score": 30.0,
       "neutral": false,
       "stadium": "Allegiant Stadium",
-      "status": "locked",
+      "status": "final",
       "model": null,
       "market": null
     },
@@ -1288,11 +1288,11 @@
       "kickoff": "2026-10-04T20:25:00+00:00",
       "home": "SEA",
       "away": "LAC",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 30.0,
+      "away_score": 23.0,
       "neutral": false,
       "stadium": "Lumen Field",
-      "status": "locked",
+      "status": "final",
       "model": null,
       "market": null
     },
@@ -1303,11 +1303,11 @@
       "kickoff": "2026-10-04T20:25:00+00:00",
       "home": "SF",
       "away": "DEN",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 24.0,
+      "away_score": 14.0,
       "neutral": false,
       "stadium": "Levi's Stadium",
-      "status": "locked",
+      "status": "final",
       "model": null,
       "market": null
     },
@@ -1322,14 +1322,8 @@
       "away_score": null,
       "neutral": false,
       "stadium": "Bank of America Stadium",
-      "status": "scheduled",
-      "model": {
-        "home_points": 22.6,
-        "away_points": 28.9,
-        "home_win": 0.31132,
-        "away_win": 0.686804,
-        "tie": 0.001876
-      },
+      "status": "locked",
+      "model": null,
       "market": null
     },
     {
@@ -1347,9 +1341,9 @@
       "model": {
         "home_points": 22.8,
         "away_points": 20.4,
-        "home_win": 0.572828,
-        "away_win": 0.425296,
-        "tie": 0.001876
+        "home_win": 0.573033,
+        "away_win": 0.425112,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1366,11 +1360,11 @@
       "stadium": "AT&T Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 26.8,
-        "away_points": 25.9,
-        "home_win": 0.526427,
-        "away_win": 0.471697,
-        "tie": 0.001876
+        "home_points": 27.0,
+        "away_points": 25.7,
+        "home_win": 0.539993,
+        "away_win": 0.458152,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1387,11 +1381,11 @@
       "stadium": "Tottenham Hotspur Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 23.3,
-        "away_points": 20.2,
-        "home_win": 0.594842,
-        "away_win": 0.403282,
-        "tie": 0.001876
+        "home_points": 23.2,
+        "away_points": 19.9,
+        "home_win": 0.600718,
+        "away_win": 0.397427,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1408,11 +1402,11 @@
       "stadium": "Lambeau Field",
       "status": "scheduled",
       "model": {
-        "home_points": 23.7,
-        "away_points": 22.4,
-        "home_win": 0.541688,
-        "away_win": 0.456436,
-        "tie": 0.001876
+        "home_points": 23.3,
+        "away_points": 22.0,
+        "home_win": 0.541492,
+        "away_win": 0.456653,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1429,11 +1423,11 @@
       "stadium": "Hard Rock Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.2,
-        "away_points": 25.1,
-        "home_win": 0.470982,
-        "away_win": 0.527142,
-        "tie": 0.001876
+        "home_points": 23.8,
+        "away_points": 24.5,
+        "home_win": 0.47675,
+        "away_win": 0.521395,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1450,11 +1444,11 @@
       "stadium": "Gillette Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 23.7,
-        "away_points": 17.2,
-        "home_win": 0.690867,
-        "away_win": 0.307257,
-        "tie": 0.001876
+        "home_points": 24.2,
+        "away_points": 17.6,
+        "home_win": 0.699185,
+        "away_win": 0.29896,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1471,11 +1465,11 @@
       "stadium": "Caesars Superdome",
       "status": "scheduled",
       "model": {
-        "home_points": 18.6,
-        "away_points": 21.4,
-        "home_win": 0.413434,
-        "away_win": 0.58469,
-        "tie": 0.001876
+        "home_points": 18.4,
+        "away_points": 21.2,
+        "home_win": 0.413173,
+        "away_win": 0.584972,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1492,11 +1486,11 @@
       "stadium": "MetLife Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 20.8,
-        "away_points": 20.1,
-        "home_win": 0.519955,
-        "away_win": 0.478169,
-        "tie": 0.001876
+        "home_points": 20.6,
+        "away_points": 20.0,
+        "home_win": 0.51663,
+        "away_win": 0.481515,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1513,11 +1507,11 @@
       "stadium": "Acrisure Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.6,
+        "home_points": 24.5,
         "away_points": 23.0,
-        "home_win": 0.546778,
-        "away_win": 0.451346,
-        "tie": 0.001876
+        "home_win": 0.546353,
+        "away_win": 0.451792,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1534,11 +1528,11 @@
       "stadium": "Nissan Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 17.3,
-        "away_points": 23.5,
-        "home_win": 0.315589,
-        "away_win": 0.682535,
-        "tie": 0.001876
+        "home_points": 17.7,
+        "away_points": 23.4,
+        "home_win": 0.326622,
+        "away_win": 0.671523,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1556,10 +1550,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 24.3,
-        "away_points": 21.8,
-        "home_win": 0.57555,
-        "away_win": 0.422574,
-        "tie": 0.001876
+        "away_points": 22.2,
+        "home_win": 0.563628,
+        "away_win": 0.434517,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1576,11 +1570,11 @@
       "stadium": "SoFi Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 20.6,
-        "away_points": 21.1,
-        "home_win": 0.48439,
-        "away_win": 0.513734,
-        "tie": 0.001876
+        "home_points": 20.7,
+        "away_points": 21.0,
+        "home_win": 0.488865,
+        "away_win": 0.50928,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1597,11 +1591,11 @@
       "stadium": "State Farm Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.0,
-        "away_points": 29.1,
-        "home_win": 0.34686,
-        "away_win": 0.651264,
-        "tie": 0.001876
+        "home_points": 24.1,
+        "away_points": 29.6,
+        "home_win": 0.333668,
+        "away_win": 0.664477,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1618,11 +1612,11 @@
       "stadium": "Lumen Field",
       "status": "scheduled",
       "model": {
-        "home_points": 24.6,
-        "away_points": 21.5,
-        "home_win": 0.592358,
-        "away_win": 0.405766,
-        "tie": 0.001876
+        "home_points": 24.5,
+        "away_points": 21.7,
+        "home_win": 0.585682,
+        "away_win": 0.412463,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1640,10 +1634,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 21.6,
-        "away_points": 25.9,
-        "home_win": 0.368608,
-        "away_win": 0.629516,
-        "tie": 0.001876
+        "away_points": 25.8,
+        "home_win": 0.371531,
+        "away_win": 0.626614,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1660,11 +1654,11 @@
       "stadium": "SoFi Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.8,
-        "away_points": 25.3,
-        "home_win": 0.516385,
-        "away_win": 0.481739,
-        "tie": 0.001876
+        "home_points": 26.2,
+        "away_points": 25.2,
+        "home_win": 0.53018,
+        "away_win": 0.467965,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1681,11 +1675,11 @@
       "stadium": "Empower Field at Mile High",
       "status": "scheduled",
       "model": {
-        "home_points": 21.2,
-        "away_points": 21.8,
-        "home_win": 0.48356,
-        "away_win": 0.514564,
-        "tie": 0.001876
+        "home_points": 21.1,
+        "away_points": 21.9,
+        "home_win": 0.474377,
+        "away_win": 0.523768,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1702,11 +1696,11 @@
       "stadium": "Wembley Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.0,
-        "away_points": 20.7,
-        "home_win": 0.539594,
-        "away_win": 0.45853,
-        "tie": 0.001876
+        "home_points": 22.3,
+        "away_points": 20.6,
+        "home_win": 0.553644,
+        "away_win": 0.444501,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1723,11 +1717,11 @@
       "stadium": "Mercedes-Benz Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.6,
+        "home_points": 21.4,
         "away_points": 23.7,
-        "home_win": 0.434167,
-        "away_win": 0.563957,
-        "tie": 0.001876
+        "home_win": 0.428623,
+        "away_win": 0.569522,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1744,11 +1738,11 @@
       "stadium": "Huntington Bank Field",
       "status": "scheduled",
       "model": {
-        "home_points": 19.6,
-        "away_points": 25.2,
-        "home_win": 0.332862,
-        "away_win": 0.665262,
-        "tie": 0.001876
+        "home_points": 19.7,
+        "away_points": 25.1,
+        "home_win": 0.33491,
+        "away_win": 0.663235,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1765,11 +1759,11 @@
       "stadium": "Lucas Oil Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 28.1,
-        "away_points": 19.5,
-        "home_win": 0.744008,
-        "away_win": 0.254116,
-        "tie": 0.001876
+        "home_points": 27.8,
+        "away_points": 19.6,
+        "home_win": 0.740639,
+        "away_win": 0.257506,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1786,11 +1780,11 @@
       "stadium": "Gillette Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.8,
-        "away_points": 17.1,
-        "home_win": 0.7228,
-        "away_win": 0.275324,
-        "tie": 0.001876
+        "home_points": 25.0,
+        "away_points": 16.9,
+        "home_win": 0.734797,
+        "away_win": 0.263348,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1807,11 +1801,11 @@
       "stadium": "MetLife Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.1,
-        "away_points": 20.7,
-        "home_win": 0.509974,
-        "away_win": 0.48815,
-        "tie": 0.001876
+        "home_points": 21.5,
+        "away_points": 20.8,
+        "home_win": 0.521899,
+        "away_win": 0.476246,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1829,10 +1823,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 25.6,
-        "away_points": 17.7,
-        "home_win": 0.729654,
-        "away_win": 0.26847,
-        "tie": 0.001876
+        "away_points": 17.8,
+        "home_win": 0.729231,
+        "away_win": 0.268914,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1849,11 +1843,11 @@
       "stadium": "Raymond James Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 23.3,
-        "away_points": 21.6,
-        "home_win": 0.551581,
-        "away_win": 0.446543,
-        "tie": 0.001876
+        "home_points": 22.9,
+        "away_points": 21.4,
+        "home_win": 0.54732,
+        "away_win": 0.450825,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1870,11 +1864,11 @@
       "stadium": "SoFi Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 28.5,
+        "home_points": 28.9,
         "away_points": 19.9,
-        "home_win": 0.745326,
-        "away_win": 0.252798,
-        "tie": 0.001876
+        "home_win": 0.759373,
+        "away_win": 0.238772,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1891,11 +1885,11 @@
       "stadium": "GEHA Field at Arrowhead Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.5,
-        "away_points": 17.6,
-        "home_win": 0.645287,
-        "away_win": 0.352837,
-        "tie": 0.001876
+        "home_points": 22.9,
+        "away_points": 18.1,
+        "home_win": 0.644852,
+        "away_win": 0.353293,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1912,11 +1906,11 @@
       "stadium": "Allegiant Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 20.4,
-        "away_points": 27.5,
-        "home_win": 0.292027,
-        "away_win": 0.706097,
-        "tie": 0.001876
+        "home_points": 21.0,
+        "away_points": 27.7,
+        "home_win": 0.298606,
+        "away_win": 0.699539,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1933,11 +1927,11 @@
       "stadium": "Lambeau Field",
       "status": "scheduled",
       "model": {
-        "home_points": 27.8,
-        "away_points": 23.7,
-        "home_win": 0.624469,
-        "away_win": 0.373655,
-        "tie": 0.001876
+        "home_points": 27.7,
+        "away_points": 23.8,
+        "home_win": 0.61881,
+        "away_win": 0.379335,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1954,11 +1948,11 @@
       "stadium": "Levi's Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 29.2,
-        "away_points": 20.8,
-        "home_win": 0.740963,
-        "away_win": 0.257161,
-        "tie": 0.001876
+        "home_points": 29.1,
+        "away_points": 20.5,
+        "home_win": 0.747785,
+        "away_win": 0.25036,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1975,11 +1969,11 @@
       "stadium": "Soldier Field",
       "status": "scheduled",
       "model": {
-        "home_points": 23.1,
-        "away_points": 20.5,
-        "home_win": 0.58015,
-        "away_win": 0.417974,
-        "tie": 0.001876
+        "home_points": 23.0,
+        "away_points": 20.6,
+        "home_win": 0.573875,
+        "away_win": 0.42427,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -1998,9 +1992,9 @@
       "model": {
         "home_points": 20.1,
         "away_points": 22.1,
-        "home_win": 0.437295,
-        "away_win": 0.560829,
-        "tie": 0.001876
+        "home_win": 0.437183,
+        "away_win": 0.560962,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2017,11 +2011,11 @@
       "stadium": "Mercedes-Benz Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.2,
+        "home_points": 20.9,
         "away_points": 25.2,
-        "home_win": 0.374912,
-        "away_win": 0.623212,
-        "tie": 0.001876
+        "home_win": 0.364815,
+        "away_win": 0.63333,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2038,11 +2032,11 @@
       "stadium": "M&T Bank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 29.3,
-        "away_points": 23.5,
-        "home_win": 0.673012,
-        "away_win": 0.325112,
-        "tie": 0.001876
+        "home_points": 29.0,
+        "away_points": 23.3,
+        "home_win": 0.67285,
+        "away_win": 0.325295,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2059,11 +2053,11 @@
       "stadium": "Bank of America Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.3,
-        "away_points": 24.3,
-        "home_win": 0.437952,
-        "away_win": 0.560172,
-        "tie": 0.001876
+        "home_points": 22.1,
+        "away_points": 24.0,
+        "home_win": 0.440135,
+        "away_win": 0.55801,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2080,11 +2074,11 @@
       "stadium": "Reliant Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 23.9,
-        "away_points": 16.6,
-        "home_win": 0.71335,
-        "away_win": 0.284774,
-        "tie": 0.001876
+        "home_points": 24.0,
+        "away_points": 17.5,
+        "home_win": 0.694656,
+        "away_win": 0.303489,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2101,11 +2095,11 @@
       "stadium": "U.S. Bank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.9,
-        "away_points": 20.6,
-        "home_win": 0.627828,
-        "away_win": 0.370296,
-        "tie": 0.001876
+        "home_points": 24.6,
+        "away_points": 20.4,
+        "home_win": 0.627151,
+        "away_win": 0.370994,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2122,11 +2116,11 @@
       "stadium": "MetLife Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.9,
-        "away_points": 21.9,
-        "home_win": 0.497627,
-        "away_win": 0.500497,
-        "tie": 0.001876
+        "home_points": 21.3,
+        "away_points": 21.5,
+        "home_win": 0.491011,
+        "away_win": 0.507134,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2144,10 +2138,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 19.8,
-        "away_points": 20.4,
-        "home_win": 0.481027,
-        "away_win": 0.517097,
-        "tie": 0.001876
+        "away_points": 20.2,
+        "home_win": 0.485946,
+        "away_win": 0.512199,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2165,10 +2159,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 21.3,
-        "away_points": 24.5,
-        "home_win": 0.402858,
-        "away_win": 0.595266,
-        "tie": 0.001876
+        "away_points": 24.6,
+        "home_win": 0.396841,
+        "away_win": 0.601304,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2185,11 +2179,11 @@
       "stadium": "Ford Field",
       "status": "scheduled",
       "model": {
-        "home_points": 28.2,
-        "away_points": 23.2,
-        "home_win": 0.651116,
-        "away_win": 0.347008,
-        "tie": 0.001876
+        "home_points": 27.9,
+        "away_points": 23.1,
+        "home_win": 0.64864,
+        "away_win": 0.349505,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2206,11 +2200,11 @@
       "stadium": "Allegiant Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 19.5,
-        "away_points": 25.2,
-        "home_win": 0.328892,
-        "away_win": 0.669232,
-        "tie": 0.001876
+        "home_points": 19.7,
+        "away_points": 25.5,
+        "home_win": 0.322878,
+        "away_win": 0.675267,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2227,11 +2221,11 @@
       "stadium": "Lumen Field",
       "status": "scheduled",
       "model": {
-        "home_points": 22.6,
-        "away_points": 18.8,
-        "home_win": 0.613859,
-        "away_win": 0.384265,
-        "tie": 0.001876
+        "home_points": 23.1,
+        "away_points": 19.3,
+        "home_win": 0.617177,
+        "away_win": 0.380968,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2249,10 +2243,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 27.2,
-        "away_points": 22.2,
-        "home_win": 0.651639,
-        "away_win": 0.346485,
-        "tie": 0.001876
+        "away_points": 22.6,
+        "home_win": 0.64054,
+        "away_win": 0.357605,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2269,11 +2263,11 @@
       "stadium": "Lambeau Field",
       "status": "scheduled",
       "model": {
-        "home_points": 26.2,
-        "away_points": 19.2,
-        "home_win": 0.705175,
-        "away_win": 0.292949,
-        "tie": 0.001876
+        "home_points": 26.0,
+        "away_points": 19.0,
+        "home_win": 0.709874,
+        "away_win": 0.288271,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2290,11 +2284,11 @@
       "stadium": "Highmark Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 28.1,
-        "away_points": 24.7,
-        "home_win": 0.601941,
-        "away_win": 0.396183,
-        "tie": 0.001876
+        "home_points": 28.0,
+        "away_points": 24.8,
+        "home_win": 0.598367,
+        "away_win": 0.399778,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2311,11 +2305,11 @@
       "stadium": "Paycor Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 28.0,
-        "away_points": 20.1,
-        "home_win": 0.729799,
-        "away_win": 0.268325,
-        "tie": 0.001876
+        "home_points": 27.5,
+        "away_points": 20.0,
+        "home_win": 0.722555,
+        "away_win": 0.27559,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2332,11 +2326,11 @@
       "stadium": "AT&T Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 28.3,
-        "away_points": 24.8,
-        "home_win": 0.606267,
-        "away_win": 0.391857,
-        "tie": 0.001876
+        "home_points": 29.2,
+        "away_points": 25.0,
+        "home_win": 0.626583,
+        "away_win": 0.371562,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2353,11 +2347,11 @@
       "stadium": "Ford Field",
       "status": "scheduled",
       "model": {
-        "home_points": 25.4,
-        "away_points": 22.1,
-        "home_win": 0.601265,
-        "away_win": 0.396859,
-        "tie": 0.001876
+        "home_points": 25.2,
+        "away_points": 21.9,
+        "home_win": 0.603469,
+        "away_win": 0.394676,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2374,11 +2368,11 @@
       "stadium": "EverBank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 27.1,
-        "away_points": 22.4,
-        "home_win": 0.641105,
-        "away_win": 0.357019,
-        "tie": 0.001876
+        "home_points": 26.9,
+        "away_points": 22.2,
+        "home_win": 0.645541,
+        "away_win": 0.352604,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2396,10 +2390,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 21.6,
-        "away_points": 20.8,
-        "home_win": 0.520906,
-        "away_win": 0.477218,
-        "tie": 0.001876
+        "away_points": 21.1,
+        "home_win": 0.515495,
+        "away_win": 0.48265,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2417,10 +2411,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 22.9,
-        "away_points": 17.2,
-        "home_win": 0.668291,
-        "away_win": 0.329833,
-        "tie": 0.001876
+        "away_points": 17.3,
+        "home_win": 0.66936,
+        "away_win": 0.328785,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2437,11 +2431,11 @@
       "stadium": "Raymond James Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.0,
-        "away_points": 20.8,
-        "home_win": 0.626693,
-        "away_win": 0.371431,
-        "tie": 0.001876
+        "home_points": 24.7,
+        "away_points": 20.6,
+        "home_win": 0.623338,
+        "away_win": 0.374807,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2458,11 +2452,11 @@
       "stadium": "SoFi Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.1,
+        "home_points": 25.3,
         "away_points": 19.2,
-        "home_win": 0.674924,
-        "away_win": 0.3232,
-        "tie": 0.001876
+        "home_win": 0.681284,
+        "away_win": 0.316861,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2480,10 +2474,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 21.3,
-        "away_points": 19.9,
-        "home_win": 0.540932,
-        "away_win": 0.457192,
-        "tie": 0.001876
+        "away_points": 20.1,
+        "home_win": 0.535659,
+        "away_win": 0.462486,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2500,11 +2494,11 @@
       "stadium": "Hard Rock Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 20.2,
+        "home_points": 19.9,
         "away_points": 22.1,
-        "home_win": 0.440635,
-        "away_win": 0.557489,
-        "tie": 0.001876
+        "home_win": 0.431601,
+        "away_win": 0.566544,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2521,11 +2515,11 @@
       "stadium": "Northwest Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.6,
-        "away_points": 24.6,
-        "home_win": 0.407147,
-        "away_win": 0.590977,
-        "tie": 0.001876
+        "home_points": 21.5,
+        "away_points": 24.5,
+        "home_win": 0.40855,
+        "away_win": 0.589595,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2543,10 +2537,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 25.0,
-        "away_points": 20.0,
-        "home_win": 0.650434,
-        "away_win": 0.34769,
-        "tie": 0.001876
+        "away_points": 20.1,
+        "home_win": 0.648752,
+        "away_win": 0.349393,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2563,11 +2557,11 @@
       "stadium": "M&T Bank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.5,
-        "away_points": 23.0,
-        "home_win": 0.574851,
-        "away_win": 0.423273,
-        "tie": 0.001876
+        "home_points": 25.0,
+        "away_points": 22.9,
+        "home_win": 0.565122,
+        "away_win": 0.433023,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2584,11 +2578,11 @@
       "stadium": "Bernabeu",
       "status": "scheduled",
       "model": {
-        "home_points": 23.4,
-        "away_points": 25.7,
-        "home_win": 0.428477,
-        "away_win": 0.569647,
-        "tie": 0.001876
+        "home_points": 23.3,
+        "away_points": 25.4,
+        "home_win": 0.432196,
+        "away_win": 0.565949,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2605,11 +2599,11 @@
       "stadium": "Bank of America Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 19.9,
-        "away_points": 24.3,
-        "home_win": 0.365333,
-        "away_win": 0.632791,
-        "tie": 0.001876
+        "home_points": 19.8,
+        "away_points": 24.0,
+        "home_win": 0.369167,
+        "away_win": 0.628978,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2626,11 +2620,11 @@
       "stadium": "Lucas Oil Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 29.4,
-        "away_points": 26.0,
-        "home_win": 0.605792,
-        "away_win": 0.392332,
-        "tie": 0.001876
+        "home_points": 29.5,
+        "away_points": 26.4,
+        "home_win": 0.595529,
+        "away_win": 0.402616,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2647,11 +2641,11 @@
       "stadium": "GEHA Field at Arrowhead Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.6,
-        "away_points": 15.9,
-        "home_win": 0.771792,
-        "away_win": 0.226332,
-        "tie": 0.001876
+        "home_points": 25.7,
+        "away_points": 16.1,
+        "home_win": 0.774226,
+        "away_win": 0.223919,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2668,11 +2662,11 @@
       "stadium": "Hard Rock Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.8,
-        "away_points": 28.0,
-        "home_win": 0.341417,
-        "away_win": 0.656707,
-        "tie": 0.001876
+        "home_points": 22.5,
+        "away_points": 27.7,
+        "home_win": 0.34034,
+        "away_win": 0.657805,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2689,11 +2683,11 @@
       "stadium": "Caesars Superdome",
       "status": "scheduled",
       "model": {
-        "home_points": 22.0,
-        "away_points": 18.4,
-        "home_win": 0.610234,
-        "away_win": 0.38789,
-        "tie": 0.001876
+        "home_points": 22.1,
+        "away_points": 18.5,
+        "home_win": 0.611244,
+        "away_win": 0.386901,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2711,10 +2705,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 24.3,
-        "away_points": 16.9,
-        "home_win": 0.715783,
-        "away_win": 0.282341,
-        "tie": 0.001876
+        "away_points": 17.4,
+        "home_win": 0.703809,
+        "away_win": 0.294336,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2731,11 +2725,11 @@
       "stadium": "Northwest Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.3,
+        "home_points": 22.1,
         "away_points": 27.2,
-        "home_win": 0.351445,
-        "away_win": 0.646679,
-        "tie": 0.001876
+        "home_win": 0.345343,
+        "away_win": 0.652802,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2752,11 +2746,11 @@
       "stadium": "SoFi Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 20.0,
-        "away_points": 20.1,
-        "home_win": 0.496307,
-        "away_win": 0.501817,
-        "tie": 0.001876
+        "home_points": 20.6,
+        "away_points": 20.4,
+        "home_win": 0.504031,
+        "away_win": 0.494114,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2773,11 +2767,11 @@
       "stadium": "Levi's Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 27.2,
-        "away_points": 18.0,
-        "home_win": 0.760416,
-        "away_win": 0.237708,
-        "tie": 0.001876
+        "home_points": 27.4,
+        "away_points": 18.1,
+        "home_win": 0.767011,
+        "away_win": 0.231134,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2795,10 +2789,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 22.3,
-        "away_points": 20.6,
-        "home_win": 0.551493,
-        "away_win": 0.446631,
-        "tie": 0.001876
+        "away_points": 20.5,
+        "home_win": 0.556749,
+        "away_win": 0.441396,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2815,11 +2809,11 @@
       "stadium": "Lumen Field",
       "status": "scheduled",
       "model": {
-        "home_points": 27.7,
-        "away_points": 18.3,
-        "home_win": 0.765047,
-        "away_win": 0.233077,
-        "tie": 0.001876
+        "home_points": 28.3,
+        "away_points": 18.6,
+        "home_win": 0.775746,
+        "away_win": 0.222399,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2836,11 +2830,11 @@
       "stadium": "Soldier Field",
       "status": "scheduled",
       "model": {
-        "home_points": 25.5,
-        "away_points": 21.8,
-        "home_win": 0.609828,
-        "away_win": 0.388296,
-        "tie": 0.001876
+        "home_points": 25.1,
+        "away_points": 21.3,
+        "home_win": 0.617371,
+        "away_win": 0.380774,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2858,10 +2852,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 22.7,
-        "away_points": 23.3,
-        "home_win": 0.481612,
-        "away_win": 0.516512,
-        "tie": 0.001876
+        "away_points": 23.1,
+        "home_win": 0.488434,
+        "away_win": 0.509711,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2878,11 +2872,11 @@
       "stadium": "MetLife Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 23.7,
+        "home_points": 24.1,
         "away_points": 22.4,
-        "home_win": 0.53999,
-        "away_win": 0.458134,
-        "tie": 0.001876
+        "home_win": 0.551167,
+        "away_win": 0.446978,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2899,11 +2893,11 @@
       "stadium": "FC Bayern Munich Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 26.1,
-        "away_points": 22.8,
-        "home_win": 0.60128,
-        "away_win": 0.396844,
-        "tie": 0.001876
+        "home_points": 26.2,
+        "away_points": 23.1,
+        "home_win": 0.593557,
+        "away_win": 0.404588,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2920,11 +2914,11 @@
       "stadium": "Mercedes-Benz Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 19.2,
-        "away_points": 22.6,
-        "home_win": 0.396267,
-        "away_win": 0.601857,
-        "tie": 0.001876
+        "home_points": 19.5,
+        "away_points": 22.8,
+        "home_win": 0.395934,
+        "away_win": 0.602211,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2941,11 +2935,11 @@
       "stadium": "Huntington Bank Field",
       "status": "scheduled",
       "model": {
-        "home_points": 17.7,
-        "away_points": 21.3,
-        "home_win": 0.387107,
-        "away_win": 0.611017,
-        "tie": 0.001876
+        "home_points": 18.1,
+        "away_points": 21.5,
+        "home_win": 0.393776,
+        "away_win": 0.604369,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2962,11 +2956,11 @@
       "stadium": "Lambeau Field",
       "status": "scheduled",
       "model": {
-        "home_points": 20.9,
-        "away_points": 20.7,
-        "home_win": 0.505446,
-        "away_win": 0.492678,
-        "tie": 0.001876
+        "home_points": 20.5,
+        "away_points": 20.1,
+        "home_win": 0.509967,
+        "away_win": 0.488178,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -2983,11 +2977,11 @@
       "stadium": "Lucas Oil Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 27.0,
-        "away_points": 21.7,
-        "home_win": 0.65807,
-        "away_win": 0.340054,
-        "tie": 0.001876
+        "home_points": 26.6,
+        "away_points": 21.5,
+        "home_win": 0.656127,
+        "away_win": 0.342018,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3006,9 +3000,9 @@
       "model": {
         "home_points": 24.0,
         "away_points": 20.0,
-        "home_win": 0.620716,
-        "away_win": 0.377408,
-        "tie": 0.001876
+        "home_win": 0.62136,
+        "away_win": 0.376785,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3025,11 +3019,11 @@
       "stadium": "MetLife Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 20.3,
-        "away_points": 28.5,
-        "home_win": 0.260884,
-        "away_win": 0.73724,
-        "tie": 0.001876
+        "home_points": 20.4,
+        "away_points": 28.4,
+        "home_win": 0.263015,
+        "away_win": 0.73513,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3046,11 +3040,11 @@
       "stadium": "Nissan Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 18.2,
-        "away_points": 25.7,
-        "home_win": 0.280307,
-        "away_win": 0.717817,
-        "tie": 0.001876
+        "home_points": 17.9,
+        "away_points": 25.4,
+        "home_win": 0.278738,
+        "away_win": 0.719407,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3068,10 +3062,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 21.8,
-        "away_points": 26.5,
-        "home_win": 0.355778,
-        "away_win": 0.642346,
-        "tie": 0.001876
+        "away_points": 27.1,
+        "home_win": 0.338518,
+        "away_win": 0.659627,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3088,11 +3082,11 @@
       "stadium": "Allegiant Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 17.9,
-        "away_points": 24.4,
-        "home_win": 0.306428,
-        "away_win": 0.691696,
-        "tie": 0.001876
+        "home_points": 18.4,
+        "away_points": 24.9,
+        "home_win": 0.303796,
+        "away_win": 0.694349,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3109,11 +3103,11 @@
       "stadium": "AT&T Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.2,
-        "away_points": 28.0,
-        "home_win": 0.412834,
-        "away_win": 0.58529,
-        "tie": 0.001876
+        "home_points": 25.3,
+        "away_points": 28.1,
+        "home_win": 0.413106,
+        "away_win": 0.585039,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3130,11 +3124,11 @@
       "stadium": "Paycor Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.9,
-        "away_points": 23.2,
-        "home_win": 0.551624,
-        "away_win": 0.4465,
-        "tie": 0.001876
+        "home_points": 24.6,
+        "away_points": 23.1,
+        "home_win": 0.546707,
+        "away_win": 0.451438,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3151,11 +3145,11 @@
       "stadium": "M&T Bank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.9,
-        "away_points": 20.1,
-        "home_win": 0.671843,
-        "away_win": 0.326281,
-        "tie": 0.001876
+        "home_points": 25.8,
+        "away_points": 20.2,
+        "home_win": 0.668311,
+        "away_win": 0.329834,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3172,11 +3166,11 @@
       "stadium": "Reliant Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.9,
-        "away_points": 21.5,
-        "home_win": 0.602466,
-        "away_win": 0.395658,
-        "tie": 0.001876
+        "home_points": 25.0,
+        "away_points": 22.0,
+        "home_win": 0.593367,
+        "away_win": 0.404778,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3193,11 +3187,11 @@
       "stadium": "Highmark Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 29.7,
+        "home_points": 29.3,
         "away_points": 19.6,
-        "home_win": 0.781904,
-        "away_win": 0.21622,
-        "tie": 0.001876
+        "home_win": 0.774739,
+        "away_win": 0.223406,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3215,10 +3209,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 21.2,
-        "away_points": 27.1,
-        "home_win": 0.322937,
-        "away_win": 0.675187,
-        "tie": 0.001876
+        "away_points": 27.0,
+        "home_win": 0.3253,
+        "away_win": 0.672845,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3235,11 +3229,11 @@
       "stadium": "Soldier Field",
       "status": "scheduled",
       "model": {
-        "home_points": 25.0,
-        "away_points": 19.6,
-        "home_win": 0.662154,
-        "away_win": 0.33597,
-        "tie": 0.001876
+        "home_points": 24.9,
+        "away_points": 19.4,
+        "home_win": 0.665924,
+        "away_win": 0.332221,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3256,11 +3250,11 @@
       "stadium": "AT&T Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 28.3,
-        "away_points": 21.4,
-        "home_win": 0.703011,
-        "away_win": 0.295113,
-        "tie": 0.001876
+        "home_points": 28.5,
+        "away_points": 21.5,
+        "home_win": 0.708189,
+        "away_win": 0.289956,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3277,11 +3271,11 @@
       "stadium": "Ford Field",
       "status": "scheduled",
       "model": {
-        "home_points": 29.4,
-        "away_points": 23.2,
-        "home_win": 0.6847,
-        "away_win": 0.313424,
-        "tie": 0.001876
+        "home_points": 29.2,
+        "away_points": 22.9,
+        "home_win": 0.689895,
+        "away_win": 0.30825,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3298,11 +3292,11 @@
       "stadium": "GEHA Field at Arrowhead Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.9,
-        "away_points": 18.4,
-        "home_win": 0.718714,
-        "away_win": 0.27941,
-        "tie": 0.001876
+        "home_points": 26.5,
+        "away_points": 18.8,
+        "home_win": 0.727275,
+        "away_win": 0.27087,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3319,11 +3313,11 @@
       "stadium": "MetLife Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 19.4,
-        "away_points": 24.2,
-        "home_win": 0.353962,
-        "away_win": 0.644162,
-        "tie": 0.001876
+        "home_points": 19.5,
+        "away_points": 24.1,
+        "home_win": 0.360169,
+        "away_win": 0.637976,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3342,9 +3336,9 @@
       "model": {
         "home_points": 24.3,
         "away_points": 17.6,
-        "home_win": 0.697785,
-        "away_win": 0.300339,
-        "tie": 0.001876
+        "home_win": 0.700632,
+        "away_win": 0.297513,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3361,11 +3355,11 @@
       "stadium": "Empower Field at Mile High",
       "status": "scheduled",
       "model": {
-        "home_points": 25.0,
-        "away_points": 17.1,
-        "home_win": 0.728872,
-        "away_win": 0.269252,
-        "tie": 0.001876
+        "home_points": 24.9,
+        "away_points": 17.4,
+        "home_win": 0.723355,
+        "away_win": 0.27479,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3382,11 +3376,11 @@
       "stadium": "Lincoln Financial Field",
       "status": "scheduled",
       "model": {
-        "home_points": 22.7,
+        "home_points": 22.6,
         "away_points": 18.9,
-        "home_win": 0.61594,
-        "away_win": 0.382184,
-        "tie": 0.001876
+        "home_win": 0.614272,
+        "away_win": 0.383873,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3403,11 +3397,11 @@
       "stadium": "Estadio Banorte",
       "status": "scheduled",
       "model": {
-        "home_points": 22.1,
-        "away_points": 21.3,
-        "home_win": 0.52377,
-        "away_win": 0.474354,
-        "tie": 0.001876
+        "home_points": 21.8,
+        "away_points": 20.7,
+        "home_win": 0.533512,
+        "away_win": 0.464633,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3424,11 +3418,11 @@
       "stadium": "Northwest Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.9,
-        "away_points": 26.8,
-        "home_win": 0.472229,
-        "away_win": 0.525895,
-        "tie": 0.001876
+        "home_points": 25.7,
+        "away_points": 26.5,
+        "home_win": 0.476875,
+        "away_win": 0.52127,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3445,11 +3439,11 @@
       "stadium": "SoFi Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.7,
-        "away_points": 21.0,
-        "home_win": 0.642198,
-        "away_win": 0.355926,
-        "tie": 0.001876
+        "home_points": 25.4,
+        "away_points": 20.7,
+        "home_win": 0.643705,
+        "away_win": 0.35444,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3466,11 +3460,11 @@
       "stadium": "Ford Field",
       "status": "scheduled",
       "model": {
-        "home_points": 28.3,
-        "away_points": 23.8,
-        "home_win": 0.635926,
-        "away_win": 0.362198,
-        "tie": 0.001876
+        "home_points": 28.1,
+        "away_points": 23.7,
+        "home_win": 0.63363,
+        "away_win": 0.364515,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3487,11 +3481,11 @@
       "stadium": "AT&T Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.1,
-        "away_points": 25.3,
-        "home_win": 0.460572,
-        "away_win": 0.537552,
-        "tie": 0.001876
+        "home_points": 24.5,
+        "away_points": 25.4,
+        "home_win": 0.471598,
+        "away_win": 0.526547,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3508,11 +3502,11 @@
       "stadium": "Highmark Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.7,
-        "away_points": 21.3,
-        "home_win": 0.629598,
-        "away_win": 0.368526,
-        "tie": 0.001876
+        "home_points": 25.9,
+        "away_points": 21.9,
+        "home_win": 0.62284,
+        "away_win": 0.375305,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3529,11 +3523,11 @@
       "stadium": "Acrisure Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.0,
-        "away_points": 21.3,
-        "home_win": 0.489361,
-        "away_win": 0.508763,
-        "tie": 0.001876
+        "home_points": 20.9,
+        "away_points": 21.1,
+        "home_win": 0.494646,
+        "away_win": 0.503499,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3550,11 +3544,11 @@
       "stadium": "Paycor Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 26.1,
+        "home_points": 25.8,
         "away_points": 22.3,
-        "home_win": 0.612226,
-        "away_win": 0.385898,
-        "tie": 0.001876
+        "home_win": 0.607583,
+        "away_win": 0.390562,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3571,11 +3565,11 @@
       "stadium": "Huntington Bank Field",
       "status": "scheduled",
       "model": {
-        "home_points": 20.9,
-        "away_points": 19.0,
-        "home_win": 0.558771,
-        "away_win": 0.439353,
-        "tie": 0.001876
+        "home_points": 21.2,
+        "away_points": 19.4,
+        "home_win": 0.556281,
+        "away_win": 0.441864,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3592,11 +3586,11 @@
       "stadium": "Reliant Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.7,
-        "away_points": 22.7,
-        "home_win": 0.500173,
-        "away_win": 0.497951,
-        "tie": 0.001876
+        "home_points": 22.9,
+        "away_points": 23.0,
+        "home_win": 0.495059,
+        "away_win": 0.503086,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3614,10 +3608,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 26.5,
-        "away_points": 20.7,
-        "home_win": 0.673314,
-        "away_win": 0.32481,
-        "tie": 0.001876
+        "away_points": 21.2,
+        "home_win": 0.661796,
+        "away_win": 0.336349,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3634,11 +3628,11 @@
       "stadium": "Hard Rock Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 23.8,
-        "away_points": 19.9,
-        "home_win": 0.616697,
-        "away_win": 0.381427,
-        "tie": 0.001876
+        "home_points": 23.4,
+        "away_points": 19.4,
+        "home_win": 0.62219,
+        "away_win": 0.375955,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3655,11 +3649,11 @@
       "stadium": "U.S. Bank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 23.9,
-        "away_points": 16.8,
-        "home_win": 0.707913,
-        "away_win": 0.290211,
-        "tie": 0.001876
+        "home_points": 23.7,
+        "away_points": 16.7,
+        "home_win": 0.707955,
+        "away_win": 0.29019,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3676,11 +3670,11 @@
       "stadium": "EverBank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 27.6,
-        "away_points": 16.3,
-        "home_win": 0.808134,
-        "away_win": 0.18999,
-        "tie": 0.001876
+        "home_points": 27.2,
+        "away_points": 16.1,
+        "home_win": 0.80882,
+        "away_win": 0.189325,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3698,10 +3692,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 26.0,
-        "away_points": 23.9,
-        "home_win": 0.562421,
-        "away_win": 0.435703,
-        "tie": 0.001876
+        "away_points": 24.4,
+        "home_win": 0.550065,
+        "away_win": 0.44808,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3718,11 +3712,11 @@
       "stadium": "Levi's Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 23.4,
-        "away_points": 22.7,
-        "home_win": 0.522846,
-        "away_win": 0.475278,
-        "tie": 0.001876
+        "home_points": 23.6,
+        "away_points": 22.6,
+        "home_win": 0.528826,
+        "away_win": 0.469319,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3739,11 +3733,11 @@
       "stadium": "SoFi Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 20.8,
-        "away_points": 19.8,
-        "home_win": 0.528776,
-        "away_win": 0.469348,
-        "tie": 0.001876
+        "home_points": 20.9,
+        "away_points": 20.3,
+        "home_win": 0.517157,
+        "away_win": 0.480988,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3760,11 +3754,11 @@
       "stadium": "Raymond James Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 26.2,
-        "away_points": 20.4,
-        "home_win": 0.672498,
-        "away_win": 0.325626,
-        "tie": 0.001876
+        "home_points": 25.9,
+        "away_points": 20.3,
+        "home_win": 0.669724,
+        "away_win": 0.328421,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3781,11 +3775,11 @@
       "stadium": "SoFi Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 23.4,
-        "away_points": 20.4,
-        "home_win": 0.58958,
-        "away_win": 0.408544,
-        "tie": 0.001876
+        "home_points": 23.7,
+        "away_points": 20.6,
+        "home_win": 0.596507,
+        "away_win": 0.401638,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3802,11 +3796,11 @@
       "stadium": "Mercedes-Benz Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.9,
+        "home_points": 23.0,
         "away_points": 27.7,
-        "home_win": 0.356382,
-        "away_win": 0.641742,
-        "tie": 0.001876
+        "home_win": 0.353007,
+        "away_win": 0.645138,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3823,11 +3817,11 @@
       "stadium": "Soldier Field",
       "status": "scheduled",
       "model": {
-        "home_points": 23.3,
-        "away_points": 23.0,
-        "home_win": 0.507619,
-        "away_win": 0.490505,
-        "tie": 0.001876
+        "home_points": 22.9,
+        "away_points": 22.7,
+        "home_win": 0.506445,
+        "away_win": 0.4917,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3844,11 +3838,11 @@
       "stadium": "Huntington Bank Field",
       "status": "scheduled",
       "model": {
-        "home_points": 22.4,
-        "away_points": 24.0,
-        "home_win": 0.448756,
-        "away_win": 0.549368,
-        "tie": 0.001876
+        "home_points": 22.3,
+        "away_points": 23.8,
+        "home_win": 0.451229,
+        "away_win": 0.546916,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3865,11 +3859,11 @@
       "stadium": "Caesars Superdome",
       "status": "scheduled",
       "model": {
-        "home_points": 21.4,
-        "away_points": 22.5,
-        "home_win": 0.465402,
-        "away_win": 0.532722,
-        "tie": 0.001876
+        "home_points": 21.1,
+        "away_points": 22.4,
+        "home_win": 0.460204,
+        "away_win": 0.537941,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3886,11 +3880,11 @@
       "stadium": "MetLife Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 20.0,
+        "home_points": 20.1,
         "away_points": 25.1,
-        "home_win": 0.344103,
-        "away_win": 0.654021,
-        "tie": 0.001876
+        "home_win": 0.346266,
+        "away_win": 0.651879,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3907,11 +3901,11 @@
       "stadium": "Raymond James Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 23.0,
-        "away_points": 21.2,
-        "home_win": 0.556507,
-        "away_win": 0.441617,
-        "tie": 0.001876
+        "home_points": 22.8,
+        "away_points": 21.1,
+        "home_win": 0.553054,
+        "away_win": 0.445091,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3928,11 +3922,11 @@
       "stadium": "Nissan Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.6,
-        "away_points": 23.9,
-        "home_win": 0.457509,
-        "away_win": 0.540615,
-        "tie": 0.001876
+        "home_points": 22.5,
+        "away_points": 23.7,
+        "home_win": 0.460255,
+        "away_win": 0.53789,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3949,11 +3943,11 @@
       "stadium": "State Farm Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.1,
-        "away_points": 23.9,
-        "home_win": 0.411674,
-        "away_win": 0.58645,
-        "tie": 0.001876
+        "home_points": 21.2,
+        "away_points": 24.3,
+        "home_win": 0.401349,
+        "away_win": 0.596796,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3970,11 +3964,11 @@
       "stadium": "Empower Field at Mile High",
       "status": "scheduled",
       "model": {
-        "home_points": 25.3,
-        "away_points": 18.2,
-        "home_win": 0.709239,
-        "away_win": 0.288885,
-        "tie": 0.001876
+        "home_points": 24.7,
+        "away_points": 17.9,
+        "home_win": 0.702495,
+        "away_win": 0.29565,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -3991,11 +3985,11 @@
       "stadium": "U.S. Bank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.1,
-        "away_points": 16.4,
-        "home_win": 0.748844,
-        "away_win": 0.24928,
-        "tie": 0.001876
+        "home_points": 24.9,
+        "away_points": 16.3,
+        "home_win": 0.749256,
+        "away_win": 0.248889,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4012,11 +4006,11 @@
       "stadium": "Gillette Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.5,
+        "home_points": 23.0,
         "away_points": 24.9,
-        "home_win": 0.423075,
-        "away_win": 0.575049,
-        "tie": 0.001876
+        "home_win": 0.440338,
+        "away_win": 0.557807,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4033,11 +4027,11 @@
       "stadium": "Acrisure Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 20.4,
-        "away_points": 20.4,
-        "home_win": 0.501281,
-        "away_win": 0.496843,
-        "tie": 0.001876
+        "home_points": 20.9,
+        "away_points": 20.5,
+        "home_win": 0.509812,
+        "away_win": 0.488333,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4054,11 +4048,11 @@
       "stadium": "Lumen Field",
       "status": "scheduled",
       "model": {
-        "home_points": 29.1,
-        "away_points": 21.3,
-        "home_win": 0.725342,
-        "away_win": 0.272782,
-        "tie": 0.001876
+        "home_points": 29.3,
+        "away_points": 21.9,
+        "home_win": 0.719004,
+        "away_win": 0.279141,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4075,11 +4069,11 @@
       "stadium": "Gillette Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 19.5,
-        "away_points": 19.5,
-        "home_win": 0.499047,
-        "away_win": 0.499077,
-        "tie": 0.001876
+        "home_points": 19.6,
+        "away_points": 19.3,
+        "home_win": 0.509304,
+        "away_win": 0.488841,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4096,11 +4090,11 @@
       "stadium": "M&T Bank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 27.7,
-        "away_points": 21.9,
-        "home_win": 0.673051,
-        "away_win": 0.325073,
-        "tie": 0.001876
+        "home_points": 27.3,
+        "away_points": 21.5,
+        "home_win": 0.672293,
+        "away_win": 0.325852,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4119,9 +4113,9 @@
       "model": {
         "home_points": 21.9,
         "away_points": 22.1,
-        "home_win": 0.493416,
-        "away_win": 0.504708,
-        "tie": 0.001876
+        "home_win": 0.491882,
+        "away_win": 0.506263,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4139,10 +4133,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 20.9,
-        "away_points": 20.2,
-        "home_win": 0.519571,
-        "away_win": 0.478553,
-        "tie": 0.001876
+        "away_points": 20.3,
+        "home_win": 0.518301,
+        "away_win": 0.479844,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4159,11 +4153,11 @@
       "stadium": "Ford Field",
       "status": "scheduled",
       "model": {
-        "home_points": 31.0,
-        "away_points": 18.7,
-        "home_win": 0.828055,
-        "away_win": 0.170069,
-        "tie": 0.001876
+        "home_points": 30.8,
+        "away_points": 18.8,
+        "home_win": 0.826945,
+        "away_win": 0.1712,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4180,11 +4174,11 @@
       "stadium": "Hard Rock Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.4,
-        "away_points": 24.1,
-        "home_win": 0.418312,
-        "away_win": 0.579812,
-        "tie": 0.001876
+        "home_points": 20.9,
+        "away_points": 23.6,
+        "home_win": 0.415199,
+        "away_win": 0.582946,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4201,11 +4195,11 @@
       "stadium": "MetLife Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 18.9,
-        "away_points": 24.2,
-        "home_win": 0.340068,
-        "away_win": 0.658056,
-        "tie": 0.001876
+        "home_points": 18.6,
+        "away_points": 23.8,
+        "home_win": 0.340787,
+        "away_win": 0.657358,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4222,11 +4216,11 @@
       "stadium": "Lincoln Financial Field",
       "status": "scheduled",
       "model": {
-        "home_points": 25.4,
+        "home_points": 25.3,
         "away_points": 21.9,
-        "home_win": 0.605229,
-        "away_win": 0.392895,
-        "tie": 0.001876
+        "home_win": 0.603549,
+        "away_win": 0.394596,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4243,11 +4237,11 @@
       "stadium": "Northwest Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.2,
-        "away_points": 24.1,
-        "home_win": 0.409935,
-        "away_win": 0.588189,
-        "tie": 0.001876
+        "home_points": 21.6,
+        "away_points": 24.2,
+        "home_win": 0.418819,
+        "away_win": 0.579326,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4264,11 +4258,11 @@
       "stadium": "Allegiant Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 19.7,
-        "away_points": 21.4,
-        "home_win": 0.446529,
-        "away_win": 0.551595,
-        "tie": 0.001876
+        "home_points": 20.1,
+        "away_points": 21.8,
+        "home_win": 0.447384,
+        "away_win": 0.550761,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4286,10 +4280,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 23.0,
-        "away_points": 24.0,
-        "home_win": 0.466095,
-        "away_win": 0.532029,
-        "tie": 0.001876
+        "away_points": 24.2,
+        "home_win": 0.462001,
+        "away_win": 0.536144,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4306,11 +4300,11 @@
       "stadium": "Lumen Field",
       "status": "scheduled",
       "model": {
-        "home_points": 26.2,
-        "away_points": 16.1,
-        "home_win": 0.782053,
-        "away_win": 0.216071,
-        "tie": 0.001876
+        "home_points": 26.4,
+        "away_points": 16.7,
+        "home_win": 0.774915,
+        "away_win": 0.22323,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4327,11 +4321,11 @@
       "stadium": "Levi's Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.0,
-        "away_points": 23.4,
-        "home_win": 0.547861,
-        "away_win": 0.450263,
-        "tie": 0.001876
+        "home_points": 24.8,
+        "away_points": 23.2,
+        "home_win": 0.550177,
+        "away_win": 0.447968,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4348,11 +4342,11 @@
       "stadium": "Lambeau Field",
       "status": "scheduled",
       "model": {
-        "home_points": 23.8,
-        "away_points": 26.1,
-        "home_win": 0.429367,
-        "away_win": 0.568757,
-        "tie": 0.001876
+        "home_points": 23.9,
+        "away_points": 25.8,
+        "home_win": 0.440993,
+        "away_win": 0.557152,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4369,11 +4363,11 @@
       "stadium": "EverBank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.5,
-        "away_points": 19.4,
-        "home_win": 0.651485,
-        "away_win": 0.346639,
-        "tie": 0.001876
+        "home_points": 24.3,
+        "away_points": 19.2,
+        "home_win": 0.655873,
+        "away_win": 0.342272,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4390,11 +4384,11 @@
       "stadium": "SoFi Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.5,
-        "away_points": 23.3,
-        "home_win": 0.445247,
-        "away_win": 0.552877,
-        "tie": 0.001876
+        "home_points": 21.4,
+        "away_points": 23.4,
+        "home_win": 0.434655,
+        "away_win": 0.56349,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4411,11 +4405,11 @@
       "stadium": "Lincoln Financial Field",
       "status": "scheduled",
       "model": {
-        "home_points": 20.7,
-        "away_points": 21.5,
-        "home_win": 0.474513,
-        "away_win": 0.523611,
-        "tie": 0.001876
+        "home_points": 20.8,
+        "away_points": 21.8,
+        "home_win": 0.469732,
+        "away_win": 0.528413,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4432,11 +4426,11 @@
       "stadium": "Highmark Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 28.1,
-        "away_points": 22.5,
-        "home_win": 0.665627,
-        "away_win": 0.332497,
-        "tie": 0.001876
+        "home_points": 27.8,
+        "away_points": 22.7,
+        "home_win": 0.654251,
+        "away_win": 0.343894,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4453,11 +4447,11 @@
       "stadium": "Bank of America Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 23.9,
-        "away_points": 25.9,
-        "home_win": 0.43791,
-        "away_win": 0.560214,
-        "tie": 0.001876
+        "home_points": 23.8,
+        "away_points": 25.7,
+        "home_win": 0.440746,
+        "away_win": 0.557399,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4474,11 +4468,11 @@
       "stadium": "Lambeau Field",
       "status": "scheduled",
       "model": {
-        "home_points": 25.4,
-        "away_points": 19.4,
-        "home_win": 0.675821,
-        "away_win": 0.322303,
-        "tie": 0.001876
+        "home_points": 24.8,
+        "away_points": 18.9,
+        "home_win": 0.678117,
+        "away_win": 0.320028,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4495,11 +4489,11 @@
       "stadium": "Reliant Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.7,
-        "away_points": 21.1,
-        "home_win": 0.517436,
-        "away_win": 0.480688,
-        "tie": 0.001876
+        "home_points": 21.5,
+        "away_points": 21.4,
+        "home_win": 0.502872,
+        "away_win": 0.495273,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4516,11 +4510,11 @@
       "stadium": "MetLife Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 20.9,
+        "home_points": 21.4,
         "away_points": 18.9,
-        "home_win": 0.563367,
-        "away_win": 0.434757,
-        "tie": 0.001876
+        "home_win": 0.576571,
+        "away_win": 0.421574,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4538,10 +4532,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 22.4,
-        "away_points": 24.2,
-        "home_win": 0.44359,
-        "away_win": 0.554534,
-        "tie": 0.001876
+        "away_points": 24.0,
+        "home_win": 0.447403,
+        "away_win": 0.550742,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4558,11 +4552,11 @@
       "stadium": "Raymond James Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.4,
-        "away_points": 20.7,
-        "home_win": 0.612184,
-        "away_win": 0.38594,
-        "tie": 0.001876
+        "home_points": 24.1,
+        "away_points": 20.5,
+        "home_win": 0.608177,
+        "away_win": 0.389968,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4579,11 +4573,11 @@
       "stadium": "Nissan Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.5,
-        "away_points": 26.1,
-        "home_win": 0.357312,
-        "away_win": 0.640812,
-        "tie": 0.001876
+        "home_points": 21.4,
+        "away_points": 25.9,
+        "home_win": 0.360424,
+        "away_win": 0.637721,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4602,9 +4596,9 @@
       "model": {
         "home_points": 24.4,
         "away_points": 23.0,
-        "home_win": 0.543077,
-        "away_win": 0.455047,
-        "tie": 0.001876
+        "home_win": 0.543962,
+        "away_win": 0.454183,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4621,11 +4615,11 @@
       "stadium": "State Farm Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.1,
-        "away_points": 21.0,
-        "home_win": 0.62232,
-        "away_win": 0.375804,
-        "tie": 0.001876
+        "home_points": 25.0,
+        "away_points": 21.3,
+        "home_win": 0.615237,
+        "away_win": 0.382908,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4642,11 +4636,11 @@
       "stadium": "SoFi Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 29.8,
-        "away_points": 22.9,
-        "home_win": 0.704004,
-        "away_win": 0.29412,
-        "tie": 0.001876
+        "home_points": 29.9,
+        "away_points": 23.2,
+        "home_win": 0.700625,
+        "away_win": 0.29752,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4663,11 +4657,11 @@
       "stadium": "Allegiant Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 19.0,
+        "home_points": 19.2,
         "away_points": 23.1,
-        "home_win": 0.374806,
-        "away_win": 0.623318,
-        "tie": 0.001876
+        "home_win": 0.380305,
+        "away_win": 0.61784,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4684,11 +4678,11 @@
       "stadium": "U.S. Bank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.0,
-        "away_points": 23.5,
-        "home_win": 0.513672,
-        "away_win": 0.484452,
-        "tie": 0.001876
+        "home_points": 23.7,
+        "away_points": 23.4,
+        "home_win": 0.510534,
+        "away_win": 0.487611,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4705,11 +4699,11 @@
       "stadium": "GEHA Field at Arrowhead Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.0,
-        "away_points": 18.1,
-        "home_win": 0.617686,
-        "away_win": 0.380438,
-        "tie": 0.001876
+        "home_points": 22.2,
+        "away_points": 18.7,
+        "home_win": 0.606482,
+        "away_win": 0.391663,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4726,11 +4720,11 @@
       "stadium": "Lincoln Financial Field",
       "status": "scheduled",
       "model": {
-        "home_points": 21.2,
-        "away_points": 19.2,
-        "home_win": 0.560659,
-        "away_win": 0.437465,
-        "tie": 0.001876
+        "home_points": 21.6,
+        "away_points": 19.4,
+        "home_win": 0.567782,
+        "away_win": 0.430363,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4747,11 +4741,11 @@
       "stadium": "Soldier Field",
       "status": "scheduled",
       "model": {
-        "home_points": 24.3,
-        "away_points": 21.8,
-        "home_win": 0.573874,
-        "away_win": 0.42425,
-        "tie": 0.001876
+        "home_points": 23.9,
+        "away_points": 21.5,
+        "home_win": 0.573224,
+        "away_win": 0.424921,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4768,11 +4762,11 @@
       "stadium": "Empower Field at Mile High",
       "status": "scheduled",
       "model": {
-        "home_points": 23.8,
-        "away_points": 24.8,
-        "home_win": 0.46706,
-        "away_win": 0.531064,
-        "tie": 0.001876
+        "home_points": 23.7,
+        "away_points": 24.7,
+        "home_win": 0.468452,
+        "away_win": 0.529693,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4789,11 +4783,11 @@
       "stadium": "Lumen Field",
       "status": "scheduled",
       "model": {
-        "home_points": 24.1,
-        "away_points": 21.4,
-        "home_win": 0.582547,
-        "away_win": 0.415577,
-        "tie": 0.001876
+        "home_points": 24.2,
+        "away_points": 21.7,
+        "home_win": 0.578545,
+        "away_win": 0.4196,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4810,11 +4804,11 @@
       "stadium": "Mercedes-Benz Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.7,
-        "away_points": 23.1,
-        "home_win": 0.487131,
-        "away_win": 0.510993,
-        "tie": 0.001876
+        "home_points": 22.5,
+        "away_points": 22.8,
+        "home_win": 0.489804,
+        "away_win": 0.508341,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4831,11 +4825,11 @@
       "stadium": "M&T Bank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 27.1,
-        "away_points": 17.7,
-        "home_win": 0.764813,
-        "away_win": 0.233311,
-        "tie": 0.001876
+        "home_points": 26.9,
+        "away_points": 17.8,
+        "home_win": 0.762427,
+        "away_win": 0.235718,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4852,11 +4846,11 @@
       "stadium": "Lucas Oil Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 28.1,
-        "away_points": 25.7,
-        "home_win": 0.574998,
-        "away_win": 0.423126,
-        "tie": 0.001876
+        "home_points": 28.0,
+        "away_points": 25.4,
+        "home_win": 0.579016,
+        "away_win": 0.419129,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4873,11 +4867,11 @@
       "stadium": "Hard Rock Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 20.7,
-        "away_points": 21.7,
-        "home_win": 0.469692,
-        "away_win": 0.528432,
-        "tie": 0.001876
+        "home_points": 20.6,
+        "away_points": 21.5,
+        "home_win": 0.471748,
+        "away_win": 0.526397,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4894,11 +4888,11 @@
       "stadium": "U.S. Bank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 26.0,
-        "away_points": 18.4,
-        "home_win": 0.72056,
-        "away_win": 0.277564,
-        "tie": 0.001876
+        "home_points": 25.6,
+        "away_points": 18.2,
+        "home_win": 0.71949,
+        "away_win": 0.278655,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4915,11 +4909,11 @@
       "stadium": "Caesars Superdome",
       "status": "scheduled",
       "model": {
-        "home_points": 24.2,
-        "away_points": 21.5,
-        "home_win": 0.582858,
-        "away_win": 0.415266,
-        "tie": 0.001876
+        "home_points": 24.6,
+        "away_points": 21.6,
+        "home_win": 0.593526,
+        "away_win": 0.404619,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4936,11 +4930,11 @@
       "stadium": "MetLife Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 19.0,
-        "away_points": 22.9,
-        "home_win": 0.381757,
-        "away_win": 0.616367,
-        "tie": 0.001876
+        "home_points": 18.8,
+        "away_points": 23.1,
+        "home_win": 0.367179,
+        "away_win": 0.630966,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4957,11 +4951,11 @@
       "stadium": "Acrisure Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.9,
-        "away_points": 18.8,
-        "home_win": 0.67818,
-        "away_win": 0.319944,
-        "tie": 0.001876
+        "home_points": 24.8,
+        "away_points": 18.9,
+        "home_win": 0.678898,
+        "away_win": 0.319247,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -4978,11 +4972,11 @@
       "stadium": "Allegiant Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 23.0,
-        "away_points": 18.7,
-        "home_win": 0.631572,
-        "away_win": 0.366552,
-        "tie": 0.001876
+        "home_points": 23.1,
+        "away_points": 18.9,
+        "home_win": 0.628079,
+        "away_win": 0.370066,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5000,10 +4994,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 22.7,
-        "away_points": 21.6,
-        "home_win": 0.535724,
-        "away_win": 0.4624,
-        "tie": 0.001876
+        "away_points": 21.9,
+        "home_win": 0.525009,
+        "away_win": 0.473136,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5020,11 +5014,11 @@
       "stadium": "AT&T Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.6,
-        "away_points": 27.1,
-        "home_win": 0.423236,
-        "away_win": 0.574888,
-        "tie": 0.001876
+        "home_points": 24.7,
+        "away_points": 27.0,
+        "home_win": 0.427729,
+        "away_win": 0.570416,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5042,10 +5036,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 29.5,
-        "away_points": 19.9,
-        "home_win": 0.770453,
-        "away_win": 0.227671,
-        "tie": 0.001876
+        "away_points": 20.4,
+        "home_win": 0.76262,
+        "away_win": 0.235525,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5062,11 +5056,11 @@
       "stadium": "Paycor Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.4,
-        "away_points": 27.4,
-        "home_win": 0.43739,
-        "away_win": 0.560734,
-        "tie": 0.001876
+        "home_points": 25.1,
+        "away_points": 27.1,
+        "home_win": 0.43672,
+        "away_win": 0.561425,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5085,9 +5079,9 @@
       "model": {
         "home_points": 22.3,
         "away_points": 20.9,
-        "home_win": 0.542747,
-        "away_win": 0.455377,
-        "tie": 0.001876
+        "home_win": 0.541685,
+        "away_win": 0.45646,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5104,11 +5098,11 @@
       "stadium": "Bank of America Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 18.8,
-        "away_points": 25.6,
-        "home_win": 0.297677,
-        "away_win": 0.700447,
-        "tie": 0.001876
+        "home_points": 18.9,
+        "away_points": 25.8,
+        "home_win": 0.293599,
+        "away_win": 0.704546,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5126,10 +5120,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 21.8,
-        "away_points": 24.0,
-        "home_win": 0.431529,
-        "away_win": 0.566595,
-        "tie": 0.001876
+        "away_points": 24.1,
+        "home_win": 0.429526,
+        "away_win": 0.568619,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5146,11 +5140,11 @@
       "stadium": "AT&T Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 26.8,
-        "away_points": 22.6,
-        "home_win": 0.62789,
-        "away_win": 0.370234,
-        "tie": 0.001876
+        "home_points": 27.2,
+        "away_points": 23.1,
+        "home_win": 0.625529,
+        "away_win": 0.372616,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5167,11 +5161,11 @@
       "stadium": "EverBank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 28.2,
-        "away_points": 20.2,
-        "home_win": 0.732293,
-        "away_win": 0.265831,
-        "tie": 0.001876
+        "home_points": 28.0,
+        "away_points": 19.9,
+        "home_win": 0.735735,
+        "away_win": 0.26241,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5188,11 +5182,11 @@
       "stadium": "SoFi Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 19.5,
-        "away_points": 20.6,
-        "home_win": 0.467384,
-        "away_win": 0.53074,
-        "tie": 0.001876
+        "home_points": 20.0,
+        "away_points": 21.0,
+        "home_win": 0.466994,
+        "away_win": 0.531151,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5210,10 +5204,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 21.5,
-        "away_points": 27.8,
-        "home_win": 0.312405,
-        "away_win": 0.685719,
-        "tie": 0.001876
+        "away_points": 27.4,
+        "home_win": 0.320257,
+        "away_win": 0.677888,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5230,11 +5224,11 @@
       "stadium": "Gillette Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.0,
-        "away_points": 20.6,
-        "home_win": 0.513624,
-        "away_win": 0.4845,
-        "tie": 0.001876
+        "home_points": 21.3,
+        "away_points": 20.3,
+        "home_win": 0.529287,
+        "away_win": 0.468858,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5251,11 +5245,11 @@
       "stadium": "MetLife Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 17.4,
-        "away_points": 23.1,
-        "home_win": 0.326769,
-        "away_win": 0.671355,
-        "tie": 0.001876
+        "home_points": 16.9,
+        "away_points": 22.8,
+        "home_win": 0.322574,
+        "away_win": 0.675571,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5272,11 +5266,11 @@
       "stadium": "Raymond James Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.9,
-        "away_points": 25.0,
-        "home_win": 0.433977,
-        "away_win": 0.564147,
-        "tie": 0.001876
+        "home_points": 22.4,
+        "away_points": 24.8,
+        "home_win": 0.423146,
+        "away_win": 0.574999,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5294,10 +5288,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 18.8,
-        "away_points": 23.1,
-        "home_win": 0.367802,
-        "away_win": 0.630322,
-        "tie": 0.001876
+        "away_points": 23.0,
+        "home_win": 0.370943,
+        "away_win": 0.627202,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5314,11 +5308,11 @@
       "stadium": "State Farm Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.0,
-        "away_points": 21.1,
-        "home_win": 0.586514,
-        "away_win": 0.41161,
-        "tie": 0.001876
+        "home_points": 24.3,
+        "away_points": 21.9,
+        "home_win": 0.574365,
+        "away_win": 0.42378,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5335,11 +5329,11 @@
       "stadium": "Soldier Field",
       "status": "scheduled",
       "model": {
-        "home_points": 25.7,
-        "away_points": 26.4,
-        "home_win": 0.477362,
-        "away_win": 0.520762,
-        "tie": 0.001876
+        "home_points": 25.6,
+        "away_points": 26.3,
+        "home_win": 0.47894,
+        "away_win": 0.519205,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5356,11 +5350,11 @@
       "stadium": "Levi's Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.3,
-        "away_points": 20.8,
-        "home_win": 0.605121,
-        "away_win": 0.393003,
-        "tie": 0.001876
+        "home_points": 24.2,
+        "away_points": 20.5,
+        "home_win": 0.615072,
+        "away_win": 0.383073,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5377,11 +5371,11 @@
       "stadium": "Lambeau Field",
       "status": "scheduled",
       "model": {
-        "home_points": 21.8,
-        "away_points": 20.7,
-        "home_win": 0.53191,
-        "away_win": 0.466214,
-        "tie": 0.001876
+        "home_points": 22.0,
+        "away_points": 20.6,
+        "home_win": 0.545043,
+        "away_win": 0.453102,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5398,11 +5392,11 @@
       "stadium": "State Farm Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.2,
-        "away_points": 26.7,
-        "home_win": 0.365223,
-        "away_win": 0.632901,
-        "tie": 0.001876
+        "home_points": 22.0,
+        "away_points": 27.1,
+        "home_win": 0.345239,
+        "away_win": 0.652906,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5419,11 +5413,11 @@
       "stadium": "M&T Bank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 26.1,
+        "home_points": 25.9,
         "away_points": 20.5,
-        "home_win": 0.667333,
-        "away_win": 0.330791,
-        "tie": 0.001876
+        "home_win": 0.663043,
+        "away_win": 0.335102,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5440,11 +5434,11 @@
       "stadium": "Highmark Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 30.5,
-        "away_points": 18.4,
-        "home_win": 0.823652,
-        "away_win": 0.174472,
-        "tie": 0.001876
+        "home_points": 30.3,
+        "away_points": 18.5,
+        "home_win": 0.82141,
+        "away_win": 0.176735,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5463,9 +5457,9 @@
       "model": {
         "home_points": 22.5,
         "away_points": 22.2,
-        "home_win": 0.508625,
-        "away_win": 0.489499,
-        "tie": 0.001876
+        "home_win": 0.507729,
+        "away_win": 0.490416,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5482,11 +5476,11 @@
       "stadium": "Paycor Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.9,
+        "home_points": 25.7,
         "away_points": 20.4,
-        "home_win": 0.662579,
-        "away_win": 0.335545,
-        "tie": 0.001876
+        "home_win": 0.659511,
+        "away_win": 0.338634,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5503,11 +5497,11 @@
       "stadium": "Empower Field at Mile High",
       "status": "scheduled",
       "model": {
-        "home_points": 23.0,
-        "away_points": 18.7,
-        "home_win": 0.62929,
-        "away_win": 0.368834,
-        "tie": 0.001876
+        "home_points": 22.8,
+        "away_points": 18.8,
+        "home_win": 0.624231,
+        "away_win": 0.373914,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5524,11 +5518,11 @@
       "stadium": "Lambeau Field",
       "status": "scheduled",
       "model": {
-        "home_points": 25.1,
-        "away_points": 26.3,
-        "home_win": 0.461134,
-        "away_win": 0.53699,
-        "tie": 0.001876
+        "home_points": 24.9,
+        "away_points": 26.1,
+        "home_win": 0.462938,
+        "away_win": 0.535207,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5545,11 +5539,11 @@
       "stadium": "Reliant Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.4,
-        "away_points": 15.4,
-        "home_win": 0.779262,
-        "away_win": 0.218862,
-        "tie": 0.001876
+        "home_points": 25.3,
+        "away_points": 15.9,
+        "home_win": 0.769409,
+        "away_win": 0.228736,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5566,11 +5560,11 @@
       "stadium": "Lucas Oil Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.3,
-        "away_points": 25.2,
-        "home_win": 0.471852,
-        "away_win": 0.526272,
-        "tie": 0.001876
+        "home_points": 24.0,
+        "away_points": 25.1,
+        "home_win": 0.466258,
+        "away_win": 0.531887,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5587,11 +5581,11 @@
       "stadium": "GEHA Field at Arrowhead Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.5,
-        "away_points": 16.0,
-        "home_win": 0.742797,
-        "away_win": 0.255327,
-        "tie": 0.001876
+        "home_points": 25.0,
+        "away_points": 16.7,
+        "home_win": 0.741379,
+        "away_win": 0.256766,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5608,11 +5602,11 @@
       "stadium": "SoFi Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 23.3,
-        "away_points": 22.2,
-        "home_win": 0.532881,
-        "away_win": 0.465243,
-        "tie": 0.001876
+        "home_points": 23.5,
+        "away_points": 22.4,
+        "home_win": 0.536097,
+        "away_win": 0.462048,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5629,11 +5623,11 @@
       "stadium": "U.S. Bank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.7,
-        "away_points": 19.6,
-        "home_win": 0.593466,
-        "away_win": 0.404658,
-        "tie": 0.001876
+        "home_points": 22.2,
+        "away_points": 19.3,
+        "home_win": 0.588455,
+        "away_win": 0.40969,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5651,10 +5645,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 24.0,
-        "away_points": 18.3,
-        "home_win": 0.670042,
-        "away_win": 0.328082,
-        "tie": 0.001876
+        "away_points": 18.1,
+        "home_win": 0.677523,
+        "away_win": 0.320622,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5671,11 +5665,11 @@
       "stadium": "Caesars Superdome",
       "status": "scheduled",
       "model": {
-        "home_points": 22.6,
-        "away_points": 22.5,
-        "home_win": 0.502339,
-        "away_win": 0.495785,
-        "tie": 0.001876
+        "home_points": 22.4,
+        "away_points": 22.2,
+        "home_win": 0.505651,
+        "away_win": 0.492494,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5692,11 +5686,11 @@
       "stadium": "MetLife Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 18.8,
+        "home_points": 19.3,
         "away_points": 22.4,
-        "home_win": 0.389743,
-        "away_win": 0.608381,
-        "tie": 0.001876
+        "home_win": 0.402427,
+        "away_win": 0.595718,
+        "tie": 0.001855
       },
       "market": null
     },
@@ -5713,11 +5707,11 @@
       "stadium": "Northwest Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 27.2,
-        "away_points": 27.1,
-        "home_win": 0.503847,
-        "away_win": 0.494277,
-        "tie": 0.001876
+        "home_points": 27.3,
+        "away_points": 27.4,
+        "home_win": 0.493796,
+        "away_win": 0.504349,
+        "tie": 0.001855
       },
       "market": null
     }
@@ -5732,2722 +5726,2722 @@
       [
         4.7,
         -1.0,
-        0.23664223
+        0.23652672
       ],
       [
         9.7,
         5.4,
-        0.23709048
+        0.23697476
       ],
       [
         -9.8,
         -1.6,
-        0.23785619
+        0.23774009
       ],
       [
         4.8,
         10.4,
-        0.23785619
+        0.23774009
       ],
       [
         2.6,
         -2.5,
-        0.23785619
+        0.23774009
       ],
       [
         -13.6,
         -2.0,
-        0.23785619
+        0.23774009
       ],
       [
         2.9,
         7.7,
-        0.23785619
+        0.23774009
       ],
       [
         -6.5,
         -4.5,
-        0.23785619
+        0.23774009
       ],
       [
         22.8,
         -5.7,
-        0.23785619
+        0.23774009
       ],
       [
         -14.4,
         6.7,
-        0.23785619
+        0.23774009
       ],
       [
         -1.3,
         -11.2,
-        0.23791423
+        0.2377981
       ],
       [
         2.2,
         0.1,
-        0.23791423
+        0.2377981
       ],
       [
         -5.0,
         7.5,
-        0.2379205
+        0.23780437
       ],
       [
         11.4,
         2.4,
-        0.2379205
+        0.23780437
       ],
       [
         0.3,
         -2.9,
-        0.23799425
+        0.23787808
       ],
       [
         5.8,
         4.7,
-        0.23844506
+        0.23832868
       ],
       [
         -13.9,
         5.6,
-        0.23980739
+        0.23969033
       ],
       [
         -2.2,
         8.6,
-        0.24103918
+        0.24092152
       ],
       [
         -16.6,
         3.2,
-        0.24103918
+        0.24092152
       ],
       [
         -7.7,
         24.1,
-        0.24103918
+        0.24092152
       ],
       [
         -8.6,
         -2.1,
-        0.24103918
+        0.24092152
       ],
       [
         -10.4,
         -10.8,
-        0.24103918
+        0.24092152
       ],
       [
         -10.1,
         -3.1,
-        0.24103918
+        0.24092152
       ],
       [
         2.2,
         -7.5,
-        0.24103918
+        0.24092152
       ],
       [
         -1.2,
         3.6,
-        0.24103918
+        0.24092152
       ],
       [
         -3.4,
         6.9,
-        0.24103918
+        0.24092152
       ],
       [
         -1.0,
         -2.3,
-        0.24103918
+        0.24092152
       ],
       [
         18.5,
         -13.8,
-        0.24109799
+        0.24098031
       ],
       [
         -13.6,
         -5.9,
-        0.24110435
+        0.24098666
       ],
       [
         1.0,
         5.2,
-        0.24110435
+        0.24098666
       ],
       [
         -3.8,
         -7.6,
-        0.24117908
+        0.24106136
       ],
       [
         -6.3,
         2.2,
-        0.24163593
+        0.24151799
       ],
       [
         5.7,
         -14.8,
-        0.24301649
+        0.24289787
       ],
       [
         -8.7,
         4.1,
-        0.24426476
+        0.24414553
       ],
       [
         -2.6,
         -5.5,
-        0.24426476
+        0.24414553
       ],
       [
         9.7,
         -12.2,
-        0.24426476
+        0.24414553
       ],
       [
         -14.1,
         -7.3,
-        0.24426476
+        0.24414553
       ],
       [
         -0.5,
         -8.8,
-        0.24426476
+        0.24414553
       ],
       [
         -16.1,
         8.6,
-        0.24426476
+        0.24414553
       ],
       [
         -6.0,
         8.6,
-        0.24426476
+        0.24414553
       ],
       [
         -2.3,
         19.9,
-        0.24432436
+        0.2442051
       ],
       [
         -0.4,
         -20.9,
-        0.24432436
+        0.2442051
       ],
       [
         -11.6,
         -5.4,
-        0.2443308
+        0.24421154
       ],
       [
         -0.6,
         5.7,
-        0.2443308
+        0.24421154
       ],
       [
         6.6,
         -0.9,
-        0.2443308
+        0.24421154
       ],
       [
         -2.2,
         -1.7,
-        0.24440654
+        0.24428724
       ],
       [
         19.9,
         -7.7,
-        0.24485497
+        0.24473545
       ],
       [
         5.3,
         19.1,
-        0.2448695
+        0.24474998
       ],
       [
         -3.7,
         -5.8,
-        0.24626853
+        0.24614832
       ],
       [
         6.8,
         1.2,
-        0.24753351
+        0.24741268
       ],
       [
         4.3,
         9.7,
-        0.24753351
+        0.24741268
       ],
       [
         2.1,
         -3.9,
-        0.24753351
+        0.24741268
       ],
       [
         5.8,
         10.0,
-        0.24753351
+        0.24741268
       ],
       [
         2.0,
         -1.0,
-        0.24753351
+        0.24741268
       ],
       [
         7.1,
         3.8,
-        0.24753351
+        0.24741268
       ],
       [
         -10.7,
         -8.3,
-        0.24753351
+        0.24741268
       ],
       [
         9.9,
         -6.3,
-        0.24753351
+        0.24741268
       ],
       [
         -12.4,
         20.3,
-        0.2475939
+        0.24747305
       ],
       [
         4.7,
         -2.4,
-        0.2475939
+        0.24747305
       ],
       [
         -11.1,
         -5.8,
-        0.24760043
+        0.24747958
       ],
       [
         -2.6,
         -5.2,
-        0.24760043
+        0.24747958
       ],
       [
         12.3,
         -13.6,
-        0.24767718
+        0.24755629
       ],
       [
         -13.0,
         12.0,
-        0.24813161
+        0.2480105
       ],
       [
         16.7,
         6.8,
-        0.24814634
+        0.24802522
       ],
       [
         16.3,
         8.8,
-        0.24956409
+        0.24944227
       ],
       [
         1.0,
         -1.0,
-        0.25077653
+        0.25065413
       ],
       [
         12.3,
         -7.7,
-        0.25084599
+        0.25072355
       ],
       [
         15.6,
         16.7,
-        0.25084599
+        0.25072355
       ],
       [
         3.8,
         -6.3,
-        0.25084599
+        0.25072355
       ],
       [
         13.1,
         12.5,
-        0.25084599
+        0.25072355
       ],
       [
         -11.1,
         -5.8,
-        0.25084599
+        0.25072355
       ],
       [
         11.3,
         -10.6,
-        0.25084599
+        0.25072355
       ],
       [
         12.5,
         -1.6,
-        0.2509072
+        0.25078473
       ],
       [
         -6.2,
         6.2,
-        0.2509072
+        0.25078473
       ],
       [
         -3.6,
         1.5,
-        0.25091382
+        0.25079135
       ],
       [
         -3.7,
         11.4,
-        0.25091382
+        0.25079135
       ],
       [
         -2.8,
         -2.8,
-        0.25099159
+        0.25086908
       ],
       [
         2.8,
         -6.8,
-        0.25146703
+        0.25134428
       ],
       [
         2.6,
         10.8,
-        0.25290375
+        0.2527803
       ],
       [
         12.9,
         -5.5,
-        0.25413242
+        0.25400838
       ],
       [
         1.0,
         4.1,
-        0.25420281
+        0.25407873
       ],
       [
         7.4,
         -6.8,
-        0.25420281
+        0.25407873
       ],
       [
         0.7,
         23.2,
-        0.25420281
+        0.25407873
       ],
       [
         4.0,
         31.9,
-        0.25420281
+        0.25407873
       ],
       [
         -5.9,
         -5.0,
-        0.25420281
+        0.25407873
       ],
       [
         -6.1,
         -0.9,
-        0.25420281
+        0.25407873
       ],
       [
         -5.3,
         3.3,
-        0.25426484
+        0.25414073
       ],
       [
         -6.8,
         13.0,
-        0.25426484
+        0.25414073
       ],
       [
         0.0,
         15.9,
-        0.25427154
+        0.25414743
       ],
       [
         -19.5,
         24.3,
-        0.25427154
+        0.25414743
       ],
       [
         -14.0,
         -6.0,
-        0.25435036
+        0.25422621
       ],
       [
         2.2,
         -0.8,
-        0.25483216
+        0.25470777
       ],
       [
         -13.3,
         14.3,
-        0.2562881
+        0.25616301
       ],
       [
         11.4,
         -4.0,
-        0.25753322
+        0.25740751
       ],
       [
         -9.4,
         11.6,
-        0.25760455
+        0.25747881
       ],
       [
         7.4,
         -6.6,
-        0.25760455
+        0.25747881
       ],
       [
         -8.6,
         -2.2,
-        0.25760455
+        0.25747881
       ],
       [
         -1.3,
         2.8,
-        0.25760455
+        0.25747881
       ],
       [
         -8.0,
         -13.8,
-        0.25760455
+        0.25747881
       ],
       [
         4.5,
         7.2,
-        0.25760455
+        0.25747881
       ],
       [
         -16.8,
         5.1,
-        0.25760455
+        0.25747881
       ],
       [
         -4.0,
         -5.6,
-        0.2576674
+        0.25754163
       ],
       [
         14.0,
         -12.7,
-        0.2576674
+        0.25754163
       ],
       [
         -6.0,
         7.3,
-        0.2576742
+        0.25754843
       ],
       [
         17.4,
         0.1,
-        0.25775407
+        0.25762826
       ],
       [
         8.9,
         17.7,
-        0.25824231
+        0.25811626
       ],
       [
         -4.8,
         -8.2,
-        0.25825764
+        0.25813158
       ],
       [
         7.9,
         -2.7,
-        0.25971775
+        0.25959097
       ],
       [
         -8.2,
         13.2,
-        0.26105181
+        0.26092438
       ],
       [
         8.9,
         -0.9,
-        0.26105181
+        0.26092438
       ],
       [
         25.3,
         -4.8,
-        0.26105181
+        0.26092438
       ],
       [
         -0.6,
         -1.8,
-        0.26105181
+        0.26092438
       ],
       [
         5.4,
         6.0,
-        0.26105181
+        0.26092438
       ],
       [
         1.7,
         7.1,
-        0.26105181
+        0.26092438
       ],
       [
         6.3,
         4.3,
-        0.26105181
+        0.26092438
       ],
       [
         0.8,
         11.5,
-        0.26105181
+        0.26092438
       ],
       [
         3.8,
         -12.9,
-        0.2611155
+        0.26098805
       ],
       [
         -11.7,
         4.8,
-        0.2611155
+        0.26098805
       ],
       [
         2.9,
         -1.4,
-        0.26112239
+        0.26099494
       ],
       [
         0.9,
         2.8,
-        0.26112239
+        0.26099494
       ],
       [
         -5.4,
         -7.8,
-        0.26112239
+        0.26099494
       ],
       [
         3.7,
         1.2,
-        0.26120333
+        0.26107583
       ],
       [
         4.9,
         4.1,
-        0.26169811
+        0.26157037
       ],
       [
         0.4,
         -6.8,
-        0.26319328
+        0.26306482
       ],
       [
         5.1,
         -5.0,
-        0.26456613
+        0.26443699
       ],
       [
         15.5,
         -8.7,
-        0.26456613
+        0.26443699
       ],
       [
         2.1,
         8.2,
-        0.26456613
+        0.26443699
       ],
       [
         4.7,
         -2.6,
-        0.26456613
+        0.26443699
       ],
       [
         15.3,
         3.1,
-        0.26456613
+        0.26443699
       ],
       [
         -10.7,
         6.5,
-        0.26456613
+        0.26443699
       ],
       [
         1.2,
         5.6,
-        0.26456613
+        0.26443699
       ],
       [
         -0.1,
         -1.4,
-        0.26456613
+        0.26443699
       ],
       [
         6.9,
         -13.3,
-        0.26463069
+        0.26450152
       ],
       [
         0.7,
         2.3,
-        0.26463069
+        0.26450152
       ],
       [
         -10.8,
         -0.9,
-        0.26463767
+        0.26450849
       ],
       [
         -3.6,
         3.8,
-        0.26463767
+        0.26450849
       ],
       [
         -4.7,
         -7.4,
-        0.26471969
+        0.26459048
       ],
       [
         4.9,
         4.5,
-        0.26522113
+        0.26509168
       ],
       [
         6.9,
         12.4,
-        0.26673644
+        0.26660624
       ],
       [
         2.3,
         -4.2,
-        0.26803231
+        0.26790148
       ],
       [
         -18.6,
         1.6,
-        0.26810655
+        0.26797568
       ],
       [
         -0.1,
         3.4,
-        0.26810655
+        0.26797568
       ],
       [
         -15.1,
         -11.9,
-        0.26810655
+        0.26797568
       ],
       [
         -8.5,
         -3.0,
-        0.26810655
+        0.26797568
       ],
       [
         -4.0,
         -3.3,
-        0.26810655
+        0.26797568
       ],
       [
         -2.3,
         -1.8,
-        0.26810655
+        0.26797568
       ],
       [
         6.2,
         6.4,
-        0.26810655
+        0.26797568
       ],
       [
         3.5,
         0.3,
-        0.26817197
+        0.26804107
       ],
       [
         8.9,
         -13.6,
-        0.26817904
+        0.26804814
       ],
       [
         -20.6,
         10.2,
-        0.26817904
+        0.26804814
       ],
       [
         1.2,
         -0.3,
-        0.26826217
+        0.26813123
       ],
       [
         -9.0,
         1.5,
-        0.26877032
+        0.26863913
       ],
       [
         -2.2,
         -3.3,
-        0.2703059
+        0.27017396
       ],
       [
         -1.4,
         -2.4,
-        0.27169435
+        0.27156173
       ],
       [
         23.2,
         -14.5,
-        0.27169435
+        0.27156173
       ],
       [
         9.0,
         -1.9,
-        0.27169435
+        0.27156173
       ],
       [
         2.5,
         7.6,
-        0.27169435
+        0.27156173
       ],
       [
         12.2,
         -5.6,
-        0.27169435
+        0.27156173
       ],
       [
         6.1,
         7.8,
-        0.27169435
+        0.27156173
       ],
       [
         -2.4,
         -7.0,
-        0.27169435
+        0.27156173
       ],
       [
         -6.1,
         0.2,
-        0.27169435
+        0.27156173
       ],
       [
         15.6,
         -13.2,
-        0.27176064
+        0.27162799
       ],
       [
         -10.7,
         0.4,
-        0.27176064
+        0.27162799
       ],
       [
         5.5,
         0.1,
-        0.27176781
+        0.27163516
       ],
       [
         10.2,
         4.8,
-        0.27185205
+        0.27171935
       ],
       [
         -16.7,
         13.6,
-        0.272367
+        0.27223405
       ],
       [
         5.3,
         -1.0,
-        0.27392313
+        0.27378942
       ],
       [
         11.0,
         3.7,
-        0.27533016
+        0.27519576
       ],
       [
         7.2,
         8.3,
-        0.27533016
+        0.27519576
       ],
       [
         3.8,
         13.7,
-        0.27533016
+        0.27519576
       ],
       [
         -16.4,
         -3.9,
-        0.27533016
+        0.27519576
       ],
       [
         10.6,
         -3.1,
-        0.27533016
+        0.27519576
       ],
       [
         -11.8,
         7.4,
-        0.27533016
+        0.27519576
       ],
       [
         1.6,
         8.3,
-        0.27533016
+        0.27519576
       ],
       [
         -1.7,
         7.3,
-        0.27539734
+        0.27526291
       ],
       [
         15.6,
         -13.5,
-        0.2754046
+        0.27527017
       ],
       [
         -8.8,
         -15.8,
-        0.2754046
+        0.27527017
       ],
       [
         -2.6,
         13.0,
-        0.27548997
+        0.2753555
       ],
       [
         1.1,
         6.1,
-        0.27601181
+        0.27587708
       ],
       [
         -5.2,
         1.5,
-        0.27741859
+        0.27728318
       ],
       [
         0.9,
         2.8,
-        0.27750641
+        0.27737095
       ],
       [
         4.8,
         -3.9,
-        0.27759059
+        0.2774551
       ],
       [
         -8.0,
         -0.8,
-        0.2780009
+        0.27786521
       ],
       [
         -7.7,
         -5.5,
-        0.27901462
+        0.27887843
       ],
       [
         15.0,
         23.1,
-        0.27901462
+        0.27887843
       ],
       [
         -2.6,
         0.6,
-        0.27901462
+        0.27887843
       ],
       [
         -2.1,
         2.6,
-        0.27901462
+        0.27887843
       ],
       [
         3.1,
         4.8,
-        0.27901462
+        0.27887843
       ],
       [
         1.0,
         4.9,
-        0.27901462
+        0.27887843
       ],
       [
         17.4,
         -2.0,
-        0.27901462
+        0.27887843
       ],
       [
         4.3,
         0.1,
-        0.2790827
+        0.27894648
       ],
       [
         -9.8,
         0.1,
-        0.2790827
+        0.27894648
       ],
       [
         -7.6,
         1.0,
-        0.27909006
+        0.27895383
       ],
       [
         9.0,
         -11.6,
-        0.27917657
+        0.2790403
       ],
       [
         18.5,
         14.0,
-        0.27970539
+        0.27956886
       ],
       [
         7.4,
         8.9,
-        0.28130345
+        0.28116614
       ],
       [
         8.1,
         7.7,
-        0.28274839
+        0.28261037
       ],
       [
         16.9,
         2.4,
-        0.28274839
+        0.28261037
       ],
       [
         -7.2,
         -7.4,
-        0.28274839
+        0.28261037
       ],
       [
         -7.6,
         -0.3,
-        0.28274839
+        0.28261037
       ],
       [
         4.0,
         -3.8,
-        0.28274839
+        0.28261037
       ],
       [
         1.9,
         -6.9,
-        0.28274839
+        0.28261037
       ],
       [
         -16.3,
         -11.3,
-        0.28274839
+        0.28261037
       ],
       [
         -4.9,
         7.6,
-        0.28281738
+        0.28267933
       ],
       [
         23.5,
         16.0,
-        0.28282484
+        0.28268679
       ],
       [
         12.6,
         -5.2,
-        0.28282484
+        0.28268679
       ],
       [
         -4.5,
         -1.6,
-        0.2829125
+        0.28277441
       ],
       [
         -7.7,
         2.1,
-        0.2834484
+        0.28331005
       ],
       [
         -20.6,
         -8.4,
-        0.28506785
+        0.2849287
       ],
       [
         -6.1,
         3.4,
-        0.28653212
+        0.28639226
       ],
       [
         -12.4,
         -2.8,
-        0.28653212
+        0.28639226
       ],
       [
         -3.2,
         -10.9,
-        0.28653212
+        0.28639226
       ],
       [
         3.4,
         12.6,
-        0.28653212
+        0.28639226
       ],
       [
         -6.1,
         -1.6,
-        0.28653212
+        0.28639226
       ],
       [
         -2.9,
         9.9,
-        0.28653212
+        0.28639226
       ],
       [
         5.3,
         11.8,
-        0.28653212
+        0.28639226
       ],
       [
         7.6,
         -1.6,
-        0.28660959
+        0.2864697
       ],
       [
         6.8,
         -6.3,
-        0.28660959
+        0.2864697
       ],
       [
         15.8,
         22.5,
-        0.28660959
+        0.2864697
       ],
       [
         -5.6,
         18.9,
-        0.28660959
+        0.2864697
       ],
       [
         3.2,
         -6.3,
-        0.28660959
+        0.2864697
       ],
       [
         -9.4,
         6.7,
-        0.28669843
+        0.28655849
       ],
       [
         5.3,
         -6.3,
-        0.28723582
+        0.28709562
       ],
       [
         -14.4,
         -6.4,
-        0.28724719
+        0.28710698
       ],
       [
         12.5,
         7.0,
-        0.28888262
+        0.28874161
       ],
       [
         2.1,
         1.4,
-        0.2898156
+        0.28967413
       ],
       [
         9.0,
         -1.8,
-        0.28989587
+        0.28975437
       ],
       [
         12.1,
         -10.5,
-        0.29036649
+        0.29022476
       ],
       [
         15.9,
         6.1,
-        0.29036649
+        0.29022476
       ],
       [
         -4.0,
         6.9,
-        0.29036649
+        0.29022476
       ],
       [
         -3.2,
         -15.5,
-        0.29036649
+        0.29022476
       ],
       [
         14.5,
         10.2,
-        0.29036649
+        0.29022476
       ],
       [
         -11.3,
         -2.9,
-        0.29036649
+        0.29022476
       ],
       [
         13.1,
         6.6,
-        0.29036649
+        0.29022476
       ],
       [
         1.9,
         4.0,
-        0.29043734
+        0.29029557
       ],
       [
         -4.9,
         4.9,
-        0.290445
+        0.29030323
       ],
       [
         -4.1,
         -7.1,
-        0.290445
+        0.29030323
       ],
       [
         7.0,
         -7.0,
-        0.290445
+        0.29030323
       ],
       [
         1.0,
         0.0,
-        0.29053503
+        0.29039321
       ],
       [
         9.3,
         -19.3,
-        0.29108537
+        0.29094328
       ],
       [
         -9.3,
         8.2,
-        0.29202546
+        0.29188292
       ],
       [
         -18.9,
         5.2,
-        0.29210634
+        0.29196376
       ],
       [
         -18.5,
         -15.8,
-        0.29274844
+        0.29260555
       ],
       [
         -11.8,
         18.8,
-        0.2936939
+        0.29355055
       ],
       [
         4.6,
         1.4,
-        0.29377525
+        0.29363186
       ],
       [
         -12.0,
         -11.7,
-        0.29386243
+        0.293719
       ],
       [
         11.2,
         -2.5,
-        0.29425217
+        0.29410854
       ],
       [
         -3.1,
         -7.0,
-        0.29425217
+        0.29410854
       ],
       [
         -13.3,
         6.1,
-        0.29425217
+        0.29410854
       ],
       [
         25.1,
         11.7,
-        0.29425217
+        0.29410854
       ],
       [
         14.0,
         -15.8,
-        0.29425217
+        0.29410854
       ],
       [
         19.5,
         -3.0,
-        0.29425217
+        0.29410854
       ],
       [
         -18.4,
         -2.8,
-        0.29432397
+        0.2941803
       ],
       [
         4.2,
         2.6,
-        0.29433173
+        0.29418806
       ],
       [
         4.7,
         1.7,
-        0.29442296
+        0.29427925
       ],
       [
         9.0,
         14.7,
-        0.29498066
+        0.29483668
       ],
       [
         6.7,
         -6.6,
-        0.29770655
+        0.29756123
       ],
       [
         -6.4,
         -3.8,
-        0.297789
+        0.29764365
       ],
       [
         12.2,
         25.5,
-        0.29818984
+        0.29804429
       ],
       [
         -8.5,
         -0.5,
-        0.29818984
+        0.29804429
       ],
       [
         -3.6,
         7.4,
-        0.29818984
+        0.29804429
       ],
       [
         1.7,
         1.0,
-        0.29818984
+        0.29804429
       ],
       [
         5.1,
         -11.6,
-        0.29818984
+        0.29804429
       ],
       [
         -7.7,
         -2.5,
-        0.29818984
+        0.29804429
       ],
       [
         1.7,
         -0.1,
-        0.29818984
+        0.29804429
       ],
       [
         -6.6,
         1.5,
-        0.29818984
+        0.29804429
       ],
       [
         25.5,
         -0.7,
-        0.29827047
+        0.29812488
       ],
       [
         17.9,
         -22.2,
-        0.29827047
+        0.29812488
       ],
       [
         1.9,
         9.6,
-        0.29827047
+        0.29812488
       ],
       [
         -0.3,
         11.5,
-        0.29827047
+        0.29812488
       ],
       [
         12.3,
         -2.4,
-        0.29827047
+        0.29812488
       ],
       [
         2.8,
         -14.0,
-        0.29836292
+        0.29821729
       ],
       [
         -3.1,
         -1.1,
-        0.47238652
+        0.47215595
       ],
       [
         6.7,
         -0.7,
-        0.47327197
+        0.47304096
       ],
       [
         -2.0,
         -1.4,
-        0.47480984
+        0.47457808
       ],
       [
         -6.1,
         -7.7,
-        0.47480984
+        0.47457808
       ],
       [
         10.0,
         -16.3,
-        0.47480984
+        0.47457808
       ],
       [
         0.3,
         -9.7,
-        0.47480984
+        0.47457808
       ],
       [
         -7.4,
         0.0,
-        0.47480984
+        0.47457808
       ],
       [
         -10.1,
         -0.8,
-        0.47480984
+        0.47457808
       ],
       [
         12.9,
         14.1,
-        0.47480984
+        0.47457808
       ],
       [
         -4.4,
         -13.2,
-        0.47480984
+        0.47457808
       ],
       [
         -5.5,
         -5.0,
-        0.4749257
+        0.47469388
       ],
       [
         -9.9,
         -6.1,
-        0.4749257
+        0.47469388
       ],
       [
         2.2,
         -12.5,
-        0.47493823
+        0.4747064
       ],
       [
         -9.0,
         -11.1,
-        0.47493823
+        0.4747064
       ],
       [
         14.9,
         15.6,
-        0.47508544
+        0.47485354
       ],
       [
         3.9,
         4.9,
-        0.47598536
+        0.47575302
       ],
       [
         0.2,
         -2.4,
-        0.47870483
+        0.47847117
       ],
       [
         12.3,
         0.0,
-        0.48116374
+        0.48092888
       ],
       [
         4.6,
         6.2,
-        0.48116374
+        0.48092888
       ],
       [
         14.9,
         19.3,
-        0.48116374
+        0.48092888
       ],
       [
         23.2,
         2.2,
-        0.48116374
+        0.48092888
       ],
       [
         3.2,
         15.4,
-        0.48116374
+        0.48092888
       ],
       [
         -0.1,
         3.3,
-        0.48116374
+        0.48092888
       ],
       [
         -10.8,
         3.0,
-        0.48116374
+        0.48092888
       ],
       [
         -5.4,
         11.5,
-        0.48116374
+        0.48092888
       ],
       [
         -0.7,
         11.1,
-        0.48116374
+        0.48092888
       ],
       [
         0.0,
         3.0,
-        0.48128115
+        0.48104623
       ],
       [
         7.0,
         4.7,
-        0.48128115
+        0.48104623
       ],
       [
         -5.9,
         -1.8,
-        0.48129384
+        0.48105891
       ],
       [
         -19.9,
         2.5,
-        0.48144302
+        0.48120802
       ],
       [
         -2.4,
         -2.6,
-        0.48230728
+        0.48207186
       ],
       [
         -11.4,
         -2.4,
-        0.48242178
+        0.48218631
       ],
       [
         1.4,
         0.5,
-        0.48511085
+        0.48487407
       ],
       [
         9.0,
         -24.4,
-        0.48760266
+        0.48736466
       ],
       [
         -5.4,
         -14.2,
-        0.48760266
+        0.48736466
       ],
       [
         -4.6,
         -10.7,
-        0.48760266
+        0.48736466
       ],
       [
         23.0,
         -12.7,
-        0.48760266
+        0.48736466
       ],
       [
         -5.1,
         0.2,
-        0.48760266
+        0.48736466
       ],
       [
         7.7,
         6.4,
-        0.48760266
+        0.48736466
       ],
       [
         3.3,
         9.1,
-        0.48760266
+        0.48736466
       ],
       [
         -2.1,
         17.8,
-        0.48760266
+        0.48736466
       ],
       [
         16.4,
         3.5,
-        0.48760266
+        0.48736466
       ],
       [
         0.2,
         -0.1,
-        0.48772164
+        0.48748358
       ],
       [
         20.9,
         -6.2,
-        0.48772164
+        0.48748358
       ],
       [
         8.0,
         -9.9,
-        0.4877345
+        0.48749644
       ],
       [
         -10.0,
         -5.4,
-        0.4877345
+        0.48749644
       ],
       [
         -8.5,
         -1.0,
-        0.48788568
+        0.48764754
       ],
       [
         1.8,
         12.1,
-        0.48880985
+        0.48857126
       ],
       [
         -2.4,
         0.8,
-        0.4916026
+        0.49136264
       ],
       [
         4.1,
         -1.7,
-        0.49399093
+        0.49374981
       ],
       [
         10.6,
         3.6,
-        0.49412775
+        0.49388657
       ],
       [
         1.5,
         0.6,
-        0.49412775
+        0.49388657
       ],
       [
         3.5,
         -7.7,
-        0.49412775
+        0.49388657
       ],
       [
         2.1,
         -17.2,
-        0.49412775
+        0.49388657
       ],
       [
         19.3,
         -6.1,
-        0.49412775
+        0.49388657
       ],
       [
         3.3,
         -4.7,
-        0.49412775
+        0.49388657
       ],
       [
         0.9,
         7.4,
-        0.49412775
+        0.49388657
       ],
       [
         1.6,
         -1.6,
-        0.49424832
+        0.49400707
       ],
       [
         -4.4,
         7.1,
-        0.49424832
+        0.49400707
       ],
       [
         14.0,
         -4.0,
-        0.49426136
+        0.4940201
       ],
       [
         2.0,
         4.3,
-        0.49426136
+        0.4940201
       ],
       [
         17.7,
         15.6,
-        0.49441456
+        0.49417323
       ],
       [
         2.6,
         1.1,
-        0.4953119
+        0.49507013
       ],
       [
         2.0,
         -19.0,
-        0.4953511
+        0.49510931
       ],
       [
         0.1,
         4.1,
-        0.49818121
+        0.49793805
       ],
       [
         -0.6,
         -3.2,
-        0.50060151
+        0.50035716
       ],
       [
         -17.3,
         25.2,
-        0.50074016
+        0.50049575
       ],
       [
         5.3,
         -0.9,
-        0.50074016
+        0.50049575
       ],
       [
         14.5,
         -15.2,
-        0.50074016
+        0.50049575
       ],
       [
         3.5,
         -3.8,
-        0.50074016
+        0.50049575
       ],
       [
         -1.8,
         13.3,
-        0.50074016
+        0.50049575
       ],
       [
         -7.8,
         0.8,
-        0.50074016
+        0.50049575
       ],
       [
         -4.4,
         4.3,
-        0.50086234
+        0.50061787
       ],
       [
         10.9,
         15.8,
-        0.50086234
+        0.50061787
       ],
       [
         -0.1,
         7.3,
-        0.50087556
+        0.50063107
       ],
       [
         -15.8,
         6.1,
-        0.50087556
+        0.50063107
       ],
       [
         -9.2,
         5.9,
-        0.50103081
+        0.50078625
       ],
       [
         11.0,
         5.6,
-        0.50197987
+        0.50173485
       ],
       [
         16.0,
         -7.7,
-        0.50484787
+        0.50460144
       ],
       [
         -7.2,
         -10.9,
-        0.50730055
+        0.50705293
       ],
       [
         -24.6,
         -4.7,
-        0.50744106
+        0.50719337
       ],
       [
         6.9,
         0.0,
-        0.50744106
+        0.50719337
       ],
       [
         5.7,
         5.2,
-        0.50744106
+        0.50719337
       ],
       [
         -10.7,
         -2.6,
-        0.50744106
+        0.50719337
       ],
       [
         4.7,
         7.0,
-        0.50744106
+        0.50719337
       ],
       [
         -2.7,
         6.1,
-        0.50744106
+        0.50719337
       ],
       [
         0.0,
         -7.6,
-        0.50744106
+        0.50719337
       ],
       [
         -3.2,
         -9.3,
-        0.50756488
+        0.50731713
       ],
       [
         -0.9,
         -2.5,
-        0.50757826
+        0.50733051
       ],
       [
         4.9,
         -3.7,
-        0.50757826
+        0.50733051
       ],
       [
         6.1,
         -8.9,
-        0.50773559
+        0.50748776
       ],
       [
         2.6,
         -12.9,
-        0.50865711
+        0.50840883
       ],
       [
         -1.6,
         3.9,
-        0.50869736
+        0.50844906
       ],
       [
         9.5,
         8.5,
-        0.51160373
+        0.51135401
       ],
       [
         -13.2,
         12.4,
-        0.51408923
+        0.5138383
       ],
       [
         2.9,
         -5.7,
-        0.51423163
+        0.51398062
       ],
       [
         9.9,
         -16.2,
-        0.51423163
+        0.51398062
       ],
       [
         4.9,
         -16.4,
-        0.51423163
+        0.51398062
       ],
       [
         -1.8,
         5.7,
-        0.51423163
+        0.51398062
       ],
       [
         -18.5,
         -6.6,
-        0.51423163
+        0.51398062
       ],
       [
         -6.7,
         10.6,
-        0.51423163
+        0.51398062
       ],
       [
         8.7,
         16.7,
-        0.5143571
+        0.51410604
       ],
       [
         -1.2,
         16.5,
-        0.5143571
+        0.51410604
       ],
       [
         1.8,
         3.2,
-        0.51437067
+        0.5141196
       ],
       [
         16.7,
         -3.2,
-        0.51437067
+        0.5141196
       ],
       [
         -5.1,
         -9.4,
-        0.5145301
+        0.51427895
       ],
       [
         -6.1,
         -14.3,
-        0.51545375
+        0.51520216
       ],
       [
         4.5,
         -0.6,
-        0.51557613
+        0.51532447
       ],
       [
         14.5,
         -11.5,
-        0.51845
+        0.51819694
       ],
       [
         -13.8,
         12.8,
-        0.52111306
+        0.5208587
       ],
       [
         2.6,
         -4.3,
-        0.52111306
+        0.5208587
       ],
       [
         -11.4,
         11.6,
-        0.52111306
+        0.5208587
       ],
       [
         12.4,
         18.4,
-        0.52111306
+        0.5208587
       ],
       [
         4.4,
         -5.4,
-        0.52111306
+        0.5208587
       ],
       [
         10.7,
         -4.3,
-        0.52111306
+        0.5208587
       ],
       [
         10.9,
         3.0,
-        0.52111306
+        0.5208587
       ],
       [
         -18.6,
         -1.1,
-        0.52124022
+        0.52098579
       ],
       [
         17.8,
         1.6,
-        0.52125396
+        0.52099953
       ],
       [
         10.1,
         -4.6,
-        0.52125396
+        0.52099953
       ],
       [
         3.9,
         12.7,
-        0.52141553
+        0.52116102
       ],
       [
         1.2,
         -12.9,
-        0.52240321
+        0.52214822
       ],
       [
         -18.1,
         2.1,
-        0.52538789
+        0.52513144
       ],
       [
         16.3,
         24.1,
-        0.52812838
+        0.52787059
       ],
       [
         -5.2,
         6.2,
-        0.52812838
+        0.52787059
       ],
       [
         -16.3,
         -0.4,
-        0.52812838
+        0.52787059
       ],
       [
         -6.1,
         -2.0,
-        0.52812838
+        0.52787059
       ],
       [
         1.6,
         4.3,
-        0.52812838
+        0.52787059
       ],
       [
         4.2,
         10.7,
-        0.52812838
+        0.52787059
       ],
       [
         2.6,
         -2.9,
-        0.52812838
+        0.52787059
       ],
       [
         1.6,
         3.0,
-        0.52812838
+        0.52787059
       ],
       [
         9.3,
         -7.0,
-        0.52825724
+        0.52799939
       ],
       [
         7.6,
         9.0,
-        0.52825724
+        0.52799939
       ],
       [
         2.7,
         -0.4,
-        0.52827117
+        0.52801332
       ],
       [
         -10.1,
         14.0,
-        0.52843492
+        0.52817698
       ],
       [
         -10.3,
         3.5,
-        0.52943589
+        0.52917747
       ],
       [
         -15.9,
         -9.6,
-        0.53246075
+        0.53220085
       ],
       [
         5.6,
         3.0,
-        0.53504758
+        0.53478642
       ],
       [
         -14.5,
         -4.1,
-        0.53519578
+        0.53493454
       ],
       [
         -0.6,
         0.8,
-        0.53519578
+        0.53493454
       ],
       [
         12.5,
         11.0,
-        0.53519578
+        0.53493454
       ],
       [
         7.7,
         -14.4,
-        0.53519578
+        0.53493454
       ],
       [
         -4.7,
         3.0,
-        0.53519578
+        0.53493454
       ],
       [
         5.5,
         1.7,
-        0.53519578
+        0.53493454
       ],
       [
         -2.2,
         9.3,
-        0.53519578
+        0.53493454
       ],
       [
         18.5,
         2.0,
-        0.53532637
+        0.53506507
       ],
       [
         2.9,
         20.9,
-        0.53534049
+        0.53507918
       ],
       [
         -1.4,
         14.5,
-        0.53534049
+        0.53507918
       ],
       [
         1.6,
         -9.6,
-        0.53550642
+        0.53524504
       ],
       [
         -17.5,
         -12.3,
-        0.5365208
+        0.53625891
       ],
       [
         4.1,
         -4.6,
-        0.53958613
+        0.53932275
       ],
       [
         -9.1,
         -10.7,
-        0.54220758
+        0.54194292
       ],
       [
         2.6,
         11.3,
-        0.54235776
+        0.54209303
       ],
       [
         16.2,
         9.7,
-        0.54235776
+        0.54209303
       ],
       [
         13.5,
         -17.1,
-        0.54235776
+        0.54209303
       ],
       [
         -8.1,
         -0.9,
-        0.54235776
+        0.54209303
       ],
       [
         1.4,
         2.9,
-        0.54235776
+        0.54209303
       ],
       [
         7.4,
         -10.8,
-        0.54235776
+        0.54209303
       ],
       [
         -4.6,
         -7.0,
-        0.54235776
+        0.54209303
       ],
       [
         -1.1,
         17.5,
-        0.5424901
+        0.5422253
       ],
       [
         -2.9,
         -2.5,
-        0.5424901
+        0.5422253
       ],
       [
         -3.1,
         -2.5,
-        0.54250441
+        0.5422396
       ],
       [
         1.3,
         -1.5,
-        0.54250441
+        0.5422396
       ],
       [
         -9.1,
         -17.2,
-        0.54267256
+        0.54240768
       ],
       [
         -7.5,
         8.3,
-        0.54370051
+        0.54343512
       ],
       [
         0.8,
         -5.3,
-        0.54680686
+        0.54653996
       ],
       [
         -5.3,
         -8.0,
-        0.54961558
+        0.54934731
       ],
       [
         8.9,
         6.7,
-        0.54961558
+        0.54934731
       ],
       [
         -5.0,
         2.2,
-        0.54961558
+        0.54934731
       ],
       [
         2.8,
         9.6,
-        0.54961558
+        0.54934731
       ],
       [
         -1.2,
         -13.6,
-        0.54961558
+        0.54934731
       ],
       [
         -3.4,
         -0.6,
-        0.54961558
+        0.54934731
       ],
       [
         5.7,
         4.7,
-        0.54961558
+        0.54934731
       ],
       [
         -0.2,
         4.7,
-        0.54974969
+        0.54948135
       ],
       [
         -10.8,
         5.2,
-        0.54974969
+        0.54948135
       ],
       [
         -0.3,
         -5.1,
-        0.54976419
+        0.54949584
       ],
       [
         -11.9,
         3.9,
-        0.54976419
+        0.54949584
       ],
       [
         9.1,
         -14.6,
-        0.54993459
+        0.54966616
       ],
       [
         -8.0,
         -8.8,
-        0.5509763
+        0.55070736
       ],
       [
         -3.1,
         9.2,
-        0.55380643
+        0.55353611
       ],
       [
         7.8,
         2.9,
-        0.55395983
+        0.55368943
       ],
       [
         -17.2,
         10.1,
-        0.55412788
+        0.5538574
       ],
       [
         -11.5,
         5.1,
-        0.55494694
+        0.55467607
       ],
       [
         13.1,
         2.9,
-        0.55697053
+        0.55669866
       ],
       [
         -11.5,
         3.0,
-        0.55697053
+        0.55669866
       ],
       [
         -7.8,
         -1.7,
-        0.55697053
+        0.55669866
       ],
       [
         -2.9,
         -1.3,
-        0.55697053
+        0.55669866
       ],
       [
         5.0,
         3.4,
-        0.55697053
+        0.55669866
       ],
       [
         -7.0,
         -4.5,
-        0.55697053
+        0.55669866
       ],
       [
         -17.3,
         1.6,
-        0.55697053
+        0.55669866
       ],
       [
         1.3,
         -20.3,
-        0.55710643
+        0.5568345
       ],
       [
         5.9,
         -2.8,
-        0.55712112
+        0.55684919
       ],
       [
         -15.6,
         0.5,
-        0.55712112
+        0.55684919
       ],
       [
         4.2,
         3.1,
-        0.55729381
+        0.55702179
       ],
       [
         9.0,
         -3.1,
-        0.55834945
+        0.55807692
       ],
       [
         11.9,
         6.3,
-        0.5615395
+        0.56126541
       ],
       [
         -11.7,
         12.5,
-        0.5644239
+        0.56414839
       ],
       [
         -3.9,
         7.3,
-        0.5644239
+        0.56414839
       ],
       [
         6.8,
         11.7,
-        0.5644239
+        0.56414839
       ],
       [
         6.9,
         13.9,
-        0.5644239
+        0.56414839
       ],
       [
         11.3,
         -4.7,
-        0.5644239
+        0.56414839
       ],
       [
         5.6,
         -20.9,
-        0.5644239
+        0.56414839
       ],
       [
         -11.4,
         12.1,
-        0.5644239
+        0.56414839
       ],
       [
         -5.6,
         5.7,
-        0.5644239
+        0.56414839
       ],
       [
         -0.9,
         0.7,
-        0.56456162
+        0.56428605
       ],
       [
         -4.5,
         20.7,
-        0.56457651
+        0.56430093
       ],
       [
         2.2,
         2.4,
-        0.56457651
+        0.56430093
       ],
       [
         -12.5,
         2.3,
-        0.5647515
+        0.56447584
       ],
       [
         0.1,
         -3.0,
-        0.56582127
+        0.56554509
       ],
       [
         1.6,
         8.8,
-        0.56905401
+        0.56877625
       ],
       [
         6.9,
         -15.5,
-        0.57197701
+        0.57169782
       ],
       [
         -25.2,
         -4.1,
-        0.57197701
+        0.57169782
       ],
       [
         15.5,
         1.7,
-        0.57197701
+        0.57169782
       ],
       [
         23.1,
         1.2,
-        0.57197701
+        0.57169782
       ],
       [
         -10.4,
         -2.9,
-        0.57197701
+        0.57169782
       ],
       [
         9.4,
         9.3,
-        0.57197701
+        0.57169782
       ],
       [
         -2.5,
         5.7,
-        0.57197701
+        0.57169782
       ],
       [
         4.5,
         -15.8,
-        0.57197701
+        0.57169782
       ],
       [
         12.6,
         4.9,
-        0.57213166
+        0.5718524
       ],
       [
         15.6,
         8.4,
-        0.57213166
+        0.5718524
       ],
       [
         -2.7,
         -1.6,
-        0.57213166
+        0.5718524
       ],
       [
         -9.4,
         -5.6,
-        0.57213166
+        0.5718524
       ],
       [
         9.3,
         7.6,
-        0.57213166
+        0.5718524
       ],
       [
         1.0,
         10.0,
-        0.572309
+        0.57202965
       ],
       [
         5.3,
         -5.6,
-        0.57339308
+        0.5731132
       ],
       [
         14.2,
         15.1,
-        0.57666908
+        0.57638761
       ],
       [
         -3.1,
         3.7,
-        0.57871463
+        0.57843216
       ],
       [
         0.6,
         -7.4,
-        0.57886729
+        0.57858474
       ],
       [
         2.0,
         -5.0,
-        0.57963119
+        0.57934827
       ],
       [
         0.9,
         -4.5,
-        0.57963119
+        0.57934827
       ],
       [
         -8.3,
         9.2,
-        0.57963119
+        0.57934827
       ],
       [
         -5.9,
         22.0,
-        0.57963119
+        0.57934827
       ],
       [
         6.9,
         -12.8,
-        0.57963119
+        0.57934827
       ],
       [
         -6.5,
         -7.4,
-        0.57963119
+        0.57934827
       ],
       [
         9.1,
         -15.7,
-        0.57963119
+        0.57934827
       ],
       [
         -5.8,
         3.9,
-        0.57977262
+        0.57948963
       ],
       [
         -4.4,
         13.5,
-        0.57977262
+        0.57948963
       ],
       [
         -5.2,
         8.0,
-        0.57978792
+        0.57950491
       ],
       [
         -1.9,
         6.6,
-        0.57978792
+        0.57950491
       ],
       [
         -1.7,
         8.9,
-        0.57996763
+        0.57968454
       ],
       [
         2.5,
         23.7,
-        0.58106622
+        0.58078259
       ],
       [
         -3.9,
         3.2,
-        0.58405091
+        0.58376583
       ],
       [
         -0.4,
         -16.0,
-        0.58421268
+        0.58392752
       ],
       [
         -9.3,
         0.6,
-        0.58438606
+        0.58410081
       ],
       [
         -5.2,
         0.4,
-        0.58643578
+        0.58614954
       ],
       [
         0.1,
         19.1,
-        0.58659821
+        0.58631189
       ],
       [
         -8.6,
         1.1,
-        0.58738781
+        0.5871011
       ],
       [
         9.1,
         -10.4,
-        0.58738781
+        0.5871011
       ],
       [
         -5.5,
         -15.8,
-        0.58738781
+        0.5871011
       ],
       [
         -8.3,
         -1.4,
-        0.58738781
+        0.5871011
       ],
       [
         -3.7,
         -6.4,
-        0.58738781
+        0.5871011
       ],
       [
         -9.8,
         19.3,
-        0.58738781
+        0.5871011
       ],
       [
         6.3,
         13.5,
-        0.58738781
+        0.5871011
       ],
       [
         -11.6,
         13.7,
-        0.58753113
+        0.58724435
       ],
       [
         -14.2,
         -9.6,
-        0.58754663
+        0.58725984
       ],
       [
         16.0,
         17.2,
-        0.58772874
+        0.58744187
       ],
       [
         6.3,
         -1.9,
-        0.58884204
+        0.58855462
       ],
       [
         -10.6,
         -4.7,
-        0.59428345
+        0.59399338
       ],
       [
         -21.3,
         -10.6,
-        0.59444806
+        0.5941579
       ],
       [
         -3.3,
         -3.1,
-        0.59524822
+        0.59495767
       ],
       [
         -8.1,
         -0.5,
-        0.59524822
+        0.59495767
       ],
       [
         13.3,
         9.6,
-        0.59524822
+        0.59495767
       ],
       [
         13.9,
         -10.9,
-        0.59524822
+        0.59495767
       ],
       [
         -5.3,
         -18.0,
-        0.59524822
+        0.59495767
       ],
       [
         9.4,
         -9.1,
-        0.59524822
+        0.59495767
       ],
       [
         4.4,
         -9.5,
-        0.59540916
+        0.59511854
       ],
       [
         -8.3,
         -8.8,
-        0.59540916
+        0.59511854
       ],
       [
         -3.6,
         -17.1,
-        0.59540916
+        0.59511854
       ],
       [
         8.3,
         0.6,
-        0.59540916
+        0.59511854
       ],
       [
         -2.6,
         -11.4,
-        0.59540916
+        0.59511854
       ],
       [
         14.3,
         -10.1,
-        0.59540916
+        0.59511854
       ],
       [
         -10.4,
         5.6,
-        0.59540916
+        0.59511854
       ],
       [
         4.3,
         0.4,
-        0.59559372
+        0.595303
       ]
     ],
     "description": "Home error, away error, recency weight. Prior two regular seasons, forecasts fitted before each week. Centered in the simulator; not calibrated prediction intervals."
