@@ -1,20 +1,20 @@
 {
   "season": 2026,
-  "generated_at": "2026-10-20T04:21:22.951637+00:00",
+  "generated_at": "2026-10-20T10:17:42.954321+00:00",
   "model_version": "Team Baseline v1",
   "source": {
     "name": "nflverse schedules and results",
     "url": "https://github.com/nflverse/nfldata/blob/master/data/games.csv"
   },
   "training": {
-    "training_games": 908,
-    "current_season_games": 92,
+    "training_games": 909,
+    "current_season_games": 93,
     "training_first": "2023-09-08T00:20:00+00:00",
-    "training_last": "2026-10-19T00:20:00+00:00",
-    "margin_sd": 12.54976257638764,
-    "tie_probability": 0.002707581227436823
+    "training_last": "2026-10-20T00:15:00+00:00",
+    "margin_sd": 12.53316562068281,
+    "tie_probability": 0.002705139765554554
   },
-  "league_points": 22.89,
+  "league_points": 22.88,
   "home_advantage": 1.69,
   "backtest": {
     "games": 544,
@@ -30,8 +30,8 @@
     {
       "team": "ARI",
       "name": "Arizona Cardinals",
-      "offense": -0.84,
-      "defense": -2.69,
+      "offense": -0.82,
+      "defense": -2.71,
       "current_season": {
         "games": 6,
         "points_for": 21.0,
@@ -41,7 +41,7 @@
     {
       "team": "ATL",
       "name": "Atlanta Falcons",
-      "offense": -0.83,
+      "offense": -0.82,
       "defense": -1.19,
       "current_season": {
         "games": 6,
@@ -52,8 +52,8 @@
     {
       "team": "BAL",
       "name": "Baltimore Ravens",
-      "offense": 2.65,
-      "defense": 0.64,
+      "offense": 2.66,
+      "defense": 0.63,
       "current_season": {
         "games": 6,
         "points_for": 26.0,
@@ -63,8 +63,8 @@
     {
       "team": "BUF",
       "name": "Buffalo Bills",
-      "offense": 5.19,
-      "defense": -0.37,
+      "offense": 5.2,
+      "defense": -0.38,
       "current_season": {
         "games": 6,
         "points_for": 32.83,
@@ -85,8 +85,8 @@
     {
       "team": "CHI",
       "name": "Chicago Bears",
-      "offense": 0.7,
-      "defense": 0.43,
+      "offense": 0.71,
+      "defense": 0.42,
       "current_season": {
         "games": 6,
         "points_for": 25.0,
@@ -97,7 +97,7 @@
       "team": "CIN",
       "name": "Cincinnati Bengals",
       "offense": 2.03,
-      "defense": -2.11,
+      "defense": -2.12,
       "current_season": {
         "games": 5,
         "points_for": 25.6,
@@ -107,8 +107,8 @@
     {
       "team": "CLE",
       "name": "Cleveland Browns",
-      "offense": -4.14,
-      "defense": 0.6,
+      "offense": -4.13,
+      "defense": 0.59,
       "current_season": {
         "games": 6,
         "points_for": 17.67,
@@ -118,8 +118,8 @@
     {
       "team": "DAL",
       "name": "Dallas Cowboys",
-      "offense": 1.93,
-      "defense": -3.4,
+      "offense": 1.96,
+      "defense": -3.41,
       "current_season": {
         "games": 6,
         "points_for": 25.17,
@@ -129,8 +129,8 @@
     {
       "team": "DEN",
       "name": "Denver Broncos",
-      "offense": -0.07,
-      "defense": 2.23,
+      "offense": -0.06,
+      "defense": 2.22,
       "current_season": {
         "games": 6,
         "points_for": 19.0,
@@ -140,7 +140,7 @@
     {
       "team": "DET",
       "name": "Detroit Lions",
-      "offense": 5.41,
+      "offense": 5.42,
       "defense": -1.13,
       "current_season": {
         "games": 5,
@@ -151,7 +151,7 @@
     {
       "team": "GB",
       "name": "Green Bay Packers",
-      "offense": 0.29,
+      "offense": 0.3,
       "defense": 1.71,
       "current_season": {
         "games": 6,
@@ -162,7 +162,7 @@
     {
       "team": "HOU",
       "name": "Houston Texans",
-      "offense": -0.02,
+      "offense": -0.01,
       "defense": 2.1,
       "current_season": {
         "games": 6,
@@ -173,8 +173,8 @@
     {
       "team": "IND",
       "name": "Indianapolis Colts",
-      "offense": 1.7,
-      "defense": -2.17,
+      "offense": 1.71,
+      "defense": -2.18,
       "current_season": {
         "games": 6,
         "points_for": 24.0,
@@ -185,7 +185,7 @@
       "team": "JAX",
       "name": "Jacksonville Jaguars",
       "offense": 1.63,
-      "defense": 1.45,
+      "defense": 1.44,
       "current_season": {
         "games": 6,
         "points_for": 25.67,
@@ -195,7 +195,7 @@
     {
       "team": "KC",
       "name": "Kansas City Chiefs",
-      "offense": -0.06,
+      "offense": -0.05,
       "defense": 2.95,
       "current_season": {
         "games": 5,
@@ -206,8 +206,8 @@
     {
       "team": "LA",
       "name": "Los Angeles Rams",
-      "offense": 2.17,
-      "defense": 1.13,
+      "offense": 2.18,
+      "defense": 1.11,
       "current_season": {
         "games": 6,
         "points_for": 22.5,
@@ -218,7 +218,7 @@
       "team": "LAC",
       "name": "Los Angeles Chargers",
       "offense": -1.83,
-      "defense": 0.98,
+      "defense": 0.97,
       "current_season": {
         "games": 6,
         "points_for": 15.0,
@@ -228,7 +228,7 @@
     {
       "team": "LV",
       "name": "Las Vegas Raiders",
-      "offense": -2.39,
+      "offense": -2.38,
       "defense": -1.98,
       "current_season": {
         "games": 6,
@@ -239,8 +239,8 @@
     {
       "team": "MIA",
       "name": "Miami Dolphins",
-      "offense": -2.19,
-      "defense": -0.93,
+      "offense": -2.18,
+      "defense": -0.94,
       "current_season": {
         "games": 5,
         "points_for": 14.0,
@@ -250,7 +250,7 @@
     {
       "team": "MIN",
       "name": "Minnesota Vikings",
-      "offense": -0.91,
+      "offense": -0.9,
       "defense": 3.72,
       "current_season": {
         "games": 5,
@@ -273,7 +273,7 @@
       "team": "NO",
       "name": "New Orleans Saints",
       "offense": -1.57,
-      "defense": -1.15,
+      "defense": -1.16,
       "current_season": {
         "games": 6,
         "points_for": 25.33,
@@ -283,8 +283,8 @@
     {
       "team": "NYG",
       "name": "New York Giants",
-      "offense": -2.18,
-      "defense": -1.33,
+      "offense": -2.15,
+      "defense": -1.34,
       "current_season": {
         "games": 6,
         "points_for": 22.67,
@@ -294,7 +294,7 @@
     {
       "team": "NYJ",
       "name": "New York Jets",
-      "offense": -3.34,
+      "offense": -3.33,
       "defense": -1.46,
       "current_season": {
         "games": 6,
@@ -305,8 +305,8 @@
     {
       "team": "PHI",
       "name": "Philadelphia Eagles",
-      "offense": -0.82,
-      "defense": 1.88,
+      "offense": -0.8,
+      "defense": 1.86,
       "current_season": {
         "games": 6,
         "points_for": 17.67,
@@ -317,7 +317,7 @@
       "team": "PIT",
       "name": "Pittsburgh Steelers",
       "offense": -0.45,
-      "defense": 1.07,
+      "defense": 1.06,
       "current_season": {
         "games": 6,
         "points_for": 22.83,
@@ -327,8 +327,8 @@
     {
       "team": "SEA",
       "name": "Seattle Seahawks",
-      "offense": 1.67,
-      "defense": 2.55,
+      "offense": 1.7,
+      "defense": 2.52,
       "current_season": {
         "games": 6,
         "points_for": 24.67,
@@ -338,19 +338,19 @@
     {
       "team": "SF",
       "name": "San Francisco 49ers",
-      "offense": 2.78,
-      "defense": 0.97,
+      "offense": 2.56,
+      "defense": 1.1,
       "current_season": {
-        "games": 5,
-        "points_for": 30.8,
-        "points_against": 18.6
+        "games": 6,
+        "points_for": 29.5,
+        "points_against": 18.33
       }
     },
     {
       "team": "TB",
       "name": "Tampa Bay Buccaneers",
-      "offense": -0.15,
-      "defense": -0.11,
+      "offense": -0.14,
+      "defense": -0.12,
       "current_season": {
         "games": 6,
         "points_for": 19.83,
@@ -361,7 +361,7 @@
       "team": "TEN",
       "name": "Tennessee Titans",
       "offense": -4.42,
-      "defense": -1.78,
+      "defense": -1.79,
       "current_season": {
         "games": 6,
         "points_for": 14.0,
@@ -371,12 +371,12 @@
     {
       "team": "WAS",
       "name": "Washington Commanders",
-      "offense": -0.2,
-      "defense": -3.01,
+      "offense": -0.33,
+      "defense": -2.79,
       "current_season": {
-        "games": 5,
-        "points_for": 23.0,
-        "points_against": 29.8
+        "games": 6,
+        "points_for": 22.0,
+        "points_against": 28.67
       }
     }
   ],
@@ -1768,11 +1768,11 @@
       "kickoff": "2026-10-20T00:15:00+00:00",
       "home": "SF",
       "away": "WAS",
-      "home_score": null,
-      "away_score": null,
+      "home_score": 23.0,
+      "away_score": 17.0,
       "neutral": false,
       "stadium": "Levi's Stadium",
-      "status": "locked",
+      "status": "final",
       "model": null,
       "market": null
     },
@@ -1791,9 +1791,9 @@
       "model": {
         "home_points": 22.7,
         "away_points": 21.6,
-        "home_win": 0.533606,
-        "away_win": 0.463686,
-        "tie": 0.002708
+        "home_win": 0.533486,
+        "away_win": 0.463809,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -1812,9 +1812,9 @@
       "model": {
         "home_points": 20.2,
         "away_points": 23.6,
-        "home_win": 0.393972,
-        "away_win": 0.60332,
-        "tie": 0.002708
+        "home_win": 0.393825,
+        "away_win": 0.60347,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -1831,11 +1831,11 @@
       "stadium": "Mercedes-Benz Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.9,
-        "away_points": 26.0,
-        "home_win": 0.37178,
-        "away_win": 0.625512,
-        "tie": 0.002708
+        "home_points": 21.8,
+        "away_points": 25.8,
+        "home_win": 0.374156,
+        "away_win": 0.623139,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -1854,9 +1854,9 @@
       "model": {
         "home_points": 28.5,
         "away_points": 23.4,
-        "home_win": 0.655099,
-        "away_win": 0.342193,
-        "tie": 0.002708
+        "home_win": 0.655111,
+        "away_win": 0.342184,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -1875,9 +1875,9 @@
       "model": {
         "home_points": 22.2,
         "away_points": 23.3,
-        "home_win": 0.463339,
-        "away_win": 0.533953,
-        "tie": 0.002708
+        "home_win": 0.463109,
+        "away_win": 0.534186,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -1894,11 +1894,11 @@
       "stadium": "Reliant Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.0,
+        "home_points": 25.1,
         "away_points": 17.8,
-        "home_win": 0.717201,
-        "away_win": 0.280091,
-        "tie": 0.002708
+        "home_win": 0.717022,
+        "away_win": 0.280273,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -1917,9 +1917,9 @@
       "model": {
         "home_points": 25.0,
         "away_points": 20.0,
-        "home_win": 0.652532,
-        "away_win": 0.34476,
-        "tie": 0.002708
+        "home_win": 0.652521,
+        "away_win": 0.344774,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -1938,9 +1938,9 @@
       "model": {
         "home_points": 21.3,
         "away_points": 21.3,
-        "home_win": 0.499117,
-        "away_win": 0.498175,
-        "tie": 0.002708
+        "home_win": 0.498952,
+        "away_win": 0.498343,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -1959,9 +1959,9 @@
       "model": {
         "home_points": 18.7,
         "away_points": 19.7,
-        "home_win": 0.467961,
-        "away_win": 0.529331,
-        "tie": 0.002708
+        "home_win": 0.467742,
+        "away_win": 0.529553,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -1980,9 +1980,9 @@
       "model": {
         "home_points": 20.7,
         "away_points": 24.7,
-        "home_win": 0.374098,
-        "away_win": 0.623194,
-        "tie": 0.002708
+        "home_win": 0.373518,
+        "away_win": 0.623777,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2001,9 +2001,9 @@
       "model": {
         "home_points": 27.4,
         "away_points": 23.5,
-        "home_win": 0.622463,
-        "away_win": 0.374829,
-        "tie": 0.002708
+        "home_win": 0.622397,
+        "away_win": 0.374898,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2022,9 +2022,9 @@
       "model": {
         "home_points": 20.2,
         "away_points": 26.2,
-        "home_win": 0.31623,
-        "away_win": 0.681062,
-        "tie": 0.002708
+        "home_win": 0.316137,
+        "away_win": 0.681158,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2042,10 +2042,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 22.5,
-        "away_points": 19.4,
-        "home_win": 0.59343,
-        "away_win": 0.403862,
-        "tie": 0.002708
+        "away_points": 19.5,
+        "home_win": 0.593139,
+        "away_win": 0.404156,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2064,9 +2064,9 @@
       "model": {
         "home_points": 26.3,
         "away_points": 22.1,
-        "home_win": 0.629824,
-        "away_win": 0.367468,
-        "tie": 0.002708
+        "home_win": 0.629803,
+        "away_win": 0.367492,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2085,9 +2085,9 @@
       "model": {
         "home_points": 25.5,
         "away_points": 18.7,
-        "home_win": 0.703231,
-        "away_win": 0.294061,
-        "tie": 0.002708
+        "home_win": 0.703341,
+        "away_win": 0.293954,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2106,9 +2106,9 @@
       "model": {
         "home_points": 28.3,
         "away_points": 25.1,
-        "home_win": 0.599818,
-        "away_win": 0.397474,
-        "tie": 0.002708
+        "home_win": 0.599709,
+        "away_win": 0.397586,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2127,9 +2127,9 @@
       "model": {
         "home_points": 27.5,
         "away_points": 19.7,
-        "home_win": 0.73117,
-        "away_win": 0.266122,
-        "tie": 0.002708
+        "home_win": 0.731271,
+        "away_win": 0.266024,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2148,9 +2148,9 @@
       "model": {
         "home_points": 28.4,
         "away_points": 24.6,
-        "home_win": 0.615872,
-        "away_win": 0.38142,
-        "tie": 0.002708
+        "home_win": 0.61634,
+        "away_win": 0.380955,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2169,9 +2169,9 @@
       "model": {
         "home_points": 25.4,
         "away_points": 22.3,
-        "home_win": 0.597864,
-        "away_win": 0.399428,
-        "tie": 0.002708
+        "home_win": 0.597775,
+        "away_win": 0.39952,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2190,9 +2190,9 @@
       "model": {
         "home_points": 27.5,
         "away_points": 22.3,
-        "home_win": 0.660068,
-        "away_win": 0.337224,
-        "tie": 0.002708
+        "home_win": 0.659983,
+        "away_win": 0.337312,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2211,9 +2211,9 @@
       "model": {
         "home_points": 22.4,
         "away_points": 21.1,
-        "home_win": 0.538616,
-        "away_win": 0.458676,
-        "tie": 0.002708
+        "home_win": 0.538371,
+        "away_win": 0.458924,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2232,9 +2232,9 @@
       "model": {
         "home_points": 22.7,
         "away_points": 16.8,
-        "home_win": 0.677671,
-        "away_win": 0.319621,
-        "tie": 0.002708
+        "home_win": 0.677743,
+        "away_win": 0.319552,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2253,9 +2253,9 @@
       "model": {
         "home_points": 24.8,
         "away_points": 21.3,
-        "home_win": 0.606532,
-        "away_win": 0.39076,
-        "tie": 0.002708
+        "home_win": 0.606399,
+        "away_win": 0.390896,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2274,9 +2274,9 @@
       "model": {
         "home_points": 24.9,
         "away_points": 19.1,
-        "home_win": 0.67754,
-        "away_win": 0.319752,
-        "tie": 0.002708
+        "home_win": 0.677288,
+        "away_win": 0.320007,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2295,9 +2295,9 @@
       "model": {
         "home_points": 20.7,
         "away_points": 19.8,
-        "home_win": 0.529026,
-        "away_win": 0.468266,
-        "tie": 0.002708
+        "home_win": 0.528791,
+        "away_win": 0.468504,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2316,9 +2316,9 @@
       "model": {
         "home_points": 19.8,
         "away_points": 23.0,
-        "home_win": 0.400155,
-        "away_win": 0.597137,
-        "tie": 0.002708
+        "home_win": 0.399802,
+        "away_win": 0.597493,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2335,11 +2335,11 @@
       "stadium": "Northwest Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.7,
-        "away_points": 24.2,
-        "home_win": 0.41754,
-        "away_win": 0.579752,
-        "tie": 0.002708
+        "home_points": 21.5,
+        "away_points": 24.0,
+        "home_win": 0.419764,
+        "away_win": 0.577531,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2358,9 +2358,9 @@
       "model": {
         "home_points": 25.0,
         "away_points": 20.2,
-        "home_win": 0.646838,
-        "away_win": 0.350454,
-        "tie": 0.002708
+        "home_win": 0.64666,
+        "away_win": 0.350635,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2379,9 +2379,9 @@
       "model": {
         "home_points": 24.9,
         "away_points": 23.0,
-        "home_win": 0.558964,
-        "away_win": 0.438328,
-        "tie": 0.002708
+        "home_win": 0.558918,
+        "away_win": 0.438377,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2400,9 +2400,9 @@
       "model": {
         "home_points": 24.2,
         "away_points": 26.1,
-        "home_win": 0.437864,
-        "away_win": 0.559428,
-        "tie": 0.002708
+        "home_win": 0.437825,
+        "away_win": 0.55947,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2421,9 +2421,9 @@
       "model": {
         "home_points": 19.9,
         "away_points": 23.4,
-        "home_win": 0.388029,
-        "away_win": 0.609263,
-        "tie": 0.002708
+        "home_win": 0.387692,
+        "away_win": 0.609603,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2441,10 +2441,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 28.8,
-        "away_points": 26.1,
-        "home_win": 0.583186,
-        "away_win": 0.414106,
-        "tie": 0.002708
+        "away_points": 26.2,
+        "home_win": 0.58286,
+        "away_win": 0.414435,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2463,9 +2463,9 @@
       "model": {
         "home_points": 25.1,
         "away_points": 15.8,
-        "home_win": 0.770613,
-        "away_win": 0.226679,
-        "tie": 0.002708
+        "home_win": 0.770803,
+        "away_win": 0.226492,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2484,9 +2484,9 @@
       "model": {
         "home_points": 22.7,
         "away_points": 28.4,
-        "home_win": 0.323732,
-        "away_win": 0.67356,
-        "tie": 0.002708
+        "home_win": 0.323292,
+        "away_win": 0.674003,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2505,9 +2505,9 @@
       "model": {
         "home_points": 21.6,
         "away_points": 19.1,
-        "home_win": 0.577741,
-        "away_win": 0.419551,
-        "tie": 0.002708
+        "home_win": 0.577669,
+        "away_win": 0.419626,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2524,11 +2524,11 @@
       "stadium": "Lincoln Financial Field",
       "status": "scheduled",
       "model": {
-        "home_points": 24.2,
+        "home_points": 24.3,
         "away_points": 18.0,
-        "home_win": 0.688982,
-        "away_win": 0.30831,
-        "tie": 0.002708
+        "home_win": 0.689049,
+        "away_win": 0.308246,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2545,11 +2545,11 @@
       "stadium": "Northwest Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.4,
-        "away_points": 27.2,
-        "home_win": 0.349475,
-        "away_win": 0.647817,
-        "tie": 0.002708
+        "home_points": 22.3,
+        "away_points": 27.0,
+        "home_win": 0.352007,
+        "away_win": 0.645288,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2568,9 +2568,9 @@
       "model": {
         "home_points": 19.8,
         "away_points": 21.0,
-        "home_win": 0.459217,
-        "away_win": 0.538075,
-        "tie": 0.002708
+        "home_win": 0.45907,
+        "away_win": 0.538225,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2587,11 +2587,11 @@
       "stadium": "Levi's Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 28.5,
-        "away_points": 18.7,
-        "home_win": 0.780742,
-        "away_win": 0.21655,
-        "tie": 0.002708
+        "home_points": 28.3,
+        "away_points": 18.6,
+        "home_win": 0.778737,
+        "away_win": 0.218558,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2610,9 +2610,9 @@
       "model": {
         "home_points": 22.0,
         "away_points": 20.6,
-        "home_win": 0.542996,
-        "away_win": 0.454296,
-        "tie": 0.002708
+        "home_win": 0.542802,
+        "away_win": 0.454493,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2631,9 +2631,9 @@
       "model": {
         "home_points": 28.1,
         "away_points": 18.7,
-        "home_win": 0.771968,
-        "away_win": 0.225324,
-        "tie": 0.002708
+        "home_win": 0.772179,
+        "away_win": 0.225116,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2652,9 +2652,9 @@
       "model": {
         "home_points": 24.5,
         "away_points": 21.5,
-        "home_win": 0.595264,
-        "away_win": 0.402028,
-        "tie": 0.002708
+        "home_win": 0.595246,
+        "away_win": 0.402049,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2673,9 +2673,9 @@
       "model": {
         "home_points": 23.2,
         "away_points": 23.5,
-        "home_win": 0.488671,
-        "away_win": 0.508621,
-        "tie": 0.002708
+        "home_win": 0.488511,
+        "away_win": 0.508784,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2692,11 +2692,11 @@
       "stadium": "MetLife Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.6,
-        "away_points": 23.2,
-        "home_win": 0.543036,
-        "away_win": 0.454256,
-        "tie": 0.002708
+        "home_points": 24.4,
+        "away_points": 23.0,
+        "home_win": 0.540307,
+        "away_win": 0.456988,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2715,9 +2715,9 @@
       "model": {
         "home_points": 26.6,
         "away_points": 24.0,
-        "home_win": 0.579526,
-        "away_win": 0.417766,
-        "tie": 0.002708
+        "home_win": 0.57965,
+        "away_win": 0.417645,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2736,9 +2736,9 @@
       "model": {
         "home_points": 20.0,
         "away_points": 23.2,
-        "home_win": 0.397869,
-        "away_win": 0.599423,
-        "tie": 0.002708
+        "home_win": 0.39753,
+        "away_win": 0.599765,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2757,9 +2757,9 @@
       "model": {
         "home_points": 17.5,
         "away_points": 21.4,
-        "home_win": 0.375966,
-        "away_win": 0.621326,
-        "tie": 0.002708
+        "home_win": 0.37564,
+        "away_win": 0.621655,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2778,9 +2778,9 @@
       "model": {
         "home_points": 20.3,
         "away_points": 19.4,
-        "home_win": 0.526688,
-        "away_win": 0.470604,
-        "tie": 0.002708
+        "home_win": 0.526534,
+        "away_win": 0.470761,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2799,9 +2799,9 @@
       "model": {
         "home_points": 26.4,
         "away_points": 22.0,
-        "home_win": 0.633447,
-        "away_win": 0.363845,
-        "tie": 0.002708
+        "home_win": 0.633504,
+        "away_win": 0.363791,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2820,9 +2820,9 @@
       "model": {
         "home_points": 23.6,
         "away_points": 21.6,
-        "home_win": 0.562942,
-        "away_win": 0.43435,
-        "tie": 0.002708
+        "home_win": 0.562844,
+        "away_win": 0.434451,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2841,9 +2841,9 @@
       "model": {
         "home_points": 20.8,
         "away_points": 28.7,
-        "home_win": 0.263143,
-        "away_win": 0.734149,
-        "tie": 0.002708
+        "home_win": 0.262728,
+        "away_win": 0.734567,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2861,10 +2861,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 17.9,
-        "away_points": 25.4,
-        "home_win": 0.272085,
-        "away_win": 0.725207,
-        "tie": 0.002708
+        "away_points": 25.5,
+        "home_win": 0.271712,
+        "away_win": 0.725583,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2883,9 +2883,9 @@
       "model": {
         "home_points": 21.8,
         "away_points": 26.9,
-        "home_win": 0.340324,
-        "away_win": 0.656968,
-        "tie": 0.002708
+        "home_win": 0.339943,
+        "away_win": 0.657352,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2904,9 +2904,9 @@
       "model": {
         "home_points": 18.8,
         "away_points": 25.7,
-        "home_win": 0.290632,
-        "away_win": 0.70666,
-        "tie": 0.002708
+        "home_win": 0.290429,
+        "away_win": 0.706866,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2923,11 +2923,11 @@
       "stadium": "AT&T Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.7,
-        "away_points": 28.2,
-        "home_win": 0.38825,
-        "away_win": 0.609042,
-        "tie": 0.002708
+        "home_points": 24.6,
+        "away_points": 28.0,
+        "home_win": 0.390907,
+        "away_win": 0.606388,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2946,9 +2946,9 @@
       "model": {
         "home_points": 24.7,
         "away_points": 23.7,
-        "home_win": 0.529986,
-        "away_win": 0.467306,
-        "tie": 0.002708
+        "home_win": 0.529809,
+        "away_win": 0.467486,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2967,9 +2967,9 @@
       "model": {
         "home_points": 25.4,
         "away_points": 19.6,
-        "home_win": 0.677247,
-        "away_win": 0.320045,
-        "tie": 0.002708
+        "home_win": 0.677236,
+        "away_win": 0.320059,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -2988,9 +2988,9 @@
       "model": {
         "home_points": 25.9,
         "away_points": 21.6,
-        "home_win": 0.630901,
-        "away_win": 0.366391,
-        "tie": 0.002708
+        "home_win": 0.630796,
+        "away_win": 0.366499,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3009,9 +3009,9 @@
       "model": {
         "home_points": 29.9,
         "away_points": 20.2,
-        "home_win": 0.776532,
-        "away_win": 0.22076,
-        "tie": 0.002708
+        "home_win": 0.776688,
+        "away_win": 0.220607,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3030,9 +3030,9 @@
       "model": {
         "home_points": 21.5,
         "away_points": 26.1,
-        "home_win": 0.354129,
-        "away_win": 0.643163,
-        "tie": 0.002708
+        "home_win": 0.353735,
+        "away_win": 0.64356,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3051,9 +3051,9 @@
       "model": {
         "home_points": 25.6,
         "away_points": 20.0,
-        "home_win": 0.668825,
-        "away_win": 0.328467,
-        "tie": 0.002708
+        "home_win": 0.668866,
+        "away_win": 0.328429,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3070,11 +3070,11 @@
       "stadium": "AT&T Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 27.4,
+        "home_points": 27.5,
         "away_points": 21.0,
-        "home_win": 0.693915,
-        "away_win": 0.303377,
-        "tie": 0.002708
+        "home_win": 0.694213,
+        "away_win": 0.303082,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3093,9 +3093,9 @@
       "model": {
         "home_points": 29.3,
         "away_points": 23.0,
-        "home_win": 0.688513,
-        "away_win": 0.308779,
-        "tie": 0.002708
+        "home_win": 0.688595,
+        "away_win": 0.3087,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3114,9 +3114,9 @@
       "model": {
         "home_points": 26.4,
         "away_points": 18.3,
-        "home_win": 0.739078,
-        "away_win": 0.258214,
-        "tie": 0.002708
+        "home_win": 0.739441,
+        "away_win": 0.257854,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3135,9 +3135,9 @@
       "model": {
         "home_points": 20.1,
         "away_points": 25.0,
-        "home_win": 0.347613,
-        "away_win": 0.649679,
-        "tie": 0.002708
+        "home_win": 0.347547,
+        "away_win": 0.649748,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3156,9 +3156,9 @@
       "model": {
         "home_points": 23.4,
         "away_points": 17.7,
-        "home_win": 0.671452,
-        "away_win": 0.32584,
-        "tie": 0.002708
+        "home_win": 0.671542,
+        "away_win": 0.325753,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3177,9 +3177,9 @@
       "model": {
         "home_points": 25.6,
         "away_points": 17.4,
-        "home_win": 0.74175,
-        "away_win": 0.255542,
-        "tie": 0.002708
+        "home_win": 0.741778,
+        "away_win": 0.255517,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3196,11 +3196,11 @@
       "stadium": "Lincoln Financial Field",
       "status": "scheduled",
       "model": {
-        "home_points": 21.8,
+        "home_points": 21.9,
         "away_points": 19.7,
-        "home_win": 0.565885,
-        "away_win": 0.431407,
-        "tie": 0.002708
+        "home_win": 0.566035,
+        "away_win": 0.43126,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3217,11 +3217,11 @@
       "stadium": "Estadio Banorte",
       "status": "scheduled",
       "model": {
-        "home_points": 21.9,
-        "away_points": 21.0,
-        "home_win": 0.528395,
-        "away_win": 0.468897,
-        "tie": 0.002708
+        "home_points": 21.7,
+        "away_points": 20.9,
+        "home_win": 0.525588,
+        "away_win": 0.471707,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3238,11 +3238,11 @@
       "stadium": "Northwest Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.6,
-        "away_points": 27.1,
-        "home_win": 0.453258,
-        "away_win": 0.544034,
-        "tie": 0.002708
+        "home_points": 25.5,
+        "away_points": 26.9,
+        "home_win": 0.455842,
+        "away_win": 0.541453,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3261,9 +3261,9 @@
       "model": {
         "home_points": 24.2,
         "away_points": 21.2,
-        "home_win": 0.592441,
-        "away_win": 0.404851,
-        "tie": 0.002708
+        "home_win": 0.592079,
+        "away_win": 0.405216,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3282,9 +3282,9 @@
       "model": {
         "home_points": 28.7,
         "away_points": 23.9,
-        "home_win": 0.648705,
-        "away_win": 0.348587,
-        "tie": 0.002708
+        "home_win": 0.648686,
+        "away_win": 0.348609,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3302,10 +3302,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 23.8,
-        "away_points": 24.6,
-        "home_win": 0.472382,
-        "away_win": 0.52491,
-        "tie": 0.002708
+        "away_points": 24.7,
+        "home_win": 0.472138,
+        "away_win": 0.525157,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3324,9 +3324,9 @@
       "model": {
         "home_points": 26.0,
         "away_points": 22.4,
-        "home_win": 0.611856,
-        "away_win": 0.385436,
-        "tie": 0.002708
+        "home_win": 0.611718,
+        "away_win": 0.385577,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3345,9 +3345,9 @@
       "model": {
         "home_points": 21.1,
         "away_points": 20.9,
-        "home_win": 0.503371,
-        "away_win": 0.493921,
-        "tie": 0.002708
+        "home_win": 0.503208,
+        "away_win": 0.494087,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3366,9 +3366,9 @@
       "model": {
         "home_points": 26.9,
         "away_points": 22.6,
-        "home_win": 0.633254,
-        "away_win": 0.364038,
-        "tie": 0.002708
+        "home_win": 0.633232,
+        "away_win": 0.364063,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3387,9 +3387,9 @@
       "model": {
         "home_points": 21.6,
         "away_points": 19.1,
-        "home_win": 0.577901,
-        "away_win": 0.419391,
-        "tie": 0.002708
+        "home_win": 0.577696,
+        "away_win": 0.419599,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3408,9 +3408,9 @@
       "model": {
         "home_points": 23.1,
         "away_points": 22.6,
-        "home_win": 0.514121,
-        "away_win": 0.483171,
-        "tie": 0.002708
+        "home_win": 0.513883,
+        "away_win": 0.483412,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3428,10 +3428,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 26.8,
-        "away_points": 22.0,
-        "home_win": 0.644961,
-        "away_win": 0.352331,
-        "tie": 0.002708
+        "away_points": 22.1,
+        "home_win": 0.644742,
+        "away_win": 0.352553,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3450,9 +3450,9 @@
       "model": {
         "home_points": 23.0,
         "away_points": 19.6,
-        "home_win": 0.604269,
-        "away_win": 0.393023,
-        "tie": 0.002708
+        "home_win": 0.604171,
+        "away_win": 0.393124,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3471,9 +3471,9 @@
       "model": {
         "home_points": 24.0,
         "away_points": 17.5,
-        "home_win": 0.6964,
-        "away_win": 0.300892,
-        "tie": 0.002708
+        "home_win": 0.696441,
+        "away_win": 0.300854,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3492,9 +3492,9 @@
       "model": {
         "home_points": 27.1,
         "away_points": 16.2,
-        "home_win": 0.806792,
-        "away_win": 0.1905,
-        "tie": 0.002708
+        "home_win": 0.806916,
+        "away_win": 0.190379,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3511,11 +3511,11 @@
       "stadium": "State Farm Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.9,
-        "away_points": 24.5,
-        "home_win": 0.542341,
-        "away_win": 0.454951,
-        "tie": 0.002708
+        "home_points": 25.7,
+        "away_points": 24.4,
+        "home_win": 0.539089,
+        "away_win": 0.458206,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3532,11 +3532,11 @@
       "stadium": "Levi's Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.0,
-        "away_points": 22.7,
-        "home_win": 0.537468,
-        "away_win": 0.459824,
-        "tie": 0.002708
+        "home_points": 23.8,
+        "away_points": 22.6,
+        "home_win": 0.534661,
+        "away_win": 0.462634,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3555,9 +3555,9 @@
       "model": {
         "home_points": 20.2,
         "away_points": 21.1,
-        "home_win": 0.470885,
-        "away_win": 0.526407,
-        "tie": 0.002708
+        "home_win": 0.470722,
+        "away_win": 0.526573,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3576,9 +3576,9 @@
       "model": {
         "home_points": 25.0,
         "away_points": 20.5,
-        "home_win": 0.638363,
-        "away_win": 0.358929,
-        "tie": 0.002708
+        "home_win": 0.63833,
+        "away_win": 0.358965,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3597,9 +3597,9 @@
       "model": {
         "home_points": 23.0,
         "away_points": 20.9,
-        "home_win": 0.564841,
-        "away_win": 0.432451,
-        "tie": 0.002708
+        "home_win": 0.564415,
+        "away_win": 0.43288,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3618,9 +3618,9 @@
       "model": {
         "home_points": 24.0,
         "away_points": 28.6,
-        "home_win": 0.355946,
-        "away_win": 0.641346,
-        "tie": 0.002708
+        "home_win": 0.355614,
+        "away_win": 0.641681,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3639,9 +3639,9 @@
       "model": {
         "home_points": 23.0,
         "away_points": 23.2,
-        "home_win": 0.490605,
-        "away_win": 0.506687,
-        "tie": 0.002708
+        "home_win": 0.490482,
+        "away_win": 0.506813,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3660,9 +3660,9 @@
       "model": {
         "home_points": 21.7,
         "away_points": 23.5,
-        "home_win": 0.44297,
-        "away_win": 0.554322,
-        "tie": 0.002708
+        "home_win": 0.442671,
+        "away_win": 0.554624,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3681,9 +3681,9 @@
       "model": {
         "home_points": 20.4,
         "away_points": 23.5,
-        "home_win": 0.403295,
-        "away_win": 0.593997,
-        "tie": 0.002708
+        "home_win": 0.402945,
+        "away_win": 0.59435,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3700,11 +3700,11 @@
       "stadium": "MetLife Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 20.6,
-        "away_points": 26.1,
-        "home_win": 0.327818,
-        "away_win": 0.669474,
-        "tie": 0.002708
+        "home_points": 20.5,
+        "away_points": 25.9,
+        "home_win": 0.330236,
+        "away_win": 0.667059,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3723,9 +3723,9 @@
       "model": {
         "home_points": 22.6,
         "away_points": 20.3,
-        "home_win": 0.570813,
-        "away_win": 0.426479,
-        "tie": 0.002708
+        "home_win": 0.570611,
+        "away_win": 0.426684,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3742,11 +3742,11 @@
       "stadium": "Nissan Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.3,
-        "away_points": 23.6,
-        "home_win": 0.457631,
-        "away_win": 0.539661,
-        "tie": 0.002708
+        "home_points": 22.1,
+        "away_points": 23.5,
+        "home_win": 0.454527,
+        "away_win": 0.542768,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3765,9 +3765,9 @@
       "model": {
         "home_points": 21.0,
         "away_points": 23.9,
-        "home_win": 0.407872,
-        "away_win": 0.58942,
-        "tie": 0.002708
+        "home_win": 0.407028,
+        "away_win": 0.590267,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3786,9 +3786,9 @@
       "model": {
         "home_points": 24.6,
         "away_points": 17.6,
-        "home_win": 0.708815,
-        "away_win": 0.288477,
-        "tie": 0.002708
+        "home_win": 0.708915,
+        "away_win": 0.28838,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3807,9 +3807,9 @@
       "model": {
         "home_points": 24.3,
         "away_points": 16.7,
-        "home_win": 0.724986,
-        "away_win": 0.272306,
-        "tie": 0.002708
+        "home_win": 0.725111,
+        "away_win": 0.272184,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3828,9 +3828,9 @@
       "model": {
         "home_points": 24.1,
         "away_points": 25.5,
-        "home_win": 0.453906,
-        "away_win": 0.543386,
-        "tie": 0.002708
+        "home_win": 0.453664,
+        "away_win": 0.543631,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3849,9 +3849,9 @@
       "model": {
         "home_points": 21.2,
         "away_points": 21.0,
-        "home_win": 0.505807,
-        "away_win": 0.491485,
-        "tie": 0.002708
+        "home_win": 0.505677,
+        "away_win": 0.491618,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3869,10 +3869,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 28.8,
-        "away_points": 21.4,
-        "home_win": 0.719843,
-        "away_win": 0.277449,
-        "tie": 0.002708
+        "away_points": 21.5,
+        "home_win": 0.719555,
+        "away_win": 0.27774,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3891,9 +3891,9 @@
       "model": {
         "home_points": 20.0,
         "away_points": 19.4,
-        "home_win": 0.517463,
-        "away_win": 0.479829,
-        "tie": 0.002708
+        "home_win": 0.517247,
+        "away_win": 0.480048,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3912,9 +3912,9 @@
       "model": {
         "home_points": 26.5,
         "away_points": 21.3,
-        "home_win": 0.660118,
-        "away_win": 0.337174,
-        "tie": 0.002708
+        "home_win": 0.660172,
+        "away_win": 0.337123,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3933,9 +3933,9 @@
       "model": {
         "home_points": 23.3,
         "away_points": 21.9,
-        "home_win": 0.541351,
-        "away_win": 0.455941,
-        "tie": 0.002708
+        "home_win": 0.541186,
+        "away_win": 0.456109,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3954,9 +3954,9 @@
       "model": {
         "home_points": 20.8,
         "away_points": 20.6,
-        "home_win": 0.503808,
-        "away_win": 0.493484,
-        "tie": 0.002708
+        "home_win": 0.503546,
+        "away_win": 0.493749,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3974,10 +3974,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 30.9,
-        "away_points": 18.7,
-        "home_win": 0.831884,
-        "away_win": 0.165408,
-        "tie": 0.002708
+        "away_points": 18.8,
+        "home_win": 0.832074,
+        "away_win": 0.165221,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -3996,9 +3996,9 @@
       "model": {
         "home_points": 21.1,
         "away_points": 23.7,
-        "home_win": 0.418357,
-        "away_win": 0.578935,
-        "tie": 0.002708
+        "home_win": 0.417988,
+        "away_win": 0.579307,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4017,9 +4017,9 @@
       "model": {
         "home_points": 18.2,
         "away_points": 23.4,
-        "home_win": 0.336536,
-        "away_win": 0.660756,
-        "tie": 0.002708
+        "home_win": 0.336157,
+        "away_win": 0.661138,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4038,9 +4038,9 @@
       "model": {
         "home_points": 25.1,
         "away_points": 21.9,
-        "home_win": 0.599681,
-        "away_win": 0.397611,
-        "tie": 0.002708
+        "home_win": 0.599853,
+        "away_win": 0.397442,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4057,11 +4057,11 @@
       "stadium": "Northwest Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.4,
-        "away_points": 25.0,
-        "home_win": 0.385881,
-        "away_win": 0.611411,
-        "tie": 0.002708
+        "home_points": 21.3,
+        "away_points": 24.8,
+        "home_win": 0.388339,
+        "away_win": 0.608956,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4080,9 +4080,9 @@
       "model": {
         "home_points": 20.4,
         "away_points": 22.2,
-        "home_win": 0.441229,
-        "away_win": 0.556063,
-        "tie": 0.002708
+        "home_win": 0.440979,
+        "away_win": 0.556316,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4101,9 +4101,9 @@
       "model": {
         "home_points": 22.8,
         "away_points": 24.1,
-        "home_win": 0.457859,
-        "away_win": 0.539433,
-        "tie": 0.002708
+        "home_win": 0.457551,
+        "away_win": 0.539744,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4120,11 +4120,11 @@
       "stadium": "Lumen Field",
       "status": "scheduled",
       "model": {
-        "home_points": 26.7,
-        "away_points": 17.3,
-        "home_win": 0.77144,
-        "away_win": 0.225852,
-        "tie": 0.002708
+        "home_points": 26.8,
+        "away_points": 17.4,
+        "home_win": 0.771256,
+        "away_win": 0.226039,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4141,11 +4141,11 @@
       "stadium": "Levi's Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.4,
-        "away_points": 23.2,
-        "home_win": 0.566395,
-        "away_win": 0.430897,
-        "tie": 0.002708
+        "home_points": 25.2,
+        "away_points": 23.1,
+        "home_win": 0.563745,
+        "away_win": 0.43355,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4164,9 +4164,9 @@
       "model": {
         "home_points": 24.4,
         "away_points": 25.5,
-        "home_win": 0.4631,
-        "away_win": 0.534192,
-        "tie": 0.002708
+        "home_win": 0.462918,
+        "away_win": 0.534377,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4185,9 +4185,9 @@
       "model": {
         "home_points": 24.3,
         "away_points": 20.1,
-        "home_win": 0.62783,
-        "away_win": 0.369462,
-        "tie": 0.002708
+        "home_win": 0.627718,
+        "away_win": 0.369577,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4204,11 +4204,11 @@
       "stadium": "SoFi Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 20.9,
-        "away_points": 23.8,
-        "home_win": 0.407051,
-        "away_win": 0.590241,
-        "tie": 0.002708
+        "home_points": 20.8,
+        "away_points": 23.6,
+        "home_win": 0.409553,
+        "away_win": 0.587742,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4226,10 +4226,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 20.4,
-        "away_points": 21.8,
-        "home_win": 0.452067,
-        "away_win": 0.545225,
-        "tie": 0.002708
+        "away_points": 21.9,
+        "home_win": 0.452253,
+        "away_win": 0.545042,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4248,9 +4248,9 @@
       "model": {
         "home_points": 28.5,
         "away_points": 23.1,
-        "home_win": 0.664414,
-        "away_win": 0.332878,
-        "tie": 0.002708
+        "home_win": 0.664382,
+        "away_win": 0.332913,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4269,9 +4269,9 @@
       "model": {
         "home_points": 24.2,
         "away_points": 25.5,
-        "home_win": 0.457904,
-        "away_win": 0.539388,
-        "tie": 0.002708
+        "home_win": 0.457629,
+        "away_win": 0.539666,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4290,9 +4290,9 @@
       "model": {
         "home_points": 25.0,
         "away_points": 18.1,
-        "home_win": 0.704598,
-        "away_win": 0.292694,
-        "tie": 0.002708
+        "home_win": 0.704736,
+        "away_win": 0.292559,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4311,9 +4311,9 @@
       "model": {
         "home_points": 22.3,
         "away_points": 21.6,
-        "home_win": 0.520981,
-        "away_win": 0.476311,
-        "tie": 0.002708
+        "home_win": 0.52083,
+        "away_win": 0.476465,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4332,9 +4332,9 @@
       "model": {
         "home_points": 21.0,
         "away_points": 19.2,
-        "home_win": 0.553328,
-        "away_win": 0.443964,
-        "tie": 0.002708
+        "home_win": 0.553483,
+        "away_win": 0.443812,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4353,9 +4353,9 @@
       "model": {
         "home_points": 22.6,
         "away_points": 23.6,
-        "home_win": 0.467634,
-        "away_win": 0.529658,
-        "tie": 0.002708
+        "home_win": 0.467401,
+        "away_win": 0.529894,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4374,9 +4374,9 @@
       "model": {
         "home_points": 24.7,
         "away_points": 20.6,
-        "home_win": 0.628097,
-        "away_win": 0.369195,
-        "tie": 0.002708
+        "home_win": 0.628032,
+        "away_win": 0.369263,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4395,9 +4395,9 @@
       "model": {
         "home_points": 21.5,
         "away_points": 25.5,
-        "home_win": 0.372836,
-        "away_win": 0.624456,
-        "tie": 0.002708
+        "home_win": 0.372449,
+        "away_win": 0.624846,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4414,11 +4414,11 @@
       "stadium": "Northwest Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.7,
-        "away_points": 24.2,
-        "home_win": 0.514176,
-        "away_win": 0.483116,
-        "tie": 0.002708
+        "home_points": 24.6,
+        "away_points": 24.0,
+        "home_win": 0.516815,
+        "away_win": 0.48048,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4437,9 +4437,9 @@
       "model": {
         "home_points": 24.4,
         "away_points": 21.4,
-        "home_win": 0.591686,
-        "away_win": 0.405606,
-        "tie": 0.002708
+        "home_win": 0.591365,
+        "away_win": 0.40593,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4457,10 +4457,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 29.3,
-        "away_points": 22.8,
-        "home_win": 0.69477,
-        "away_win": 0.302522,
-        "tie": 0.002708
+        "away_points": 22.9,
+        "home_win": 0.694355,
+        "away_win": 0.30294,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4479,9 +4479,9 @@
       "model": {
         "home_points": 19.1,
         "away_points": 24.0,
-        "home_win": 0.349121,
-        "away_win": 0.648171,
-        "tie": 0.002708
+        "home_win": 0.348841,
+        "away_win": 0.648454,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4500,9 +4500,9 @@
       "model": {
         "home_points": 24.0,
         "away_points": 23.7,
-        "home_win": 0.505742,
-        "away_win": 0.49155,
-        "tie": 0.002708
+        "home_win": 0.505568,
+        "away_win": 0.491727,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4521,9 +4521,9 @@
       "model": {
         "home_points": 22.0,
         "away_points": 19.1,
-        "home_win": 0.588958,
-        "away_win": 0.408334,
-        "tie": 0.002708
+        "home_win": 0.588946,
+        "away_win": 0.408349,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4541,10 +4541,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 20.8,
-        "away_points": 20.1,
-        "home_win": 0.519676,
-        "away_win": 0.477616,
-        "tie": 0.002708
+        "away_points": 20.2,
+        "home_win": 0.519832,
+        "away_win": 0.477463,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4563,9 +4563,9 @@
       "model": {
         "home_points": 22.7,
         "away_points": 21.9,
-        "home_win": 0.524392,
-        "away_win": 0.4729,
-        "tie": 0.002708
+        "home_win": 0.52421,
+        "away_win": 0.473085,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4584,9 +4584,9 @@
       "model": {
         "home_points": 24.0,
         "away_points": 25.0,
-        "home_win": 0.467987,
-        "away_win": 0.529305,
-        "tie": 0.002708
+        "home_win": 0.467762,
+        "away_win": 0.529533,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4605,9 +4605,9 @@
       "model": {
         "home_points": 24.3,
         "away_points": 21.7,
-        "home_win": 0.580929,
-        "away_win": 0.416363,
-        "tie": 0.002708
+        "home_win": 0.580928,
+        "away_win": 0.416367,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4626,9 +4626,9 @@
       "model": {
         "home_points": 23.0,
         "away_points": 23.1,
-        "home_win": 0.496769,
-        "away_win": 0.500523,
-        "tie": 0.002708
+        "home_win": 0.49664,
+        "away_win": 0.500655,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4647,9 +4647,9 @@
       "model": {
         "home_points": 25.8,
         "away_points": 17.3,
-        "home_win": 0.749486,
-        "away_win": 0.247806,
-        "tie": 0.002708
+        "home_win": 0.749631,
+        "away_win": 0.247664,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4668,9 +4668,9 @@
       "model": {
         "home_points": 27.5,
         "away_points": 26.2,
-        "home_win": 0.539981,
-        "away_win": 0.457311,
-        "tie": 0.002708
+        "home_win": 0.539867,
+        "away_win": 0.457428,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4689,9 +4689,9 @@
       "model": {
         "home_points": 20.6,
         "away_points": 21.1,
-        "home_win": 0.4806,
-        "away_win": 0.516692,
-        "tie": 0.002708
+        "home_win": 0.480266,
+        "away_win": 0.517029,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4708,11 +4708,11 @@
       "stadium": "U.S. Bank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 25.8,
-        "away_points": 18.1,
-        "home_win": 0.728867,
-        "away_win": 0.268425,
-        "tie": 0.002708
+        "home_points": 25.6,
+        "away_points": 18.0,
+        "home_win": 0.726606,
+        "away_win": 0.270689,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4731,9 +4731,9 @@
       "model": {
         "home_points": 24.9,
         "away_points": 22.4,
-        "home_win": 0.577278,
-        "away_win": 0.420014,
-        "tie": 0.002708
+        "home_win": 0.577436,
+        "away_win": 0.419859,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4752,9 +4752,9 @@
       "model": {
         "home_points": 18.7,
         "away_points": 23.5,
-        "home_win": 0.349584,
-        "away_win": 0.647708,
-        "tie": 0.002708
+        "home_win": 0.349217,
+        "away_win": 0.648078,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4773,9 +4773,9 @@
       "model": {
         "home_points": 24.7,
         "away_points": 19.4,
-        "home_win": 0.664059,
-        "away_win": 0.333233,
-        "tie": 0.002708
+        "home_win": 0.664109,
+        "away_win": 0.333186,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4794,9 +4794,9 @@
       "model": {
         "home_points": 23.1,
         "away_points": 19.6,
-        "home_win": 0.609163,
-        "away_win": 0.388129,
-        "tie": 0.002708
+        "home_win": 0.60919,
+        "away_win": 0.388105,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4813,11 +4813,11 @@
       "stadium": "GEHA Field at Arrowhead Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 22.7,
-        "away_points": 21.9,
-        "home_win": 0.525093,
-        "away_win": 0.472199,
-        "tie": 0.002708
+        "home_points": 22.6,
+        "away_points": 21.7,
+        "home_win": 0.527805,
+        "away_win": 0.46949,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4836,9 +4836,9 @@
       "model": {
         "home_points": 24.2,
         "away_points": 27.1,
-        "home_win": 0.409151,
-        "away_win": 0.588141,
-        "tie": 0.002708
+        "home_win": 0.409177,
+        "away_win": 0.588118,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4857,9 +4857,9 @@
       "model": {
         "home_points": 30.5,
         "away_points": 21.0,
-        "home_win": 0.772954,
-        "away_win": 0.224338,
-        "tie": 0.002708
+        "home_win": 0.772899,
+        "away_win": 0.224396,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4878,9 +4878,9 @@
       "model": {
         "home_points": 25.1,
         "away_points": 26.8,
-        "home_win": 0.445452,
-        "away_win": 0.55184,
-        "tie": 0.002708
+        "home_win": 0.445176,
+        "away_win": 0.552119,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4899,9 +4899,9 @@
       "model": {
         "home_points": 24.1,
         "away_points": 21.7,
-        "home_win": 0.574445,
-        "away_win": 0.422847,
-        "tie": 0.002708
+        "home_win": 0.574382,
+        "away_win": 0.422913,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4920,9 +4920,9 @@
       "model": {
         "home_points": 19.6,
         "away_points": 25.2,
-        "home_win": 0.326979,
-        "away_win": 0.670313,
-        "tie": 0.002708
+        "home_win": 0.32672,
+        "away_win": 0.670575,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4940,10 +4940,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 21.8,
-        "away_points": 23.1,
-        "home_win": 0.455148,
-        "away_win": 0.542144,
-        "tie": 0.002708
+        "away_points": 23.2,
+        "home_win": 0.454829,
+        "away_win": 0.542466,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4962,9 +4962,9 @@
       "model": {
         "home_points": 27.0,
         "away_points": 23.3,
-        "home_win": 0.615202,
-        "away_win": 0.38209,
-        "tie": 0.002708
+        "home_win": 0.615169,
+        "away_win": 0.382126,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -4981,11 +4981,11 @@
       "stadium": "EverBank Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 28.4,
-        "away_points": 20.4,
-        "home_win": 0.735599,
-        "away_win": 0.261693,
-        "tie": 0.002708
+        "home_points": 28.1,
+        "away_points": 20.3,
+        "home_win": 0.733301,
+        "away_win": 0.263994,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5002,11 +5002,11 @@
       "stadium": "SoFi Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 19.0,
+        "home_points": 18.9,
         "away_points": 21.0,
-        "home_win": 0.433734,
-        "away_win": 0.563558,
-        "tie": 0.002708
+        "home_win": 0.433454,
+        "away_win": 0.563841,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5025,9 +5025,9 @@
       "model": {
         "home_points": 21.9,
         "away_points": 28.2,
-        "home_win": 0.308491,
-        "away_win": 0.688801,
-        "tie": 0.002708
+        "home_win": 0.308072,
+        "away_win": 0.689223,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5046,9 +5046,9 @@
       "model": {
         "home_points": 21.5,
         "away_points": 20.3,
-        "home_win": 0.538119,
-        "away_win": 0.459173,
-        "tie": 0.002708
+        "home_win": 0.537968,
+        "away_win": 0.459327,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5067,9 +5067,9 @@
       "model": {
         "home_points": 16.7,
         "away_points": 22.6,
-        "home_win": 0.317781,
-        "away_win": 0.679511,
-        "tie": 0.002708
+        "home_win": 0.317352,
+        "away_win": 0.679943,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5088,9 +5088,9 @@
       "model": {
         "home_points": 22.5,
         "away_points": 24.3,
-        "home_win": 0.439724,
-        "away_win": 0.557568,
-        "tie": 0.002708
+        "home_win": 0.439667,
+        "away_win": 0.557628,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5109,9 +5109,9 @@
       "model": {
         "home_points": 18.2,
         "away_points": 23.4,
-        "home_win": 0.340491,
-        "away_win": 0.656801,
-        "tie": 0.002708
+        "home_win": 0.340093,
+        "away_win": 0.657202,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5129,10 +5129,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 24.9,
-        "away_points": 22.3,
-        "home_win": 0.578364,
-        "away_win": 0.418928,
-        "tie": 0.002708
+        "away_points": 22.4,
+        "home_win": 0.57793,
+        "away_win": 0.419365,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5151,9 +5151,9 @@
       "model": {
         "home_points": 25.6,
         "away_points": 27.0,
-        "home_win": 0.452311,
-        "away_win": 0.544981,
-        "tie": 0.002708
+        "home_win": 0.452067,
+        "away_win": 0.545228,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5170,11 +5170,11 @@
       "stadium": "Levi's Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 24.6,
-        "away_points": 20.2,
-        "home_win": 0.635106,
-        "away_win": 0.362186,
-        "tie": 0.002708
+        "home_points": 24.4,
+        "away_points": 20.1,
+        "home_win": 0.63215,
+        "away_win": 0.365145,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5193,9 +5193,9 @@
       "model": {
         "home_points": 21.9,
         "away_points": 20.3,
-        "home_win": 0.54972,
-        "away_win": 0.447572,
-        "tie": 0.002708
+        "home_win": 0.549663,
+        "away_win": 0.447632,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5212,11 +5212,11 @@
       "stadium": "State Farm Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 21.9,
-        "away_points": 27.5,
-        "home_win": 0.327184,
-        "away_win": 0.670108,
-        "tie": 0.002708
+        "home_points": 21.8,
+        "away_points": 27.3,
+        "home_win": 0.329124,
+        "away_win": 0.668171,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5235,9 +5235,9 @@
       "model": {
         "home_points": 25.3,
         "away_points": 21.0,
-        "home_win": 0.634313,
-        "away_win": 0.362979,
-        "tie": 0.002708
+        "home_win": 0.634284,
+        "away_win": 0.363011,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5256,9 +5256,9 @@
       "model": {
         "home_points": 30.4,
         "away_points": 19.1,
-        "home_win": 0.81409,
-        "away_win": 0.183202,
-        "tie": 0.002708
+        "home_win": 0.814251,
+        "away_win": 0.183044,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5277,9 +5277,9 @@
       "model": {
         "home_points": 23.3,
         "away_points": 22.7,
-        "home_win": 0.518845,
-        "away_win": 0.478447,
-        "tie": 0.002708
+        "home_win": 0.518609,
+        "away_win": 0.478686,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5298,9 +5298,9 @@
       "model": {
         "home_points": 25.2,
         "away_points": 20.0,
-        "home_win": 0.657405,
-        "away_win": 0.339887,
-        "tie": 0.002708
+        "home_win": 0.657439,
+        "away_win": 0.339856,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5319,9 +5319,9 @@
       "model": {
         "home_points": 22.7,
         "away_points": 18.0,
-        "home_win": 0.64451,
-        "away_win": 0.352782,
-        "tie": 0.002708
+        "home_win": 0.644432,
+        "away_win": 0.352863,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5340,9 +5340,9 @@
       "model": {
         "home_points": 25.2,
         "away_points": 25.7,
-        "home_win": 0.480132,
-        "away_win": 0.51716,
-        "tie": 0.002708
+        "home_win": 0.479936,
+        "away_win": 0.517359,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5361,9 +5361,9 @@
       "model": {
         "home_points": 25.5,
         "away_points": 15.5,
-        "home_win": 0.784677,
-        "away_win": 0.212615,
-        "tie": 0.002708
+        "home_win": 0.784796,
+        "away_win": 0.212499,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5382,9 +5382,9 @@
       "model": {
         "home_points": 24.0,
         "away_points": 25.8,
-        "home_win": 0.440099,
-        "away_win": 0.557193,
-        "tie": 0.002708
+        "home_win": 0.439928,
+        "away_win": 0.557367,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5403,9 +5403,9 @@
       "model": {
         "home_points": 25.7,
         "away_points": 16.7,
-        "home_win": 0.760164,
-        "away_win": 0.237128,
-        "tie": 0.002708
+        "home_win": 0.760271,
+        "away_win": 0.237024,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5424,9 +5424,9 @@
       "model": {
         "home_points": 23.4,
         "away_points": 22.6,
-        "home_win": 0.523118,
-        "away_win": 0.474174,
-        "tie": 0.002708
+        "home_win": 0.522853,
+        "away_win": 0.474442,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5445,9 +5445,9 @@
       "model": {
         "home_points": 22.4,
         "away_points": 19.0,
-        "home_win": 0.604582,
-        "away_win": 0.39271,
-        "tie": 0.002708
+        "home_win": 0.604522,
+        "away_win": 0.392773,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5466,9 +5466,9 @@
       "model": {
         "home_points": 24.7,
         "away_points": 18.1,
-        "home_win": 0.696574,
-        "away_win": 0.300718,
-        "tie": 0.002708
+        "home_win": 0.69666,
+        "away_win": 0.300635,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5487,9 +5487,9 @@
       "model": {
         "home_points": 22.3,
         "away_points": 23.0,
-        "home_win": 0.474203,
-        "away_win": 0.523089,
-        "tie": 0.002708
+        "home_win": 0.474007,
+        "away_win": 0.523288,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5507,10 +5507,10 @@
       "status": "scheduled",
       "model": {
         "home_points": 19.7,
-        "away_points": 22.5,
-        "home_win": 0.408554,
-        "away_win": 0.588738,
-        "tie": 0.002708
+        "away_points": 22.6,
+        "home_win": 0.40822,
+        "away_win": 0.589075,
+        "tie": 0.002705
       },
       "market": null
     },
@@ -5527,11 +5527,11 @@
       "stadium": "Northwest Stadium",
       "status": "scheduled",
       "model": {
-        "home_points": 26.9,
-        "away_points": 27.0,
-        "home_win": 0.496937,
-        "away_win": 0.500355,
-        "tie": 0.002708
+        "home_points": 26.8,
+        "away_points": 26.8,
+        "home_win": 0.499318,
+        "away_win": 0.497977,
+        "tie": 0.002705
       },
       "market": null
     }
@@ -5546,2722 +5546,2722 @@
       [
         4.7,
         -1.0,
-        0.22988636
+        0.22977836
       ],
       [
         9.7,
         5.4,
-        0.23032182
+        0.23021361
       ],
       [
         -9.8,
         -1.6,
-        0.23106567
+        0.23095711
       ],
       [
         4.8,
         10.4,
-        0.23106567
+        0.23095711
       ],
       [
         2.6,
         -2.5,
-        0.23106567
+        0.23095711
       ],
       [
         -13.6,
         -2.0,
-        0.23106567
+        0.23095711
       ],
       [
         2.9,
         7.7,
-        0.23106567
+        0.23095711
       ],
       [
         -6.5,
         -4.5,
-        0.23106567
+        0.23095711
       ],
       [
         22.8,
         -5.7,
-        0.23106567
+        0.23095711
       ],
       [
         -14.4,
         6.7,
-        0.23106567
+        0.23095711
       ],
       [
         -1.3,
         -11.2,
-        0.23112205
+        0.23101347
       ],
       [
         2.2,
         0.1,
-        0.23112205
+        0.23101347
       ],
       [
         -5.0,
         7.5,
-        0.23112815
+        0.23101956
       ],
       [
         11.4,
         2.4,
-        0.23112815
+        0.23101956
       ],
       [
         0.3,
         -2.9,
-        0.23119979
+        0.23109117
       ],
       [
         5.8,
         4.7,
-        0.23163773
+        0.23152891
       ],
       [
         -13.9,
         5.6,
-        0.23296116
+        0.23285172
       ],
       [
         -2.2,
         8.6,
-        0.23415779
+        0.23404778
       ],
       [
         -16.6,
         3.2,
-        0.23415779
+        0.23404778
       ],
       [
         -7.7,
         24.1,
-        0.23415779
+        0.23404778
       ],
       [
         -8.6,
         -2.1,
-        0.23415779
+        0.23404778
       ],
       [
         -10.4,
         -10.8,
-        0.23415779
+        0.23404778
       ],
       [
         -10.1,
         -3.1,
-        0.23415779
+        0.23404778
       ],
       [
         2.2,
         -7.5,
-        0.23415779
+        0.23404778
       ],
       [
         -1.2,
         3.6,
-        0.23415779
+        0.23404778
       ],
       [
         -3.4,
         6.9,
-        0.23415779
+        0.23404778
       ],
       [
         -1.0,
         -2.3,
-        0.23415779
+        0.23404778
       ],
       [
         18.5,
         -13.8,
-        0.23421492
+        0.23410489
       ],
       [
         -13.6,
         -5.9,
-        0.2342211
+        0.23411106
       ],
       [
         1.0,
         5.2,
-        0.2342211
+        0.23411106
       ],
       [
         -3.8,
         -7.6,
-        0.2342937
+        0.23418363
       ],
       [
         -6.3,
         2.2,
-        0.23473751
+        0.23462722
       ],
       [
         5.7,
         -14.8,
-        0.23607865
+        0.23596773
       ],
       [
         -8.7,
         4.1,
-        0.23729128
+        0.2371798
       ],
       [
         -2.6,
         -5.5,
-        0.23729128
+        0.2371798
       ],
       [
         9.7,
         -12.2,
-        0.23729128
+        0.2371798
       ],
       [
         -14.1,
         -7.3,
-        0.23729128
+        0.2371798
       ],
       [
         -0.5,
         -8.8,
-        0.23729128
+        0.2371798
       ],
       [
         -16.1,
         8.6,
-        0.23729128
+        0.2371798
       ],
       [
         -6.0,
         8.6,
-        0.23729128
+        0.2371798
       ],
       [
         -2.3,
         19.9,
-        0.23734918
+        0.23723767
       ],
       [
         -0.4,
         -20.9,
-        0.23734918
+        0.23723767
       ],
       [
         -11.6,
         -5.4,
-        0.23735544
+        0.23724393
       ],
       [
         -0.6,
         5.7,
-        0.23735544
+        0.23724393
       ],
       [
         6.6,
         -0.9,
-        0.23735544
+        0.23724393
       ],
       [
         -2.2,
         -1.7,
-        0.23742901
+        0.23731747
       ],
       [
         19.9,
         -7.7,
-        0.23786464
+        0.23775289
       ],
       [
         5.3,
         19.1,
-        0.23787876
+        0.237767
       ],
       [
         -3.7,
         -5.8,
-        0.23923785
+        0.23912545
       ],
       [
         6.8,
         1.2,
-        0.24046671
+        0.24035374
       ],
       [
         4.3,
         9.7,
-        0.24046671
+        0.24035374
       ],
       [
         2.1,
         -3.9,
-        0.24046671
+        0.24035374
       ],
       [
         5.8,
         10.0,
-        0.24046671
+        0.24035374
       ],
       [
         2.0,
         -1.0,
-        0.24046671
+        0.24035374
       ],
       [
         7.1,
         3.8,
-        0.24046671
+        0.24035374
       ],
       [
         -10.7,
         -8.3,
-        0.24046671
+        0.24035374
       ],
       [
         9.9,
         -6.3,
-        0.24046671
+        0.24035374
       ],
       [
         -12.4,
         20.3,
-        0.24052538
+        0.24041238
       ],
       [
         4.7,
         -2.4,
-        0.24052538
+        0.24041238
       ],
       [
         -11.1,
         -5.8,
-        0.24053173
+        0.24041872
       ],
       [
         -2.6,
         -5.2,
-        0.24053173
+        0.24041872
       ],
       [
         12.3,
         -13.6,
-        0.24060628
+        0.24049324
       ],
       [
         -13.0,
         12.0,
-        0.24104774
+        0.2409345
       ],
       [
         16.7,
         6.8,
-        0.24106205
+        0.24094879
       ],
       [
         16.3,
         8.8,
-        0.24243932
+        0.24232542
       ],
       [
         1.0,
         -1.0,
-        0.24361715
+        0.2435027
       ],
       [
         12.3,
         -7.7,
-        0.24368463
+        0.24357015
       ],
       [
         15.6,
         16.7,
-        0.24368463
+        0.24357015
       ],
       [
         3.8,
         -6.3,
-        0.24368463
+        0.24357015
       ],
       [
         13.1,
         12.5,
-        0.24368463
+        0.24357015
       ],
       [
         -11.1,
         -5.8,
-        0.24368463
+        0.24357015
       ],
       [
         11.3,
         -10.6,
-        0.24368463
+        0.24357015
       ],
       [
         12.5,
         -1.6,
-        0.24374409
+        0.24362958
       ],
       [
         -6.2,
         6.2,
-        0.24374409
+        0.24362958
       ],
       [
         -3.6,
         1.5,
-        0.24375052
+        0.243636
       ],
       [
         -3.7,
         11.4,
-        0.24375052
+        0.243636
       ],
       [
         -2.8,
         -2.8,
-        0.24382607
+        0.24371152
       ],
       [
         2.8,
         -6.8,
-        0.24428794
+        0.24417317
       ],
       [
         2.6,
         10.8,
-        0.24568364
+        0.24556822
       ],
       [
         12.9,
         -5.5,
-        0.24687723
+        0.24676125
       ],
       [
         1.0,
         4.1,
-        0.24694561
+        0.2468296
       ],
       [
         7.4,
         -6.8,
-        0.24694561
+        0.2468296
       ],
       [
         0.7,
         23.2,
-        0.24694561
+        0.2468296
       ],
       [
         4.0,
         31.9,
-        0.24694561
+        0.2468296
       ],
       [
         -5.9,
         -5.0,
-        0.24694561
+        0.2468296
       ],
       [
         -6.1,
         -0.9,
-        0.24694561
+        0.2468296
       ],
       [
         -5.3,
         3.3,
-        0.24700587
+        0.24688982
       ],
       [
         -6.8,
         13.0,
-        0.24700587
+        0.24688982
       ],
       [
         0.0,
         15.9,
-        0.24701239
+        0.24689634
       ],
       [
         -19.5,
         24.3,
-        0.24701239
+        0.24689634
       ],
       [
         -14.0,
         -6.0,
-        0.24708895
+        0.24697286
       ],
       [
         2.2,
         -0.8,
-        0.24755699
+        0.24744069
       ],
       [
         -13.3,
         14.3,
-        0.24897137
+        0.2488544
       ],
       [
         11.4,
         -4.0,
-        0.25018094
+        0.2500634
       ],
       [
         -9.4,
         11.6,
-        0.25025024
+        0.25013267
       ],
       [
         7.4,
         -6.6,
-        0.25025024
+        0.25013267
       ],
       [
         -8.6,
         -2.2,
-        0.25025024
+        0.25013267
       ],
       [
         -1.3,
         2.8,
-        0.25025024
+        0.25013267
       ],
       [
         -8.0,
         -13.8,
-        0.25025024
+        0.25013267
       ],
       [
         4.5,
         7.2,
-        0.25025024
+        0.25013267
       ],
       [
         -16.8,
         5.1,
-        0.25025024
+        0.25013267
       ],
       [
         -4.0,
         -5.6,
-        0.2503113
+        0.2501937
       ],
       [
         14.0,
         -12.7,
-        0.2503113
+        0.2501937
       ],
       [
         -6.0,
         7.3,
-        0.2503179
+        0.2502003
       ],
       [
         17.4,
         0.1,
-        0.25039549
+        0.25027785
       ],
       [
         8.9,
         17.7,
-        0.2508698
+        0.25075193
       ],
       [
         -4.8,
         -8.2,
-        0.25088468
+        0.25076682
       ],
       [
         7.9,
         -2.7,
-        0.2523031
+        0.25218457
       ],
       [
         -8.2,
         13.2,
-        0.25359908
+        0.25347994
       ],
       [
         8.9,
         -0.9,
-        0.25359908
+        0.25347994
       ],
       [
         25.3,
         -4.8,
-        0.25359908
+        0.25347994
       ],
       [
         -0.6,
         -1.8,
-        0.25359908
+        0.25347994
       ],
       [
         5.4,
         6.0,
-        0.25359908
+        0.25347994
       ],
       [
         1.7,
         7.1,
-        0.25359908
+        0.25347994
       ],
       [
         6.3,
         4.3,
-        0.25359908
+        0.25347994
       ],
       [
         0.8,
         11.5,
-        0.25359908
+        0.25347994
       ],
       [
         3.8,
         -12.9,
-        0.25366096
+        0.25354179
       ],
       [
         -11.7,
         4.8,
-        0.25366096
+        0.25354179
       ],
       [
         2.9,
         -1.4,
-        0.25366765
+        0.25354847
       ],
       [
         0.9,
         2.8,
-        0.25366765
+        0.25354847
       ],
       [
         -5.4,
         -7.8,
-        0.25366765
+        0.25354847
       ],
       [
         3.7,
         1.2,
-        0.25374628
+        0.25362706
       ],
       [
         4.9,
         4.1,
-        0.25422693
+        0.25410749
       ],
       [
         0.4,
         -6.8,
-        0.25567942
+        0.2555593
       ],
       [
         5.1,
         -5.0,
-        0.25701307
+        0.25689233
       ],
       [
         15.5,
         -8.7,
-        0.25701307
+        0.25689233
       ],
       [
         2.1,
         8.2,
-        0.25701307
+        0.25689233
       ],
       [
         4.7,
         -2.6,
-        0.25701307
+        0.25689233
       ],
       [
         15.3,
         3.1,
-        0.25701307
+        0.25689233
       ],
       [
         -10.7,
         6.5,
-        0.25701307
+        0.25689233
       ],
       [
         1.2,
         5.6,
-        0.25701307
+        0.25689233
       ],
       [
         -0.1,
         -1.4,
-        0.25701307
+        0.25689233
       ],
       [
         6.9,
         -13.3,
-        0.25707579
+        0.25695501
       ],
       [
         0.7,
         2.3,
-        0.25707579
+        0.25695501
       ],
       [
         -10.8,
         -0.9,
-        0.25708257
+        0.25696179
       ],
       [
         -3.6,
         3.8,
-        0.25708257
+        0.25696179
       ],
       [
         -4.7,
         -7.4,
-        0.25716225
+        0.25704143
       ],
       [
         4.9,
         4.5,
-        0.25764938
+        0.25752833
       ],
       [
         6.9,
         12.4,
-        0.25912142
+        0.25899968
       ],
       [
         2.3,
         -4.2,
-        0.2603803
+        0.26025797
       ],
       [
         -18.6,
         1.6,
-        0.26045242
+        0.26033005
       ],
       [
         -0.1,
         3.4,
-        0.26045242
+        0.26033005
       ],
       [
         -15.1,
         -11.9,
-        0.26045242
+        0.26033005
       ],
       [
         -8.5,
         -3.0,
-        0.26045242
+        0.26033005
       ],
       [
         -4.0,
         -3.3,
-        0.26045242
+        0.26033005
       ],
       [
         -2.3,
         -1.8,
-        0.26045242
+        0.26033005
       ],
       [
         6.2,
         6.4,
-        0.26045242
+        0.26033005
       ],
       [
         3.5,
         0.3,
-        0.26051597
+        0.26039358
       ],
       [
         8.9,
         -13.6,
-        0.26052284
+        0.26040044
       ],
       [
         -20.6,
         10.2,
-        0.26052284
+        0.26040044
       ],
       [
         1.2,
         -0.3,
-        0.26060359
+        0.26048116
       ],
       [
         -9.0,
         1.5,
-        0.26109724
+        0.26097457
       ],
       [
         -2.2,
         -3.3,
-        0.26258898
+        0.26246561
       ],
       [
         -1.4,
         -2.4,
-        0.26393779
+        0.26381379
       ],
       [
         23.2,
         -14.5,
-        0.26393779
+        0.26381379
       ],
       [
         9.0,
         -1.9,
-        0.26393779
+        0.26381379
       ],
       [
         2.5,
         7.6,
-        0.26393779
+        0.26381379
       ],
       [
         12.2,
         -5.6,
-        0.26393779
+        0.26381379
       ],
       [
         6.1,
         7.8,
-        0.26393779
+        0.26381379
       ],
       [
         -2.4,
         -7.0,
-        0.26393779
+        0.26381379
       ],
       [
         -6.1,
         0.2,
-        0.26393779
+        0.26381379
       ],
       [
         15.6,
         -13.2,
-        0.26400219
+        0.26387816
       ],
       [
         -10.7,
         0.4,
-        0.26400219
+        0.26387816
       ],
       [
         5.5,
         0.1,
-        0.26400915
+        0.26388512
       ],
       [
         10.2,
         4.8,
-        0.26409098
+        0.26396691
       ],
       [
         -16.7,
         13.6,
-        0.26459123
+        0.26446693
       ],
       [
         5.3,
         -1.0,
-        0.26610294
+        0.26597792
       ],
       [
         11.0,
         3.7,
-        0.2674698
+        0.26734414
       ],
       [
         7.2,
         8.3,
-        0.2674698
+        0.26734414
       ],
       [
         3.8,
         13.7,
-        0.2674698
+        0.26734414
       ],
       [
         -16.4,
         -3.9,
-        0.2674698
+        0.26734414
       ],
       [
         10.6,
         -3.1,
-        0.2674698
+        0.26734414
       ],
       [
         -11.8,
         7.4,
-        0.2674698
+        0.26734414
       ],
       [
         1.6,
         8.3,
-        0.2674698
+        0.26734414
       ],
       [
         -1.7,
         7.3,
-        0.26753506
+        0.26740937
       ],
       [
         15.6,
         -13.5,
-        0.26754212
+        0.26741642
       ],
       [
         -8.8,
         -15.8,
-        0.26754212
+        0.26741642
       ],
       [
         -2.6,
         13.0,
-        0.26762505
+        0.26749931
       ],
       [
         1.1,
         6.1,
-        0.26813199
+        0.26800602
       ],
       [
         -5.2,
         1.5,
-        0.26949861
+        0.26937199
       ],
       [
         0.9,
         2.8,
-        0.26958392
+        0.26945727
       ],
       [
         4.8,
         -3.9,
-        0.2696657
+        0.26953901
       ],
       [
         -8.0,
         -0.8,
-        0.2700643
+        0.26993742
       ],
       [
         -7.7,
         -5.5,
-        0.27104907
+        0.27092173
       ],
       [
         15.0,
         23.1,
-        0.27104907
+        0.27092173
       ],
       [
         -2.6,
         0.6,
-        0.27104907
+        0.27092173
       ],
       [
         -2.1,
         2.6,
-        0.27104907
+        0.27092173
       ],
       [
         3.1,
         4.8,
-        0.27104907
+        0.27092173
       ],
       [
         1.0,
         4.9,
-        0.27104907
+        0.27092173
       ],
       [
         17.4,
         -2.0,
-        0.27104907
+        0.27092173
       ],
       [
         4.3,
         0.1,
-        0.27111521
+        0.27098784
       ],
       [
         -9.8,
         0.1,
-        0.27111521
+        0.27098784
       ],
       [
         -7.6,
         1.0,
-        0.27112236
+        0.27099499
       ],
       [
         9.0,
         -11.6,
-        0.2712064
+        0.27107898
       ],
       [
         18.5,
         14.0,
-        0.27172013
+        0.27159247
       ],
       [
         7.4,
         8.9,
-        0.27327256
+        0.27314417
       ],
       [
         8.1,
         7.7,
-        0.27467625
+        0.2745472
       ],
       [
         16.9,
         2.4,
-        0.27467625
+        0.2745472
       ],
       [
         -7.2,
         -7.4,
-        0.27467625
+        0.2745472
       ],
       [
         -7.6,
         -0.3,
-        0.27467625
+        0.2745472
       ],
       [
         4.0,
         -3.8,
-        0.27467625
+        0.2745472
       ],
       [
         1.9,
         -6.9,
-        0.27467625
+        0.2745472
       ],
       [
         -16.3,
         -11.3,
-        0.27467625
+        0.2745472
       ],
       [
         -4.9,
         7.6,
-        0.27474327
+        0.27461419
       ],
       [
         23.5,
         16.0,
-        0.27475052
+        0.27462144
       ],
       [
         12.6,
         -5.2,
-        0.27475052
+        0.27462144
       ],
       [
         -4.5,
         -1.6,
-        0.27483568
+        0.27470656
       ],
       [
         -7.7,
         2.1,
-        0.27535628
+        0.27522691
       ],
       [
         -20.6,
         -8.4,
-        0.27692949
+        0.27679938
       ],
       [
         -6.1,
         3.4,
-        0.27835196
+        0.27822119
       ],
       [
         -12.4,
         -2.8,
-        0.27835196
+        0.27822119
       ],
       [
         -3.2,
         -10.9,
-        0.27835196
+        0.27822119
       ],
       [
         3.4,
         12.6,
-        0.27835196
+        0.27822119
       ],
       [
         -6.1,
         -1.6,
-        0.27835196
+        0.27822119
       ],
       [
         -2.9,
         9.9,
-        0.27835196
+        0.27822119
       ],
       [
         5.3,
         11.8,
-        0.27835196
+        0.27822119
       ],
       [
         7.6,
         -1.6,
-        0.27842722
+        0.27829641
       ],
       [
         6.8,
         -6.3,
-        0.27842722
+        0.27829641
       ],
       [
         15.8,
         22.5,
-        0.27842722
+        0.27829641
       ],
       [
         -5.6,
         18.9,
-        0.27842722
+        0.27829641
       ],
       [
         3.2,
         -6.3,
-        0.27842722
+        0.27829641
       ],
       [
         -9.4,
         6.7,
-        0.27851352
+        0.27838267
       ],
       [
         5.3,
         -6.3,
-        0.27903557
+        0.27890448
       ],
       [
         -14.4,
         -6.4,
-        0.27904661
+        0.27891551
       ],
       [
         12.5,
         7.0,
-        0.28063535
+        0.28050351
       ],
       [
         2.1,
         1.4,
-        0.2815417
+        0.28140942
       ],
       [
         9.0,
         -1.8,
-        0.28161968
+        0.28148737
       ],
       [
         12.1,
         -10.5,
-        0.28207686
+        0.28194434
       ],
       [
         15.9,
         6.1,
-        0.28207686
+        0.28194434
       ],
       [
         -4.0,
         6.9,
-        0.28207686
+        0.28194434
       ],
       [
         -3.2,
         -15.5,
-        0.28207686
+        0.28194434
       ],
       [
         14.5,
         10.2,
-        0.28207686
+        0.28194434
       ],
       [
         -11.3,
         -2.9,
-        0.28207686
+        0.28194434
       ],
       [
         13.1,
         6.6,
-        0.28207686
+        0.28194434
       ],
       [
         1.9,
         4.0,
-        0.28214569
+        0.28201313
       ],
       [
         -4.9,
         4.9,
-        0.28215313
+        0.28202057
       ],
       [
         -4.1,
         -7.1,
-        0.28215313
+        0.28202057
       ],
       [
         7.0,
         -7.0,
-        0.28215313
+        0.28202057
       ],
       [
         1.0,
         0.0,
-        0.28224059
+        0.28210799
       ],
       [
         9.3,
         -19.3,
-        0.28277522
+        0.28264236
       ],
       [
         -9.3,
         8.2,
-        0.28368847
+        0.28355519
       ],
       [
         -18.9,
         5.2,
-        0.28376704
+        0.28363373
       ],
       [
         -18.5,
         -15.8,
-        0.28439081
+        0.2842572
       ],
       [
         -11.8,
         18.8,
-        0.28530928
+        0.28517524
       ],
       [
         4.6,
         1.4,
-        0.28538831
+        0.28525423
       ],
       [
         -12.0,
         -11.7,
-        0.285473
+        0.28533888
       ],
       [
         11.2,
         -2.5,
-        0.28585161
+        0.28571731
       ],
       [
         -3.1,
         -7.0,
-        0.28585161
+        0.28571731
       ],
       [
         -13.3,
         6.1,
-        0.28585161
+        0.28571731
       ],
       [
         25.1,
         11.7,
-        0.28585161
+        0.28571731
       ],
       [
         14.0,
         -15.8,
-        0.28585161
+        0.28571731
       ],
       [
         19.5,
         -3.0,
-        0.28585161
+        0.28571731
       ],
       [
         -18.4,
         -2.8,
-        0.28592136
+        0.28578703
       ],
       [
         4.2,
         2.6,
-        0.2859289
+        0.28579457
       ],
       [
         4.7,
         1.7,
-        0.28601752
+        0.28588315
       ],
       [
         9.0,
         14.7,
-        0.28655931
+        0.28642468
       ],
       [
         6.7,
         -6.6,
-        0.28920737
+        0.28907149
       ],
       [
         -6.4,
         -3.8,
-        0.28928747
+        0.28915156
       ],
       [
         12.2,
         25.5,
-        0.28967687
+        0.28954078
       ],
       [
         -8.5,
         -0.5,
-        0.28967687
+        0.28954078
       ],
       [
         -3.6,
         7.4,
-        0.28967687
+        0.28954078
       ],
       [
         1.7,
         1.0,
-        0.28967687
+        0.28954078
       ],
       [
         5.1,
         -11.6,
-        0.28967687
+        0.28954078
       ],
       [
         -7.7,
         -2.5,
-        0.28967687
+        0.28954078
       ],
       [
         1.7,
         -0.1,
-        0.28967687
+        0.28954078
       ],
       [
         -6.6,
         1.5,
-        0.28967687
+        0.28954078
       ],
       [
         25.5,
         -0.7,
-        0.28975519
+        0.28961906
       ],
       [
         17.9,
         -22.2,
-        0.28975519
+        0.28961906
       ],
       [
         1.9,
         9.6,
-        0.28975519
+        0.28961906
       ],
       [
         -0.3,
         11.5,
-        0.28975519
+        0.28961906
       ],
       [
         12.3,
         -2.4,
-        0.28975519
+        0.28961906
       ],
       [
         2.8,
         -14.0,
-        0.28984501
+        0.28970883
       ],
       [
         -3.1,
         -1.1,
-        0.45890043
+        0.45868484
       ],
       [
         6.7,
         -0.7,
-        0.4597606
+        0.4595446
       ],
       [
         -2.0,
         -1.4,
-        0.46125457
+        0.46103787
       ],
       [
         -6.1,
         -7.7,
-        0.46125457
+        0.46103787
       ],
       [
         10.0,
         -16.3,
-        0.46125457
+        0.46103787
       ],
       [
         0.3,
         -9.7,
-        0.46125457
+        0.46103787
       ],
       [
         -7.4,
         0.0,
-        0.46125457
+        0.46103787
       ],
       [
         -10.1,
         -0.8,
-        0.46125457
+        0.46103787
       ],
       [
         12.9,
         14.1,
-        0.46125457
+        0.46103787
       ],
       [
         -4.4,
         -13.2,
-        0.46125457
+        0.46103787
       ],
       [
         -5.5,
         -5.0,
-        0.46136712
+        0.46115036
       ],
       [
         -9.9,
         -6.1,
-        0.46136712
+        0.46115036
       ],
       [
         2.2,
         -12.5,
-        0.46137929
+        0.46116253
       ],
       [
         -9.0,
         -11.1,
-        0.46137929
+        0.46116253
       ],
       [
         14.9,
         15.6,
-        0.4615223
+        0.46130547
       ],
       [
         3.9,
         4.9,
-        0.46239653
+        0.46217929
       ],
       [
         0.2,
         -2.4,
-        0.46503837
+        0.46481988
       ],
       [
         12.3,
         0.0,
-        0.46742707
+        0.46720747
       ],
       [
         4.6,
         6.2,
-        0.46742707
+        0.46720747
       ],
       [
         14.9,
         19.3,
-        0.46742707
+        0.46720747
       ],
       [
         23.2,
         2.2,
-        0.46742707
+        0.46720747
       ],
       [
         3.2,
         15.4,
-        0.46742707
+        0.46720747
       ],
       [
         -0.1,
         3.3,
-        0.46742707
+        0.46720747
       ],
       [
         -10.8,
         3.0,
-        0.46742707
+        0.46720747
       ],
       [
         -5.4,
         11.5,
-        0.46742707
+        0.46720747
       ],
       [
         -0.7,
         11.1,
-        0.46742707
+        0.46720747
       ],
       [
         0.0,
         3.0,
-        0.46754113
+        0.46732147
       ],
       [
         7.0,
         4.7,
-        0.46754113
+        0.46732147
       ],
       [
         -5.9,
         -1.8,
-        0.46755346
+        0.4673338
       ],
       [
         -19.9,
         2.5,
-        0.46769838
+        0.46747865
       ],
       [
         -2.4,
         -2.6,
-        0.46853796
+        0.46831784
       ],
       [
         -11.4,
         -2.4,
-        0.4686492
+        0.46842902
       ],
       [
         1.4,
         0.5,
-        0.4712615
+        0.4710401
       ],
       [
         9.0,
         -24.4,
-        0.47368217
+        0.47345963
       ],
       [
         -5.4,
         -14.2,
-        0.47368217
+        0.47345963
       ],
       [
         -4.6,
         -10.7,
-        0.47368217
+        0.47345963
       ],
       [
         23.0,
         -12.7,
-        0.47368217
+        0.47345963
       ],
       [
         -5.1,
         0.2,
-        0.47368217
+        0.47345963
       ],
       [
         7.7,
         6.4,
-        0.47368217
+        0.47345963
       ],
       [
         3.3,
         9.1,
-        0.47368217
+        0.47345963
       ],
       [
         -2.1,
         17.8,
-        0.47368217
+        0.47345963
       ],
       [
         16.4,
         3.5,
-        0.47368217
+        0.47345963
       ],
       [
         0.2,
         -0.1,
-        0.47379775
+        0.47357516
       ],
       [
         20.9,
         -6.2,
-        0.47379775
+        0.47357516
       ],
       [
         8.0,
         -9.9,
-        0.47381025
+        0.47358765
       ],
       [
         -10.0,
         -5.4,
-        0.47381025
+        0.47358765
       ],
       [
         -8.5,
         -1.0,
-        0.47395711
+        0.47373444
       ],
       [
         1.8,
         12.1,
-        0.4748549
+        0.4746318
       ],
       [
         -2.4,
         0.8,
-        0.47756791
+        0.47734355
       ],
       [
         4.1,
         -1.7,
-        0.47988806
+        0.4796626
       ],
       [
         10.6,
         3.6,
-        0.48002098
+        0.47979546
       ],
       [
         1.5,
         0.6,
-        0.48002098
+        0.47979546
       ],
       [
         3.5,
         -7.7,
-        0.48002098
+        0.47979546
       ],
       [
         2.1,
         -17.2,
-        0.48002098
+        0.47979546
       ],
       [
         19.3,
         -6.1,
-        0.48002098
+        0.47979546
       ],
       [
         3.3,
         -4.7,
-        0.48002098
+        0.47979546
       ],
       [
         0.9,
         7.4,
-        0.48002098
+        0.47979546
       ],
       [
         1.6,
         -1.6,
-        0.48013811
+        0.47991253
       ],
       [
         -4.4,
         7.1,
-        0.48013811
+        0.47991253
       ],
       [
         14.0,
         -4.0,
-        0.48015077
+        0.47992519
       ],
       [
         2.0,
         4.3,
-        0.48015077
+        0.47992519
       ],
       [
         17.7,
         15.6,
-        0.4802996
+        0.48007395
       ],
       [
         2.6,
         1.1,
-        0.48117132
+        0.48094526
       ],
       [
         2.0,
         -19.0,
-        0.4812094
+        0.48098332
       ],
       [
         0.1,
         4.1,
-        0.48395872
+        0.48373135
       ],
       [
         -0.6,
         -3.2,
-        0.48630991
+        0.48608144
       ],
       [
         -17.3,
         25.2,
-        0.48644461
+        0.48621607
       ],
       [
         5.3,
         -0.9,
-        0.48644461
+        0.48621607
       ],
       [
         14.5,
         -15.2,
-        0.48644461
+        0.48621607
       ],
       [
         3.5,
         -3.8,
-        0.48644461
+        0.48621607
       ],
       [
         -1.8,
         13.3,
-        0.48644461
+        0.48621607
       ],
       [
         -7.8,
         0.8,
-        0.48644461
+        0.48621607
       ],
       [
         -4.4,
         4.3,
-        0.4865633
+        0.48633471
       ],
       [
         10.9,
         15.8,
-        0.4865633
+        0.48633471
       ],
       [
         -0.1,
         7.3,
-        0.48657614
+        0.48634754
       ],
       [
         -15.8,
         6.1,
-        0.48657614
+        0.48634754
       ],
       [
         -9.2,
         5.9,
-        0.48672696
+        0.48649829
       ],
       [
         11.0,
         5.6,
-        0.48764893
+        0.48741983
       ],
       [
         16.0,
         -7.7,
-        0.49043504
+        0.49020463
       ],
       [
         -7.2,
         -10.9,
-        0.4928177
+        0.49258617
       ],
       [
         -24.6,
         -4.7,
-        0.4929542
+        0.49272261
       ],
       [
         6.9,
         0.0,
-        0.4929542
+        0.49272261
       ],
       [
         5.7,
         5.2,
-        0.4929542
+        0.49272261
       ],
       [
         -10.7,
         -2.6,
-        0.4929542
+        0.49272261
       ],
       [
         4.7,
         7.0,
-        0.4929542
+        0.49272261
       ],
       [
         -2.7,
         6.1,
-        0.4929542
+        0.49272261
       ],
       [
         0.0,
         -7.6,
-        0.4929542
+        0.49272261
       ],
       [
         -3.2,
         -9.3,
-        0.49307449
+        0.49284283
       ],
       [
         -0.9,
         -2.5,
-        0.49308749
+        0.49285583
       ],
       [
         4.9,
         -3.7,
-        0.49308749
+        0.49285583
       ],
       [
         6.1,
         -8.9,
-        0.49324033
+        0.4930086
       ],
       [
         2.6,
         -12.9,
-        0.49413554
+        0.49390339
       ],
       [
         -1.6,
         3.9,
-        0.49417464
+        0.49394247
       ],
       [
         9.5,
         8.5,
-        0.49699804
+        0.49676454
       ],
       [
         -13.2,
         12.4,
-        0.49941258
+        0.49917795
       ],
       [
         2.9,
         -5.7,
-        0.49955091
+        0.49931621
       ],
       [
         9.9,
         -16.2,
-        0.49955091
+        0.49931621
       ],
       [
         4.9,
         -16.4,
-        0.49955091
+        0.49931621
       ],
       [
         -1.8,
         5.7,
-        0.49955091
+        0.49931621
       ],
       [
         -18.5,
         -6.6,
-        0.49955091
+        0.49931621
       ],
       [
         -6.7,
         10.6,
-        0.49955091
+        0.49931621
       ],
       [
         8.7,
         16.7,
-        0.4996728
+        0.49943805
       ],
       [
         -1.2,
         16.5,
-        0.4996728
+        0.49943805
       ],
       [
         1.8,
         3.2,
-        0.49968598
+        0.49945122
       ],
       [
         16.7,
         -3.2,
-        0.49968598
+        0.49945122
       ],
       [
         -5.1,
         -9.4,
-        0.49984086
+        0.49960603
       ],
       [
         -6.1,
         -14.3,
-        0.50073815
+        0.50050289
       ],
       [
         4.5,
         -0.6,
-        0.50085702
+        0.50062172
       ],
       [
         14.5,
         -11.5,
-        0.50364886
+        0.50341223
       ],
       [
         -13.8,
         12.8,
-        0.50623589
+        0.50599805
       ],
       [
         2.6,
         -4.3,
-        0.50623589
+        0.50599805
       ],
       [
         -11.4,
         11.6,
-        0.50623589
+        0.50599805
       ],
       [
         12.4,
         18.4,
-        0.50623589
+        0.50599805
       ],
       [
         4.4,
         -5.4,
-        0.50623589
+        0.50599805
       ],
       [
         10.7,
         -4.3,
-        0.50623589
+        0.50599805
       ],
       [
         10.9,
         3.0,
-        0.50623589
+        0.50599805
       ],
       [
         -18.6,
         -1.1,
-        0.50635941
+        0.50612152
       ],
       [
         17.8,
         1.6,
-        0.50637277
+        0.50613487
       ],
       [
         10.1,
         -4.6,
-        0.50637277
+        0.50613487
       ],
       [
         3.9,
         12.7,
-        0.50652972
+        0.50629175
       ],
       [
         1.2,
         -12.9,
-        0.50748921
+        0.50725078
       ],
       [
         -18.1,
         2.1,
-        0.51038867
+        0.51014889
       ],
       [
         16.3,
         24.1,
-        0.51305092
+        0.51280988
       ],
       [
         -5.2,
         6.2,
-        0.51305092
+        0.51280988
       ],
       [
         -16.3,
         -0.4,
-        0.51305092
+        0.51280988
       ],
       [
         -6.1,
         -2.0,
-        0.51305092
+        0.51280988
       ],
       [
         1.6,
         4.3,
-        0.51305092
+        0.51280988
       ],
       [
         4.2,
         10.7,
-        0.51305092
+        0.51280988
       ],
       [
         2.6,
         -2.9,
-        0.51305092
+        0.51280988
       ],
       [
         1.6,
         3.0,
-        0.51305092
+        0.51280988
       ],
       [
         9.3,
         -7.0,
-        0.51317611
+        0.51293501
       ],
       [
         7.6,
         9.0,
-        0.51317611
+        0.51293501
       ],
       [
         2.7,
         -0.4,
-        0.51318964
+        0.51294854
       ],
       [
         -10.1,
         14.0,
-        0.51334871
+        0.51310753
       ],
       [
         -10.3,
         3.5,
-        0.51432111
+        0.51407948
       ],
       [
         -15.9,
         -9.6,
-        0.51725961
+        0.5170166
       ],
       [
         5.6,
         3.0,
-        0.51977259
+        0.5195284
       ],
       [
         -14.5,
         -4.1,
-        0.51991656
+        0.5196723
       ],
       [
         -0.6,
         0.8,
-        0.51991656
+        0.5196723
       ],
       [
         12.5,
         11.0,
-        0.51991656
+        0.5196723
       ],
       [
         7.7,
         -14.4,
-        0.51991656
+        0.5196723
       ],
       [
         -4.7,
         3.0,
-        0.51991656
+        0.5196723
       ],
       [
         5.5,
         1.7,
-        0.51991656
+        0.5196723
       ],
       [
         -2.2,
         9.3,
-        0.51991656
+        0.5196723
       ],
       [
         18.5,
         2.0,
-        0.52004342
+        0.5197991
       ],
       [
         2.9,
         20.9,
-        0.52005714
+        0.51981281
       ],
       [
         -1.4,
         14.5,
-        0.52005714
+        0.51981281
       ],
       [
         1.6,
         -9.6,
-        0.52021833
+        0.51997393
       ],
       [
         -17.5,
         -12.3,
-        0.52120375
+        0.52095888
       ],
       [
         4.1,
         -4.6,
-        0.52418157
+        0.52393531
       ],
       [
         -9.1,
         -10.7,
-        0.52672818
+        0.52648072
       ],
       [
         2.6,
         11.3,
-        0.52687407
+        0.52662654
       ],
       [
         16.2,
         9.7,
-        0.52687407
+        0.52662654
       ],
       [
         13.5,
         -17.1,
-        0.52687407
+        0.52662654
       ],
       [
         -8.1,
         -0.9,
-        0.52687407
+        0.52662654
       ],
       [
         1.4,
         2.9,
-        0.52687407
+        0.52662654
       ],
       [
         7.4,
         -10.8,
-        0.52687407
+        0.52662654
       ],
       [
         -4.6,
         -7.0,
-        0.52687407
+        0.52662654
       ],
       [
         -1.1,
         17.5,
-        0.52700263
+        0.52675504
       ],
       [
         -2.9,
         -2.5,
-        0.52700263
+        0.52675504
       ],
       [
         -3.1,
         -2.5,
-        0.52701653
+        0.52676893
       ],
       [
         1.3,
         -1.5,
-        0.52701653
+        0.52676893
       ],
       [
         -9.1,
         -17.2,
-        0.52717989
+        0.52693221
       ],
       [
         -7.5,
         8.3,
-        0.52817849
+        0.52793034
       ],
       [
         0.8,
         -5.3,
-        0.53119616
+        0.5309466
       ],
       [
         -5.3,
         -8.0,
-        0.53392469
+        0.53367385
       ],
       [
         8.9,
         6.7,
-        0.53392469
+        0.53367385
       ],
       [
         -5.0,
         2.2,
-        0.53392469
+        0.53367385
       ],
       [
         2.8,
         9.6,
-        0.53392469
+        0.53367385
       ],
       [
         -1.2,
         -13.6,
-        0.53392469
+        0.53367385
       ],
       [
         -3.4,
         -0.6,
-        0.53392469
+        0.53367385
       ],
       [
         5.7,
         4.7,
-        0.53392469
+        0.53367385
       ],
       [
         -0.2,
         4.7,
-        0.53405497
+        0.53380407
       ],
       [
         -10.8,
         5.2,
-        0.53405497
+        0.53380407
       ],
       [
         -0.3,
         -5.1,
-        0.53406906
+        0.53381815
       ],
       [
         -11.9,
         3.9,
-        0.53406906
+        0.53381815
       ],
       [
         9.1,
         -14.6,
-        0.5342346
+        0.53398361
       ],
       [
         -8.0,
         -8.8,
-        0.53524656
+        0.5349951
       ],
       [
         -3.1,
         9.2,
-        0.5379959
+        0.53774314
       ],
       [
         7.8,
         2.9,
-        0.53814491
+        0.53789209
       ],
       [
         -17.2,
         10.1,
-        0.53830817
+        0.53805526
       ],
       [
         -11.5,
         5.1,
-        0.53910385
+        0.53885057
       ],
       [
         13.1,
         2.9,
-        0.54106966
+        0.54081546
       ],
       [
         -11.5,
         3.0,
-        0.54106966
+        0.54081546
       ],
       [
         -7.8,
         -1.7,
-        0.54106966
+        0.54081546
       ],
       [
         -2.9,
         -1.3,
-        0.54106966
+        0.54081546
       ],
       [
         5.0,
         3.4,
-        0.54106966
+        0.54081546
       ],
       [
         -7.0,
         -4.5,
-        0.54106966
+        0.54081546
       ],
       [
         -17.3,
         1.6,
-        0.54106966
+        0.54081546
       ],
       [
         1.3,
         -20.3,
-        0.54120169
+        0.54094742
       ],
       [
         5.9,
         -2.8,
-        0.54121596
+        0.54096169
       ],
       [
         -15.6,
         0.5,
-        0.54121596
+        0.54096169
       ],
       [
         4.2,
         3.1,
-        0.54138372
+        0.54112937
       ],
       [
         9.0,
         -3.1,
-        0.54240922
+        0.54215439
       ],
       [
         11.9,
         6.3,
-        0.5455082
+        0.54525191
       ],
       [
         -11.7,
         12.5,
-        0.54831025
+        0.54805264
       ],
       [
         -3.9,
         7.3,
-        0.54831025
+        0.54805264
       ],
       [
         6.8,
         11.7,
-        0.54831025
+        0.54805264
       ],
       [
         6.9,
         13.9,
-        0.54831025
+        0.54805264
       ],
       [
         11.3,
         -4.7,
-        0.54831025
+        0.54805264
       ],
       [
         5.6,
         -20.9,
-        0.54831025
+        0.54805264
       ],
       [
         -11.4,
         12.1,
-        0.54831025
+        0.54805264
       ],
       [
         -5.6,
         5.7,
-        0.54831025
+        0.54805264
       ],
       [
         -0.9,
         0.7,
-        0.54844404
+        0.54818637
       ],
       [
         -4.5,
         20.7,
-        0.5484585
+        0.54820083
       ],
       [
         2.2,
         2.4,
-        0.5484585
+        0.54820083
       ],
       [
         -12.5,
         2.3,
-        0.5486285
+        0.54837075
       ],
       [
         0.1,
         -3.0,
-        0.54966773
+        0.54940949
       ],
       [
         1.6,
         8.8,
-        0.55280818
+        0.55254846
       ],
       [
         6.9,
         -15.5,
-        0.55564772
+        0.55538667
       ],
       [
         -25.2,
         -4.1,
-        0.55564772
+        0.55538667
       ],
       [
         15.5,
         1.7,
-        0.55564772
+        0.55538667
       ],
       [
         23.1,
         1.2,
-        0.55564772
+        0.55538667
       ],
       [
         -10.4,
         -2.9,
-        0.55564772
+        0.55538667
       ],
       [
         9.4,
         9.3,
-        0.55564772
+        0.55538667
       ],
       [
         -2.5,
         5.7,
-        0.55564772
+        0.55538667
       ],
       [
         4.5,
         -15.8,
-        0.55564772
+        0.55538667
       ],
       [
         12.6,
         4.9,
-        0.55579796
+        0.55553684
       ],
       [
         15.6,
         8.4,
-        0.55579796
+        0.55553684
       ],
       [
         -2.7,
         -1.6,
-        0.55579796
+        0.55553684
       ],
       [
         -9.4,
         -5.6,
-        0.55579796
+        0.55553684
       ],
       [
         9.3,
         7.6,
-        0.55579796
+        0.55553684
       ],
       [
         1.0,
         10.0,
-        0.55597024
+        0.55570904
       ],
       [
         5.3,
         -5.6,
-        0.55702337
+        0.55676168
       ],
       [
         14.2,
         15.1,
-        0.56020585
+        0.55994266
       ],
       [
         -3.1,
         3.7,
-        0.562193
+        0.56192888
       ],
       [
         0.6,
         -7.4,
-        0.5623413
+        0.56207711
       ],
       [
         2.0,
         -5.0,
-        0.56308339
+        0.56281885
       ],
       [
         0.9,
         -4.5,
-        0.56308339
+        0.56281885
       ],
       [
         -8.3,
         9.2,
-        0.56308339
+        0.56281885
       ],
       [
         -5.9,
         22.0,
-        0.56308339
+        0.56281885
       ],
       [
         6.9,
         -12.8,
-        0.56308339
+        0.56281885
       ],
       [
         -6.5,
         -7.4,
-        0.56308339
+        0.56281885
       ],
       [
         9.1,
         -15.7,
-        0.56308339
+        0.56281885
       ],
       [
         -5.8,
         3.9,
-        0.56322079
+        0.56295618
       ],
       [
         -4.4,
         13.5,
-        0.56322079
+        0.56295618
       ],
       [
         -5.2,
         8.0,
-        0.56323564
+        0.56297103
       ],
       [
         -1.9,
         6.6,
-        0.56323564
+        0.56297103
       ],
       [
         -1.7,
         8.9,
-        0.56341022
+        0.56314552
       ],
       [
         2.5,
         23.7,
-        0.56447745
+        0.56421225
       ],
       [
         -3.9,
         3.2,
-        0.56737694
+        0.56711037
       ],
       [
         -0.4,
         -16.0,
-        0.56753409
+        0.56726745
       ],
       [
         -9.3,
         0.6,
-        0.56770251
+        0.5674358
       ],
       [
         -5.2,
         0.4,
-        0.56969372
+        0.56942607
       ],
       [
         0.1,
         19.1,
-        0.56985151
+        0.56958379
       ],
       [
         -8.6,
         1.1,
-        0.57061856
+        0.57035048
       ],
       [
         9.1,
         -10.4,
-        0.57061856
+        0.57035048
       ],
       [
         -5.5,
         -15.8,
-        0.57061856
+        0.57035048
       ],
       [
         -8.3,
         -1.4,
-        0.57061856
+        0.57035048
       ],
       [
         -3.7,
         -6.4,
-        0.57061856
+        0.57035048
       ],
       [
         -9.8,
         19.3,
-        0.57061856
+        0.57035048
       ],
       [
         6.3,
         13.5,
-        0.57061856
+        0.57035048
       ],
       [
         -11.6,
         13.7,
-        0.5707578
+        0.57048965
       ],
       [
         -14.2,
         -9.6,
-        0.57077285
+        0.57050469
       ],
       [
         16.0,
         17.2,
-        0.57094977
+        0.57068153
       ],
       [
         6.3,
         -1.9,
-        0.57203128
+        0.57176253
       ],
       [
         -10.6,
         -4.7,
-        0.57731735
+        0.57704612
       ],
       [
         -21.3,
         -10.6,
-        0.57747726
+        0.57720595
       ],
       [
         -3.3,
         -3.1,
-        0.57825457
+        0.5779829
       ],
       [
         -8.1,
         -0.5,
-        0.57825457
+        0.5779829
       ],
       [
         13.3,
         9.6,
-        0.57825457
+        0.5779829
       ],
       [
         13.9,
         -10.9,
-        0.57825457
+        0.5779829
       ],
       [
         -5.3,
         -18.0,
-        0.57825457
+        0.5779829
       ],
       [
         9.4,
         -9.1,
-        0.57825457
+        0.5779829
       ],
       [
         4.4,
         -9.5,
-        0.57841092
+        0.57813918
       ],
       [
         -8.3,
         -8.8,
-        0.57841092
+        0.57813918
       ],
       [
         -3.6,
         -17.1,
-        0.57841092
+        0.57813918
       ],
       [
         8.3,
         0.6,
-        0.57841092
+        0.57813918
       ],
       [
         -2.6,
         -11.4,
-        0.57841092
+        0.57813918
       ],
       [
         14.3,
         -10.1,
-        0.57841092
+        0.57813918
       ],
       [
         -10.4,
         5.6,
-        0.57841092
+        0.57813918
       ],
       [
         4.3,
         0.4,
-        0.57859021
+        0.57831838
       ]
     ],
     "description": "Home error, away error, recency weight. Prior two regular seasons, forecasts fitted before each week. Centered in the simulator; not calibrated prediction intervals."
