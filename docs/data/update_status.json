@@ -1,15 +1,15 @@
 {
-  "started_at": "2026-10-19T22:17:02.477875+00:00",
-  "completed_at": "2026-10-19T22:17:36.094798+00:00",
+  "started_at": "2026-10-20T04:20:44.182157+00:00",
+  "completed_at": "2026-10-20T04:21:23.243602+00:00",
   "schedule": "00:00, 06:00, 12:00, 18:00 America/New_York; scheduling is best effort",
   "execution_status": "success",
-  "status": "success",
+  "status": "partial_failure",
   "sources": {
     "rankings": {
       "execution_status": "success",
-      "attempted_at": "2026-10-19T22:17:09.079415+00:00",
-      "last_success": "2026-10-19T22:17:09.079415+00:00",
-      "data_updated_at": "2026-10-19",
+      "attempted_at": "2026-10-20T04:20:56.954028+00:00",
+      "last_success": "2026-10-20T04:20:56.954028+00:00",
+      "data_updated_at": "2026-10-20",
       "status": "success",
       "freshness": "current",
       "providers": {
@@ -26,9 +26,9 @@
         "Sleeper": {
           "status": "success",
           "freshness": "current",
-          "attempted_at": "2026-10-19T22:17:04.094886+00:00",
-          "last_success": "2026-10-19T22:17:04.094886+00:00",
-          "data_updated_at": "2026-10-19",
+          "attempted_at": "2026-10-20T04:20:45.932073+00:00",
+          "last_success": "2026-10-20T04:20:45.932073+00:00",
+          "data_updated_at": "2026-10-20",
           "timestamp_kind": "snapshot",
           "row_count": 419,
           "note": "Downloaded and validated on the snapshot date; provider publication time is not supplied."
@@ -36,9 +36,9 @@
         "MFL": {
           "status": "fallback",
           "freshness": "season_aggregate",
-          "attempted_at": "2026-10-19T22:17:04.094886+00:00",
-          "last_success": "2026-10-19T22:17:04.094886+00:00",
-          "data_updated_at": "2026-10-19",
+          "attempted_at": "2026-10-20T04:20:45.932073+00:00",
+          "last_success": "2026-10-20T04:20:45.932073+00:00",
+          "data_updated_at": "2026-10-20",
           "timestamp_kind": "snapshot",
           "row_count": 321,
           "note": "No recent qualifying MFL drafts; downloaded and validated the broader season aggregate. This is not recent-draft ADP; the date is its capture, not provider publication.",
@@ -51,17 +51,17 @@
           "status": "historical",
           "freshness": "historical",
           "season": 2025,
-          "attempted_at": "2026-10-19T22:17:03.745325+00:00",
-          "last_success": "2026-10-19T22:17:03.745325+00:00",
+          "attempted_at": "2026-10-20T04:20:45.597317+00:00",
+          "last_success": "2026-10-20T04:20:45.597317+00:00",
           "data_updated_at": null,
           "note": "Completed 2025 season statistics; fixed historical baseline."
         },
         "special_teams_Sleeper": {
           "status": "success",
           "freshness": "current",
-          "attempted_at": "2026-10-19T22:17:05.927253+00:00",
-          "last_success": "2026-10-19T22:17:05.927253+00:00",
-          "data_updated_at": "2026-10-19",
+          "attempted_at": "2026-10-20T04:20:48.731998+00:00",
+          "last_success": "2026-10-20T04:20:48.731998+00:00",
+          "data_updated_at": "2026-10-20",
           "timestamp_kind": "snapshot",
           "row_count": 55,
           "note": "Downloaded and validated on the snapshot date; provider publication time is not supplied."
@@ -69,9 +69,9 @@
         "special_teams_MFL": {
           "status": "fallback",
           "freshness": "season_aggregate",
-          "attempted_at": "2026-10-19T22:17:05.927253+00:00",
-          "last_success": "2026-10-19T22:17:05.927253+00:00",
-          "data_updated_at": "2026-10-19",
+          "attempted_at": "2026-10-20T04:20:48.731998+00:00",
+          "last_success": "2026-10-20T04:20:48.731998+00:00",
+          "data_updated_at": "2026-10-20",
           "timestamp_kind": "snapshot",
           "row_count": 54,
           "note": "No recent qualifying MFL drafts; downloaded and validated the broader season aggregate. This is not recent-draft ADP; the date is its capture, not provider publication.",
@@ -86,48 +86,48 @@
     },
     "news": {
       "execution_status": "success",
-      "attempted_at": "2026-10-19T22:17:17.529478+00:00",
+      "attempted_at": "2026-10-20T04:21:05.211543+00:00",
       "last_success": "2026-10-19T22:17:17.529478+00:00",
       "data_updated_at": null,
-      "status": "success",
-      "freshness": "current",
+      "status": "partial_failure",
+      "freshness": "mixed",
       "providers": {
         "injuries": {
-          "status": "success",
-          "freshness": "current",
-          "attempted_at": "2026-10-19T22:17:14.538827+00:00",
+          "status": "behind",
+          "freshness": "behind",
+          "attempted_at": "2026-10-20T04:21:02.134635+00:00",
           "data_updated_at": null,
-          "expected_week": 6,
+          "expected_week": 7,
           "season": 2026,
           "latest_report_week": 6,
           "latest_report_season": 2026,
-          "note": "Reports include the expected week; missing players have unknown health."
+          "note": "The injury source has no reports for the expected week; current health is unknown."
         }
       },
-      "note": "Provider checks completed; manual and historical sources are labeled separately.",
+      "note": "Refresh completed with retained or unavailable provider data.",
       "timestamp_kind": "mixed"
     },
     "headlines": {
       "status": "success",
-      "attempted_at": "2026-10-19T22:17:17.529478+00:00",
+      "attempted_at": "2026-10-20T04:21:05.211543+00:00",
       "execution_status": "success",
       "freshness": "current",
-      "last_success": "2026-10-19T22:17:14.538827+00:00",
-      "data_updated_at": "2026-10-19T22:17:14.538827+00:00",
+      "last_success": "2026-10-20T04:21:02.134635+00:00",
+      "data_updated_at": "2026-10-20T04:21:02.134635+00:00",
       "note": "Yahoo Sports RSS"
     },
     "history": {
       "execution_status": "success",
-      "attempted_at": "2026-10-19T22:17:31.526516+00:00",
+      "attempted_at": "2026-10-20T04:21:18.719754+00:00",
       "last_success": "2026-09-27T16:19:52.264082+00:00",
-      "data_updated_at": "2026-10-19T22:17:22.250406+00:00",
+      "data_updated_at": "2026-10-20T04:21:09.329567+00:00",
       "status": "historical",
       "freshness": "historical",
       "note": "Completed-season historical archive; not a live feed."
     },
     "draft_capital": {
       "execution_status": "success",
-      "attempted_at": "2026-10-19T22:17:31.599145+00:00",
+      "attempted_at": "2026-10-20T04:21:18.792122+00:00",
       "last_success": "2026-09-27T16:19:52.383502+00:00",
       "data_updated_at": null,
       "status": "historical",
@@ -136,28 +136,28 @@
     },
     "odds": {
       "execution_status": "success",
-      "attempted_at": "2026-10-19T22:17:35.473455+00:00",
-      "last_success": "2026-10-19T22:17:35.473455+00:00",
-      "data_updated_at": "2026-10-19T22:16:46.424023Z",
+      "attempted_at": "2026-10-20T04:21:22.520206+00:00",
+      "last_success": "2026-10-20T04:21:22.520206+00:00",
+      "data_updated_at": "2026-10-20T04:20:46.610672Z",
       "status": "success",
       "freshness": "current",
       "providers": {
         "schedule": {
           "status": "success",
           "freshness": "current",
-          "attempted_at": "2026-10-19T22:17:31.830381+00:00",
-          "last_success": "2026-10-19T22:17:31.830381+00:00",
+          "attempted_at": "2026-10-20T04:21:19.030816+00:00",
+          "last_success": "2026-10-20T04:21:19.030816+00:00",
           "data_updated_at": null,
           "note": "Schedule downloaded; provider publication time is not supplied."
         },
         "exchange": {
           "status": "success",
           "freshness": "current",
-          "attempted_at": "2026-10-19T22:17:31.830381+00:00",
-          "last_success": "2026-10-19T22:17:31.830381+00:00",
+          "attempted_at": "2026-10-20T04:21:19.030816+00:00",
+          "last_success": "2026-10-20T04:21:19.030816+00:00",
           "data_updated_at": null,
           "note": "Public exchange request succeeded.",
-          "row_count": 22
+          "row_count": 46
         },
         "primary_sportsbook": {
           "status": "not_configured",
@@ -178,11 +178,11 @@
         "prediction_markets": {
           "status": "success",
           "freshness": "current",
-          "attempted_at": "2026-10-19T22:17:31.830381+00:00",
-          "last_success": "2026-10-19T22:17:31.830381+00:00",
-          "data_updated_at": "2026-10-19T22:16:46.424023Z",
+          "attempted_at": "2026-10-20T04:21:19.030816+00:00",
+          "last_success": "2026-10-20T04:21:19.030816+00:00",
+          "data_updated_at": "2026-10-20T04:20:46.610672Z",
           "note": "Public prediction market request succeeded.",
-          "row_count": 186
+          "row_count": 180
         },
         "sportsbooks": {
           "status": "not_configured",
@@ -196,21 +196,15 @@
         "weather": {
           "status": "success",
           "freshness": "current",
-          "attempted_at": "2026-10-19T22:17:31.830381+00:00",
-          "last_success": "2026-10-19T22:17:31.830381+00:00",
-          "data_updated_at": "2026-10-19T21:36:01+00:00",
-          "note": "10 kickoff forecasts available; 0 kickoff hours not yet published; 0 provider failures.",
-          "row_count": 10,
-          "pending_count": 0,
+          "attempted_at": "2026-10-20T04:21:19.030816+00:00",
+          "last_success": "2026-10-20T04:21:19.030816+00:00",
+          "data_updated_at": "2026-10-20T03:26:19+00:00",
+          "note": "9 kickoff forecasts available; 1 kickoff hours not yet published; 0 provider failures.",
+          "row_count": 9,
+          "pending_count": 1,
           "failed_count": 0,
           "retained_count": 0,
           "games": {
-            "2026_06_WAS_SF": {
-              "status": "success",
-              "reason_code": null,
-              "valid_at": "2026-10-19T17:00:00-07:00",
-              "forecast_through": null
-            },
             "2026_07_NE_CHI": {
               "status": "success",
               "reason_code": null,
@@ -264,6 +258,12 @@
               "reason_code": null,
               "valid_at": "2026-10-25T17:00:00-07:00",
               "forecast_through": null
+            },
+            "2026_07_DAL_PHI": {
+              "status": "pending",
+              "reason_code": "outside_forecast_window",
+              "valid_at": null,
+              "forecast_through": "2026-10-26T12:00:00-04:00"
             }
           }
         }
@@ -273,9 +273,9 @@
     },
     "teams": {
       "execution_status": "success",
-      "attempted_at": "2026-10-19T22:17:36.093913+00:00",
-      "last_success": "2026-10-19T22:17:36.093913+00:00",
-      "data_updated_at": "2026-10-19T22:17:35.835819+00:00",
+      "attempted_at": "2026-10-20T04:21:23.242760+00:00",
+      "last_success": "2026-10-20T04:21:23.242760+00:00",
+      "data_updated_at": "2026-10-20T04:21:22.951637+00:00",
       "status": "success",
       "freshness": "current",
       "note": "Snapshot refreshed successfully."
