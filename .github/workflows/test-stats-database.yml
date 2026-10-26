@@ -1,10 +1,12 @@
 name: Test stats database
 on:
+  schedule:
+    - cron: "13 8 * * *"
   push:
     branches: [main]
-    paths: ["database/**", "database_stats.py", "app/stats_*.py", "requirements-database.txt", "tests/test_stats_*.py", ".github/workflows/test-stats-database.yml", ".github/workflows/sync-stats-database.yml"]
+    paths: ["docs/data/game_stats/**", "docs/data/player_history.json", "app/league_leaders.py", "database/**", "database_stats.py", "app/stats_*.py", "requirements-database.txt", "tests/test_stats_*.py", ".github/workflows/test-stats-database.yml", ".github/workflows/sync-stats-database.yml"]
   pull_request:
-    paths: ["database/**", "database_stats.py", "app/stats_*.py", "requirements-database.txt", "tests/test_stats_*.py", ".github/workflows/test-stats-database.yml", ".github/workflows/sync-stats-database.yml"]
+    paths: ["docs/data/game_stats/**", "docs/data/player_history.json", "app/league_leaders.py", "database/**", "database_stats.py", "app/stats_*.py", "requirements-database.txt", "tests/test_stats_*.py", ".github/workflows/test-stats-database.yml", ".github/workflows/sync-stats-database.yml"]
   workflow_dispatch:
 permissions:
   contents: read
