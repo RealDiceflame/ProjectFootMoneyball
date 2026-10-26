@@ -1,0 +1,26 @@
+name: Monitor published website
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  push:
+    branches: [main]
+    paths: ['scripts/check-live-site.mjs', '.github/workflows/monitor-live-site.yml']
+permissions:
+  contents: read
+concurrency:
+  group: monitor-live-site
+  cancel-in-progress: false
+jobs:
+  public-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Check public pages, assets and JSON
+        run: node scripts/check-live-site.mjs
