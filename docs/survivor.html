@@ -9,20 +9,24 @@
   <title>Survivor Lab | OutlierBaseline</title>
   <link rel="stylesheet" href="styles.css?v=20260928-layout2">
   <link rel="stylesheet" href="survivor.css?v=20260928-layout1">
+  <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
+  <link rel="stylesheet" href="tools.css?v=20261027-tools-editorial1">
 </head>
-<body class="survivor-page">
+<body class="tool-page survivor-page">
   <header class="topbar">
     <a class="brand" href="./" aria-label="OutlierBaseline home"><span class="brand-mark" aria-hidden="true">OB</span><span><strong>OutlierBaseline</strong><small>Football intelligence lab</small></span></a>
     <nav class="topnav" aria-label="Analytics pages">
       <a href="rankings.html">Player rankings</a><a href="projection.html">Projection Lab</a><a href="survivor.html" class="active" aria-current="page">Survivor Lab</a><a href="special-teams.html">Kickers &amp; D/ST</a><a href="odds.html">Weekly odds</a>
     </nav>
-    <div class="source-status" id="survivor-status" role="status">Loading team estimates…</div>
+
   </header>
-  <main>
-    <section class="survivor-hero">
-      <div><p class="eyebrow">Survivor &amp; Matchup Lab · Experimental</p><h1>Play the matchup.<br>Explore the possibilities.</h1><p>Simulate two NFL teams with today's saved ratings, or plan a no-repeat survivor path through the season.</p></div>
-      <div class="survivor-version"><span>TEAM BASELINE v1</span><strong>32 teams. One path.</strong><p>NFL scoring estimates—not fantasy points. Injuries, roster changes, and schemes are not yet modeled.</p></div>
+  <main id="main-content" tabindex="-1">
+    <section class="survivor-hero tool-masthead">
+      <div><p class="tool-kicker">Research / Matchups &amp; survivor</p><h1>Matchup &amp; Survivor Lab</h1><p class="tool-description">Explore experimental team-scoring simulations and plan a no-repeat survivor path using saved ratings.</p></div>
+      <div class="survivor-version"><span>TEAM BASELINE v1</span><strong>Experimental team model</strong><p>NFL scoring estimates—not fantasy points. Injuries, roster changes, and schemes are not yet modeled.</p></div>
     </section>
+    <nav class="tool-related-links" aria-label="Related team research"><a href="league.html">League simulations <span aria-hidden="true">↗</span></a><a href="stats.html">Game results <span aria-hidden="true">↗</span></a><a href="odds.html">Weekly odds <span aria-hidden="true">↗</span></a></nav>
+    <div class="source-status tool-source-band" id="survivor-status" role="status">Loading team estimates…</div>
     <p id="survivor-error" role="alert" hidden></p>
     <noscript>This page needs JavaScript for the survivor matrix and simulations.</noscript>
     <div id="survivor-content" hidden>
@@ -86,7 +90,7 @@
         <details><summary>Team offense and defense ratings</summary><p>Points above a league-average team after accounting for opponents and home field. Positive offense adds scoring; positive defense prevents it. These are scoreboard-based team ratings, not individual-player grades.</p><div id="ratings-summary"></div><div class="survivor-table-scroll" tabindex="0" role="region" aria-label="Team ratings"><table class="survivor-table" id="team-ratings"></table></div></details>
       </section>
       <section class="survivor-panel survivor-method" aria-labelledby="method-heading">
-        <p class="eyebrow">Know the assumptions</p><h2 id="method-heading">A baseline we can measure and improve</h2>
+        <p class="eyebrow">Know the assumptions</p><h2 id="method-heading">Model assumptions &amp; sources</h2>
         <div id="model-evidence"></div>
         <p><strong>Team scoring:</strong> Opponent-adjusted offense and defense fitted to regular-season scoreboard points from the prior three seasons and completed current-season games. Recent results get more weight (365-day half-life); ratings are pulled toward league average. Neutral sites have no home advantage. Scores are treated as completed only when present and at least six hours past kickoff.</p>
         <p><strong>Win estimates:</strong> Expected point margin is compared with historical margin variation. A small, smoothed historical tie rate is included. Conditional win estimates are bounded at 2.5–97.5%. These experimental probabilities are not calibrated guarantees; future weeks use today's team strengths.</p>
@@ -99,8 +103,7 @@
     </div>
   </main>
   <footer><p>OutlierBaseline · Research, not certainty. No guaranteed outcomes. If you play for money, set a limit you can afford to lose.</p></footer>
-  <script type="module" src="survivor.js?v=20260928-layout1"></script>
-  <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
+  <script type="module" src="survivor.js?v=20261027-tools1"></script>
   <script type="module" src="site-nav.js?v=20260930-no-leagues1"></script>
 </body>
 </html>

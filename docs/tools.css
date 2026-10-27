@@ -1,0 +1,210 @@
+/* Shared editorial system for the eight research tools. Home and Stats do not
+   carry .tool-page, so their approved layouts are deliberately unaffected. */
+.tool-page {
+  --muted: #a8bcb2;
+  --line: rgba(220, 239, 229, .15);
+  --line-strong: rgba(220, 239, 229, .27);
+  --tool-surface: #0c241d;
+  background: #071b16;
+}
+.tool-page .topbar, .tool-page main, .tool-page footer { width: min(1440px, calc(100% - 64px)); }
+.tool-page .topbar { min-height: 84px; gap: 20px; }
+.tool-page main { padding: 22px 0 40px; }
+.tool-page [hidden] { display: none !important; }
+.tool-page :focus-visible { outline: 3px solid var(--lime); outline-offset: 3px; }
+.tool-page .brand small { font-size: 12px; line-height: 1.5; }
+.tool-page .source-status { font-size: 12px; line-height: 1.65; }
+.tool-page .tool-source-band { display: block; width: 100%; max-width: none; padding: 8px 0; margin: 0 0 12px; color: var(--muted); text-align: left; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.tool-page .tool-kicker, .tool-page .eyebrow, .tool-page .tool-section-kicker { margin: 0 0 8px; color: var(--lime); font-size: 12px; line-height: 1.5; font-weight: 750; letter-spacing: .09em; text-transform: uppercase; }
+
+/* A compact masthead states the actual task. The data and controls follow it
+   directly, rather than living below a decorative marketing hero. */
+.tool-page .tool-masthead { display: grid; grid-template-columns: minmax(0, 1fr) minmax(230px, .55fr); align-items: end; gap: 18px 36px; padding: 0 0 16px; margin: 0; border: 0; border-bottom: 1px solid var(--line-strong); border-radius: 0; background: transparent; box-shadow: none; }
+.tool-page .tool-masthead > div { min-width: 0; }
+.tool-page .tool-masthead h1 { max-width: 28ch; margin: 0; font: 800 clamp(30px, 3.3vw, 44px)/1.2 Inter, system-ui, sans-serif; letter-spacing: -.045em; }
+.tool-page .tool-masthead p:not(.eyebrow):not(.tool-kicker) { max-width: 68ch; margin: 12px 0 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.tool-page .tool-masthead > .tool-description { margin: 0; }
+.tool-page .tool-related-links, .tool-page .tool-section-links { display: flex; flex-wrap: wrap; align-items: center; gap: 0 22px; min-width: 0; }
+.tool-page .tool-masthead > .tool-related-links { grid-column: 1 / -1; }
+.tool-page .tool-related-links a, .tool-page .tool-section-links a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding-block: 10px; color: var(--muted); font-size: 13px; line-height: 1.5; text-underline-offset: 4px; }
+.tool-page .tool-related-links a:hover, .tool-page .tool-section-links a:hover { color: var(--lime); }
+.tool-page .tool-section-links { padding-bottom: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
+.tool-page :is(.model-version, .survivor-version, .values-scale) { min-width: 0; max-width: 430px; padding: 6px 0 6px 20px; border: 0; border-left: 2px solid var(--lime); border-radius: 0; background: transparent; }
+.tool-page :is(.model-version, .survivor-version, .values-scale) > span { color: var(--lime); font-size: 12px; line-height: 1.5; letter-spacing: .06em; }
+.tool-page :is(.model-version, .survivor-version, .values-scale) strong { display: block; margin: 6px 0; font: 750 20px/1.4 Inter, system-ui, sans-serif; letter-spacing: -.025em; }
+.tool-page :is(.model-version, .survivor-version, .values-scale) :is(p, small) { color: var(--muted); font-size: 13px; line-height: 1.65; }
+
+/* Shared inputs use visible boundaries; tables and charts keep their explicit
+   scrolling regions instead of shrinking labels or hiding wide data. */
+.tool-page :is(input:not([type="checkbox"]):not([type="radio"]), select) { min-width: 0; max-width: 100%; min-height: 44px; border-color: #617d70; border-radius: 3px; color: var(--ink); background-color: #0c261e; font-size: 16px; }
+.tool-page input::placeholder { color: var(--muted); opacity: 1; }
+.tool-page :is(.button, .position, .draft-toggle, .values-horizons button, .survivor-controls button) { min-height: 44px; border-radius: 3px; font-size: 14px; }
+.tool-page :is(.button.secondary, .position:not(.active), .draft-toggle:not([aria-pressed="true"]), .values-horizons button:not([aria-pressed="true"]), .survivor-controls button:not(.survivor-primary)) { border-color: #617d70; }
+.tool-page :is(.button, .prediction-card):hover { transform: none; }
+.tool-page :is(.lab-scroll-hint, .values-table-hint, .values-footnote, .board-summary, .model-caveat, .round-map-note) { color: var(--muted); font-size: 13px; line-height: 1.65; }
+.tool-page :is(.table-shell, .values-table-scroll, .values-chart-scroll, .age-chart-shell, .round-map-shell, .survivor-table-scroll, .game-table-wrap) { border-radius: 3px; scrollbar-color: #638271 #0b211a; }
+.tool-page table { font-size: 14px; font-variant-numeric: tabular-nums; }
+.tool-page :is(.heading-row th, .survivor-table th, .game-table-wrap thead th) { font-size: 12px; line-height: 1.5; font-weight: 650; letter-spacing: .02em; }
+.tool-page :is(.legend, .source-credit, .filter-tip, .adp-mode-label, .adp-mode > span, .intel-hint, .player-photo-fallback, .player-status, .team-previous, .team-arrow) { font-size: 12px; line-height: 1.5; }
+.tool-page :is(.legend, .source-credit, .filter-tip, .adp-mode > span, .intel-hint, .team-previous, .team-arrow) { color: var(--muted); }
+.tool-page :is(.tag, .player-status, .best-badge, .odds-week-badge) { border-radius: 3px; }
+.tool-page .player-status { max-width: none; white-space: normal; overflow: visible; }
+.tool-page .player-name { white-space: normal; overflow: visible; }
+
+/* Rankings and special teams: setup becomes a single compact control band,
+   while the board toolbar and complete, scrollable data stay visually primary. */
+.tool-page .control-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 14px 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
+.tool-page .control-heading { align-items: center; }
+.tool-page .control-heading h2 { font-size: 18px; line-height: 1.4; font-weight: 750; }
+.tool-page .control-heading > p { max-width: 48ch; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.tool-page.rankings-page .control-panel { grid-template-columns: 240px minmax(0, 1fr); align-items: end; gap: 24px; }
+.tool-page.rankings-page .control-heading { display: grid; gap: 6px; }
+.tool-page .league-controls { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
+.tool-page .league-controls label > span { margin-bottom: 7px; font-size: 12px; line-height: 1.5; }
+.tool-page .board-panel { overflow: visible; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--tool-surface); box-shadow: none; backdrop-filter: none; }
+.tool-page .board-toolbar { align-items: center; gap: 16px 24px; padding: 16px 20px; }
+.tool-page .board-toolbar h2 { font-size: 22px; line-height: 1.35; font-weight: 750; letter-spacing: -.025em; }
+.tool-page .adp-tools { margin: 0 20px 12px; padding: 10px 0; border: 0; border-block: 1px solid var(--line); border-radius: 0; background: transparent; }
+.tool-page .adp-mode { gap: 5px; }
+.tool-page .quick-filters { padding-inline: 20px; gap: 14px; }
+.tool-page .filter-tip { max-width: 52ch; }
+.tool-page .legend { padding: 16px 20px; }
+.tool-page .player-photo { border-radius: 4px; background: #183a2d; }
+.tool-page .player-photo img { background: #183a2d; }
+.tool-page .intel-dialog, .tool-page .adp-dialog { border-radius: 6px; }
+.tool-page .intel-header { background: #102b21; }
+.tool-page .intel-header h2 { font: 750 clamp(24px, 3vw, 34px)/1.25 Inter, system-ui, sans-serif; }
+.tool-page :is(.intel-section, .history-charts figure, .history-table-shell, .source-grid a) { border-radius: 4px; }
+.tool-page .history-heading h3 { font-family: Inter, system-ui, sans-serif; font-weight: 700; }
+
+/* Research sections read as an ordered report. Boundaries separate real tasks;
+   removing nested decorative panels makes controls and results easier to scan. */
+.tool-page :is(.model-panel, .model-methodology, .survivor-panel, .values-panel) { min-width: 0; padding: 24px 0; margin-bottom: 0; border: 0; border-top: 1px solid var(--line-strong); border-radius: 0; background: transparent; box-shadow: none; }
+.tool-page :is(.model-panel-heading, .survivor-heading, .values-section-heading) { align-items: end; margin-bottom: 18px; }
+.tool-page :is(.model-panel-heading h2, .model-methodology h2, .survivor-panel h2, .values-section-heading h2) { margin: 0 0 8px; font: 750 clamp(21px, 2.3vw, 28px)/1.35 Inter, system-ui, sans-serif; letter-spacing: -.03em; }
+.tool-page :is(.model-panel-heading p:not(.eyebrow), .survivor-panel p, .survivor-panel li, .values-section-heading p) { max-width: 90ch; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.tool-page :is(.model-controls, .values-format-grid, .survivor-controls) label { font-size: 13px; line-height: 1.5; }
+.tool-page .model-controls { padding: 0 0 24px; border: 0; border-radius: 0; background: transparent; }
+.tool-page .model-control-grid label > span { font-size: 12px; line-height: 1.5; }
+.tool-page .model-loading { min-height: 200px; border-radius: 4px; background: var(--tool-surface); }
+.tool-page :is(.model-metric-card, .values-metric) { padding: 14px 16px; border: 0; border-left: 2px solid var(--line-strong); border-radius: 0; background: transparent; }
+.tool-page :is(.model-metric-card.featured, .values-metric:first-child) { border-left-color: var(--lime); }
+.tool-page :is(.model-metric-card > strong, .values-metric strong, .survival-summary strong) { font: 750 28px/1.3 Inter, system-ui, sans-serif; letter-spacing: -.035em; }
+.tool-page .model-metric-card > span { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.tool-page .model-metric-card > small { font-size: 13px; line-height: 1.6; }
+.tool-page .chart-legend { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.tool-page :is(.method-steps article, .draft-timing-cards article) { border-radius: 3px; background: var(--tool-surface); }
+.tool-page :is(.draft-timing h3, .values-method h3) { font: 700 20px/1.4 Inter, system-ui, sans-serif; }
+.tool-page.values-page main { gap: 0; }
+.tool-page .values-horizons { margin-bottom: 18px; }
+.tool-page .values-metrics { gap: 14px; margin-block: 20px; }
+.tool-page .values-metric strong { color: var(--lime); }
+.tool-page .values-metric span { font-size: 12px; }
+.tool-page .values-chart-grid figure { margin-top: 10px; }
+.tool-page .values-method p, .tool-page .values-method li { font-size: 14px; line-height: 1.7; }
+
+/* Simulators: differentiate inputs, numeric summaries and expandable evidence,
+   without altering probability encodings, table widths or model results. */
+.tool-page .matchup-panel { border-top: 2px solid var(--lime); }
+.tool-page .survivor-controls { gap: 14px; }
+.tool-page .survivor-controls select { border-color: #617d70; border-radius: 3px; }
+.tool-page .survivor-controls button { min-height: 46px; }
+.tool-page .survivor-heading > a { display: inline-flex; align-items: center; min-height: 44px; color: var(--lime); font-size: 13px; }
+.tool-page .survival-summary { gap: 14px; padding-block: 8px; }
+.tool-page .survival-summary > div { flex-basis: 180px; border-left-width: 2px; padding-inline: 16px; }
+.tool-page .survival-summary span, .tool-page .survival-summary small { color: var(--muted); font-size: 13px; line-height: 1.6; }
+.tool-page .used-teams label { min-height: 44px; border-radius: 3px; }
+.tool-page .league-intro .league-run-controls { margin-top: 18px; }
+.tool-page .league-round { padding: 16px; border-radius: 4px; background: var(--tool-surface); }
+.tool-page .league-round h3 { font-size: 18px; line-height: 1.4; }
+.tool-page .league-playoff-game { font-size: 14px; line-height: 1.7; }
+.tool-page .league-playoff-game strong { font-size: 18px; font-variant-numeric: tabular-nums; }
+.tool-page .matchup-caution { padding: 10px 14px; font-size: 13px; line-height: 1.7; }
+
+/* Odds: clearer matchup and numerical hierarchy; full market/provider names
+   remain available, and comparison columns retain their keyboard scroll region. */
+.tool-page .odds-principles { justify-content: flex-start; gap: 8px 18px; }
+.tool-page .odds-principles span { padding: 0; border: 0; border-radius: 0; color: var(--muted); background: transparent; font-size: 12px; font-weight: 500; }
+.tool-page .sportsbook-connection { padding: 12px 0; margin-bottom: 16px; border: 0; border-bottom: 1px solid var(--line); background: transparent; }
+.tool-page .prediction-panel { padding: 20px 0 24px; margin-bottom: 20px; border: 0; border-bottom: 1px solid var(--line-strong); background: transparent; }
+.tool-page .prediction-heading h2 { font-size: 22px; line-height: 1.4; }
+.tool-page .prediction-card { border-radius: 4px; background: var(--tool-surface); }
+.tool-page .prediction-card h3 { display: block; overflow: visible; -webkit-line-clamp: unset; font-size: 16px; line-height: 1.5; }
+.tool-page .prediction-outcomes span { overflow: visible; white-space: normal; overflow-wrap: anywhere; }
+.tool-page .prediction-meta, .tool-page .prediction-note { flex-wrap: wrap; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.tool-page .odds-controls { padding-inline: 20px; }
+.tool-page .odds-games-shell { padding-inline: 20px; }
+.tool-page .odds-game-card { border-radius: 4px; background: var(--tool-surface); box-shadow: none; }
+.tool-page .odds-game-header { padding: 18px; }
+.tool-page .odds-team-mark { border-radius: 3px; background: #153228; font-size: 12px; }
+.tool-page .odds-team strong { overflow: visible; white-space: normal; font-size: 18px; line-height: 1.4; }
+.tool-page .odds-team small { color: var(--muted); font-size: 12px; }
+.tool-page .odds-week-badge { padding: 5px 0; border: 0; background: transparent; font-size: 12px; }
+.tool-page .odds-game-detail > span { color: var(--muted); font-size: 12px; }
+.tool-page .odds-game-detail > strong, .tool-page .odds-game-detail > a { font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
+.tool-page .odds-comparison-provider strong { overflow: visible; white-space: normal; font-size: 14px; line-height: 1.5; }
+.tool-page .odds-comparison-provider span { font-size: 12px; line-height: 1.5; }
+.tool-page .odds-line-cell strong { font-size: 18px; }
+.tool-page .odds-line-cell > span:not(.best-badge) { color: var(--muted); }
+.tool-page .best-badge { font-size: 11px; }
+.tool-page .odds-line-missing { color: var(--muted); }
+
+/* Recorded box scores use a continuous score strip and purposeful table
+   dividers, so team identity and observed numbers carry the visual hierarchy. */
+.tool-page.game-page .game-back, .tool-page.game-page .game-download { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; }
+.tool-page.game-page .game-summary { gap: 0; margin: 20px 0; border-block: 1px solid var(--line-strong); }
+.tool-page.game-page .game-team { min-width: 0; padding: 20px 24px; border: 0; border-radius: 0; background: transparent; font-size: 20px; }
+.tool-page.game-page .game-team + .game-team { border-left: 1px solid var(--line); }
+.tool-page.game-page .game-team strong { font-size: 42px; line-height: 1.2; font-weight: 800; letter-spacing: -.04em; }
+.tool-page.game-page .game-team-name { min-width: 0; overflow-wrap: anywhere; }
+.tool-page.game-page .game-team-name small { font-size: 12px; line-height: 1.5; }
+.tool-page.game-page #game-status, .tool-page.game-page #game-conditions { color: var(--muted); font-size: 13px; line-height: 1.7; }
+.tool-page.game-page #game-status.stale { color: #ffc979; }
+.tool-page.game-page h2 { font: 750 24px/1.35 Inter, system-ui, sans-serif; letter-spacing: -.025em; }
+.tool-page.game-page .game-stat-category > h3 { margin-bottom: 18px; color: var(--lime); font-size: 18px; line-height: 1.4; }
+.tool-page.game-page .game-stat-team-heading { min-height: 44px; font-size: 16px; line-height: 1.4; }
+.tool-page.game-page .game-table-wrap { border: 0; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line); }
+.tool-page.game-page :is(th, td) { padding-block: 11px; }
+.tool-page.game-page tbody th { font-weight: 600; }
+.tool-page footer { flex-wrap: wrap; align-items: start; gap: 16px; padding-block: 24px; border-top: 1px solid var(--line); font-size: 12px; line-height: 1.7; }
+.tool-page footer p { color: var(--muted); font-size: 13px; line-height: 1.7; }
+.tool-page footer summary { min-height: 44px; }
+
+@media (max-width: 1100px) {
+  .tool-page .topbar, .tool-page main, .tool-page footer { width: calc(100% - 40px); }
+  .tool-page .league-controls { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tool-page.rankings-page .control-panel { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .tool-page .tool-masthead { gap: 20px 28px; }
+}
+@media (max-width: 800px) {
+  .tool-page .tool-masthead { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .tool-page :is(.model-version, .survivor-version, .values-scale) { max-width: none; }
+  .tool-page .board-toolbar { align-items: start; flex-direction: column; }
+  .tool-page .toolbar-actions { justify-content: flex-start; }
+  .tool-page .control-heading { align-items: start; flex-wrap: wrap; }
+}
+@media (max-width: 600px) {
+  .tool-page .topbar, .tool-page main, .tool-page footer { width: calc(100% - 28px); }
+  .tool-page main { padding-top: 22px; }
+  .tool-page .tool-masthead { margin-bottom: 16px; padding-bottom: 20px; }
+  .tool-page .tool-masthead h1 { font-size: clamp(28px, 7.8vw, 36px); }
+  .tool-page .league-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tool-page .control-panel { padding-block: 18px; }
+  .tool-page .board-toolbar { padding: 18px 14px; }
+  .tool-page .adp-tools { margin-inline: 14px; }
+  .tool-page .quick-filters, .tool-page .odds-controls, .tool-page .odds-games-shell { padding-inline: 14px; }
+  .tool-page .legend { padding-inline: 14px; }
+  .tool-page :is(.model-panel, .model-methodology, .survivor-panel, .values-panel) { padding-block: 22px; }
+  .tool-page .model-controls { padding-bottom: 20px; }
+  .tool-page .model-control-grid { gap: 14px 10px; }
+  .tool-page .survivor-controls { gap: 14px 10px; }
+  .tool-page .league-run-controls > a { flex-basis: 100%; }
+  .tool-page.game-page .game-team { flex-basis: 100%; padding: 18px 0; }
+  .tool-page.game-page .game-team + .game-team { border-left: 0; border-top: 1px solid var(--line); }
+  .tool-page.game-page .game-team strong { font-size: 36px; }
+  .tool-page .odds-game-header { padding: 16px 14px; }
+  .tool-page .odds-team strong { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tool-page *, .tool-page *::before, .tool-page *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+}

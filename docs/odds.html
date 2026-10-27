@@ -8,8 +8,10 @@
   <link rel="canonical" href="https://outlierbaseline.com/odds.html">
   <title>Weekly NFL Odds | OutlierBaseline</title>
   <link rel="stylesheet" href="styles.css?v=20260928-layout2">
+  <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
+  <link rel="stylesheet" href="tools.css?v=20261027-tools-editorial1">
 </head>
-<body>
+<body class="tool-page odds-page">
   <header class="topbar">
     <a class="brand" href="./" aria-label="OutlierBaseline home">
       <span class="brand-mark" aria-hidden="true">OB</span>
@@ -22,15 +24,15 @@
       <a href="special-teams.html">Kickers &amp; D/ST</a>
       <a class="active" href="odds.html">Weekly odds</a>
     </nav>
-    <div class="source-status" id="odds-status">Loading weekly markets...</div>
+
   </header>
 
-  <main>
-    <section class="odds-hero">
+  <main id="main-content" tabindex="-1">
+    <section class="odds-hero tool-masthead">
       <div>
-        <p class="eyebrow">Weekly NFL markets</p>
-        <h1>Shop the number, not the logo.</h1>
-        <p>Compare the next NFL games by week, market, and provider. Best-line badges appear only on licensed sportsbook data.</p>
+        <p class="tool-kicker">Markets / NFL odds</p>
+        <h1>Weekly NFL odds</h1>
+        <p class="tool-description">Compare available odds, market prices and spreads by game, week and source. Exchange prices and schedule reference lines are labeled separately from sportsbook offers.</p>
       </div>
       <div class="odds-principles" aria-label="Data policy">
         <span>Documented APIs</span>
@@ -39,6 +41,8 @@
       </div>
     </section>
 
+    <nav class="tool-related-links" aria-label="Related market research"><a href="survivor.html#matchup-heading">Matchup Lab <span aria-hidden="true">↗</span></a><a href="league.html">League simulations <span aria-hidden="true">↗</span></a><a href="stats.html">Game results <span aria-hidden="true">↗</span></a></nav>
+    <div class="source-status tool-source-band" id="odds-status" role="status">Loading weekly markets...</div>
     <section class="sportsbook-connection" id="sportsbook-connection" aria-live="polite">
       <span class="connection-light" aria-hidden="true"></span>
       <div><strong>Checking sportsbook connection...</strong><span>Loading source status.</span></div>
@@ -72,11 +76,11 @@
         <label><span>Week</span><select id="odds-week" aria-label="NFL week"></select></label>
         <label><span>Provider</span><select id="odds-provider" aria-label="Odds provider"><option value="ALL">All sources</option></select></label>
         <label class="search-field"><span>Search</span><input id="odds-search" type="search" placeholder="Team, venue, market, or source..." autocomplete="off"></label>
-        <div class="position-filters odds-market-filter" id="odds-markets" aria-label="Filter by market">
-          <button class="position active" data-market="ALL" type="button">All</button>
-          <button class="position" data-market="Moneyline" type="button">Moneyline</button>
-          <button class="position" data-market="Spread" type="button">Spread</button>
-          <button class="position" data-market="Total" type="button">Total</button>
+        <div class="position-filters odds-market-filter" id="odds-markets" aria-label="Filter by market" role="group">
+          <button class="position active" data-market="ALL" type="button" aria-pressed="true">All</button>
+          <button class="position" data-market="Moneyline" type="button" aria-pressed="false">Moneyline</button>
+          <button class="position" data-market="Spread" type="button" aria-pressed="false">Spread</button>
+          <button class="position" data-market="Total" type="button" aria-pressed="false">Total</button>
         </div>
       </div>
 
@@ -97,8 +101,7 @@
   </main>
 
   <footer><span>OutlierBaseline · Weekly NFL market comparison</span><a href="https://www.ncpgambling.org/help-treatment/about-the-national-problem-gambling-helpline/" target="_blank" rel="noopener noreferrer">Bet responsibly · Help is available</a></footer>
-  <script type="module" src="odds.js?v=20260928-layout1"></script>
-  <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
+  <script type="module" src="odds.js?v=20261027-tools1"></script>
   <script type="module" src="site-nav.js?v=20260930-no-leagues1"></script>
 </body>
 </html>

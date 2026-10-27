@@ -1,7 +1,7 @@
 import {fixture, playable, probability, sanitizeState, validatePlan, suggestPlan, survivalPath, simulatePlans} from "./survivor-model.mjs?v=1";
-import {initMatchup} from "./matchup.js?v=20260927-refresh1";
+import {initMatchup} from "./matchup.js?v=20261027-tools1";
 import {startAutoRefresh, fetchSnapshot, snapshotSignature} from "./auto-refresh.mjs?v=20260927-refresh1";
-import {canRefreshLabs, preserveLabView, validateTeamSnapshot} from "./lab-refresh.mjs?v=20260927-refresh1";
+import {canRefreshLabs, preserveLabView, validateTeamSnapshot, snapshotAgeNote} from "./lab-refresh.mjs?v=20261027-tools1";
 
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => {
@@ -13,7 +13,7 @@ const el = (tag, text, className) => {
 const pct = p => Number.isFinite(p) ? `${(100 * p).toFixed(1)}%` : "—";
 const signed = n => `${n > 0 ? "+" : ""}${n.toFixed(1)}`;
 const date = value => new Date(value).toLocaleString(undefined, {dateStyle: "medium", timeStyle: "short"});
-let data, state, storageKey, matchup, currentSignature = "", lockSignature = "", statusText = "";
+let data, state, storageKey, matchup, currentSignature = "", lockSignature = "", statusText = "", refreshWarning = "";
 
 function save() {
   try {
@@ -144,9 +144,14 @@ function render({keepSimulation = false} = {}) {
   $("tie-rule").value = state.ties ? "survive" : "lose";
   if (!keepSimulation) $("simulation-results").replaceChildren();
   renderUsed(); renderMatrix(); renderPath();
-  const hours = (Date.now() - Date.parse(data.generated_at)) / 3600000;
-  statusText = `${data.season} · Updated ${date(data.generated_at)}${hours > 24 ? " · Snapshot over 24 hours old" : ""}`;
-  $("survivor-status").textContent = statusText;
+  updateSnapshotStatus();
+}
+
+function updateSnapshotStatus() {
+  if (!data) return;
+  const age = snapshotAgeNote(data.generated_at);
+  statusText = `${data.season} · Saved ${date(data.generated_at)}${age ? ` · ${age}` : ""}`;
+  $("survivor-status").textContent = `${statusText}${refreshWarning ? ` · ${refreshWarning}` : ""}`;
 }
 
 function chart(result) {
@@ -240,8 +245,9 @@ function markPreviousSimulation() {
 startAutoRefresh(async signal => {
   const value = await fetchSnapshot("data/survivor.json", {signal, validate: validateTeamSnapshot});
   signal.throwIfAborted();
+  refreshWarning = "";
   const signature = snapshotSignature(value);
-  if (signature === currentSignature) { $("survivor-status").textContent = statusText; return; }
+  if (signature === currentSignature) { updateSnapshotStatus(); return; }
   const initial = !data;
   if (data && value.season !== data.season) throw new Error("A new season is available. Reload when you are ready to switch seasons.");
   preserveLabView(() => {
@@ -264,9 +270,11 @@ startAutoRefresh(async signal => {
   currentSignature = signature;
 }, {
   canRefresh: canRefreshLabs,
+  onCheck: updateSnapshotStatus,
   onError: error => {
     if (currentSignature) {
-      $("survivor-status").textContent = `${statusText} · ${error.message.startsWith("A new season") ? error.message : "Refresh delayed; showing saved data"}`;
+      refreshWarning = error.message.startsWith("A new season") ? error.message : "Refresh delayed; showing saved data";
+      $("survivor-status").textContent = `${statusText} · ${refreshWarning}`;
       return;
     }
     $("survivor-status").textContent = "Survivor data unavailable · retrying automatically";

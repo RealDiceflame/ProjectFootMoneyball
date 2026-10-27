@@ -1219,6 +1219,7 @@ function updateAdpMode() {
     ui.resetAdp.classList.add("hidden");
     ui.sourceStatus.textContent = state.defaultSourceStatus;
   }
+  if (state.refreshFailed) ui.sourceStatus.textContent += " · Refresh unavailable; keeping last loaded data";
 }
 
 function formatAdpStatus(data) {
@@ -1243,6 +1244,7 @@ function updateSortIndicators() {
   ui.tableHead.querySelectorAll("[data-sort]").forEach(button => {
     const indicator = button.querySelector(".sort-indicator");
     indicator.textContent = button.dataset.sort === state.sortColumn ? (state.sortAscending ? "▲" : "▼") : "";
+    button.closest("th").setAttribute("aria-sort", button.dataset.sort === state.sortColumn ? (state.sortAscending ? "ascending" : "descending") : "none");
   });
 }
 
@@ -1286,6 +1288,7 @@ function clearFilters() {
   ui.search.value = "";
   ui.tableHead.querySelectorAll("[data-filter]").forEach(control => { control.value = ""; });
   ui.positionFilters.querySelectorAll(".position").forEach(button => button.classList.toggle("active", button.dataset.position === "ALL"));
+  ui.positionFilters.querySelectorAll(".position").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.position === "ALL")));
   render();
 }
 
@@ -1323,6 +1326,7 @@ function bindEvents() {
     if (!button) return;
     state.position = button.dataset.position;
     ui.positionFilters.querySelectorAll(".position").forEach(item => item.classList.toggle("active", item === button));
+    ui.positionFilters.querySelectorAll(".position").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
     render();
   });
   ui.tableHead.addEventListener("click", event => {
@@ -1405,6 +1409,7 @@ async function loadRankings(signal) {
       if (snapshotSignature(state.draftAliases) !== previousAliases) saveJson(DRAFT_ALIASES_KEY, state.draftAliases);
     }
     Object.assign(state, next);
+    state.refreshFailed = false;
     injuryClock = injuryClockSignature(news);
     const intelStatus = state.intel.report_count
       ? `${state.intel.report_count} intel reports updated ${formatTimestamp(state.intel.generated_at)}`
@@ -1451,7 +1456,10 @@ startAutoRefresh(loadRankings, {
     injuryClock = injuryClockSignature(state.news);
   },
   onError: () => {
-    ui.sourceStatus.textContent = state.data ? `${state.defaultSourceStatus} · Refresh unavailable; keeping last loaded data` : "Rankings unavailable; retrying automatically";
+    state.refreshFailed = true;
+    if (state.data) updateAdpMode();
+    else ui.sourceStatus.textContent = "Rankings unavailable; retrying automatically";
+    ui.tableShell.setAttribute("aria-busy", "false");
     if (!state.data) ui.loadingState.textContent = "The rankings could not load. Retrying automatically when the connection is available.";
   },
 });

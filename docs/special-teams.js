@@ -132,6 +132,7 @@ function renderHead() {
   filters.className = "filter-row";
   columns.forEach(column => {
     const th = document.createElement("th");
+    th.scope = "col";
     th.style.minWidth = `${column.width}px`;
     const button = document.createElement("button");
     button.className = "sort-button";
@@ -146,6 +147,7 @@ function renderHead() {
     headings.append(th);
 
     const filterCell = document.createElement("th");
+    filterCell.scope = "col";
     if (column.key === "drafted") {
       const select = document.createElement("select");
       select.dataset.filter = column.key;
@@ -209,6 +211,7 @@ function render() {
   ui.head.querySelectorAll("[data-sort]").forEach(button => {
     button.querySelector(".sort-indicator").textContent = button.dataset.sort === state.sortColumn
       ? (state.sortAscending ? "▲" : "▼") : "";
+    button.closest("th").setAttribute("aria-sort", button.dataset.sort === state.sortColumn ? (state.sortAscending ? "ascending" : "descending") : "none");
   });
   const drafted = state.rows.filter(row => state.drafted.has(playerKey(row))).length;
   ui.summary.textContent = `Showing ${state.visible.length} of ${state.rows.length} entries · ${drafted} drafted · click a heading to sort`;
@@ -222,6 +225,7 @@ function clearFilters() {
   ui.search.value = "";
   ui.head.querySelectorAll("[data-filter]").forEach(control => { control.value = ""; });
   ui.positions.querySelectorAll(".position").forEach(button => button.classList.toggle("active", button.dataset.position === "ALL"));
+  ui.positions.querySelectorAll(".position").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.position === "ALL")));
   render();
 }
 
@@ -282,6 +286,7 @@ ui.positions.addEventListener("click", event => {
   if (!button) return;
   state.position = button.dataset.position;
   ui.positions.querySelectorAll(".position").forEach(item => item.classList.toggle("active", item === button));
+  ui.positions.querySelectorAll(".position").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
   render();
 });
 ui.head.addEventListener("input", event => {
@@ -312,6 +317,7 @@ ui.export.addEventListener("click", exportRows);
 
 observeBoardColumns(ui.shell);
 startAutoRefresh(load, {onError: () => {
+  ui.shell.setAttribute("aria-busy", "false");
   ui.status.textContent = state.data ? `${loadedStatus} · Refresh unavailable; keeping last loaded data` : "K/DST market unavailable; retrying automatically";
   if (!state.data) ui.loading.textContent = "Could not load the K/DST market. Retrying automatically.";
 }});

@@ -1,3 +1,5 @@
+import {TEAM_NAMES} from "./scores-data.mjs?v=20260915-weather1";
+
 export const ID_FIELDS = new Set(["player_id","player_name","player_display_name","position","position_group","headshot_url","season","week","season_type","game_id","team","opponent_team"]);
 export const TEAM_SUMMARY = ["completions","attempts","passing_yards","passing_tds","passing_interceptions",
   "carries","rushing_yards","rushing_tds","def_sacks","def_interceptions","fg_made","fg_att","penalties","penalty_yards"];
@@ -13,8 +15,21 @@ export function validGameId(value) {
   return typeof value === "string" && /^\d{4}_\d{2}_[A-Z]{2,3}_[A-Z]{2,3}$/.test(value);
 }
 
+export function validGameIdentity(game, gameId) {
+  if (!validGameId(gameId) || game?.game_id !== gameId) return false;
+  const [, week, away, home] = gameId.split("_");
+  return Number(week) === game.week && away === game.away && home === game.home && away !== home
+    && Object.hasOwn(TEAM_NAMES, away) && Object.hasOwn(TEAM_NAMES, home);
+}
+
+export function gameSnapshotTime(value, now = Date.now()) {
+  const time = typeof value === "string" ? Date.parse(value) : NaN;
+  const valid = Number.isFinite(time) && time <= now + 300000;
+  return {valid, stale: !valid || now - time > 7 * 3600000};
+}
+
 export function unpackStats(bundle, gameId) {
-  if (!bundle || bundle.schema_version !== 1 || bundle.game?.game_id !== gameId) throw new Error("Invalid game snapshot");
+  if (!bundle || bundle.schema_version !== 1 || !validGameIdentity(bundle.game, gameId)) throw new Error("Invalid game snapshot");
   const unpack = kind => {
     const columns = bundle[kind === "players" ? "player_columns" : "team_columns"], rows = bundle[kind];
     if (!Array.isArray(columns) || new Set(columns).size !== columns.length || !columns.includes("team")

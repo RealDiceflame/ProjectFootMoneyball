@@ -139,3 +139,9 @@ export function formatWeather(weather) {
   if (wind) pieces.push(`Wind ${wind}`);
   return pieces.join(" · ");
 }
+export function safeOddsUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password ? url.href : null;
+  } catch { return null; }
+}

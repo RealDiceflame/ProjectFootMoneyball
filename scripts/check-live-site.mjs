@@ -1,6 +1,10 @@
 // Read-only checks of public pages and their first-party assets. No provider APIs.
 const origin = new URL(process.env.SITE_URL || 'https://outlierbaseline.com/');
-const pending = new Set(['/', '/rankings.html', '/values.html', '/data/update_status.json']);
+const pending = new Set([
+  '/', '/stats.html', '/stats.html?view=leaders', '/game.html',
+  '/rankings.html', '/special-teams.html', '/values.html', '/projection.html',
+  '/survivor.html', '/league.html', '/odds.html', '/data/update_status.json',
+]);
 const checked = new Set();
 const failures = [];
 for (const path of pending) {

@@ -42,6 +42,7 @@ after(async () => {
 const pages = [
   ["index", "#home-injury-list article, #home-injury-list p"],
   ["rankings", "#table-body tr"], ["special-teams", "#special-body tr"],
+  ["values", "#values-rows tr"],
   ["projection", "#projection-content:not(.hidden)"], ["survivor", "#survivor-content:not([hidden])"],
   ["league", "#league-results:not([hidden])"], ["odds", '#odds-games-shell[aria-busy="false"]'],
   ["stats", "#stats-results > *"], ["stats-leaders", "#stats-results table", "stats.html?view=leaders"],
@@ -169,8 +170,10 @@ for (const [name, ready, route] of pages) test(`${name}: responsive layout and r
     for (const width of widths) await t.test(`${width}px`, async () => {
       await page.setViewportSize({width, height: 1000});
       await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-      if (process.env.LAYOUT_SCREENSHOTS && ["index", "rankings", "stats", "stats-leaders"].includes(name) && [390, 1440].includes(width)) {
+      if (process.env.LAYOUT_SCREENSHOTS && [390, 1440].includes(width)) {
         await page.screenshot({path: resolve(process.env.LAYOUT_SCREENSHOTS, `${name}-${width}.png`), fullPage: true});
+        await page.evaluate(() => scrollTo({top: 0, behavior: "instant"}));
+        await page.screenshot({path: resolve(process.env.LAYOUT_SCREENSHOTS, `${name}-${width}-top.png`)});
       }
       const result = {page: name, width, ...await measure(page)}; findings.push(result);
       assertLayout(result);
