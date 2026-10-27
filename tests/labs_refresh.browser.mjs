@@ -8,14 +8,15 @@ import {fileURLToPath} from "node:url";
 import {resolve, extname, sep} from "node:path";
 import {simulateLeague} from "../docs/league-model.mjs";
 import {observeRefreshChecks, waitForRefreshCheck, completedRefreshChecks} from "./helpers/refresh-clock.mjs";
+import {labNow as now, readLabSnapshots} from "./helpers/lab-fixtures.mjs";
 
 const {chromium} = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || "playwright");
 const root = fileURLToPath(new URL("../docs/", import.meta.url));
-const now = Date.parse("2026-09-27T16:00:00Z");
 const originals = {};
 let browser, server, base, leagueResult;
 before(async () => {
-  for (const key of ["rankings", "player_history", "player_news", "draft_capital_history", "survivor", "nfl_odds"]) originals[key] = JSON.parse(await readFile(resolve(root, "data", `${key}.json`), "utf8"));
+  for (const key of ["rankings", "player_history", "player_news", "draft_capital_history"]) originals[key] = JSON.parse(await readFile(resolve(root, "data", `${key}.json`), "utf8"));
+  Object.assign(originals, await readLabSnapshots());
   leagueResult = simulateLeague(originals.survivor, {trials: 100, seed: 42, now});
   server = createServer(async (request, response) => {
     try {
@@ -135,8 +136,8 @@ test("survivor refresh keeps saved picks, week and matchup controls, preserves f
   const lab = await open("survivor.html"), {page, context, values, errors} = lab;
   try {
     await page.locator("#survivor-content").waitFor({state: "visible"});
-    await page.selectOption("#start-week", "4");
-    await page.selectOption("#end-week", "5");
+    await page.selectOption("#start-week", "8");
+    await page.selectOption("#end-week", "9");
     await page.selectOption("#tie-rule", "survive");
     await page.click("#fill-plan");
     await page.click("#simulate-plan");
@@ -146,7 +147,7 @@ test("survivor refresh keeps saved picks, week and matchup controls, preserves f
     await page.selectOption("#matchup-venue", "neutral");
     await page.selectOption("#matchup-chart-metric", "total");
     const before = await page.evaluate(() => localStorage.getItem("outlierbaseline-survivor-v1-2026"));
-    const firstPick = page.getByLabel("Pick for week 4", {exact: true});
+    const firstPick = page.getByLabel("Pick for week 8", {exact: true});
     const pick = await firstPick.inputValue();
     await firstPick.focus();
     const summary = await page.locator("#matchup-summary").textContent();
@@ -156,9 +157,9 @@ test("survivor refresh keeps saved picks, week and matchup controls, preserves f
     await page.waitForFunction(() => document.querySelector("#simulation-results [data-refresh-note]"));
     assert.equal(await page.evaluate(() => localStorage.getItem("outlierbaseline-survivor-v1-2026")), before);
     assert.equal(await firstPick.inputValue(), pick);
-    assert.equal(await page.evaluate(() => document.activeElement.getAttribute("aria-label")), "Pick for week 4");
-    assert.equal(await page.inputValue("#start-week"), "4");
-    assert.equal(await page.inputValue("#end-week"), "5");
+    assert.equal(await page.evaluate(() => document.activeElement.getAttribute("aria-label")), "Pick for week 8");
+    assert.equal(await page.inputValue("#start-week"), "8");
+    assert.equal(await page.inputValue("#end-week"), "9");
     assert.equal(await page.inputValue("#tie-rule"), "survive");
     for (const [key, value] of Object.entries({mode: "custom", home: "BUF", away: "KC", venue: "neutral", "chart-metric": "total"})) assert.equal(await page.inputValue(`#matchup-${key}`), value);
     assert.equal(await page.locator("#start-week option").count(), 18);

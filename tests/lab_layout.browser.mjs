@@ -6,12 +6,14 @@ import {createServer} from "node:http";
 import {readFile, mkdir} from "node:fs/promises";
 import {fileURLToPath} from "node:url";
 import {resolve, extname, sep} from "node:path";
+import {labNow, readLabSnapshots} from "./helpers/lab-fixtures.mjs";
 
 const engines = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || "playwright");
 const root = fileURLToPath(new URL("../docs/", import.meta.url));
 const widths = [320, 390, 768, 1024, 1025, 1440];
-let server, browser, base;
+let server, browser, base, snapshots;
 before(async () => {
+  snapshots = await readLabSnapshots();
   server = createServer(async (request, response) => {
     try {
       const path = resolve(root, `.${decodeURIComponent(new URL(request.url, "http://localhost").pathname)}`);
@@ -29,11 +31,16 @@ after(async () => { await browser?.close(); if (server) await new Promise(done =
 
 async function open(path) {
   const context = await browser.newContext({viewport: {width: 1440, height: 1000}, reducedMotion: "reduce"});
-  await context.route("**/*", route => new URL(route.request().url()).origin === base ? route.continue() : route.abort());
+  await context.route("**/*", route => {
+    const url = new URL(route.request().url());
+    if (url.origin !== base) return route.abort();
+    const key = /^\/data\/(.+)\.json$/.exec(url.pathname)?.[1];
+    return Object.hasOwn(snapshots, key) ? route.fulfill({json: snapshots[key]}) : route.continue();
+  });
   const page = await context.newPage(), errors = [];
   page.setDefaultTimeout(20000);
   page.on("pageerror", error => errors.push(error.message));
-  await page.clock.install({time: new Date("2026-09-27T16:00:00Z")});
+  await page.clock.install({time: new Date(labNow)});
   await page.goto(`${base}/${path}.html`);
   return {context, page, errors};
 }
@@ -132,8 +139,8 @@ test("Survivor and matchup controls, expanded sections, and simulated results re
     for (const width of [390, 320]) await layout(page, "survivor-scheduled", width);
     assert.equal(await page.inputValue("#matchup-game"), longestGame.value);
     assert.equal(await page.locator("#matchup-game option").count(), gameOptions.length);
-    await page.selectOption("#start-week", "4");
-    await page.selectOption("#end-week", "5");
+    await page.selectOption("#start-week", "8");
+    await page.selectOption("#end-week", "9");
     await page.click("#fill-plan");
     await page.click("#simulate-plan");
     await page.selectOption("#matchup-mode", "custom");
