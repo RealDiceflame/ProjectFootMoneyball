@@ -77,6 +77,11 @@ test("leader categories and periods survive reloads and switching views",async()
   const {context,page,errors}=await open("?view=leaders&season=2026&week=all&category=Fantasy");
   try{
     assert.equal(await value(page,"stats-category"),"Fantasy");
+    for(const width of [320,390]){
+      await page.setViewportSize({width,height:844});
+      assert.equal(await page.locator("#stats-week option:checked").innerText(),"All weeks","The period label stays concise on narrow screens; the heading explains season totals");
+    }
+    await page.setViewportSize({width:1440,height:1000});
     assert.equal(await page.getByRole("table",{name:"Top 10 · Fantasy points · PPR",exact:true}).count(),1);
     const table=page.getByRole("table",{name:"Top 10 · Fantasy points · PPR",exact:true});
     assert.equal(await table.locator("thead th").last().innerText(),"Points");

@@ -140,7 +140,7 @@ async function loadSeason(preferredWeek) {
     summary=next;refreshFailed=false;
     const weeks=[...new Set(summary.games.map(game=>game.week))].sort((a,b)=>a-b);
     const wanted=(!changed && $("stats-week").value) || preferredWeek || defaultStatsWeek(summary,leaders);
-    options($("stats-week"),[["all",leaders?"Season totals":"All published games"],...weeks.map(week=>[week,`Week ${week}`])],
+    options($("stats-week"),[["all","All weeks"],...weeks.map(week=>[week,`Week ${week}`])],
       wanted==="all" || weeks.includes(Number(wanted))?wanted:defaultStatsWeek(summary,leaders));
     const groups=[...new Set(summary.metrics.map(metric=>metric.group))], category=categoryChoice || $("stats-category").value;
     options($("stats-category"),groups.map(group=>[group,group]),groups.includes(category)?category:groups[0]);
