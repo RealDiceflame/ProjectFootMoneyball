@@ -20,17 +20,17 @@
 .stats-page .stats-masthead > div { min-width: 0; }
 .stats-page h1 { margin: 0; font: 800 clamp(30px, 3.4vw, 46px)/1.18 Inter, system-ui, sans-serif; letter-spacing: -.045em; }
 .stats-page #stats-description { max-width: 400px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
-.stats-page .stats-filter-panel { padding-top: 0; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); }
-.stats-page .stats-views { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0 0 18px; border-bottom: 1px solid var(--line); }
-.stats-page .stats-views a { display: inline-flex; align-items: center; min-height: 52px; padding: 12px 0; border-bottom: 3px solid transparent; color: var(--muted); font-size: 15px; font-weight: 650; text-decoration: none; }
+.stats-page .stats-filter-panel { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 24px; padding-top: 14px; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); }
+.stats-page .stats-views { display: flex; align-self: end; flex-wrap: wrap; gap: 8px 28px; margin: 0; }
+.stats-page .stats-views a { display: inline-flex; align-items: center; min-height: 46px; padding: 10px 0; border-bottom: 3px solid transparent; color: var(--muted); font-size: 15px; font-weight: 650; text-decoration: none; }
 .stats-page .stats-views a:hover { color: var(--ink); }
 .stats-page .stats-views a[aria-current="page"] { border-color: var(--lime); color: var(--lime); }
-.stats-page .stats-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 14px; }
-.stats-page .stats-controls label { display: grid; flex: 0 1 180px; min-width: 0; gap: 7px; color: var(--muted); font-size: 12px; line-height: 1.5; }
-.stats-page .stats-controls label:last-child { flex-basis: 210px; }
+.stats-page .stats-controls { display: flex; justify-content: flex-end; flex-wrap: wrap; align-items: end; gap: 14px; }
+.stats-page .stats-controls label { display: grid; flex: 0 1 150px; min-width: 0; gap: 7px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.stats-page .stats-controls label:last-child { flex-basis: 190px; }
 .stats-page .stats-controls select { width: 100%; min-width: 0; max-width: 100%; min-height: 46px; padding: 10px 36px 10px 12px; border: 1px solid #617d70; border-radius: 3px; color: var(--ink); background: var(--stats-surface); font-size: 16px; contain: paint; text-overflow: ellipsis; }
 .stats-page .stats-controls select:disabled { cursor: default; opacity: .65; }
-.stats-page #stats-status { margin: 15px 0 18px; color: var(--muted); font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
+.stats-page #stats-status { grid-column: 1 / -1; margin: 12px 0 16px; color: var(--muted); font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
 .stats-page #stats-status.stale { color: #ffc979; }
 
 /* The overview is one continuous information band, not four oversized cards. */
@@ -41,6 +41,7 @@
 .stats-page .stats-overview-item:last-child { padding-right: 0; }
 .stats-page .stats-overview dt { color: var(--muted); font-size: 12px; line-height: 1.5; }
 .stats-page .stats-overview dd { margin: 5px 0; color: var(--ink); font-size: clamp(24px, 2.2vw, 32px); line-height: 1.25; font-weight: 750; letter-spacing: -.035em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stats-page .stats-overview-item:last-child dd { margin-block: 8px; color: var(--muted); font-size: 19px; line-height: 1.5; font-weight: 600; letter-spacing: -.015em; }
 .stats-page .stats-overview small { display: block; color: var(--muted); font-size: 12px; line-height: 1.5; }
 .stats-page .stats-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 260px; align-items: start; gap: 32px; }
 .stats-page .stats-main { min-width: 0; }
@@ -116,6 +117,9 @@
   .stats-page #stats-description { max-width: 330px; }
 }
 @media (max-width: 950px) {
+  .stats-page .stats-filter-panel { grid-template-columns: minmax(0, 1fr); padding-top: 0; }
+  .stats-page .stats-views { margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .stats-page .stats-controls { justify-content: flex-start; }
   .stats-page .stats-workspace { grid-template-columns: minmax(0, 1fr); gap: 30px; }
   .stats-page .stats-sidebar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 0 32px; padding: 24px 0 0; border-left: 0; border-top: 1px solid var(--line-strong); }
   .stats-page .stats-sidebar > h2 { grid-column: 1 / -1; }
