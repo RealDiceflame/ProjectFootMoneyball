@@ -1,4 +1,4 @@
-import {injuryFeed, filterInjuries, snapshotFreshness, leagueHeadlineCards} from "./home-data.mjs?v=20260930-home-copy1";
+import {injuryFeed, filterInjuries, injuryCoverage, snapshotFreshness, leagueHeadlineCards} from "./home-data.mjs?v=20261027-home-editorial1";
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; };
 const INJURY_PAGE_SIZE = 4;
@@ -44,6 +44,12 @@ function freshnessText(freshness) {
   return `${label}${freshness.stale ? " · Update delayed" : ""}`;
 }
 
+function updateInjuryCoverage(bundle, rows) {
+  const coverage = injuryCoverage(bundle, rows);
+  $("injury-coverage").textContent = coverage.label;
+  $("injury-coverage").classList.toggle("stale", coverage.stale);
+}
+
 function updateNewsStatus(bundle, cards = leagueHeadlineCards(bundle), refreshFailed = false) {
   const freshness = snapshotFreshness(bundle?.league_news?.updated_at || (!bundle?.league_news ? bundle?.generated_at : null));
   const unavailable = refreshFailed || !bundle || bundle.league_news?.status === "unavailable";
@@ -53,13 +59,12 @@ function updateNewsStatus(bundle, cards = leagueHeadlineCards(bundle), refreshFa
   $("league-news-status").classList.toggle("stale", unavailable || freshness.stale);
 }
 
-function renderSourcePlayers(bundle) {
-  const cards = leagueHeadlineCards(bundle);
+function renderSourcePlayers(bundle, cards = leagueHeadlineCards(bundle)) {
   $("league-news-list").replaceChildren(...cards.map((card, index) => {
     // Preserve chronological order; a missing portrait never changes the lead story.
     const article = el("article", undefined, `home-source-card${index === 0 ? " home-lead-story" : ""}`), link = el("a", undefined, "home-clip");
     link.href = card.url; link.target = "_blank"; link.rel = "noopener noreferrer";
-    const title = el("div"), metadata = el("small", `${card.source} · `);
+    const title = el("div", undefined, "home-story-copy"), metadata = el("small", `${card.source} · `, "home-story-meta");
     if (card.timestamp) {
       const time = el("time", new Date(card.timestamp).toLocaleString(undefined, {dateStyle: "medium", ...(card.timestamp.includes("T") ? {timeStyle: "short"} : {})}));
       time.dateTime = card.timestamp; metadata.append(time);
@@ -95,24 +100,27 @@ async function loadInjuries() {
     if (!response.ok) throw new Error("Injury snapshot could not be loaded.");
     const bundle = await response.json(), nextInjuries = injuryFeed(bundle);
     if (!Number.isFinite(Date.parse(bundle.generated_at))) throw new Error("Invalid snapshot timestamp");
-    const cardKey = JSON.stringify(leagueHeadlineCards(bundle).map(card=>[card.url,card.title]));
-    const changed = !newsBundle || JSON.stringify(nextInjuries) !== JSON.stringify(injuries) || newsBundle.generated_at !== bundle.generated_at
-      || newsBundle.league_news?.attempted_at !== bundle.league_news?.attempted_at || cardKey !== newsCardsKey;
+    const cards = leagueHeadlineCards(bundle), cardKey = JSON.stringify(cards);
+    const injuriesChanged = !newsBundle || JSON.stringify(nextInjuries) !== JSON.stringify(injuries);
+    const cardsChanged = !newsBundle || cardKey !== newsCardsKey;
     newsCardsKey = cardKey;
     newsBundle = bundle; injuries = nextInjuries;
+    updateInjuryCoverage(bundle, injuries);
     const freshness = snapshotFreshness(bundle.generated_at);
     $("injury-freshness").textContent = freshnessText(freshness);
     $("injury-freshness").classList.toggle("stale", freshness.stale);
     for (const id of ["injury-search", "injury-filter", "injury-more"]) $(id).disabled = false;
-    if (changed) {
+    if (injuriesChanged) renderInjuries();
+    if (cardsChanged) {
       const scroll = $("league-news-list").scrollTop;
-      renderInjuries(); renderSourcePlayers(bundle); $("league-news-list").scrollTop = scroll;
+      renderSourcePlayers(bundle, cards); $("league-news-list").scrollTop = scroll;
     } else {
       updateNewsStatus(bundle);
     }
   } catch {
     if (newsBundle) {
       injuries = injuryFeed(newsBundle); renderInjuries();
+      updateInjuryCoverage(newsBundle, injuries);
       const freshness = snapshotFreshness(newsBundle.generated_at);
       $("injury-freshness").textContent = `${freshnessText(freshness)} · ${SAVED_DATA_STATUS}`;
       updateNewsStatus(newsBundle, undefined, true);
@@ -121,6 +129,7 @@ async function loadInjuries() {
     }
     for (const id of ["injury-search", "injury-filter", "injury-more"]) $(id).disabled = true;
     $("injury-count").textContent = "Reports unavailable";
+    $("injury-coverage").textContent = "Report coverage unavailable. Current health unknown.";
     $("injury-freshness").textContent = "Injury reports temporarily unavailable";
     $("injury-freshness").classList.add("stale");
     $("home-injury-list").replaceChildren(el("p", NO_INJURY_REPORTS, "home-small"));
@@ -131,29 +140,49 @@ $("injury-search").addEventListener("input", () => { shown = INJURY_PAGE_SIZE; r
 $("injury-filter").addEventListener("change", () => { shown = INJURY_PAGE_SIZE; renderInjuries(); });
 $("injury-more").addEventListener("click", () => { shown += INJURY_PAGE_SIZE; renderInjuries(); });
 
-// Load the official embed asynchronously so an X outage cannot block the page.
-async function loadXFeed() {
+// Third-party scripts are optional: opening the disclosure does not grant consent.
+// Only the explicit button starts loading, and repeated clicks share one request.
+let xFeedPromise = null, xFeedLoaded = false;
+function loadXFeed() {
+  if (xFeedLoaded || xFeedPromise) return xFeedPromise;
+  xFeedPromise = enableXFeed();
+  return xFeedPromise;
+}
+async function enableXFeed() {
+  const button = $("load-x-feed");
+  button.disabled = true; button.textContent = "Loading NFL posts…";
   $("social-status").textContent = "Loading the NFL on X…";
   const target = $("x-feed"), link = el("a", "View posts from @NFL on X");
   link.className = "twitter-timeline"; link.href = "https://x.com/NFL"; link.target = "_blank"; link.rel = "noopener noreferrer";
   link.dataset.theme = "dark"; link.dataset.height = "560"; link.dataset.dnt = "true"; target.replaceChildren(link);
   try {
     await new Promise((resolve, reject) => {
-      const script = document.createElement("script"), timeout = setTimeout(() => reject(new Error("timeout")), 12000);
+      const script = document.createElement("script");
+      const finish = error => {
+        clearTimeout(timeout); script.onload = null; script.onerror = null;
+        if (error) {script.remove(); reject(error);} else resolve();
+      };
+      const timeout = setTimeout(() => finish(new Error("timeout")), 12000);
       script.src = "https://platform.x.com/widgets.js"; script.async = true; script.charset = "utf-8";
-      script.onload = () => { clearTimeout(timeout); resolve(); };
-      script.onerror = () => { clearTimeout(timeout); reject(new Error("blocked")); };
+      script.onload = () => finish();
+      script.onerror = () => finish(new Error("blocked"));
       document.head.append(script);
     });
-    $("social-status").textContent = "";
+    // The widget may still be blocked by browser privacy settings after the
+    // script loads. Keep the direct source link and avoid claiming posts loaded.
+    xFeedLoaded = true;
+    button.textContent = "NFL feed enabled";
+    $("social-status").textContent = "NFL feed enabled. If posts don’t appear, view them on X.";
   } catch {
+    button.disabled = false; button.textContent = "Retry NFL posts";
     $("social-status").textContent = "NFL posts couldn’t load. View them on X.";
-  }
+  } finally { xFeedPromise = null; }
 }
+$("load-x-feed").addEventListener("click", loadXFeed);
+for (const id of ["injury-search", "injury-filter", "injury-more"]) $(id).disabled = true;
 loadInjuries();
 // Check our saved file only; visitors never call a news or injury provider.
 setInterval(loadInjuries, 60000);
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden && Date.now() - newsLastAttempt >= 60000) loadInjuries();
 });
-loadXFeed();

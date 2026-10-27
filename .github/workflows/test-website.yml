@@ -39,10 +39,20 @@ jobs:
       - name: Test mobile navigation, saved selections, and automatic refresh
         env:
           BROWSER_CHANNEL: chromium
+          LAYOUT_SCREENSHOTS: artifacts/layout/chromium
         run: node --test tests/*.browser.mjs
       - name: Test WebKit touch navigation, responsive layouts, and player values
         env:
           BROWSER_ENGINE: webkit
+          LAYOUT_SCREENSHOTS: artifacts/layout/webkit
         run: |
           node --test --test-name-pattern="mobile navigation (?!supports keyboard)" tests/navigation_and_fantasy.browser.mjs
           node --test tests/site_layout.browser.mjs tests/lab_layout.browser.mjs tests/player_values.browser.mjs tests/source_health.browser.mjs
+      - name: Save responsive layout screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-layout-review
+          path: artifacts/layout/
+          if-no-files-found: ignore
+          retention-days: 14
