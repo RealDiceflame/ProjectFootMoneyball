@@ -430,7 +430,7 @@ test("archived prototype does not overwrite bad stored data or cross-tab conflic
   } finally { await context.close(); }
 });
 
-test("homepage links, injury filters, automatic X loading and mobile layout work", async () => {
+test("homepage links, injury filters, optional X fallback and mobile layout work", async () => {
   const {context, page} = await openPage({}, "/");
   try {
     const errors = [], external = [];
@@ -438,11 +438,22 @@ test("homepage links, injury filters, automatic X loading and mobile layout work
     page.on("request", request => { if (new URL(request.url()).origin !== base) external.push(request.url()); });
     await page.reload(); await page.locator("#home-injury-list article").first().waitFor();
     assert.deepEqual(errors, []);
+    assert.equal(external.filter(url => url === "https://platform.x.com/widgets.js").length, 0, "The homepage does not request X before consent");
+    assert.equal(await page.locator("#x-feed").locator("*").count(), 0, "No third-party timeline is created before consent");
+    const social = page.locator("details.home-social"), loadFeed = page.getByRole("button", {name: "Load NFL feed", exact: true});
+    assert.equal(await social.evaluate(element => element.open), false);
+    await social.locator("summary").click();
+    assert.equal(await loadFeed.isVisible(), true);
+    assert.equal(external.filter(url => url === "https://platform.x.com/widgets.js").length, 0, "Opening the disclosure alone does not request X");
+    await loadFeed.click();
     await page.waitForFunction(() => document.querySelector("#social-status").textContent === "NFL posts couldn’t load. View them on X.");
     assert.equal(external.filter(url => url === "https://platform.x.com/widgets.js").length, 1);
     assert.ok(external.every(url => ["platform.x.com", "static.www.nfl.com", "a.espncdn.com"].includes(new URL(url).hostname)));
-    assert.equal(await page.locator("#load-x-feed").count(), 0);
+    assert.equal(await page.getByRole("button", {name: "Retry NFL posts", exact: true}).isEnabled(), true, "Blocked embeds keep an explicit retry action");
     assert.equal(await page.locator("#x-feed .twitter-timeline").getAttribute("data-dnt"), "true");
+    await social.locator("summary").click();
+    await social.locator("summary").click();
+    assert.equal(external.filter(url => url === "https://platform.x.com/widgets.js").length, 1, "Reopening the disclosure never retries automatically");
     assert.equal(await page.locator(".home-nav-link").getAttribute("aria-current"), "page");
     assert.equal(await page.locator(".topnav .current-lab").count(), 0);
     assert.equal(await page.locator("#home-injury-list article").count(), 4);
@@ -506,7 +517,7 @@ test("homepage header Explore tools link scrolls and focuses its section using t
     const section = page.locator("#explore"), bounds = await page.locator("#explore-heading").boundingBox();
     assert.ok(bounds.y >= -1 && bounds.y + bounds.height <= 1001, "The tools section heading is visible after the jump");
     assert.deepEqual(await section.locator(".home-tool-grid > a").evaluateAll(links => links.map(link => link.getAttribute("href"))),
-      ["rankings.html", "special-teams.html", "projection.html", "survivor.html", "league.html", "odds.html"], "All six tools remain available at the jump target");
+      ["rankings.html", "special-teams.html", "projection.html", "survivor.html", "league.html", "odds.html", "stats.html", "values.html"], "All eight tools remain available at the jump target");
   } finally { await context.close(); }
 });
 
@@ -743,7 +754,7 @@ test("homepage injury paging shows four at a time, resets filters, and preserves
   } finally { await context.close(); }
 });
 
-test("automatic X embed initializes once when the widget script is available", async () => {
+test("optional X embed initializes once after consent when the widget script is available", async () => {
   const {context, page} = await openPage();
   try {
     let widgetRequests = 0;
@@ -752,12 +763,26 @@ test("automatic X embed initializes once when the widget script is available", a
       return route.fulfill({contentType: "text/javascript", body: 'document.querySelector("#x-feed").dataset.widgetTestLoaded = "true";'});
     });
     await page.goto(base + "/");
+    await page.locator("#home-injury-list article").first().waitFor();
+    assert.equal(widgetRequests, 0, "No widget request on initial navigation");
+    const social = page.locator("details.home-social");
+    await social.locator("summary").click();
+    assert.equal(widgetRequests, 0, "Reading the disclosure is not consent to load X");
+    const loadFeed = page.getByRole("button", {name: "Load NFL feed", exact: true});
+    await loadFeed.focus(); await page.keyboard.press("Enter");
     await page.waitForFunction(() => document.querySelector("#x-feed").dataset.widgetTestLoaded === "true");
     assert.equal(widgetRequests, 1);
     assert.equal(await page.locator("#x-feed").getAttribute("data-widget-test-loaded"), "true");
     assert.equal(await page.locator("#x-feed .twitter-timeline").getAttribute("href"), "https://x.com/NFL");
     assert.equal(await page.locator("#x-feed .twitter-timeline").getAttribute("data-dnt"), "true");
-    assert.equal(await page.locator("#load-x-feed").count(), 0);
+    await page.waitForFunction(() => document.querySelector("#social-status").textContent === "NFL feed enabled. If posts don’t appear, view them on X.");
+    assert.equal(await page.getByRole("button", {name: "NFL feed enabled", exact: true}).isDisabled(), true);
+    await social.locator("summary").click();
+    await social.locator("summary").click();
+    // Even repeated synthetic activation must not create a second widget script.
+    await page.locator("#load-x-feed").dispatchEvent("click");
+    assert.equal(widgetRequests, 1);
+    assert.equal(await page.locator('script[src="https://platform.x.com/widgets.js"]').count(), 1);
   } finally { await context.close(); }
 });
 

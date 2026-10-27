@@ -123,6 +123,21 @@ export function filterInjuries(rows, query = "", mode = "all") {
   return rows.filter(row => (mode !== "risk" || row.risk) && (!needle || [row.player, row.team, row.pos, row.injury, row.status].join(" ").toLocaleLowerCase().includes(needle)));
 }
 
+export function injuryCoverage(bundle, rows = []) {
+  const context = bundle?.injury_context || {}, current = rows.filter(row => row.current).length;
+  const weekLabel = (season, week) => Number.isInteger(season) && Number.isInteger(week) && week > 0
+    ? `${season} · Week ${week}` : null;
+  const latest = weekLabel(context.latest_report_season, context.latest_report_week);
+  const expected = weekLabel(context.season ?? bundle?.season, context.expected_week);
+  const behind = context.status === "behind";
+  const unavailable = context.status === "unavailable";
+  const source = behind ? `Source behind${latest ? ` · Latest report ${latest}` : ""}${expected ? `; expected ${expected}` : ""}. Current health unknown.`
+    : unavailable ? "Injury source unavailable. Current health unknown."
+      : !current ? "No verified current reports. Current health unknown." : "Missing reports do not establish health.";
+  return {label: `${rows.length} saved player report${rows.length === 1 ? "" : "s"} · ${current} current. ${source} Coverage is limited to saved players, not every NFL player.`,
+    stale: behind || unavailable || !current};
+}
+
 export function snapshotFreshness(value, now = Date.now()) {
   const time = Date.parse(value);
   if (!Number.isFinite(time) || time > now + 5 * 60000) return {label: "Update time unavailable", stale: true};

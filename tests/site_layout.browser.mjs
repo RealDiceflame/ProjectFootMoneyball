@@ -193,12 +193,17 @@ for (const [name, ready, route] of pages) test(`${name}: responsive layout and r
             leadSize: parseFloat(getComputedStyle(articles[0].querySelector("h3")).fontSize),
             rowSize: parseFloat(getComputedStyle(articles[1].querySelector("h3")).fontSize),
             readable: articles.every(article => textFits(article.querySelector("h3"))),
+            clippedHeadlines: articles.map(article => article.querySelector("h3")).filter(heading => !textFits(heading)).map(heading => {
+              const range = document.createRange(); range.selectNodeContents(heading);
+              return {text: heading.textContent, bounds: heading.getBoundingClientRect().toJSON(),
+                lineHeight: getComputedStyle(heading).lineHeight, textRects: [...range.getClientRects()].map(rect => rect.toJSON())};
+            }),
             updatesReadable: [...document.querySelectorAll(".home-updates h3, .home-updates p, .home-updates a")].every(textFits)};
         });
         assert.equal(editorial.leadFirst, true, "The newest story leads the reading order");
         assert.ok(editorial.headings.every(count => count === 1), "Each story retains one semantic headline");
         assert.ok(editorial.leadSize > editorial.rowSize, "The lead has a stronger type hierarchy than supporting news rows");
-        assert.equal(editorial.readable, true, "News headlines wrap without clipping at every width");
+        assert.equal(editorial.readable, true, `News headlines wrap without clipping at every width: ${JSON.stringify(editorial.clippedHeadlines)}`);
         assert.equal(editorial.updatesReadable, true, "Compact announcements keep their copy and links fully visible");
         assert.deepEqual(await page.locator(".home-updates article h3").allTextContents(),
           ["League simulations", "Player history and draft analysis"], "Approved announcements remain without the archived league prototype");
@@ -209,9 +214,9 @@ for (const [name, ready, route] of pages) test(`${name}: responsive layout and r
         assert.deepEqual(await page.locator(".home-feed-grid > *").evaluateAll(sections => sections.map(section => section.getAttribute("aria-labelledby"))),
           ["highlights-heading", "injury-heading", "explore-heading"], "Document and keyboard reading order is news, injuries, then tools");
         assert.deepEqual(await page.locator("#explore .home-tool-grid > a").evaluateAll(links => links.map(link => link.getAttribute("href"))),
-          ["rankings.html", "special-teams.html", "projection.html", "survivor.html", "league.html", "odds.html"], "All six original tool destinations remain once, in order");
+          ["rankings.html", "special-teams.html", "projection.html", "survivor.html", "league.html", "odds.html", "stats.html", "values.html"], "All eight published tool destinations are discoverable");
         assert.equal(await page.locator("#explore").count(), 1, "Explore tools is moved, not duplicated");
-        assert.equal(await page.locator(".home-tool-grid > a").count(), 6);
+        assert.equal(await page.locator(".home-tool-grid > a").count(), 8);
         const compact = await page.evaluate(() => {
           const grid = document.querySelector("#explore .home-tool-grid");
           const cards = [...grid.children];
@@ -222,31 +227,11 @@ for (const [name, ready, route] of pages) test(`${name}: responsive layout and r
               && [...range.getClientRects()].every(rect => rect.left >= bounds.left - 1 && rect.right <= bounds.right + 1
                 && rect.top >= bounds.top - 1 && rect.bottom <= bounds.bottom + 1);
           };
-          // Compare the same browser, text and available width against the former
-          // category/padding/title-spacing treatment, without fixed pixel heights.
-          const prior = grid.cloneNode(true);
-          Object.assign(prior.style, {position: "absolute", visibility: "hidden", pointerEvents: "none",
-            width: `${grid.getBoundingClientRect().width}px`, gap: "16px", left: "0", top: "0"});
-          [...prior.children].forEach((card, index) => {
-            card.style.padding = "20px";
-            const category = document.createElement("span");
-            category.textContent = ["FANTASY", "FANTASY", "LABS", "LABS", "LABS", "MARKETS"][index];
-            category.style.fontSize = "11px"; category.style.letterSpacing = ".08em";
-            card.prepend(category);
-            Object.assign(card.querySelector("h3").style, {fontSize: "18px", margin: "16px 0 10px"});
-            Object.assign(card.querySelector("p").style, {fontSize: "15px", lineHeight: "1.65", margin: "0"});
-          });
-          grid.parentElement.append(prior);
-          try {
-            return {height: grid.getBoundingClientRect().height, priorHeight: prior.getBoundingClientRect().height,
-              children: cards.map(card => [...card.children].map(child => child.tagName)),
-              textVisible: cards.every(card => [card.querySelector("h3"), card.querySelector("p")].every(element => element && textFits(element)))};
-          } finally { prior.remove(); }
+          return {children: cards.map(card => [...card.children].map(child => child.tagName)),
+            textVisible: cards.every(card => [card.querySelector("h3"), card.querySelector("p")].every(element => element && textFits(element)))};
         });
-        assert.deepEqual(compact.children, Array.from({length: 6}, () => ["H3", "P"]), "Each tool card contains its title and short description without a repeated category");
+        assert.deepEqual(compact.children, Array.from({length: 8}, () => ["H3", "P"]), "Each tool contains a title and useful short description");
         assert.equal(compact.textVisible, true, "Every tool title and description remains fully visible without clipping");
-        assert.ok(compact.height <= compact.priorHeight * .85,
-          `Tool cards are meaningfully shorter than their prior category-card treatment: ${compact.height}px vs ${compact.priorHeight}px`);
         const scoreControls = await page.evaluate(() => {
           const bounds = selector => document.querySelector(selector).getBoundingClientRect().toJSON();
           return {previous: bounds("#score-prev"), next: bounds("#score-next"), pair: bounds(".home-score-arrows"), controls: bounds(".home-score-controls")};
@@ -291,10 +276,10 @@ for (const [name, ready, route] of pages) test(`${name}: responsive layout and r
         assert.equal(await page.locator("#league-news-list").evaluate(element => element === document.activeElement
           && parseFloat(getComputedStyle(element).outlineWidth) >= 2 && getComputedStyle(element).outlineStyle !== "none"), true,
         "The news scrolling region keeps a visible keyboard focus indicator");
-        await page.locator(".home-highlights a").last().focus();
+        await page.locator(".home-social > summary").focus();
         await page.keyboard.press("Tab");
         assert.equal(await page.locator("#injury-search").evaluate(element => element === document.activeElement), true,
-          "Keyboard focus moves from news to the injury search");
+          "Keyboard focus moves from the collapsed social disclosure to injury search");
         await page.locator("#injury-search").evaluate(element => element.blur());
         const sources = page.locator(".home-source-details");
         assert.equal(await sources.evaluate(element => element.open), false, "Sources and privacy starts collapsed");

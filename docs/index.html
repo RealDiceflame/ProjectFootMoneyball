@@ -14,7 +14,7 @@
   <meta name="twitter:image" content="https://outlierbaseline.com/og.png">
   <title>OutlierBaseline | Football Analytics</title>
   <link rel="stylesheet" href="styles.css?v=20260928-layout2">
-  <link rel="stylesheet" href="home.css?v=20260930-home-release1">
+  <link rel="stylesheet" href="home.css?v=20261027-home-editorial1">
   <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
 </head>
 <body class="home-page">
@@ -25,7 +25,6 @@
     <a class="home-header-link" href="#explore">Explore tools <span aria-hidden="true">↓</span></a>
   </header>
   <main id="home-main" tabindex="-1">
-    <h1 id="home-title" class="sr-only">OutlierBaseline</h1>
     <section class="home-section home-scores" aria-labelledby="scores-heading">
       <div class="home-section-heading">
         <h2 id="scores-heading">NFL scores</h2>
@@ -42,39 +41,52 @@
       <div id="score-games" class="home-score-grid" tabindex="0" role="region" aria-label="Weekly games, scroll horizontally or use the arrow buttons"></div>
       <noscript>Enable JavaScript to view the scoreboard.</noscript>
     </section>
+    <div class="home-edition">
+      <div><p class="home-kicker">NFL · Fantasy · Analytics</p><h1 id="home-title">OutlierBaseline</h1></div>
+      <p>NFL news and fantasy analysis, grounded in the numbers.</p>
+    </div>
     <div class="home-feed-grid">
       <section class="home-section home-highlights" aria-labelledby="highlights-heading">
-        <h2 id="highlights-heading">Around the NFL</h2>
+        <div class="home-section-heading"><div><p class="home-kicker">League headlines</p><h2 id="highlights-heading">Around the NFL</h2></div></div>
         <p id="league-news-status" class="home-feed-status" role="status">Loading stories…</p>
         <div id="league-news-list" class="home-news-scroll" tabindex="0" role="region" aria-label="Scrollable league news"></div>
         <noscript><p class="home-small">Enable JavaScript to view saved headlines, or open ESPN NFL below.</p></noscript>
         <div class="home-source-links"><a class="home-text-link" href="https://www.nfl.com/videos/" target="_blank" rel="noopener noreferrer">NFL highlights ↗</a><a class="home-text-link" href="https://www.espn.com/nfl/" target="_blank" rel="noopener noreferrer">ESPN NFL ↗</a><a class="home-text-link" href="https://www.cbssports.com/watch/nfl" target="_blank" rel="noopener noreferrer">CBS Sports NFL ↗</a></div>
-        <div class="home-social"><h3>NFL on X</h3>
-          <p id="social-status" class="home-small" role="status"></p><div id="x-feed"></div>
+        <details class="home-social"><summary>NFL on X</summary>
+          <p class="home-small">Load the optional feed to see posts from NFL on X. Loading it may share browsing information with X and use cookies.</p>
+          <button id="load-x-feed" class="home-secondary" type="button" aria-controls="x-feed" aria-describedby="social-privacy">Load NFL feed</button>
+          <p id="social-status" class="home-small" role="status">The optional X feed has not been loaded.</p><div id="x-feed"></div>
           <p class="home-small"><a href="https://x.com/NFL" target="_blank" rel="noopener noreferrer">View NFL on X ↗</a> · <a href="https://help.x.com/en/x-for-websites-ads-info-and-privacy" target="_blank" rel="noopener noreferrer">X privacy information ↗</a></p>
-        </div>
+        </details>
       </section>
       <aside class="home-section home-injuries" aria-labelledby="injury-heading">
-        <div class="home-section-heading"><h2 id="injury-heading">Injury Report</h2><span id="injury-count" class="home-small"></span></div>
+        <div class="home-section-heading"><div><p class="home-kicker">Player availability</p><h2 id="injury-heading">Injury Report</h2></div><span id="injury-count" class="home-small"></span></div>
         <p id="injury-freshness" class="home-feed-status" role="status">Loading reports…</p>
+        <p id="injury-coverage" class="home-small"></p>
         <div class="home-filters"><label>Search reports<input id="injury-search" type="search" placeholder="Player, team, injury…" autocomplete="off"></label><label>Report status<select id="injury-filter" title="Only current Out, Doubtful and Injured Reserve reports receive a Risk label."><option value="all">All statuses</option><option value="risk">Out / doubtful / injured reserve</option></select></label></div>
         <div id="home-injury-list" aria-live="polite"></div><button id="injury-more" type="button" class="home-secondary" hidden>Show more reports</button>
         <noscript>Enable JavaScript to view the saved reports. <a href="rankings.html">Open player rankings</a>.</noscript>
       </aside>
       <section class="home-section" id="explore" tabindex="-1" aria-labelledby="explore-heading">
-        <div class="home-section-heading"><h2 id="explore-heading">Explore tools</h2></div>
+        <div class="home-section-heading"><div><p class="home-kicker">OutlierBaseline analytics</p><h2 id="explore-heading">Explore tools</h2></div></div>
+        <article class="home-analytics-feature" aria-labelledby="analytics-feature-heading">
+          <div class="home-feature-copy"><p class="home-kicker">Inside the Player Value Lab</p><h3 id="analytics-feature-heading">Player value, with context.</h3><p>Compare rest-of-season and three-year outlooks alongside observed production, availability and the assumptions behind the model.</p></div>
+          <a class="home-feature-link" href="values.html">Explore player values <span aria-hidden="true">↗</span></a>
+        </article>
         <div class="home-tool-grid">
           <a href="rankings.html"><h3>Player rankings ↗</h3><p>Compare players for your league’s scoring.</p></a>
           <a href="special-teams.html"><h3>Kickers &amp; D/ST ↗</h3><p>Compare where kickers and defenses are drafted.</p></a>
           <a href="projection.html"><h3>Projection Lab ↗</h3><p>Compare player history and season projections.</p></a>
           <a href="survivor.html"><h3>Matchups &amp; Survivor ↗</h3><p>Simulate matchups and plan survivor picks.</p></a>
           <a href="league.html"><h3>League simulations ↗</h3><p>Explore possible season, playoff and Super Bowl outcomes.</p></a>
-          <a href="odds.html"><h3>Weekly odds ↗</h3><p>Compare the latest available sportsbook odds and spreads.</p></a>
+          <a href="odds.html"><h3>Weekly odds ↗</h3><p>Compare available odds, market prices and spreads.</p></a>
+          <a href="stats.html"><h3>Game results &amp; stats ↗</h3><p>Review recorded box scores and season or weekly leaders.</p></a>
+          <a href="values.html"><h3>Player Value Lab ↗</h3><p>Compare rest-of-season and three-year player outlooks.</p></a>
         </div>
       </section>
     </div>
     <section class="home-section home-announcements" aria-labelledby="updates-heading">
-      <div class="home-section-heading"><h2 id="updates-heading">New at OutlierBaseline</h2></div>
+      <div class="home-section-heading"><div><p class="home-kicker">From the notebook</p><h2 id="updates-heading">New at OutlierBaseline</h2></div></div>
       <div class="home-updates">
         <article><div class="home-update-meta"><time datetime="2026-09-13">SEPTEMBER 13, 2026</time><span class="home-badge">SIMULATION LAB</span></div><div class="home-update-copy"><h3>League simulations</h3><p>Simulate the NFL season and explore possible playoff and Super Bowl outcomes.</p></div><a href="league.html#bracket-heading">View simulations ↗</a></article>
         <article><div class="home-update-meta"><time datetime="2026-09-09">SEPTEMBER 9, 2026</time><span class="home-badge">PROJECTION LAB</span></div><div class="home-update-copy"><h3>Player history and draft analysis</h3><p>Compare historical player performance by age and position.</p></div><a href="projection.html">View player history ↗</a></article>
@@ -87,6 +99,6 @@
     <p>Scores are checked more often near games; news, injuries and game stats are collected every six hours. Delays can occur. Weather comes from nflverse or <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noopener noreferrer">National Weather Service</a> forecasts. Forecasts remain labeled as forecasts.</p>
     <p id="social-privacy">The X feed may share browsing information with X and use cookies. OutlierBaseline is independent of the featured platforms. Team marks belong to their respective owners. <a href="https://help.x.com/en/x-for-websites-ads-info-and-privacy" target="_blank" rel="noopener noreferrer">X privacy information</a>.</p>
   </details></footer>
-  <script type="module" src="site-nav.js?v=20260930-no-leagues1"></script><script type="module" src="home.js?v=20260930-home-copy1"></script><script type="module" src="scores.js?v=20260930-home-copy1"></script>
+  <script type="module" src="site-nav.js?v=20260930-no-leagues1"></script><script type="module" src="home.js?v=20261027-home-editorial1"></script><script type="module" src="scores.js?v=20260930-home-copy1"></script>
 </body>
 </html>

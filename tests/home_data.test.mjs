@@ -170,7 +170,9 @@ test("homepage copy keeps the approved tool destinations, metadata, labels and s
     ["projection.html", "Projection Lab ↗", "Compare player history and season projections."],
     ["survivor.html", "Matchups & Survivor ↗", "Simulate matchups and plan survivor picks."],
     ["league.html", "League simulations ↗", "Explore possible season, playoff and Super Bowl outcomes."],
-    ["odds.html", "Weekly odds ↗", "Compare the latest available sportsbook odds and spreads."],
+    ["odds.html", "Weekly odds ↗", "Compare available odds, market prices and spreads."],
+    ["stats.html", "Game results & stats ↗", "Review recorded box scores and season or weekly leaders."],
+    ["values.html", "Player Value Lab ↗", "Compare rest-of-season and three-year player outlooks."],
   ]);
   assert.match(html, /href="stats\.html">Game results &amp; stats<\/a>/);
   assert.match(html, /<label>Report status<select id="injury-filter" title="Only current Out, Doubtful and Injured Reserve reports receive a Risk label\.">/);
@@ -200,7 +202,7 @@ test("homepage copy keeps the approved tool destinations, metadata, labels and s
 test("homepage controls and rankings route are wired with unique identifiers", () => {
   const html = readFileSync(new URL("../docs/index.html", import.meta.url), "utf8");
   const js = readFileSync(new URL("../docs/home.js", import.meta.url), "utf8");
-  const sourceSummary = js.slice(js.indexOf("function playerSummary("), js.indexOf("function renderSourcePlayers("));
+  const sourceSummary = js.slice(js.indexOf("function playerSummary("), js.indexOf("function freshnessText("));
   assert.match(sourceSummary, /portrait\(player\)/);
   assert.doesNotMatch(sourceSummary, /injury|RISK|home-badge/i);
   assert.match(js.slice(js.indexOf("function renderInjuries(")), /injuryDetails\(card, row\)/);
@@ -233,10 +235,10 @@ test("homepage controls and rankings route are wired with unique identifiers", (
   assert.ok(updates < html.indexOf("</main>"));
   assert.equal(html.slice(updates, html.indexOf("</main>")).match(/<section\b/g), null, "Product updates are the final homepage section");
   assert.doesNotMatch(html, /<script[^>]+src="https:\/\/platform\.x/);
-  assert.doesNotMatch(html, /id="load-x-feed"/);
-  assert.doesNotMatch(html, /class="home-kicker"|class="home-intro"|id="league-news-help"/);
+  assert.match(html, /<button[^>]*id="load-x-feed"[^>]*aria-describedby="social-privacy"/);
+  assert.match(html, /class="home-analytics-feature"/);
   assert.match(html, /id="social-privacy"/);
-  assert.match(js, /loadXFeed\(\);/);
+  assert.match(js, /addEventListener\("click", loadXFeed\)/);
   const rankings = readFileSync(new URL("../docs/rankings.html", import.meta.url), "utf8");
   assert.match(rankings, /id="board-heading"/); assert.match(rankings, /src="app.js/);
 });
