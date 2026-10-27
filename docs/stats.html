@@ -7,7 +7,7 @@
   <title>NFL stats · OutlierBaseline</title>
   <link rel="stylesheet" href="styles.css?v=20260928-layout2">
   <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
-  <link rel="stylesheet" href="stats.css?v=20260915-stats1">
+  <link rel="stylesheet" href="stats.css?v=20261027-stats-editorial1">
 </head>
 <body class="stats-page">
   <header class="topbar">
@@ -15,23 +15,45 @@
     <nav class="topnav" aria-label="Analytics pages"><a href="./">Home</a><a href="stats.html">Game results</a><a href="stats.html?view=leaders">League leaders</a></nav>
   </header>
   <main>
-    <h1>NFL stats</h1>
-    <nav class="stats-views" aria-label="Stats pages"><a id="view-games" href="stats.html">Game results</a><a id="view-leaders" href="stats.html?view=leaders">League leaders</a></nav>
-    <div class="stats-controls">
-      <label>Season<select id="stats-season" disabled></select></label>
-      <label>Week<select id="stats-week" disabled></select></label>
-      <label id="stats-category-label" hidden>Category<select id="stats-category" disabled></select></label>
+    <header class="stats-masthead">
+      <div><p class="stats-kicker">NFL / Statistics</p><h1 id="stats-heading">NFL game results</h1></div>
+      <p id="stats-description">The record behind the rankings. Explore reported scores, player box scores and the league's statistical leaders.</p>
+    </header>
+    <section class="stats-filter-panel" aria-label="Choose statistics">
+      <nav class="stats-views" aria-label="Stats pages"><a id="view-games" href="stats.html">Game results</a><a id="view-leaders" href="stats.html?view=leaders">League leaders</a></nav>
+      <div class="stats-controls">
+        <label>Season<select id="stats-season" disabled></select></label>
+        <label>Week<select id="stats-week" disabled></select></label>
+        <label id="stats-category-label" hidden>Category<select id="stats-category" disabled></select></label>
+      </div>
+      <p id="stats-status" role="status">Loading stats…</p>
+    </section>
+    <dl id="stats-overview" class="stats-overview" aria-label="Selected statistics overview"></dl>
+    <div class="stats-workspace">
+      <section class="stats-main" aria-labelledby="stats-results-heading">
+        <div class="stats-section-heading"><h2 id="stats-results-heading">Game results</h2><p id="stats-results-count"></p></div>
+        <div id="stats-results" aria-busy="true"></div>
+      </section>
+      <aside id="stats-sidebar" class="stats-sidebar" aria-labelledby="stats-context-heading">
+        <h2 id="stats-context-heading">In context</h2>
+        <div id="stats-context"></div>
+        <nav class="stats-quick-links" aria-label="Continue your research">
+          <h3>Beyond the box score</h3>
+          <a href="values.html"><strong>Player Value Lab <span aria-hidden="true">↗</span></strong><span>Compare remaining production and three-year outlooks.</span></a>
+          <a href="projection.html"><strong>Projection Lab <span aria-hidden="true">↗</span></strong><span>Put player history and season projections side by side.</span></a>
+          <a href="odds.html"><strong>Weekly odds <span aria-hidden="true">↗</span></strong><span>Compare available odds, market prices and spreads.</span></a>
+        </nav>
+        <div class="stats-data-note"><h3>Read the record</h3><p>Regular-season results from saved box scores. Coverage can arrive late or change after a correction. Missing statistics do not mean zero.</p><a href="#stats-source-notes">Sources &amp; data notes <span aria-hidden="true">↓</span></a></div>
+      </aside>
     </div>
-    <p id="stats-status" role="status">Loading stats…</p>
-    <section id="stats-results" aria-label="Game results and league leaders"></section>
     <noscript>Enable JavaScript to view game results and league leaders.</noscript>
   </main>
-  <footer data-compact="true"><span>OutlierBaseline</span><details><summary>Sources &amp; data notes</summary>
+  <footer data-compact="true"><span>OutlierBaseline</span><details id="stats-source-notes"><summary>Sources &amp; data notes</summary>
     <p>Recorded regular-season statistics from <a href="https://github.com/nflverse/nflverse-data" target="_blank" rel="noopener noreferrer">nflverse</a> (<a href="https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>), selected and summarized by OutlierBaseline. Box scores may arrive late or be corrected. These are not live play-by-play statistics.</p>
     <p>Leaders use available box scores only, with season totals or a single week's results. Players are matched by unique ID, including players who change teams. Zero totals and anonymous team events are omitted. Equal values share a rank; alphabetical order breaks a tie at the ten-player display limit. Longest kicks and punts use the maximum, not the sum. Rate statistics are not included.</p>
     <p>Fantasy totals use the source's standard or PPR scoring, not your league's custom scoring. A reported score is not a confirmed final-status indicator. Team marks belong to their respective owners.</p>
   </details></footer>
   <script type="module" src="site-nav.js?v=20260930-no-leagues1"></script>
-  <script type="module" src="stats.js?v=20260915-stats1"></script>
+  <script type="module" src="stats.js?v=20261027-stats-editorial1"></script>
 </body>
 </html>

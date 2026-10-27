@@ -1,5 +1,5 @@
 // Responsive layout regressions. All requests stay on the local fixture server.
-// LAYOUT_SCREENSHOTS writes homepage/rankings desktop/mobile screenshots and a report.
+// LAYOUT_SCREENSHOTS writes reviewed-page desktop/mobile screenshots and a report.
 import {test, before, after} from "node:test";
 import assert from "node:assert/strict";
 import {createRequire} from "node:module";
@@ -169,7 +169,7 @@ for (const [name, ready, route] of pages) test(`${name}: responsive layout and r
     for (const width of widths) await t.test(`${width}px`, async () => {
       await page.setViewportSize({width, height: 1000});
       await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-      if (process.env.LAYOUT_SCREENSHOTS && ["index", "rankings"].includes(name) && [390, 1440].includes(width)) {
+      if (process.env.LAYOUT_SCREENSHOTS && ["index", "rankings", "stats", "stats-leaders"].includes(name) && [390, 1440].includes(width)) {
         await page.screenshot({path: resolve(process.env.LAYOUT_SCREENSHOTS, `${name}-${width}.png`), fullPage: true});
       }
       const result = {page: name, width, ...await measure(page)}; findings.push(result);

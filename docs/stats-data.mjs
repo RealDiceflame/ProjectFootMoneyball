@@ -8,10 +8,15 @@ export function statsSummary(value, season) {
   const seen = new Set();
   for (const game of value.games) {
     if (!validGameId(game?.game_id) || Number(game.game_id.slice(0,4)) !== season || seen.has(game.game_id)
-        || !TEAM_NAMES[game.home] || !TEAM_NAMES[game.away] || game.home === game.away
+        || !Object.hasOwn(TEAM_NAMES, game.home) || !Object.hasOwn(TEAM_NAMES, game.away) || game.home === game.away
         || !Number.isInteger(game.week) || game.week < 1 || game.week > 18
         || typeof game.stats_available !== "boolean") throw new Error("Invalid stats game");
     seen.add(game.game_id);
+    const [, week, away, home] = game.game_id.split("_");
+    if (Number(week) !== game.week || away !== game.away || home !== game.home) throw new Error("Mismatched stats game identity");
+  }
+  for (const game of value.games.filter(game => game.stats_available)) {
+    if (!Object.hasOwn(value.periods, String(game.week))) throw new Error("Missing stats coverage period");
   }
   for (const [key,period] of Object.entries(value.periods)) {
     const available=value.games.filter(game=>game.stats_available&&(key==="all"||String(game.week)===key));
@@ -27,6 +32,39 @@ export function statsSummary(value, season) {
     }
   }
   return value;
+}
+
+export function periodOverview(summary, week, now = Date.now()) {
+  const games = selectedGames(summary, String(week), now);
+  const archived = games.filter(game => game.stats_available);
+  const weeks = [...new Set(archived.map(game => game.week))].sort((a, b) => a - b);
+  const continuous = weeks.every((week, index) => index === 0 || week === weeks[index - 1] + 1);
+  return {published: games.length, archived: archived.length, pending: games.length - archived.length,
+    weeks, coverage: weeks.length ? weeks.length === 1 ? `Week ${weeks[0]}` : continuous ? `Weeks ${weeks[0]}–${weeks.at(-1)}` : `Weeks ${weeks.join(", ")}` : "No archived weeks",
+    checked_at: summary.checked_at};
+}
+
+export function statsFreshness(checkedAt, now = Date.now()) {
+  const time = Date.parse(checkedAt);
+  const valid = Number.isFinite(time) && time <= now + 300000;
+  return {valid, stale: !valid || now - time > 7 * 3600000};
+}
+
+export function metricUnit(metric) {
+  if (metric.key.includes("yards") || metric.key.endsWith("_long")) return "Yards";
+  if (metric.key.startsWith("fantasy_points")) return "Points";
+  if (metric.key === "def_sacks") return "Sacks";
+  return "Total";
+}
+
+export function periodSpotlights(summary, week) {
+  return ["passing_yards", "rushing_yards", "receiving_yards"].flatMap(key => {
+    const metric = summary.metrics.find(metric => metric.key === key);
+    const rows = summary.periods[String(week)]?.leaders?.[key] || [];
+    if (!metric || !rows.length) return [];
+    const rank = Math.min(...rows.map(row => row.rank));
+    return [{metric, rows: rows.filter(row => row.rank === rank), rank}];
+  });
 }
 
 export function defaultStatsWeek(summary, leaders = false) {
