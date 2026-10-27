@@ -85,3 +85,53 @@ test("snapshot loader bypasses cache and rejects HTTP errors and invalid payload
     await assert.rejects(fetchSnapshot("local"), /503/);
   } finally { globalThis.fetch = original; }
 });
+
+test("navigation aborts pending download batches and BFCache restoration retries immediately", async () => {
+  let calls = 0, laterBatches = 0, failures = 0, pendingSignal;
+  const h = harness(async signal => {
+    calls++;
+    if (calls === 1) {
+      pendingSignal = signal;
+      await new Promise((resolve, reject) => signal.addEventListener("abort", () => reject(signal.reason), {once: true}));
+    }
+    signal.throwIfAborted();
+    laterBatches++;
+  }, {onError: () => failures++});
+  h.listeners.get("pagehide")();
+  assert.equal(pendingSignal.aborted, true);
+  await settle();
+  assert.equal(laterBatches, 0, "navigation prevents subsequent archive batches");
+  assert.equal(failures, 0, "expected navigation cancellation is not an outage");
+  h.tick(60000); await h.poller.check();
+  assert.equal(calls, 1, "hidden documents stay suspended even if visibility is not updated");
+  h.listeners.get("pageshow")(); await settle();
+  assert.equal(calls, 2);
+  assert.equal(laterBatches, 1);
+  h.poller.stop();
+  assert.equal(h.listeners.size, 0);
+});
+
+test("a fast BFCache restore waits for canceled work before restarting", async () => {
+  let calls = 0, failures = 0;
+  const h = harness(async signal => {
+    calls++;
+    if (calls === 1) await new Promise((resolve, reject) => signal.addEventListener("abort", () => reject(signal.reason), {once: true}));
+  }, {onError: () => failures++});
+  h.listeners.get("pagehide")();
+  h.listeners.get("pageshow")();
+  await settle();
+  assert.equal(calls, 2, "restoration is not lost while an aborted refresh settles");
+  assert.equal(failures, 0);
+  h.poller.stop();
+});
+
+test("snapshot loading never starts a request for an already canceled page", async () => {
+  const original = globalThis.fetch, controller = new AbortController();
+  let requests = 0;
+  controller.abort();
+  try {
+    globalThis.fetch = async () => { requests++; throw new Error("unexpected request"); };
+    await assert.rejects(fetchSnapshot("local", {signal: controller.signal}), {name: "AbortError"});
+    assert.equal(requests, 0);
+  } finally { globalThis.fetch = original; }
+});
