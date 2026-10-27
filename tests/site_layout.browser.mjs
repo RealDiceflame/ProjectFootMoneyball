@@ -193,12 +193,17 @@ for (const [name, ready, route] of pages) test(`${name}: responsive layout and r
             leadSize: parseFloat(getComputedStyle(articles[0].querySelector("h3")).fontSize),
             rowSize: parseFloat(getComputedStyle(articles[1].querySelector("h3")).fontSize),
             readable: articles.every(article => textFits(article.querySelector("h3"))),
+            clippedHeadlines: articles.map(article => article.querySelector("h3")).filter(heading => !textFits(heading)).map(heading => {
+              const range = document.createRange(); range.selectNodeContents(heading);
+              return {text: heading.textContent, bounds: heading.getBoundingClientRect().toJSON(),
+                lineHeight: getComputedStyle(heading).lineHeight, textRects: [...range.getClientRects()].map(rect => rect.toJSON())};
+            }),
             updatesReadable: [...document.querySelectorAll(".home-updates h3, .home-updates p, .home-updates a")].every(textFits)};
         });
         assert.equal(editorial.leadFirst, true, "The newest story leads the reading order");
         assert.ok(editorial.headings.every(count => count === 1), "Each story retains one semantic headline");
         assert.ok(editorial.leadSize > editorial.rowSize, "The lead has a stronger type hierarchy than supporting news rows");
-        assert.equal(editorial.readable, true, "News headlines wrap without clipping at every width");
+        assert.equal(editorial.readable, true, `News headlines wrap without clipping at every width: ${JSON.stringify(editorial.clippedHeadlines)}`);
         assert.equal(editorial.updatesReadable, true, "Compact announcements keep their copy and links fully visible");
         assert.deepEqual(await page.locator(".home-updates article h3").allTextContents(),
           ["League simulations", "Player history and draft analysis"], "Approved announcements remain without the archived league prototype");

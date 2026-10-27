@@ -517,7 +517,7 @@ test("homepage header Explore tools link scrolls and focuses its section using t
     const section = page.locator("#explore"), bounds = await page.locator("#explore-heading").boundingBox();
     assert.ok(bounds.y >= -1 && bounds.y + bounds.height <= 1001, "The tools section heading is visible after the jump");
     assert.deepEqual(await section.locator(".home-tool-grid > a").evaluateAll(links => links.map(link => link.getAttribute("href"))),
-      ["rankings.html", "special-teams.html", "projection.html", "survivor.html", "league.html", "odds.html"], "All six tools remain available at the jump target");
+      ["rankings.html", "special-teams.html", "projection.html", "survivor.html", "league.html", "odds.html", "stats.html", "values.html"], "All eight tools remain available at the jump target");
   } finally { await context.close(); }
 });
 
