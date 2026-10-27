@@ -72,6 +72,13 @@
 .home-text-link { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 0; color: var(--muted); font-size: 12px; text-underline-offset: 4px; }
 .home-text-link:hover { color: var(--ink); }
 
+/* Form boundaries remain visible against the dark surface at rest, not only
+   on keyboard focus (at least 3:1 contrast against the field fill). */
+.home-page .home-filters input, .home-page .home-filters select,
+.home-page .home-scores select, .home-page .home-score-controls button:not(:disabled),
+.home-page .lab-navigation .site-nav-toggle { border-color: #617d70; }
+.home-filters input::placeholder { color: var(--muted); opacity: 1; }
+
 /* The injury rail is a compact utility, with complete text and usable controls. */
 .home-filters { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin: 14px 0 18px; }
 .home-filters label { display: grid; gap: 6px; color: var(--muted); font-size: 12px; }

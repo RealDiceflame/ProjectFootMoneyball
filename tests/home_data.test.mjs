@@ -170,7 +170,7 @@ test("homepage copy keeps the approved tool destinations, metadata, labels and s
     ["projection.html", "Projection Lab ↗", "Compare player history and season projections."],
     ["survivor.html", "Matchups & Survivor ↗", "Simulate matchups and plan survivor picks."],
     ["league.html", "League simulations ↗", "Explore possible season, playoff and Super Bowl outcomes."],
-    ["odds.html", "Weekly odds ↗", "Compare the latest available sportsbook odds and spreads."],
+    ["odds.html", "Weekly odds ↗", "Compare available odds, market prices and spreads."],
     ["stats.html", "Game results & stats ↗", "Review recorded box scores and season or weekly leaders."],
     ["values.html", "Player Value Lab ↗", "Compare rest-of-season and three-year player outlooks."],
   ]);
