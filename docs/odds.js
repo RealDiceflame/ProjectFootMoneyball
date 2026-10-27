@@ -9,6 +9,7 @@ import {
   formatWeather,
   groupMarketRows,
   safeOddsUrl,
+  predictionContractRows,
 } from "./odds-board.mjs?v=20261027-tools1";
 import {startAutoRefresh, fetchSnapshot, snapshotSignature, preserveView} from "./auto-refresh.mjs?v=20260927-refresh1";
 import {validateOdds} from "./snapshot-validation.mjs?v=20260927-refresh1";
@@ -261,15 +262,21 @@ function renderPredictionMarket(market) {
   heading.textContent = market.title;
   const outcomes = document.createElement("div");
   outcomes.className = "prediction-outcomes";
-  (market.contracts || []).forEach(contract => {
+  const {rows, unavailable} = predictionContractRows(market.contracts);
+  rows.forEach(contract => {
     const row = document.createElement("div");
     const label = document.createElement("span");
-    label.textContent = contract.label;
+    label.textContent = contract.question ? `${contract.question} · ${contract.label}` : contract.label;
     const price = document.createElement("strong");
     price.textContent = formatProbability(contract.probability);
     row.append(label, price);
     outcomes.append(row);
   });
+  if (!rows.length || unavailable) {
+    const note = document.createElement("p"); note.className = "prediction-contract-note";
+    note.textContent = "Contract details unavailable · View market";
+    outcomes.append(note);
+  }
   const meta = document.createElement("div");
   meta.className = "prediction-meta";
   const source = document.createElement("strong");
@@ -285,7 +292,7 @@ function renderPredictionMarkets() {
   const markets = state.payload?.prediction_markets || [];
   ui.predictionMarkets.replaceChildren(...markets.map(renderPredictionMarket));
   ui.predictionSummary.textContent = markets.length
-    ? `${markets.length} saved NFL markets · probabilities reflect saved contract prices`
+    ? `${markets.length} saved NFL markets · probabilities shown only for identified contracts`
     : "No active NFL prediction markets are available in the saved update.";
   ui.predictionEmpty.classList.toggle("hidden", markets.length !== 0);
 }

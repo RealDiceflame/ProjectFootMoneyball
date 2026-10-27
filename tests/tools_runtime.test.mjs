@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import vm from "node:vm";
 import {readFileSync} from "node:fs";
 import {normalizeProjectionSettings} from "../docs/projection-model.mjs";
-import {safeOddsUrl} from "../docs/odds-board.mjs";
+import {safeOddsUrl, predictionContractRows} from "../docs/odds-board.mjs";
 import {snapshotAgeNote} from "../docs/lab-refresh.mjs";
 import * as gameData from "../docs/game-data.mjs";
 import {TEAM_NAMES, scoreDisplay, gameConditions} from "../docs/scores-data.mjs";
@@ -21,6 +21,26 @@ test("saved odds source links reject executable, non-HTTPS and credential URLs",
     assert.equal(safeOddsUrl(url), null);
   }
   assert.equal(safeOddsUrl("https://example.com/market?q=1"), "https://example.com/market?q=1");
+});
+
+test("prediction contracts require context for generic outcomes and preserve meaningful team labels", () => {
+  const legacy = predictionContractRows([
+    {label: "Under", probability: 0.93}, {label: " YES ", probability: 0.65},
+    {label: "Over", question: "  ", probability: 0.6}, {label: "No", question: null, probability: 0.7},
+  ]);
+  assert.deepEqual(legacy, {rows: [], unavailable: 4});
+  const identified = predictionContractRows([
+    {label: "Under", question: "Jordan Love: Passing yards 245.5", probability: 0.55},
+    {label: "Green Bay Packers", probability: 0.68},
+    {label: "Carolina Panthers", probability: 0},
+  ]);
+  assert.deepEqual(identified, {rows: [
+    {label: "Under", question: "Jordan Love: Passing yards 245.5", probability: 0.55},
+    {label: "Green Bay Packers", question: null, probability: 0.68},
+    {label: "Carolina Panthers", question: null, probability: 0},
+  ], unavailable: 0});
+  assert.deepEqual(predictionContractRows([{label: "Packers", probability: null},
+    {label: "Packers", probability: 2}, {label: "", question: "Some question", probability: 0.3}]), {rows: [], unavailable: 3});
 });
 
 test("future snapshot clocks cannot masquerade as fresh team forecasts", () => {

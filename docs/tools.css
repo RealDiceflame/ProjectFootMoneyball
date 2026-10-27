@@ -97,6 +97,16 @@
 .tool-page :is(.draft-timing h3, .values-method h3) { font: 700 20px/1.4 Inter, system-ui, sans-serif; }
 .tool-page.values-page main { gap: 0; }
 .tool-page .values-horizons { margin-bottom: 18px; }
+/* Place the two horizon choices beside the reference format on desktop. The
+   status keeps a full-width row so coverage and freshness remain explicit. */
+.tool-page .values-controls { display: grid; grid-template-columns: minmax(310px, .8fr) minmax(0, 1.6fr); align-items: end; gap: 14px 24px; padding-block: 16px; }
+.tool-page .values-controls > .values-section-heading { grid-column: 1 / -1; margin-bottom: 0; }
+.tool-page .values-controls .values-section-heading h2 { font-size: 22px; }
+.tool-page .values-controls > .values-horizons { margin: 0; }
+.tool-page .values-controls > :is(.values-status, .values-warning) { grid-column: 1 / -1; margin: 0; }
+.tool-page .values-controls + .values-panel { padding-top: 16px; }
+.tool-page .values-controls + .values-panel > .values-section-heading { margin-bottom: 12px; }
+.tool-page .values-controls + .values-panel .values-section-heading h2 { font-size: 24px; }
 .tool-page .values-metrics { gap: 14px; margin-block: 20px; }
 .tool-page .values-metric strong { color: var(--lime); }
 .tool-page .values-metric span { font-size: 12px; }
@@ -175,6 +185,7 @@
   .tool-page .league-controls { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .tool-page.rankings-page .control-panel { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .tool-page .tool-masthead { gap: 20px 28px; }
+  .tool-page .values-controls { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 800px) {
   .tool-page .tool-masthead { grid-template-columns: minmax(0, 1fr); gap: 18px; }
