@@ -37,6 +37,13 @@ function adpNumber(value) {
   return Number.isFinite(number) && number > 0 && number < 999 ? number : null;
 }
 
+function projectedPointsOrNull(value) {
+  if (typeof value !== "number" && typeof value !== "string") return null;
+  if (typeof value === "string" && !value.trim()) return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
 function detectDelimiter(text) {
   let quoted = false;
   const counts = new Map([[",", 0], ["\t", 0], [";", 0]]);
@@ -255,8 +262,8 @@ export function recalculateMarketMetrics(rows) {
     const position = normalizedPosition(row.pos);
     if (!groups.has(position)) groups.set(position, []);
     const adp = adpNumber(row.adp);
-    const points = Number(row.projected_points);
-    if (adp !== null && Number.isFinite(points)) groups.get(position).push({ adp, points });
+    const points = projectedPointsOrNull(row.projected_points);
+    if (adp !== null && points !== null) groups.get(position).push({ adp, points });
   });
 
   const lines = new Map();
@@ -271,11 +278,14 @@ export function recalculateMarketMetrics(rows) {
   });
 
   return rows.map(row => {
-    const next = { ...row };
+    // Recompute from observed projections; never retain a previous fit for a
+    // player whose projection or market evidence is no longer available.
+    const next = { ...row, market_expected_points: null, market_value: null,
+      market_draft_tag: "NO MARKET", draft_tag: "NO MARKET" };
     const line = lines.get(normalizedPosition(row.pos));
     const adp = adpNumber(row.adp);
-    const points = Number(row.projected_points);
-    if (!line || adp === null || !Number.isFinite(points)) return next;
+    const points = projectedPointsOrNull(row.projected_points);
+    if (!line || adp === null || points === null) return next;
     next.market_expected_points = (adp * line.slope) + line.intercept;
     next.market_value = points - next.market_expected_points;
     next.market_draft_tag = marketDraftTag(next.market_value);

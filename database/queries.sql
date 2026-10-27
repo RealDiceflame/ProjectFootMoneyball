@@ -2,6 +2,8 @@
 -- These views select current revisions, not every historical correction.
 
 -- Ten rushing-yard leaders in a chosen regular season and week window.
+-- Edit the season and week literals below; this example covers only weeks 1–4.
+-- Players with zero or entirely missing rushing-yard totals are excluded.
 SELECT p.player_id, p.display_name, SUM(s.rushing_yards) AS rushing_yards
 FROM ob_stats.current_player_game_stats s
 JOIN ob_stats.players p USING (player_id)
@@ -12,6 +14,7 @@ ORDER BY rushing_yards DESC, p.display_name, p.player_id
 LIMIT 10;
 
 -- A player's maintained historical seasons. Change the ID, not a name match.
+-- recent_team is the source's latest team, not necessarily that season's team.
 SELECT season, position, recent_team, games, rushing_yards, receiving_yards
 FROM ob_stats.current_player_season_stats
 WHERE player_id = '00-0033280'

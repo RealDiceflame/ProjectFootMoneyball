@@ -1,33 +1,42 @@
-export function formatAmerican(value) {
+// Missing provider values must not become real zero-price quotes.
+function numberOrNull(value) {
+  if (typeof value !== "number" && typeof value !== "string") return null;
+  if (typeof value === "string" && !value.trim()) return null;
   const number = Number(value);
-  if (!Number.isFinite(number)) return "—";
+  return Number.isFinite(number) ? number : null;
+}
+
+export function formatAmerican(value) {
+  const number = numberOrNull(value);
+  if (number === null) return "—";
   return number > 0 ? `+${Math.round(number)}` : String(Math.round(number));
 }
 
 export function formatLine(row) {
-  const number = Number(row.line);
-  if (!Number.isFinite(number) || row.line === null || row.line === "") return "—";
+  const number = numberOrNull(row.line);
+  if (number === null) return "—";
   if (row.market === "Spread") return number > 0 ? `+${number}` : String(number);
   return String(number);
 }
 
 export function formatPrice(row) {
-  if (row.provider_kind === "exchange" && Number.isFinite(Number(row.contract_price))) {
-    return `${Math.round(Number(row.contract_price))}¢ (≈ ${formatAmerican(row.price)})`;
+  const contractPrice = numberOrNull(row.contract_price);
+  if (row.provider_kind === "exchange" && contractPrice !== null) {
+    return `${Math.round(contractPrice)}¢ (≈ ${formatAmerican(row.price)})`;
   }
   return formatAmerican(row.price);
 }
 
 export function formatProbability(value) {
-  const number = Number(value);
-  if (!Number.isFinite(number)) return "—";
+  const number = numberOrNull(value);
+  if (number === null) return "—";
   const percentage = number * 100;
   return `${percentage < 1 && percentage > 0 ? percentage.toFixed(1) : Math.round(percentage)}%`;
 }
 
 export function formatMarketVolume(value) {
-  const number = Number(value);
-  if (!Number.isFinite(number) || number <= 0) return "Volume unavailable";
+  const number = numberOrNull(value);
+  if (number === null || number <= 0) return "Volume unavailable";
   return `${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 }).format(number)} volume`;
 }
 
@@ -84,7 +93,7 @@ export function flattenGames(games) {
 }
 
 export function defaultWeek(weeks) {
-  const values = (weeks || []).map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+  const values = (weeks || []).map(numberOrNull).filter(value => Number.isInteger(value) && value > 0).sort((a, b) => a - b);
   return values.length ? values[0] : null;
 }
 
@@ -122,8 +131,9 @@ export function filterOddsGames(games, { week, market = "ALL", provider = "ALL",
 export function formatWeather(weather) {
   if (!weather) return "Weather pending";
   const pieces = [weather.summary || "Weather pending"];
-  if (weather.temperature !== null && weather.temperature !== "" && Number.isFinite(Number(weather.temperature))) {
-    pieces.push(`${Math.round(Number(weather.temperature))}°F`);
+  const temperature = numberOrNull(weather.temperature);
+  if (temperature !== null) {
+    pieces.push(`${Math.round(temperature)}°F`);
   }
   const wind = [weather.wind_direction, weather.wind_speed].filter(Boolean).join(" ");
   if (wind) pieces.push(`Wind ${wind}`);

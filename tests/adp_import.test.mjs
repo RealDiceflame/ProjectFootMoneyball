@@ -82,3 +82,42 @@ test("recalculates position market expectations and draft tags", () => {
   assert.equal(marketDraftTag(0), "FAIR");
   assert.equal(marketDraftTag(Number.NaN), "NO MARKET");
 });
+
+test("unavailable projections do not distort market fits or retain stale values", () => {
+  for (const points of [null, undefined, "", " ", false, true, NaN, Infinity, "-"]) {
+    const rows = [
+      {pos: "WR", adp: 10, projected_points: 100},
+      {pos: "WR", adp: 20, projected_points: 80},
+      {pos: "WR", adp: 30, projected_points: points, market_expected_points: 50,
+        market_value: 25, market_draft_tag: "VALUE", draft_tag: "VALUE"},
+    ];
+    const result = recalculateMarketMetrics(rows);
+    assert.equal(result[0].market_expected_points, 100);
+    assert.equal(result[1].market_expected_points, 80);
+    assert.equal(result[2].market_expected_points, null);
+    assert.equal(result[2].market_value, null);
+    assert.equal(result[2].market_draft_tag, "NO MARKET");
+    assert.equal(result[2].draft_tag, "NO MARKET");
+    assert.equal(rows[2].market_value, 25); // The input snapshot remains intact.
+  }
+});
+
+test("real zero projections and numeric strings remain valid market observations", () => {
+  const result = recalculateMarketMetrics([
+    {pos: "WR", adp: 10, projected_points: "100"},
+    {pos: "WR", adp: 20, projected_points: 0},
+  ]);
+  assert.deepEqual(result.map(row => row.market_expected_points), [100, 0]);
+  assert.deepEqual(result.map(row => row.market_value), [0, 0]);
+});
+
+test("market metrics are cleared when ADP disappears or too few projections remain", () => {
+  const stale = {pos: "WR", projected_points: 100, market_expected_points: 50,
+    market_value: 50, market_draft_tag: "TARGET", draft_tag: "TARGET"};
+  const result = recalculateMarketMetrics([{...stale, adp: null}, {...stale, adp: 10}]);
+  for (const row of result) {
+    assert.equal(row.market_expected_points, null);
+    assert.equal(row.market_value, null);
+    assert.equal(row.draft_tag, "NO MARKET");
+  }
+});

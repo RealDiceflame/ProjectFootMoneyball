@@ -92,3 +92,25 @@ test("historical player choices keep distinct identities and exclude current pla
   assert.deepEqual(choices.map(row => row.history_key), ["id:past"]);
   assert.equal(choices[0].is_historical, true);
 });
+
+test("missing samples do not become observed zeros in scoring variation", () => {
+  const missing = [null, undefined, "", "  ", false, true, NaN, Infinity, "-"];
+  assert.equal(sampleStandardDeviation([...missing, 10]), null);
+  assert.equal(sampleStandardDeviation([...missing, 0, "10"]), Math.sqrt(50));
+});
+
+test("missing ADP variation is unavailable while measured zero remains valid", () => {
+  for (const deviation of [null, undefined, "", "  ", false, true, NaN, Infinity, "-"]) {
+    const result = historyAnalytics([], {adp: 50, adp_stddev: deviation, source_count: 2}, {});
+    assert.equal(result.market_stddev, null);
+    assert.equal(result.volatility_score, null);
+    assert.deepEqual(result.basis, []);
+  }
+  const measured = historyAnalytics([], {adp: "50", adp_stddev: "0", source_count: 2}, {});
+  assert.equal(measured.volatility_score, 0);
+  assert.deepEqual(measured.basis, ["market"]);
+  const historyOnly = historyAnalytics([{games: 10, receiving_yards: 1000}, {games: 10, receiving_yards: 2000}],
+    {pos: "WR", adp: 50, adp_stddev: null, source_count: 2}, {ppr: "Standard"});
+  assert.deepEqual(historyOnly.basis, ["history"]);
+  assert.equal(historyOnly.volatility_score, 47);
+});

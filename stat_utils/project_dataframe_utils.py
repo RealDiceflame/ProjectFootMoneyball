@@ -154,20 +154,16 @@ def normalize_stat_dataframe(df):
         df = df.reset_index()
     # Normalize all column names
     df.columns = [normalize_col(col) for col in df.columns]
-    # Robustly detect and rename the player column (e.g., player, unnamed__player, etc.)
-    player_col = next((col for col in df.columns if 'player' in col), None)
+    # Prefer the actual name over identifiers, regardless of source column order.
+    name_aliases = {'player_name', 'player_display_name', 'display_name'}
+    player_col = 'player' if 'player' in df.columns else next(
+        (col for col in df.columns if col in name_aliases or col.endswith('_player')),
+        None,
+    )
     if player_col and player_col != 'player':
         df = df.rename(columns={player_col: 'player'})
-    # Remove all columns matching 'player' except the first occurrence
-    player_indices = [idx for idx, col in enumerate(df.columns) if col == 'player']
-    if len(player_indices) > 1:
-        # keep first occurrence of 'player'
-        keep_idx = player_indices[0]
-        cols = list(df.columns)
-        for idx in reversed(player_indices[1:]):
-            del cols[idx]
-        df = df[cols]
-    # Remove any columns that are exact duplicates
+    # Select duplicates by position: label selection would select every repeated
+    # label again. Preserve the first source column, including for player names.
     df = df.loc[:, ~pd.Index(df.columns).duplicated()]
     # Normalize all player names
     if 'player' in df.columns:
@@ -290,7 +286,10 @@ def auto_unify_columns(df):
     if base_candidates:
         print(f"[INFO] Auto-unifying columns: {sorted(base_candidates)}")
         for base_col in sorted(base_candidates):
-            matches = [c for c in df.columns if c == base_col or c.startswith(base_col + "_")]
+            # Only pandas merge suffixes describe the same field. A metric such
+            # as yards_per_attempt must never fill or disappear into yards.
+            aliases = {base_col, f'{base_col}_x', f'{base_col}_y'}
+            matches = [c for c in df.columns if c in aliases]
             # Backfill across matching columns and keep first non-null
             df[base_col] = df[matches].bfill(axis=1).iloc[:, 0]
             for col in matches:
