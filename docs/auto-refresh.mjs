@@ -1,5 +1,6 @@
 // Visitors poll saved site files, never upstream data providers or secret APIs.
 export async function fetchSnapshot(url, {signal, validate} = {}) {
+  signal?.throwIfAborted();
   const response = await fetch(url, {cache: "no-store", signal});
   if (!response.ok) throw new Error(`Snapshot request failed (${response.status})`);
   const value = await response.json();
@@ -38,10 +39,11 @@ export function startAutoRefresh(refresh, {
   now = () => Date.now(),
   readManifest = fetchSnapshot,
 } = {}) {
-  let stopped = false, inFlight = false, controller;
+  let stopped = false, suspended = false, inFlight = false, controller, resumeAfterFlight = false;
+  const pageHiddenReason = new Error("Page refresh suspended during navigation");
   let lastAttempt = -Infinity, lastRefresh = -Infinity, revision = null;
   const check = async () => {
-    if (stopped || inFlight || documentRef?.hidden || !canRefresh() || now() - lastAttempt < intervalMs) return;
+    if (stopped || suspended || inFlight || documentRef?.hidden || !canRefresh() || now() - lastAttempt < intervalMs) return;
     inFlight = true; lastAttempt = now(); controller = new AbortController();
     const signal = controller.signal;
     const timeout = timers.setTimeout(() => controller.abort(new Error("Update check timed out")), timeoutMs);
@@ -65,21 +67,34 @@ export function startAutoRefresh(refresh, {
       revision = nextRevision; lastRefresh = now();
     } catch (error) {
       revision = null; // Recover even when the next manifest returns its old version.
-      if (!stopped) onError(error);
+      if (!stopped && signal.reason !== pageHiddenReason) onError(error);
     } finally {
       timers.clearTimeout(timeout); inFlight = false;
+      if (resumeAfterFlight) { resumeAfterFlight = false; void check(); }
     }
   };
   const resume = () => { void check(); };
+  // Leaving a page cancels the entire refresh, including later download batches.
+  // Keep listeners for BFCache restores, where the same document runs again.
+  const pagehide = () => { suspended = true; controller?.abort(pageHiddenReason); };
+  const pageshow = () => {
+    if (suspended) {
+      suspended = false; lastAttempt = -Infinity;
+      if (inFlight) { resumeAfterFlight = true; return; }
+    }
+    resume();
+  };
   const timer = timers.setInterval(resume, intervalMs);
   documentRef?.addEventListener("visibilitychange", resume);
   windowRef?.addEventListener("online", resume);
-  windowRef?.addEventListener("pageshow", resume);
+  windowRef?.addEventListener("pagehide", pagehide);
+  windowRef?.addEventListener("pageshow", pageshow);
   void check();
   return {check, stop() {
     stopped = true; controller?.abort(); timers.clearInterval(timer);
     documentRef?.removeEventListener("visibilitychange", resume);
     windowRef?.removeEventListener("online", resume);
-    windowRef?.removeEventListener("pageshow", resume);
+    windowRef?.removeEventListener("pagehide", pagehide);
+    windowRef?.removeEventListener("pageshow", pageshow);
   }};
 }

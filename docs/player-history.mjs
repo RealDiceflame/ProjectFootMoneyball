@@ -1,3 +1,10 @@
+function numberOrNull(value) {
+  if (typeof value !== "number" && typeof value !== "string") return null;
+  if (typeof value === "string" && !value.trim()) return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
 export function normalizeHistoryName(value) {
   const parts = String(value || "").toLocaleLowerCase().match(/[a-z0-9]+/g) || [];
   if (["jr", "sr", "ii", "iii", "iv", "v"].includes(parts.at(-1))) parts.pop();
@@ -69,7 +76,8 @@ export function fantasyPoints(stats, settings) {
 }
 
 export function sampleStandardDeviation(values) {
-  const numbers = (values || []).map(Number).filter(Number.isFinite);
+  // An absent observation contributes neither a zero nor a sample count.
+  const numbers = (values || []).map(numberOrNull).filter(Number.isFinite);
   if (numbers.length < 2) return null;
   const mean = numbers.reduce((total, value) => total + value, 0) / numbers.length;
   const variance = numbers.reduce((total, value) => total + ((value - mean) ** 2), 0) / (numbers.length - 1);
@@ -105,8 +113,8 @@ export function historyAnalytics(rows, player, settings) {
   const playerStdDev = sampleStandardDeviation(perGameValues);
   const playerCv = playerStdDev !== null && meanPerGame > 0 ? playerStdDev / meanPerGame : null;
 
-  const marketAdp = Number(player?.adp);
-  const marketStdDev = Number(player?.adp_stddev);
+  const marketAdp = numberOrNull(player?.adp);
+  const marketStdDev = numberOrNull(player?.adp_stddev);
   const hasMarketVariation = Number.isFinite(marketAdp) && marketAdp > 0
     && Number.isFinite(marketStdDev) && marketStdDev >= 0
     && Number(player?.source_count) >= 2;

@@ -280,9 +280,6 @@ test("mobile navigation preserves the link through pointerdown and null-relatedT
 });
 
 test("mobile navigation follows all 13 native destinations with actual taps", async () => {
-  const {context, page} = await openPage(mobileOptions);
-  const errors = [];
-  page.on("pageerror", error => errors.push(error.message));
   const destinations = [
     ["Stats", "Game results", "stats.html"],
     ["Stats", "League leaders", "stats.html?view=leaders", "/stats.html"],
@@ -298,10 +295,17 @@ test("mobile navigation follows all 13 native destinations with actual taps", as
     ["Betting", "Weekly odds", "odds.html"],
     [null, "Home", "./"],
   ];
-  try {
-    assert.equal(await page.locator(".lab-navigation a").count(), destinations.length);
-    for (const [category, name, href, start = "/rankings.html"] of destinations) {
-      await page.goto(base + start); await page.locator(".lab-navigation").waitFor();
+  for (const [category, name, href, start = "/rankings.html"] of destinations) {
+    // Each case owns its document. Reusing a page and calling goto to reset the
+    // next case interrupts the previous destination's background downloads;
+    // WebKit reports those teardown refusals as access-control page errors:
+    // https://github.com/microsoft/playwright/issues/43120
+    // Keep real native taps and all error assertions; avoid a setup-only reset.
+    const {context, page} = await openPage(mobileOptions, start);
+    const errors = [];
+    page.on("pageerror", error => errors.push(error.message));
+    try {
+      assert.equal(await page.locator(".lab-navigation a").count(), destinations.length);
       await page.locator(".site-nav-toggle").tap(); await waitForMobileMenu(page, true);
       if (category) { await navGroup(page, category).locator("summary").tap(); await waitForOpen(page, category, true); }
       const link = page.locator(".lab-navigation").getByRole("link", {name, exact: true});
@@ -313,9 +317,9 @@ test("mobile navigation follows all 13 native destinations with actual taps", as
       assert.equal(await page.locator(".lab-navigation details[open]").count(), 0, `${name} closes its group`);
       if (category) assert.equal(await page.locator(".topnav .current-lab > summary").textContent(), category);
       else assert.equal(await page.locator(".home-nav-link").getAttribute("aria-current"), "page");
-    }
-    assert.deepEqual(errors, [], "Navigation does not produce browser errors");
-  } finally { await context.close(); }
+    } finally { await context.close(); }
+    assert.deepEqual(errors, [], `${name}: navigation does not produce browser errors`);
+  }
 });
 
 test("mobile navigation ignores scrolling and cancelled touches and preserves outside link activation", async () => {

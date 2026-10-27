@@ -88,3 +88,25 @@ test("formats prediction-market probabilities and volume", () => {
   assert.equal(formatProbability(0.0035), "0.4%");
   assert.equal(formatMarketVolume(415785), "$415.8K volume");
 });
+
+test("missing provider numbers stay unavailable instead of becoming zero", () => {
+  for (const value of [null, undefined, "", "  ", false, true, NaN, Infinity, "-"]) {
+    assert.equal(formatAmerican(value), "—");
+    assert.equal(formatProbability(value), "—");
+    assert.equal(formatLine({market: "Spread", line: value}), "—");
+    assert.equal(formatPrice({provider_kind: "exchange", contract_price: value, price: -110}), "-110");
+    assert.equal(formatWeather({summary: "Cloudy", temperature: value}), "Cloudy");
+  }
+  assert.equal(formatPrice({provider_kind: "exchange", contract_price: null, price: null}), "—");
+  assert.equal(formatProbability(0), "0%");
+  assert.equal(formatProbability("0.25"), "25%");
+  assert.equal(formatAmerican("145"), "+145");
+  assert.equal(formatLine({market: "Spread", line: 0}), "0");
+  assert.equal(formatPrice({provider_kind: "exchange", contract_price: 0, price: null}), "0¢ (≈ —)");
+  assert.equal(formatWeather({summary: "Cold", temperature: "0"}), "Cold · 0°F");
+});
+
+test("week selection ignores absent values and invalid week numbers", () => {
+  assert.equal(defaultWeek([null, undefined, "", " ", false, true, NaN, Infinity, -1, 0, 1.5, "3", 5]), 3);
+  assert.equal(defaultWeek([null, "", 0]), null);
+});

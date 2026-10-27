@@ -7,8 +7,8 @@ and credentials are configured by the owner.
 
 The current CSV/JSON collectors and website keep working unchanged. Phase one
 imports the maintained 2016–2025 fantasy-player season archive and saved
-regular-season game box scores. Initially this means 5,050 player-season rows,
-16 games, 32 team-game rows, 1,118 player-game rows, and 2,063 known player IDs.
+regular-season game box scores. Saved coverage grows as collectors add games;
+run `python database_stats.py plan` for the current archive's row and player counts.
 This is not every NFL player's complete ten-year career or historical game log.
 
 ## Prepare without an account

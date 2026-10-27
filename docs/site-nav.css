@@ -1,25 +1,36 @@
+/* Reveal the skip link above the navigation only while it has keyboard focus. */
 .site-skip { position: absolute; top: -100px; left: 12px; z-index: 200; padding: 14px 18px; border-radius: 8px; background: var(--lime); color: var(--lime-ink); }
 .site-skip:focus { top: 12px; }
+
+/* Desktop navigation: dropdowns overlay the page without changing header height. */
 .lab-navigation { display: flex; flex: none; flex-wrap: wrap; gap: 8px; overflow: visible; }
 .lab-navigation .site-nav-links { display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; }
 .lab-navigation .site-nav-toggle { display: none; }
 .lab-navigation details { position: relative; }
 .lab-navigation .home-nav-link { display: flex; align-items: center; padding: 12px; min-height: 44px; border-radius: 8px; font-size: 14px; }
-.lab-navigation .home-nav-link:hover, .lab-navigation .home-nav-link[aria-current="page"] { color: var(--lime); background: #1d392c; }
 .lab-navigation summary { padding: 12px; min-height: 44px; cursor: pointer; color: var(--ink); font-size: 14px; border-radius: 8px; transition: background .15s, color .15s; }
-.lab-navigation summary:hover { color: var(--lime); background: #1d392c; }
-.lab-navigation .current-lab > summary, .lab-navigation details[open] > summary { color: var(--lime); background: #1d392c; }
+.lab-navigation .home-nav-link:hover,
+.lab-navigation .home-nav-link[aria-current="page"],
+.lab-navigation summary:hover,
+.lab-navigation .current-lab > summary,
+.lab-navigation details[open] > summary,
+.lab-navigation .lab-nav-menu a[aria-current="page"] { color: var(--lime); background: #1d392c; }
 .lab-navigation .lab-nav-menu { position: absolute; top: 100%; left: 0; z-index: 100; display: grid; width: 290px; max-width: calc(100vw - 32px); max-height: min(640px, 75dvh); overflow-y: auto; overscroll-behavior: contain; padding: 8px; background: #102b22; border: 1px solid #4a6b56; border-radius: 9px; box-shadow: 0 10px 30px #0006; }
+/* Anchor the final dropdowns inward so their panels do not escape the right edge. */
 .lab-navigation details:nth-last-child(-n+3) .lab-nav-menu { left: auto; right: 0; }
 .lab-navigation .lab-nav-section + .lab-nav-section { margin-top: 8px; padding-top: 8px; border-top: 1px solid #4a6b56; }
 .lab-navigation .lab-nav-section h2 { margin: 6px 12px; color: var(--lime); font: 700 12px/1.5 Inter, system-ui, sans-serif; letter-spacing: .05em; text-transform: uppercase; }
 .lab-navigation .lab-nav-menu a { display: block; white-space: normal; min-height: 44px; padding: 12px; font-size: 14px; }
-.lab-navigation .lab-nav-menu a[aria-current="page"] { color: var(--lime); background: #1d392c; }
 .lab-navigation :focus-visible { outline: 3px solid var(--lime); outline-offset: 2px; }
+
+/* Source-health disclosure occupies its own row in the shared footer. */
 .site-refresh-status { flex-basis: 100%; width: 100%; font-size: 14px; color: var(--muted); padding-top: 12px; }
 .site-refresh-status summary { cursor: pointer; padding-block: 10px; }
 .site-refresh-status p { max-width: 900px; line-height: 1.6; }
 footer:has(.site-refresh-status) { flex-wrap: wrap; }
+
+/* Mobile/tablet menus enter normal flow so expanded groups remain scrollable
+   with the document rather than covering controls beneath the header. */
 @media(max-width: 1024px) {
   .topbar:has(.lab-navigation) { flex-wrap: wrap; }
   .lab-navigation { width: 100%; align-items: start; }
@@ -33,4 +44,6 @@ footer:has(.site-refresh-status) { flex-wrap: wrap; }
   .lab-navigation .lab-nav-menu { position: static; width: 100%; min-width: 0; max-width: none; max-height: none; padding: 4px 0 12px 12px; border: 0; box-shadow: none; }
   .lab-navigation .lab-nav-menu a { display: flex; align-items: center; min-height: 48px; font-size: 16px; }
 }
+
+/* Preserve the state feedback without motion when the user requests it. */
 @media(prefers-reduced-motion: reduce) { .lab-navigation summary { transition: none; } }

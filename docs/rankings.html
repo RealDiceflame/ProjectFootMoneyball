@@ -169,10 +169,10 @@
     </form>
   </dialog>
 
-  <dialog id="reset-dialog">
+  <dialog id="reset-dialog" aria-labelledby="reset-dialog-title" aria-describedby="reset-dialog-description">
     <form method="dialog">
-      <p class="eyebrow">Reset draft</p><h2>Clear every drafted player?</h2>
-      <p>This only resets this browser. Your rankings and league settings stay available.</p>
+      <p class="eyebrow">Reset draft</p><h2 id="reset-dialog-title">Clear every drafted player?</h2>
+      <p id="reset-dialog-description">This only resets this browser. Your rankings and league settings stay available.</p>
       <div class="dialog-actions"><button class="button secondary" value="cancel">Keep my draft</button><button class="button danger solid" value="confirm">Reset everything</button></div>
     </form>
   </dialog>

@@ -10,7 +10,6 @@ Supports:
 Applies passing, rushing, receiving, and turnover formulas.
 """
 
-import os
 import re
 import pandas as pd
 
@@ -31,7 +30,10 @@ def calculate_fantasy_points(df: pd.DataFrame, ppr_type: str = "full") -> pd.Dat
 
     # Determine PPR multiplier
     ppr_map = {"standard": 0.0, "half": 0.5, "full": 1.0}
-    ppr_value = ppr_map.get(ppr_type.lower(), 1.0)
+    scoring_format = ppr_type.strip().lower()
+    if scoring_format not in ppr_map:
+        raise ValueError(f"Unknown PPR format: {ppr_type!r}; expected standard, half, or full")
+    ppr_value = ppr_map[scoring_format]
 
     # Robustly map multiple possible incoming column names into canonical names we use
     def _norm(s: str) -> str:
@@ -46,13 +48,16 @@ def calculate_fantasy_points(df: pd.DataFrame, ppr_type: str = "full") -> pd.Dat
         'int': ['passing_int', 'int', 'interceptions'],
         'rush_yds': ['rushing_yds', 'rush_yds', 'rush_yards', 'rush_yds'],
         'rush_td': ['rushing_td', 'rush_td', 'rush_tds'],
-        'rec': ['receiving_rec', 'rec', 'recs', 'receptions', 'targets'],
+        'rec': ['receiving_rec', 'rec', 'recs', 'receptions'],
         'rec_yds': ['receiving_yds', 'rec_yds', 'rec_yards', 'receiving_yards'],
         'rec_td': ['receiving_td', 'rec_td', 'rec_tds'],
         'fmb': ['fmb', 'fumbles']
     }
 
-    # pick first available column for each canonical stat; default to zero series
+    # Targets are opportunities, not completed receptions: never award PPR for them.
+    # Missing stats retain the legacy zero fallback; callers must validate coverage.
+    # `fmb` retains the legacy -2 rule; it must represent lost fumbles for standard scoring.
+    # Pick the first available alias without adding overlapping representations.
     for canon, prefs in candidates.items():
         found = None
         for p in prefs:
@@ -95,7 +100,7 @@ def calculate_and_save_fantasy_points(input_path, output_path):
         scored_df = calculate_fantasy_points(df.copy(), ppr_type)
         df[f"fantasy_{ppr_type.lower()}_ppr"] = scored_df["fantasy_points"]
         # compute per-game and 17-game projection for this scoring format
-        games = pd.to_numeric(df['g'], errors='coerce') if 'g' in df.columns else pd.Series([17] * len(df))
+        games = pd.to_numeric(df['g'], errors='coerce') if 'g' in df.columns else pd.Series(17, index=df.index, dtype=float)
         games_safe = games.where(games > 0)
         per_game = df[f"fantasy_{ppr_type.lower()}_ppr"] / games_safe
         per_game = per_game.fillna(df[f"fantasy_{ppr_type.lower()}_ppr"] / 17)
