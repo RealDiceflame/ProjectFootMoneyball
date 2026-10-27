@@ -9,7 +9,8 @@ import {
   POSITIONS,
   positionAgeCurve,
   roundPositionExpectations,
-} from "./projection-model.mjs?v=20260909-capital1";
+  normalizeProjectionSettings,
+} from "./projection-model.mjs?v=20261027-tools1";
 
 const DATA_URL = "./data/rankings.json";
 const HISTORY_URL = "./data/player_history.json";
@@ -106,6 +107,7 @@ function boardRows() {
 }
 
 function syncControls() {
+  state.settings = normalizeProjectionSettings(state.settings);
   ui.teams.value = state.settings.teams;
   ui.quarterbacks.value = state.settings.quarterbacks;
   ui.ppr.value = state.settings.ppr;
@@ -576,7 +578,7 @@ async function refreshProjection(signal) {
     const historyPhrase = historyCoverage.count
       ? `${historyCoverage.count}-season history (${historyCoverage.range})`
       : "available history";
-    ui.historyCopy.textContent = `Compare current and historical players across the maintained ${historyPhrase}. Recent production sets the baseline, position-specific aging adjusts the scoring rate, and expected games turns it into a season projection.`;
+    ui.historyCopy.textContent = `Compare current and historical players across the maintained ${historyPhrase}. Recent production sets the baseline, position-specific aging adjusts the scoring rate, and expected games turn it into a ${state.data.projection_season} season projection.`;
     render(preferredPlayer);
     statusText = `${state.data.projection_season} model · ${historyCoverage.label} · ${state.samples.length} qualifying player-seasons · ${state.historical.length} historical players`;
     ui.status.textContent = statusText;

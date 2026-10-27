@@ -139,3 +139,25 @@ export function formatWeather(weather) {
   if (wind) pieces.push(`Wind ${wind}`);
   return pieces.join(" · ");
 }
+export function safeOddsUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password ? url.href : null;
+  } catch { return null; }
+}
+
+export function predictionContractRows(contracts) {
+  const rows = []; let unavailable = 0;
+  for (const contract of Array.isArray(contracts) ? contracts : []) {
+    const label = typeof contract?.label === "string" ? contract.label.trim() : "";
+    const question = typeof contract?.question === "string" ? contract.question.trim() : "";
+    // Legacy event snapshots flatten unrelated props. "Under 93%" without its
+    // player, statistic and line is not an interpretable contract probability.
+    if (!label || (!question && /^(yes|no|over|under)$/i.test(label))
+      || !Number.isFinite(contract.probability) || contract.probability < 0 || contract.probability > 1) {
+      unavailable++; continue;
+    }
+    rows.push({label, question: question || null, probability: contract.probability});
+  }
+  return {rows, unavailable};
+}

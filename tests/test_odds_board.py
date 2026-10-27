@@ -207,9 +207,33 @@ def test_polymarket_events_become_compact_ranked_prediction_cards():
     assert len(cards) == 1
     assert cards[0]["url"].endswith("/event/tush-push-banned-for-2026-nfl-season")
     assert cards[0]["contracts"] == [
-        {"label": "No", "probability": 0.9965},
-        {"label": "Yes", "probability": 0.0035},
+        {"label": "No", "probability": 0.9965, "question": "Tush Push banned for 2026 NFL Season?"},
+        {"label": "Yes", "probability": 0.0035, "question": "Tush Push banned for 2026 NFL Season?"},
     ]
+
+
+def test_player_prop_contracts_keep_their_question_after_probability_sorting():
+    cards = build_polymarket_markets([{
+        "title": "Panthers vs Packers player props", "slug": "nfl-player-props", "markets": [
+            {"question": "Player A: Over 49.5 receiving yards?", "outcomes": ["Over", "Under"],
+             "outcomePrices": [0.1, 0.9]},
+            {"question": "Player B: Over 19.5 rushing yards?", "outcomes": ["Over", "Under"],
+             "outcomePrices": [0.2, 0.8]},
+        ],
+    }])
+    contracts = cards[0]["contracts"]
+    assert [(row["label"], row["question"]) for row in contracts[:2]] == [
+        ("Under", "Player A: Over 49.5 receiving yards?"),
+        ("Under", "Player B: Over 19.5 rushing yards?"),
+    ]
+    assert [row["probability"] for row in contracts] == [0.9, 0.8, 0.2, 0.1]
+
+
+def test_missing_contract_subject_is_not_invented_from_event_title():
+    cards = build_polymarket_markets([{
+        "title": "NFL props", "markets": [{"outcomes": ["Under"], "outcomePrices": [0.9]}],
+    }])
+    assert cards[0]["contracts"][0]["question"] is None
 
 
 def test_polymarket_game_adds_only_main_lines_to_the_comparison_table():

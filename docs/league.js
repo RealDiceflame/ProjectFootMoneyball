@@ -1,7 +1,7 @@
 import {DIVISIONS} from "./league-model.mjs?v=20260913-home1";
 import {freshSeed, validSeed} from "./simulation-runs.mjs?v=20260913-home1";
 import {startAutoRefresh, fetchSnapshot, snapshotSignature} from "./auto-refresh.mjs?v=20260927-refresh1";
-import {canRefreshLabs, preserveLabView, validateTeamSnapshot} from "./lab-refresh.mjs?v=20260927-refresh1";
+import {canRefreshLabs, preserveLabView, validateTeamSnapshot, snapshotAgeNote} from "./lab-refresh.mjs?v=20261027-tools1";
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; };
 const num = value => Number.isFinite(value) ? value.toFixed(1) : "—";
@@ -126,7 +126,8 @@ function run() {
   } catch (error) { fail(error.message); }
 }
 function updateSnapshotStatus() {
-  $("league-status").textContent = `${snapshotStatus}${pendingSnapshot ? " · New snapshot ready after this run" : result && resultSignature !== currentSignature ? " · Results use the previous snapshot; run again for updated forecasts" : ""}${refreshDelayed ? " · Refresh delayed; showing saved data" : ""}`;
+  const age = data ? snapshotAgeNote(data.generated_at) : "";
+  $("league-status").textContent = `${snapshotStatus}${age ? ` · ${age}` : ""}${pendingSnapshot ? " · New snapshot ready after this run" : result && resultSignature !== currentSignature ? " · Results use the previous snapshot; run again for updated forecasts" : ""}${refreshDelayed ? " · Refresh delayed; showing saved data" : ""}`;
 }
 
 function applyPendingSnapshot() {
@@ -138,7 +139,7 @@ function applyPendingSnapshot() {
     const initial = !data;
     data = value; currentSignature = signature;
     snapshotStatus = `${data.season} · saved ${date(data.generated_at)}`;
-    $("league-freshness").textContent = `Team strengths include results through ${date(data.training.training_last)}. ${data.training.current_season_games || 0} completed ${data.season} games in the fit. Injuries, lineups and weather are not modeled. ${Date.now() - Date.parse(data.generated_at) > 24 * 3600000 ? "Warning: snapshot over 24 hours old." : ""}`;
+    $("league-freshness").textContent = `Team strengths include results through ${date(data.training.training_last)}. ${data.training.current_season_games || 0} completed ${data.season} games in the fit. Injuries, lineups and weather are not modeled.`;
     $("league-team").replaceChildren(new Option("All teams", "all"), ...data.teams.map(team => new Option(team.name, team.team)));
     $("league-team").value = previousTeam || "all";
     if (!$("league-team").value) $("league-team").value = "all";
@@ -172,6 +173,7 @@ startAutoRefresh(async signal => {
   if (initial && data) { $("league-error").hidden = true; run(); }
 }, {
   canRefresh: canRefreshLabs,
+  onCheck: () => { if (data) updateSnapshotStatus(); },
   onError: error => {
     if (data) { refreshDelayed = true; updateSnapshotStatus(); }
     else { $("league-error").textContent = error.message; $("league-error").hidden = false; $("league-status").textContent = "Team data unavailable · retrying automatically"; }

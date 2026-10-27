@@ -1,6 +1,6 @@
 import {TEAM_NAMES, scoreDisplay, gameConditions} from "./scores-data.mjs?v=20260915-weather1";
 import {teamMark} from "./team-logos.mjs?v=20260915-games1";
-import {ID_FIELDS, TEAM_SUMMARY, validGameId, unpackStats, statGroups, statLabel, statValue, activeStatRows} from "./game-data.mjs?v=20260915-games1";
+import {ID_FIELDS, TEAM_SUMMARY, validGameId, validGameIdentity, gameSnapshotTime, unpackStats, statGroups, statLabel, statValue, activeStatRows} from "./game-data.mjs?v=20261027-tools1";
 const $ = id=>document.getElementById(id);
 const el = (tag,text,className) => {const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;};
 const gameId = new URLSearchParams(location.search).get("game");
@@ -59,8 +59,10 @@ function render(game, bundle) {
     return;
   }
   const {teams,players}=unpackStats(bundle,gameId);
-  $("game-status").textContent+=` · Stats updated ${new Date(bundle.updated_at).toLocaleString()}`;
-  const nextSignature=bundle.content_sha256;
+  const statsTime=gameSnapshotTime(bundle.updated_at);
+  $("game-status").textContent+=statsTime.valid?` · Stats updated ${new Date(bundle.updated_at).toLocaleString()}`:" · Stats update time unavailable";
+  if(!statsTime.valid)$("game-status").classList.add("stale");
+  const nextSignature=bundle.content_sha256 || JSON.stringify([bundle.team_columns,bundle.player_columns,bundle.teams,bundle.players]);
   if(signature===nextSignature)return;
   signature=nextSignature;
   const nodes=[],teamSection=el("section");
@@ -94,7 +96,10 @@ async function jsonResponse(url) {
 
 async function load() {
   if(busy||document.hidden)return;
-  if(!validGameId(gameId)){$("game-status").textContent="Choose a game from NFL scores.";return;}
+  if(!validGameId(gameId)){
+    $("game-status").textContent="Choose a game from NFL scores.";
+    $("game-stats").replaceChildren(el("p","Open a game from NFL stats or scores to view its published box score."));return;
+  }
   busy=true;lastAttempt=Date.now();
   try{
     const [scoreResult,statsResult]=await Promise.allSettled([jsonResponse("data/scores.json"),jsonResponse(`data/game_stats/${gameId.slice(0,4)}/${gameId}.json`)]);
@@ -102,11 +107,20 @@ async function load() {
     let bundle=statsResult.status==="fulfilled"?statsResult.value:lastBundle;
     let statsFailed=statsResult.status==="rejected";
     try{if(bundle)unpackStats(bundle,gameId);}catch{bundle=lastBundle;statsFailed=true;}
-    const game=(Array.isArray(board?.games)?board.games.find(row=>row?.game_id===gameId):null)||bundle?.game;
-    if(!game||!TEAM_NAMES[game.home]||!TEAM_NAMES[game.away])throw new Error("Unknown game");
-    if(lastBundle&&!bundle)throw new Error("Previously available box score missing");
+    if(lastBundle&&!bundle){bundle=lastBundle;statsFailed=true;}
+    const scoreGame=Array.isArray(board?.games)?board.games.find(row=>validGameIdentity(row,gameId)):null;
+    const scoreFailed=scoreResult.status==="rejected" || !scoreGame;
+    const game=scoreGame||bundle?.game||lastGame;
+    if(!validGameIdentity(game,gameId))throw new Error("Unknown game");
     render(game,bundle);lastGame=game;lastBundle=bundle;
-    if(scoreResult.status==="rejected"||statsFailed){
+    if(scoreGame){
+      const checked=gameSnapshotTime(board.checked_at);
+      if(checked.stale){
+        $("game-status").textContent+=checked.valid?" · Score refresh is delayed":" · Score check time unavailable";
+        $("game-status").classList.add("stale");
+      }
+    }
+    if(scoreFailed||statsFailed){
       $("game-status").textContent+=" · Some data could not refresh";
       $("game-status").classList.add("stale");
       if(!bundle&&statsFailed)$("game-stats").replaceChildren(el("p","Box score temporarily unavailable. The score remains available above."));

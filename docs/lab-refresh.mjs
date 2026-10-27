@@ -1,4 +1,10 @@
 // Snapshot checks and view preservation shared by the simulation labs.
+export function snapshotAgeNote(value, now = Date.now()) {
+  const time = typeof value === "string" ? Date.parse(value) : NaN;
+  if (!Number.isFinite(time) || time > now + 300000) return "Snapshot time unavailable";
+  return now - time > 24 * 3600000 ? "Snapshot is over 24 hours old" : "";
+}
+
 export function validateTeamSnapshot(value) {
   const finite = Number.isFinite;
   if (!value || !Number.isInteger(value.season) || !finite(Date.parse(value.generated_at))

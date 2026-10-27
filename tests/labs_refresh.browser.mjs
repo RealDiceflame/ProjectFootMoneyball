@@ -132,6 +132,20 @@ test("projection replaces changed snapshots while retaining player, format, seas
   } finally { await context.close(); }
 });
 
+test("projection repairs unsupported share-link settings and still loads available players", async () => {
+  const {page, context, errors} = await open("projection.html?teams=999&quarterbacks=bogus&ppr=bogus&tePremium=bogus");
+  try {
+    await page.locator("#projection-content:not(.hidden)").waitFor();
+    await page.locator("#age-chart svg").waitFor();
+    for (const id of ["model-teams", "model-quarterbacks", "model-ppr", "model-te-premium"]) {
+      assert.ok(await page.locator(`#${id}`).inputValue(), `${id} retains a supported selection`);
+      assert.equal(await page.locator(`#${id}`).evaluate(select => [...select.options].some(option => option.value === select.value)), true);
+    }
+    assert.ok(await page.locator("#model-player option").count() > 1);
+    assert.deepEqual(errors, []);
+  } finally { await context.close(); }
+});
+
 test("survivor refresh keeps saved picks, week and matchup controls, preserves focus, and rejects malformed forecasts", async () => {
   const lab = await open("survivor.html"), {page, context, values, errors} = lab;
   try {
@@ -171,6 +185,12 @@ test("survivor refresh keeps saved picks, week and matchup controls, preserves f
     await page.waitForFunction(() => document.querySelector("#survivor-status").textContent.includes("Refresh delayed"));
     assert.equal(await page.locator("#team-ratings").textContent(), good);
     assert.equal(await page.evaluate(() => localStorage.getItem("outlierbaseline-survivor-v1-2026")), before);
+    await page.selectOption("#tie-rule", "lose");
+    assert.match(await page.locator("#survivor-status").textContent(), /Refresh delayed/, "Editing a saved plan must not conceal the source outage");
+    values.survivor = structuredClone(originals.survivor);
+    await lab.tick();
+    await page.waitForFunction(() => !document.querySelector("#survivor-status").textContent.includes("Refresh delayed"));
+    assert.equal(await page.inputValue("#tie-rule"), "lose", "Recovery preserves the user's new setting");
     assert.deepEqual(errors, []);
   } finally { await context.close(); }
 });

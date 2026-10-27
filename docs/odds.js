@@ -8,7 +8,9 @@ import {
   formatProbability,
   formatWeather,
   groupMarketRows,
-} from "./odds-board.mjs?v=20260906-odds3";
+  safeOddsUrl,
+  predictionContractRows,
+} from "./odds-board.mjs?v=20261027-tools1";
 import {startAutoRefresh, fetchSnapshot, snapshotSignature, preserveView} from "./auto-refresh.mjs?v=20260927-refresh1";
 import {validateOdds} from "./snapshot-validation.mjs?v=20260927-refresh1";
 
@@ -150,11 +152,10 @@ function renderMarket(game, market, rows) {
     const row = document.createElement("div");
     row.className = "odds-comparison-row";
     row.setAttribute("role", "row");
-    const source = document.createElement("a");
+    const url = safeOddsUrl(providerRow.provider_url);
+    const source = document.createElement(url ? "a" : "span");
     source.className = "odds-comparison-provider";
-    source.href = providerRow.provider_url;
-    source.target = "_blank";
-    source.rel = "noopener noreferrer";
+    if (url) {source.href = url; source.target = "_blank"; source.rel = "noopener noreferrer";}
     const name = document.createElement("strong");
     name.textContent = providerRow.provider;
     const kind = document.createElement("span");
@@ -219,10 +220,11 @@ function renderGame(game) {
     detail("Field", [game.surface, game.roof].filter(Boolean).join(" · ") || "Details pending"),
   );
   const weather = detail("Weather", `${game.weather?.retained ? "Saved forecast · " : ""}${formatWeather(game.weather)}`, `weather-${game.weather?.status || "pending"}`);
-  if (game.weather?.source_url) {
+  const weatherUrl = safeOddsUrl(game.weather?.source_url);
+  if (weatherUrl) {
     const value = weather.querySelector("strong");
     const link = document.createElement("a");
-    link.href = game.weather.source_url;
+    link.href = weatherUrl;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
     link.textContent = value.textContent;
@@ -250,24 +252,31 @@ function renderGame(game) {
 }
 
 function renderPredictionMarket(market) {
-  const card = document.createElement("a");
+  const marketUrl = safeOddsUrl(market.url);
+  const card = document.createElement(marketUrl ? "a" : "article");
   card.className = "prediction-card";
-  card.href = market.url;
+  if (marketUrl) card.href = marketUrl;
   card.target = "_blank";
   card.rel = "noopener noreferrer";
   const heading = document.createElement("h3");
   heading.textContent = market.title;
   const outcomes = document.createElement("div");
   outcomes.className = "prediction-outcomes";
-  (market.contracts || []).forEach(contract => {
+  const {rows, unavailable} = predictionContractRows(market.contracts);
+  rows.forEach(contract => {
     const row = document.createElement("div");
     const label = document.createElement("span");
-    label.textContent = contract.label;
+    label.textContent = contract.question ? `${contract.question} · ${contract.label}` : contract.label;
     const price = document.createElement("strong");
     price.textContent = formatProbability(contract.probability);
     row.append(label, price);
     outcomes.append(row);
   });
+  if (!rows.length || unavailable) {
+    const note = document.createElement("p"); note.className = "prediction-contract-note";
+    note.textContent = "Contract details unavailable · View market";
+    outcomes.append(note);
+  }
   const meta = document.createElement("div");
   meta.className = "prediction-meta";
   const source = document.createElement("strong");
@@ -283,7 +292,7 @@ function renderPredictionMarkets() {
   const markets = state.payload?.prediction_markets || [];
   ui.predictionMarkets.replaceChildren(...markets.map(renderPredictionMarket));
   ui.predictionSummary.textContent = markets.length
-    ? `${markets.length} active NFL markets · probabilities reflect current contract prices`
+    ? `${markets.length} saved NFL markets · probabilities shown only for identified contracts`
     : "No active NFL prediction markets are available in the saved update.";
   ui.predictionEmpty.classList.toggle("hidden", markets.length !== 0);
 }
@@ -322,6 +331,7 @@ function clearFilters() {
   ui.provider.value = "ALL";
   ui.search.value = "";
   ui.markets.querySelectorAll("[data-market]").forEach(button => button.classList.toggle("active", button.dataset.market === "ALL"));
+  ui.markets.querySelectorAll("[data-market]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.market === "ALL")));
   render();
 }
 
@@ -354,11 +364,13 @@ ui.markets.addEventListener("click", event => {
   if (!button) return;
   state.market = button.dataset.market;
   ui.markets.querySelectorAll("[data-market]").forEach(item => item.classList.toggle("active", item === button));
+  ui.markets.querySelectorAll("[data-market]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
   render();
 });
 ui.clear.addEventListener("click", clearFilters);
 
 startAutoRefresh(load, {onError: () => {
+  ui.shell.setAttribute("aria-busy", "false");
   ui.status.textContent = state.payload ? `${loadedStatus} · Refresh unavailable; keeping last loaded data` : "Weekly odds unavailable; retrying automatically";
   if (state.payload) renderConnection(true);
   if (!state.payload) {

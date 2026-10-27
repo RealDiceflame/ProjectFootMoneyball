@@ -9,6 +9,16 @@ import {
 const POSITIONS = ["QB", "RB", "WR", "TE"];
 const RECENCY_WEIGHTS = [5, 3, 2];
 
+// Shared links are untrusted input. Unsupported formats must fall back to a
+// published board instead of making the lab retry a nonexistent board forever.
+export function normalizeProjectionSettings(settings = {}) {
+  const choices = {teams: ["8", "10", "12", "14", "16"], quarterbacks: ["1QB", "2QB"],
+    ppr: ["Standard", "Half PPR", "Full PPR"], tePremium: ["Off", "+0.5"]};
+  const defaults = {teams: "12", quarterbacks: "2QB", ppr: "Half PPR", tePremium: "+0.5"};
+  return Object.fromEntries(Object.entries(choices).map(([key, values]) =>
+    [key, values.includes(String(settings[key])) ? String(settings[key]) : defaults[key]]));
+}
+
 function numberOrNull(value) {
   if (value === null || value === undefined || value === "" || value === "-") return null;
   const number = Number(value);

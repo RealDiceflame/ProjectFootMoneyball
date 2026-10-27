@@ -483,6 +483,9 @@ def build_polymarket_markets(events: list[dict], *, limit: int = 12) -> list[dic
         contracts = []
         multiple = len(markets) > 1
         for market in markets:
+            # Outcomes like "Under" are meaningless outside their own market.
+            # Preserve the provider's exact subject/line rather than reconstructing it.
+            question = _text(market.get("question")) or _text(market.get("groupItemTitle"))
             outcomes = _json_values(market.get("outcomes"))
             prices = _json_values(market.get("outcomePrices"))
             pairs = []
@@ -498,9 +501,11 @@ def build_polymarket_markets(events: list[dict], *, limit: int = 12) -> list[dic
                     contracts.append({
                         "label": _text(market.get("groupItemTitle")) or _text(market.get("question")) or "Yes",
                         "probability": round(yes, 4),
+                        "question": question,
                     })
             else:
-                contracts.extend({"label": name, "probability": round(price, 4)} for name, price in pairs)
+                contracts.extend({"label": name, "probability": round(price, 4), "question": question}
+                                 for name, price in pairs)
         if not contracts:
             continue
         contracts.sort(key=lambda item: item["probability"], reverse=True)

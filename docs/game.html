@@ -6,21 +6,22 @@
   <meta name="description" content="NFL game scores, team comparisons and player box scores on OutlierBaseline.">
   <title>Game stats · OutlierBaseline</title>
   <link rel="stylesheet" href="styles.css?v=20260928-layout2">
-  <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
   <link rel="stylesheet" href="game.css?v=20260915-split1">
+  <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
+  <link rel="stylesheet" href="tools.css?v=20261027-tools-editorial1">
 </head>
-<body class="game-page">
+<body class="tool-page game-page">
   <header class="topbar">
     <a class="brand" href="./" aria-label="OutlierBaseline home"><span class="brand-mark" aria-hidden="true">OB</span><span><strong>OutlierBaseline</strong><small>Football intelligence</small></span></a>
     <nav class="topnav" aria-label="Analytics pages"><a href="./">Home</a><a href="rankings.html">Player rankings</a><a href="league.html">League simulations</a></nav>
   </header>
-  <main>
-    <a class="game-back" href="stats.html">← All game stats</a>
-    <h1 id="game-heading">Game stats</h1>
+  <main id="main-content" tabindex="-1">
+    <header class="tool-masthead"><div><p class="tool-kicker">NFL / Game report</p><h1 id="game-heading">Game stats</h1></div><p class="tool-description">Reported scores, team comparisons and recorded player production. A dash means unavailable, not zero.</p></header>
+    <nav class="tool-related-links" aria-label="Related game research"><a href="stats.html">All game results <span aria-hidden="true">↗</span></a><a href="stats.html?view=leaders">League leaders <span aria-hidden="true">↗</span></a><a href="survivor.html#matchup-heading">Matchup Lab <span aria-hidden="true">↗</span></a></nav>
+    <p id="game-status" class="tool-source-band" role="status">Loading game…</p>
     <div id="game-summary" class="game-summary"></div>
-    <p id="game-status" role="status">Loading game…</p>
     <p id="game-conditions"></p>
-    <div id="game-stats"></div>
+    <section class="tool-results" aria-labelledby="game-box-heading"><div class="tool-section-heading"><p class="tool-section-kicker">The recorded game</p><h2 id="game-box-heading">Team &amp; player box scores</h2></div><div id="game-stats"></div></section>
     <noscript>Enable JavaScript to view game statistics.</noscript>
   </main>
   <footer data-compact="true"><span>OutlierBaseline</span><details><summary>Sources &amp; data notes</summary>
@@ -30,6 +31,6 @@
     <p>Weather: reported stadium conditions from nflverse or saved <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noopener noreferrer">National Weather Service</a> kickoff forecasts. Forecasts are not observations; indoor venues are marked separately. Future forecasts generally become available within seven days. Weather may be unavailable for international venues.</p>
   </details></footer>
   <script type="module" src="site-nav.js?v=20260930-no-leagues1"></script>
-  <script type="module" src="game.js?v=20260915-split1"></script>
+  <script type="module" src="game.js?v=20261027-tools1"></script>
 </body>
 </html>

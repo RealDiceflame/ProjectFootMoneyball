@@ -60,6 +60,8 @@ test("odds refresh preserves filters and focus, labels cached quotes, retains go
     await page.goto(`${base}/odds.html`);
     await waitForRefreshCheck(page);
     await page.locator("#odds-games .odds-game-card").first().waitFor();
+    assert.match(await page.locator("#prediction-markets").textContent(), /Contract details unavailable/);
+    assert.doesNotMatch(await page.locator("#prediction-markets").textContent(), /50%/, "An unidentified Yes contract is not presented as an interpretable probability");
     const week = original.weeks[1] || original.weeks[0], game = original.games.find(game => game.week === week);
     await page.selectOption("#odds-week", String(week));
     await page.selectOption("#odds-provider", "draftkings");
@@ -71,10 +73,15 @@ test("odds refresh preserves filters and focus, labels cached quotes, retains go
     value.source_health.sportsbooks.status = "cached";
     value.source_health.sportsbooks.freshness = "stale";
     value.generated_at = new Date(now + 1000).toISOString();
+    value.prediction_markets[0].contracts[0].question = "Will the home team win?";
+    value.prediction_markets[0].url = "javascript:alert('unsafe')";
     const changed = value.games.find(item => item.game_id === game.game_id);
     changed.rows[0].price = 175; changed.rows[0].retained = true;
     await tick();
     await page.waitForFunction(() => document.querySelector("#odds-games").textContent.includes("+175"));
+    assert.match(await page.locator("#prediction-markets").textContent(), /Will the home team win\?/);
+    assert.match(await page.locator("#prediction-markets").textContent(), /50%/);
+    assert.equal(await page.locator('#prediction-markets a[href^="javascript:"]').count(), 0);
     assert.equal(await page.inputValue("#odds-week"), String(week));
     assert.equal(await page.inputValue("#odds-provider"), "draftkings");
     assert.equal(await page.inputValue("#odds-search"), game.home_name);

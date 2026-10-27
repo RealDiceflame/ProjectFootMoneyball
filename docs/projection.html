@@ -8,8 +8,10 @@
   <link rel="canonical" href="https://outlierbaseline.com/projection.html">
   <title>Projection Lab | OutlierBaseline</title>
   <link rel="stylesheet" href="styles.css?v=20260928-layout2">
+  <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
+  <link rel="stylesheet" href="tools.css?v=20261027-tools-editorial1">
 </head>
-<body class="projection-page">
+<body class="tool-page projection-page">
   <header class="topbar">
     <a class="brand" href="./" aria-label="OutlierBaseline home">
       <span class="brand-mark" aria-hidden="true">OB</span>
@@ -22,15 +24,15 @@
       <a href="special-teams.html">Kickers &amp; D/ST</a>
       <a href="odds.html">Weekly odds</a>
     </nav>
-    <div class="source-status" id="projection-status">Building the position curves...</div>
+
   </header>
 
-  <main>
-    <section class="projection-hero">
+  <main id="main-content" tabindex="-1">
+    <section class="projection-hero tool-masthead">
       <div>
-        <p class="eyebrow">OutlierBaseline Projection Lab</p>
-        <h1>Project the next season—not the last one again.</h1>
-        <p id="projection-history-copy">Compare current and historical players across ten seasons of NFL production. Recent form, position-specific aging, and expected games shape the next season's projections.</p>
+        <p class="tool-kicker">Research / Player projections</p>
+        <h1>Projection Lab</h1>
+        <p id="projection-history-copy" class="tool-description">Compare current and historical players across ten seasons of NFL production. Recent form, position-specific aging and expected games shape the selected season's projections.</p>
       </div>
       <div class="model-version" aria-label="Model version">
         <span>Current model</span>
@@ -39,6 +41,8 @@
       </div>
     </section>
 
+    <nav class="tool-related-links" aria-label="Related projection research"><a href="rankings.html">Player rankings <span aria-hidden="true">↗</span></a><a href="values.html">Player Value Lab <span aria-hidden="true">↗</span></a><a href="stats.html?view=leaders">League leaders <span aria-hidden="true">↗</span></a></nav>
+    <div class="source-status tool-source-band" id="projection-status" role="status">Building the position curves...</div>
     <section class="model-controls" aria-labelledby="model-controls-heading">
       <div>
         <p class="eyebrow">Model inputs</p>
@@ -70,9 +74,9 @@
           </div>
         </div>
         <label class="age-view-control">Age comparison<select id="age-view"><option value="ppg">Points per game · position peers</option><option value="season">Season points · position peers</option><option value="career">Career-relative · best observed season = 100</option></select></label>
-        <p id="age-view-note" class="model-caveat"></p>
-        <p class="lab-scroll-hint" id="age-chart-help">Scroll inside the chart to explore every age. Hover over a point for its season details.</p>
         <div class="age-chart-shell" id="age-chart" tabindex="0" role="region" aria-label="Player age and scoring chart; scroll horizontally" aria-describedby="age-chart-help"></div>
+        <p class="lab-scroll-hint" id="age-chart-help">Scroll inside the chart to explore every age. Hover over a point for its season details.</p>
+        <p id="age-view-note" class="model-caveat"></p>
         <div class="projection-card-grid" id="player-projection-cards"></div>
       </section>
 
@@ -125,7 +129,7 @@
 
       <section class="model-methodology" aria-labelledby="method-heading">
         <p class="eyebrow">How Age Curve v1 works</p>
-        <h2 id="method-heading">A transparent baseline we can improve</h2>
+        <h2 id="method-heading">Model assumptions &amp; sources</h2>
         <div class="method-steps">
           <article><strong>1</strong><h3>Recent form</h3><p>The latest three seasons receive 5:3:2 weights, with partial seasons contributing less.</p></article>
           <article><strong>2</strong><h3>Position aging</h3><p>Year-over-year changes from the same player and position estimate improvement or decline at the next age.</p></article>
@@ -142,8 +146,7 @@
   </main>
 
   <footer><span>OutlierBaseline · Age Curve v1</span><a href="rankings.html">Use these projections on the live rankings board</a></footer>
-  <script type="module" src="projection.js?v=20260927-refresh1"></script>
-  <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
+  <script type="module" src="projection.js?v=20261027-tools1"></script>
   <script type="module" src="site-nav.js?v=20260930-no-leagues1"></script>
 </body>
 </html>

@@ -10,21 +10,24 @@
   <link rel="stylesheet" href="styles.css?v=20260928-layout2">
   <link rel="stylesheet" href="values.css?v=20260928-values1">
   <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
+  <link rel="stylesheet" href="tools.css?v=20261027-tools-editorial1">
 </head>
-<body class="values-page">
+<body class="tool-page values-page">
   <header class="topbar">
     <a class="brand" href="./" aria-label="OutlierBaseline home"><span class="brand-mark" aria-hidden="true">OB</span><span><strong>OutlierBaseline</strong><small>Football intelligence lab</small></span></a>
     <nav class="topnav" aria-label="Analytics pages"><a href="rankings.html">Player rankings</a><a href="values.html" aria-current="page">Player values</a><a href="projection.html">Projection Lab</a></nav>
-    <span class="source-status">Player Value Lab · Experimental</span>
+
   </header>
-  <main>
-    <section class="values-hero" aria-labelledby="values-heading">
-      <div><p class="eyebrow">Player Value Lab</p><h1 id="values-heading">What comes next<br>is what counts.</h1><p>Compare remaining production and a three-year outlook. Current-season scoring, prior seasons, and verified availability inform an explainable player-value index.</p></div>
+  <main id="main-content" tabindex="-1">
+    <section class="values-hero tool-masthead" aria-labelledby="values-heading">
+      <div><p class="tool-kicker">Fantasy / Player valuation</p><h1 id="values-heading">Player Value Lab</h1><p class="tool-description">Compare remaining production and a three-year outlook. Current-season scoring, prior seasons, and verified availability inform an explainable player-value index.</p></div>
       <aside class="values-scale" aria-label="How to read the value index"><span>RELATIVE VALUE · 0–10,000</span><strong>Production, in perspective.</strong><p>The highest modeled surplus sets the scale. Zero means no projected edge over replacement—not a worthless player.</p><small>Original analysis. Not KTC consensus, a trade price, or an additive trade calculator.</small></aside>
     </section>
 
+    <nav class="tool-related-links" aria-label="Related player research"><a href="rankings.html">Player rankings <span aria-hidden="true">↗</span></a><a href="projection.html">Projection Lab <span aria-hidden="true">↗</span></a><a href="stats.html">NFL statistics <span aria-hidden="true">↗</span></a></nav>
+    <span class="source-status tool-source-band">Player Value Lab · Experimental</span>
     <section class="values-panel values-controls" aria-labelledby="values-format-heading">
-      <div class="values-section-heading"><div><p class="eyebrow">Your reference format</p><h2 id="values-format-heading">One board. Two horizons.</h2></div><p>Fixed 12-team reference. No account or draft changes.</p></div>
+      <div class="values-section-heading"><div><p class="eyebrow">Your reference format</p><h2 id="values-format-heading">Format &amp; valuation horizon</h2></div><p>Fixed 12-team reference. No account or draft changes.</p></div>
       <div class="values-horizons" role="group" aria-label="Value horizon"><button type="button" data-horizon="ros" aria-pressed="true">Rest of season</button><button type="button" data-horizon="dynasty" aria-pressed="false">Dynasty · 3 years</button></div>
       <div class="values-format-grid">
         <label>Quarterbacks<select id="values-quarterbacks"><option value="1QB">1 quarterback</option><option value="2QB">2 quarterbacks</option></select></label>
@@ -59,7 +62,7 @@
       </div>
     </section>
 
-    <details class="values-panel values-method"><summary>How the values work · sources &amp; limitations</summary>
+    <details class="values-panel values-method" id="values-method"><summary>How the values work · sources &amp; limitations</summary>
       <p id="values-model-version"></p>
       <h3>Rate, opportunity, then replacement</h3><p>Current-season observations update a prior-season scoring baseline. The model estimates remaining production from the actual remaining schedule, then compares it with a replacement player at the same position. This fixed 12-team reference uses QB13 in 1QB or QB25 in 2QB, RB25, WR37, and TE13.</p>
       <h3>Two different horizons</h3><p>Rest of season covers remaining regular-season fixtures. The three-year dynasty view includes that remainder plus two future 17-game seasons, discounted by 0.85 and 0.85². Experimental position-and-age adjustments are not a career-survival or retirement model. Injuries do not become invented long-term recovery forecasts.</p>

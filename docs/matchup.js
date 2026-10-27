@@ -1,6 +1,6 @@
 import {upcomingGames, simulateMatchup, matchupMarkets} from "./matchup-model.mjs?v=20260909-matchup1";
 import {startAutoRefresh, fetchSnapshot, snapshotSignature} from "./auto-refresh.mjs?v=20260927-refresh1";
-import {canRefreshLabs, preserveLabView} from "./lab-refresh.mjs?v=20260927-refresh1";
+import {canRefreshLabs, preserveLabView, snapshotAgeNote} from "./lab-refresh.mjs?v=20261027-tools1";
 
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => {
@@ -165,8 +165,8 @@ export function initMatchup(data) {
     $("matchup-context").textContent = game
       ? `Week ${game.week} · ${game.away} at ${game.home} · ${date(game.kickoff)} · ${game.stadium || "Stadium unavailable"}${game.neutral ? " · Neutral site" : ""}. All times use your device's time zone.`
       : "Hypothetical game played with the latest saved team strengths. This is not a historical replay or a roster-adjusted forecast.";
-    const age = (Date.now() - Date.parse(data.generated_at)) / 3600000;
-    $("matchup-freshness").textContent = `Ratings saved ${date(data.generated_at)}${age > 24 ? " · Snapshot is over 24 hours old" : ""}. Results included through ${date(data.training.training_last)}. ${data.training.current_season_games ?? 0} completed ${data.season} games in the fit${data.training.current_season_games ? "." : "; preseason baseline until current-season results arrive."} Injuries, lineups, weather and roster changes are not modeled.`;
+    const age = snapshotAgeNote(data.generated_at);
+    $("matchup-freshness").textContent = `Ratings saved ${date(data.generated_at)}${age ? ` · ${age}` : ""}. Results included through ${date(data.training.training_last)}. ${data.training.current_season_games ?? 0} completed ${data.season} games in the fit${data.training.current_season_games ? "." : "; preseason baseline until current-season results arrive."} Injuries, lineups, weather and roster changes are not modeled.`;
     try {
       lastResult = simulateMatchup(data, choice(), {seed: data.season}); renderResults(data, lastResult);
     } catch (error) { $("matchup-error").textContent = error.message; $("matchup-error").hidden = false; }
