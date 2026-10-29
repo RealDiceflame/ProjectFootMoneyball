@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['app/player_values.py', 'update_player_values.py', 'docs/player-values.mjs', 'scripts/record_player_values.mjs', '.github/workflows/update-player-values.yml']
+    paths: ['app/player_values.py', 'update_player_values.py', 'docs/player-values.mjs', 'scripts/record_player_values.mjs', 'scripts/request_pages_build.py', '.github/workflows/update-player-values.yml']
   workflow_run:
     workflows: ['Update site data', 'Update game stats']
     types: [completed]
