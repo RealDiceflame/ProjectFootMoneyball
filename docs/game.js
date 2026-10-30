@@ -1,10 +1,12 @@
 import {scoreDisplay, gameConditions} from "./scores-data.mjs?v=20260915-weather1";
 import {teamMark} from "./team-logos.mjs?v=20260915-games1";
 import {ID_FIELDS, TEAM_SUMMARY, validGameId, validGameIdentity, gameTeamName, gameSnapshotTime, unpackStats, statGroups, statLabel, statValue, activeStatRows} from "./game-data.mjs?v=20261030-historical1";
+import {validateSnapCounts, snapValue, snapRowsForTeam} from "./snap-data.mjs?v=20261030-snaps1";
 const $ = id=>document.getElementById(id);
 const el = (tag,text,className) => {const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;};
 const gameId = new URLSearchParams(location.search).get("game");
 let busy=false,lastAttempt=0,lastBundle=null,lastGame=null,signature=null,historicalView=false;
+let lastSnaps=null,snapSignature=null;
 
 function gameMark(team) {
   if (!historicalView && !["OAK","SD","STL"].includes(team)) return teamMark(team);
@@ -96,9 +98,50 @@ function render(game, bundle) {
   all.append(el("h2","All available team statistics"),
     teamTable(teams,game,bundle.team_columns.filter(key=>!ID_FIELDS.has(key)),"All team statistics"));
   nodes.push(all);
-  const unavailable=el("p","Possession time, third/fourth-down conversions, snap counts and play-by-play are not available from this feed.");
+  const unavailable=el("p","Possession time, third/fourth-down conversions and play-by-play are not available from this box-score feed. Snap counts are reported separately below.");
   const download=el("a","Download game data","game-download");download.href=`data/game_stats/${bundle.season}/${gameId}.json`;download.download=`${gameId}.json`;
   nodes.push(unavailable,download);content.replaceChildren(...nodes);
+}
+
+function renderSnaps(game, bundle, failed=false) {
+  const status=$("game-snaps-status"), content=$("game-snaps-tables");
+  $("game-snaps-issues").textContent="";
+  status.classList.remove("stale");
+  if(failed)status.classList.add("stale");
+  if(!bundle){
+    status.textContent=failed?"Snap counts could not refresh. Box scores remain available.":"Snap counts are not yet available for this game.";
+    content.replaceChildren();snapSignature=null;return;
+  }
+  const unlinked=bundle.players.filter(row=>!row.player_id).length;
+  const issuePlayers=bundle.players.filter(row=>row.data_issues?.length).length;
+  if(issuePlayers)$("game-snaps-issues").textContent=`${issuePlayers} ${issuePlayers===1?"player has":"players have"} a source issue: an inconsistent source percentage is shown as unavailable (—). Reported snap counts are retained; the original value is included in the download.`;
+  const reportedTeams=new Set(bundle.players.map(row=>row.team)).size;
+  const stamp=gameSnapshotTime(bundle.updated_at);
+  status.textContent=`${bundle.players.length} reported players · ${reportedTeams} of 2 teams · ${unlinked} NFL IDs unlinked · `+
+    (stamp.valid?`Snapshot ${new Date(bundle.updated_at).toLocaleString()}`:"Snapshot time unavailable")+
+    (failed?" · Refresh unavailable; showing the last successful snapshot":"");
+  if(!stamp.valid)status.classList.add("stale");
+  const nextSignature=JSON.stringify(bundle.players);
+  if(nextSignature===snapSignature)return;
+  snapSignature=nextSignature;
+  const sides=el("div",undefined,"game-stat-sides game-snap-sides");
+  for(const side of ["away","home"]){
+    const team=game[side],label=side==="away"?"Away":"Home";
+    const panel=el("section",undefined,"game-stat-team");panel.dataset.side=side;panel.dataset.team=team;
+    const heading=el("h3",undefined,"game-stat-team-heading");
+    heading.append(gameMark(team),el("span",`${label} · ${teamName(team)}`));panel.append(heading);
+    const rows=snapRowsForTeam(bundle,team);
+    if(rows.length){
+      panel.append(table(["Player","Pos.","Offense","Defense","Special teams"],rows.map(row=>[
+        `${row.player_name}${row.player_id?"":" · ID unlinked"}${row.data_issues?.length?" · Source issue":""}`,row.position||"—",
+        ...["offense","defense","st"].map(group=>snapValue(row[`${group}_snaps`],row[`${group}_pct`]))
+      ]),`${label} ${teamName(team)} snap counts and percentages`));
+    }else panel.append(el("p","No participation records reported for this team. This does not mean zero snaps.","game-stat-empty"));
+    sides.append(panel);
+  }
+  const download=el("a","Download snap-count data","game-download");
+  download.href=`data/snap_counts/${bundle.season}/${gameId}.json`;download.download=`${gameId}-snaps.json`;
+  content.replaceChildren(sides,download);
 }
 
 async function jsonResponse(url) {
@@ -112,11 +155,12 @@ async function load() {
   if(busy||document.hidden)return;
   if(!validGameId(gameId)){
     $("game-status").textContent="Choose a game from NFL scores.";
+    $("game-snaps-status").textContent="Choose a game to view participation.";
     $("game-stats").replaceChildren(el("p","Open a game from NFL stats or scores to view its published box score."));return;
   }
   busy=true;lastAttempt=Date.now();
   try{
-    const [scoreResult,statsResult]=await Promise.allSettled([jsonResponse("data/scores.json"),jsonResponse(`data/game_stats/${gameId.slice(0,4)}/${gameId}.json`)]);
+    const [scoreResult,statsResult,snapResult]=await Promise.allSettled([jsonResponse("data/scores.json"),jsonResponse(`data/game_stats/${gameId.slice(0,4)}/${gameId}.json`),jsonResponse(`data/snap_counts/${gameId.slice(0,4)}/${gameId}.json`)]);
     const board=scoreResult.status==="fulfilled"?scoreResult.value:null;
     let bundle=statsResult.status==="fulfilled"?statsResult.value:lastBundle;
     let statsFailed=statsResult.status==="rejected";
@@ -128,6 +172,11 @@ async function load() {
     const game=(historical?bundle.game:scoreGame||bundle?.game)||lastGame;
     if(!validGameIdentity(game,gameId))throw new Error("Unknown game");
     render(game,bundle);lastGame=game;lastBundle=bundle;
+    let snaps=snapResult.status==="fulfilled"?snapResult.value:lastSnaps;
+    let snapsFailed=snapResult.status==="rejected";
+    try{if(snaps)validateSnapCounts(snaps,gameId);}catch{snaps=lastSnaps;snapsFailed=true;}
+    if(lastSnaps&&!snaps){snaps=lastSnaps;snapsFailed=true;}
+    renderSnaps(game,snaps,snapsFailed);lastSnaps=snaps;
     if(scoreGame&&!historical){
       const checked=gameSnapshotTime(board.checked_at);
       if(checked.stale){
@@ -141,8 +190,8 @@ async function load() {
       if(!bundle&&statsFailed)$("game-stats").replaceChildren(el("p","Box score temporarily unavailable. The score remains available above."));
     }
   }catch{
-    if(lastGame){render(lastGame,lastBundle);$("game-status").textContent+=" · Refresh unavailable";}
-    else $("game-status").textContent="Game data temporarily unavailable. Return to NFL scores to choose a game.";
+    if(lastGame){render(lastGame,lastBundle);renderSnaps(lastGame,lastSnaps,true);$("game-status").textContent+=" · Refresh unavailable";}
+    else {$("game-status").textContent="Game data temporarily unavailable. Return to NFL scores to choose a game.";$("game-snaps-status").textContent="Participation unavailable until this game can be identified.";}
     $("game-status").classList.add("stale");
   }finally{busy=false;}
 }
