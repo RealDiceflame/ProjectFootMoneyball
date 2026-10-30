@@ -6,7 +6,7 @@
   <meta name="description" content="NFL game scores, team comparisons and player box scores on OutlierBaseline.">
   <title>Game stats · OutlierBaseline</title>
   <link rel="stylesheet" href="styles.css?v=20260928-layout2">
-  <link rel="stylesheet" href="game.css?v=20261030-snaps1">
+  <link rel="stylesheet" href="game.css?v=20261030-pbp1">
   <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
   <link rel="stylesheet" href="tools.css?v=20261027-tools-editorial1">
 </head>
@@ -17,7 +17,7 @@
   </header>
   <main id="main-content" tabindex="-1">
     <header class="tool-masthead"><div><p class="tool-kicker">NFL / Game report</p><h1 id="game-heading">Game stats</h1></div><p class="tool-description">Reported scores, team comparisons and recorded player production. A dash means unavailable, not zero.</p></header>
-    <nav class="tool-related-links" aria-label="Related game research"><a id="game-results-link" href="stats.html">All game results <span aria-hidden="true">↗</span></a><a id="game-leaders-link" href="stats.html?view=leaders">League leaders <span aria-hidden="true">↗</span></a><a href="#game-snaps">Snap counts <span aria-hidden="true">↓</span></a><a href="survivor.html#matchup-heading">Matchup Lab <span aria-hidden="true">↗</span></a></nav>
+    <nav class="tool-related-links" aria-label="Related game research"><a id="game-results-link" href="stats.html">All game results <span aria-hidden="true">↗</span></a><a id="game-leaders-link" href="stats.html?view=leaders">League leaders <span aria-hidden="true">↗</span></a><a href="#game-plays">Play-by-play <span aria-hidden="true">↓</span></a><a href="#game-snaps">Snap counts <span aria-hidden="true">↓</span></a><a href="survivor.html#matchup-heading">Matchup Lab <span aria-hidden="true">↗</span></a></nav>
     <p id="game-status" class="tool-source-band" role="status">Loading game…</p>
     <div id="game-summary" class="game-summary"></div>
     <p id="game-conditions"></p>
@@ -30,15 +30,28 @@
       <div id="game-snaps-tables"></div>
       <p class="game-snap-note">Source: <a href="https://github.com/nflverse/nflverse-data/releases/tag/snap_counts" target="_blank" rel="noopener noreferrer">Pro Football Reference via nflverse</a>. Historical and delayed reports, not continuous live scoring. A missing row means unknown participation, not “did not play”; a dash means unavailable, not zero. ID-unlinked players retain their PFR identity and are not joined to NFL statistics by name.</p>
     </section>
+    <section id="game-plays" class="tool-results" aria-labelledby="pbp-heading">
+      <div class="tool-section-heading"><p class="tool-section-kicker">How the game unfolded</p><h2 id="pbp-heading">Drives &amp; play-by-play</h2></div>
+      <p id="pbp-status" role="status">Loading play-by-play…</p>
+      <div id="pbp-controls" class="pbp-controls" hidden>
+        <label for="pbp-view">View<select id="pbp-view"><option value="drives">By drive</option><option value="all">All events</option><option value="scoring">Scoring plays</option></select></label>
+        <label for="pbp-quarter">Period<select id="pbp-quarter"><option value="all">Whole game</option><option value="1">1st quarter</option><option value="2">2nd quarter</option><option value="3">3rd quarter</option><option value="4">4th quarter</option><option value="5">Overtime</option></select></label>
+      </div>
+      <p id="pbp-filter-status" role="status"></p>
+      <div id="pbp-events"></div>
+      <a id="pbp-download" class="game-download" hidden>Download game play-by-play</a>
+      <p class="pbp-note">Source: <a href="https://github.com/nflverse/nflverse-data/releases/tag/pbp" target="_blank" rel="noopener noreferrer">nflverse / nflfastR</a>, <a href="https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Selected and formatted by OutlierBaseline. Corrected historical reports, not live scoring. Events include penalties, timeouts and period markers; event counts are not snap counts. Scores show the running total after each event. Drives use the source’s corrected grouping and starting possession; a defensive score can change possession within a group. Drive results describe the whole drive even when a period filter is active.</p>
+    </section>
     <noscript>Enable JavaScript to view game statistics.</noscript>
   </main>
   <footer data-compact="true"><span>OutlierBaseline</span><details><summary>Sources &amp; data notes</summary>
     <p>Team and player statistics: <a href="https://github.com/nflverse/nflverse-data" target="_blank" rel="noopener noreferrer">nflverse</a>, <a href="https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Selected and formatted by OutlierBaseline. Team marks belong to their respective owners.</p>
-    <p>Box scores usually arrive after games and may be corrected later. A dash means unavailable, not zero. These releases do not include possession time, third/fourth-down conversion rates or play-by-play. Snap counts come from a separate PFR/nflverse dataset shown above. Player rows cover recorded statistics, not the full active roster. Anonymous source events are kept separate from named players.</p>
+    <p>Box scores usually arrive after games and may be corrected later. A dash means unavailable, not zero. The box-score feed does not supply possession time or third/fourth-down conversion rates. Snap counts and 2025 regular-season play-by-play come from separate datasets shown above. Player rows cover recorded statistics, not the full active roster. Anonymous source events are kept separate from named players.</p>
     <p>Regular-season data is archived by season and game for future research. Historical archives may receive source corrections; their age is not a live-feed outage. Historical franchise codes are preserved and shown instead of modern team marks. These are observed results, not predictions; preserving them does not automatically retrain a model.</p>
     <p>Weather: reported stadium conditions from nflverse or saved <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noopener noreferrer">National Weather Service</a> kickoff forecasts. Forecasts are not observations; indoor venues are marked separately. Future forecasts generally become available within seven days. Weather may be unavailable for international venues.</p>
   </details></footer>
   <script type="module" src="site-nav.js?v=20260930-no-leagues1"></script>
-  <script type="module" src="game.js?v=20261030-snaps1"></script>
+  <script type="module" src="play-by-play.js?v=20261030-pbp1"></script>
+  <script type="module" src="game.js?v=20261030-pbp1"></script>
 </body>
 </html>

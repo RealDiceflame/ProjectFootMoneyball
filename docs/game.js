@@ -98,7 +98,7 @@ function render(game, bundle) {
   all.append(el("h2","All available team statistics"),
     teamTable(teams,game,bundle.team_columns.filter(key=>!ID_FIELDS.has(key)),"All team statistics"));
   nodes.push(all);
-  const unavailable=el("p","Possession time, third/fourth-down conversions and play-by-play are not available from this box-score feed. Snap counts are reported separately below.");
+  const unavailable=el("p","Possession time and third/fourth-down conversions are not available from this box-score feed. Snap counts and 2025 regular-season play-by-play are reported separately below.");
   const download=el("a","Download game data","game-download");download.href=`data/game_stats/${bundle.season}/${gameId}.json`;download.download=`${gameId}.json`;
   nodes.push(unavailable,download);content.replaceChildren(...nodes);
 }
