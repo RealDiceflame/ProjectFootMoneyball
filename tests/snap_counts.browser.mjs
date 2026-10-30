@@ -55,7 +55,7 @@ test("participation includes snap-only players, same names and unlinked IDs with
     assert.match(await page.locator('#game-snaps [data-side="home"]').innerText(),/Source issue/);
     assert.match(await page.locator('#game-snaps [data-side="home"]').innerText(),/31 · —/);
     assert.match(await page.locator("#game-snaps-issues").innerText(),/inconsistent source percentage/);
-    assert.match(await page.locator(".game-snap-note").innerText(),/unknown participation/);
+    assert.match(await page.locator(".game-snap-note").filter({hasText:"unknown participation"}).innerText(),/unknown participation/);
     assert.deepEqual(errors,[]);
   }finally{await context.close();}
 });
