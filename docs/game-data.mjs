@@ -15,11 +15,18 @@ export function validGameId(value) {
   return typeof value === "string" && /^\d{4}_\d{2}_[A-Z]{2,3}_[A-Z]{2,3}$/.test(value);
 }
 
+export function gameTeamName(team, season = null) {
+  const historical = {OAK: "Oakland Raiders", SD: "San Diego Chargers", STL: "St. Louis Rams"};
+  if (Object.hasOwn(historical, team)) return historical[team];
+  if (team === "WAS" && Number.isInteger(season) && season < 2022) return season >= 2020 ? "Washington Football Team" : "Washington";
+  return Object.hasOwn(TEAM_NAMES, team) ? TEAM_NAMES[team] : null;
+}
+
 export function validGameIdentity(game, gameId) {
   if (!validGameId(gameId) || game?.game_id !== gameId) return false;
   const [, week, away, home] = gameId.split("_");
   return Number(week) === game.week && away === game.away && home === game.home && away !== home
-    && Object.hasOwn(TEAM_NAMES, away) && Object.hasOwn(TEAM_NAMES, home);
+    && gameTeamName(away) !== null && gameTeamName(home) !== null;
 }
 
 export function gameSnapshotTime(value, now = Date.now()) {

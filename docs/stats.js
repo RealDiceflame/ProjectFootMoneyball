@@ -1,6 +1,7 @@
-import {TEAM_NAMES, scoreDisplay} from "./scores-data.mjs?v=20260915-weather1";
+import {scoreDisplay} from "./scores-data.mjs?v=20260915-weather1";
 import {teamMark} from "./team-logos.mjs?v=20260915-games1";
-import {statsSummary, defaultStatsWeek, selectedGames, coverageText, periodOverview, periodSpotlights, metricUnit, statsFreshness} from "./stats-data.mjs?v=20261027-stats-editorial1";
+import {gameTeamName} from "./game-data.mjs?v=20261030-historical1";
+import {statsSummary, defaultStatsWeek, selectedGames, coverageText, periodOverview, periodSpotlights, metricUnit, statsFreshness} from "./stats-data.mjs?v=20261030-historical1";
 const $ = id=>document.getElementById(id);
 const el = (tag,text,className)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;};
 const query = new URLSearchParams(location.search), leaders = query.get("view") === "leaders";
@@ -19,9 +20,12 @@ function gameCard(game) {
   meta.append(el("p",`Week ${game.week}`,"stats-game-week"),time);card.append(meta);
   for(const side of ["away","home"]){
     const row=el("div",undefined,"stats-game-team");
-    const name=el("span",TEAM_NAMES[game[side]],"stats-game-name");
+    const name=el("span",gameTeamName(game[side],summary.season),"stats-game-name");
     name.append(el("small",side==="home"?"Home":"Away","stats-game-location"));
-    row.append(teamMark(game[side]),name,el("strong",display[side]));card.append(row);
+    const historicalMark=summary.historical===true || ["OAK","SD","STL"].includes(game[side]);
+    const mark=historicalMark?el("span",game[side],"team-logo"):teamMark(game[side]);
+    if(historicalMark)mark.setAttribute("aria-hidden","true");
+    row.append(mark,name,el("strong",display[side]));card.append(row);
   }
   const footer=el("div",undefined,"stats-game-footer");
   footer.append(el("p",display.label,"stats-game-status"),el("p",game.stats_available?"Player & team box score →":"Box score pending · View game →","stats-game-link"));
@@ -57,13 +61,13 @@ function overviewItem(label,value,note) {
   item.append(el("dt",label),el("dd",String(value)),el("small",note));return item;
 }
 function renderContext(week) {
-  const overview=periodOverview(summary,week),freshness=statsFreshness(overview.checked_at);
-  const checked=freshness.valid?new Date(overview.checked_at).toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}):"Time unavailable";
+  const overview=periodOverview(summary,week),freshness=statsFreshness(overview.checked_at,Date.now(),{historical:summary.historical===true});
+  const checked=freshness.valid?new Date(overview.checked_at).toLocaleString(undefined,{month:"short",day:"numeric",...(summary.historical===true?{year:"numeric"}:{}),hour:"numeric",minute:"2-digit"}):"Time unavailable";
   $("stats-overview").replaceChildren(
     overviewItem("Published games",overview.published,`${periodName(week)} · Results in the saved feed`),
     overviewItem("Box scores available",overview.archived,overview.pending?`${overview.pending} reported game${overview.pending===1?"":"s"} awaiting stats`:overview.archived?"Player and team statistics archived":"No archived stats for this selection"),
     overviewItem("Weeks with box scores",overview.weeks.length,overview.coverage),
-    overviewItem("Archive checked",checked,"Check time, not every game's update time"),
+    overviewItem("Archive checked",checked,summary.historical===true?"Historical snapshot · Corrections remain possible":"Check time, not every game's update time"),
   );
   const spotlights=periodSpotlights(summary,week), signature=JSON.stringify({season:summary.season,week,
     archived:overview.archived,pending:overview.pending,spotlights});
@@ -87,9 +91,12 @@ function render() {
   results.className=leaders?"stats-grid stats-leaders-grid":"stats-grid stats-games-grid";
   $("stats-status").textContent=coverageText(summary,week);
   $("stats-status").classList.remove("stale");
-  const freshness=statsFreshness(summary.checked_at);
+  const freshness=statsFreshness(summary.checked_at,Date.now(),{historical:summary.historical===true});
   if(freshness.stale){$("stats-status").textContent+=freshness.valid?" · Latest stats refresh is delayed":" · Archive check time unavailable";$("stats-status").classList.add("stale");}
   if(refreshFailed){$("stats-status").textContent+=" · Refresh unavailable · Showing the last loaded stats";$("stats-status").classList.add("stale");}
+  $("stats-description").textContent=summary.historical===true
+    ? `${summary.season} regular-season archive. These are historical reported results and recorded statistics, not a live feed. Source corrections may update the saved archive.`
+    : leaders?"Follow the players setting the pace. Explore top recorded totals by season, week and statistical category.":"Every published result, with the numbers behind it. Browse reported scores and open archived player and team box scores.";
   renderContext(week);
   $("stats-results-heading").textContent=`${periodName(week)} · ${leaders?$("stats-category").value+" leaders":"Game results"}`;
   const games=selectedGames(summary,week),metrics=summary.metrics.filter(metric=>metric.group===$("stats-category").value);
@@ -170,7 +177,8 @@ async function start() {
     const seasons=[...new Set((Array.isArray(catalogue?.seasons)?catalogue.seasons:[]).filter(season=>Number.isInteger(season)&&season>=2000&&season<=2100))].sort((a,b)=>b-a);
     if(!seasons.length)throw new Error("No seasons");
     const wanted=Number(query.get("season"));
-    options($("stats-season"),seasons.map(season=>[season,season]),seasons.includes(wanted)?wanted:seasons[0]);
+    const current=seasons.includes(catalogue.current_season)?catalogue.current_season:seasons[0];
+    options($("stats-season"),seasons.map(season=>[season,season]),seasons.includes(wanted)?wanted:current);
     await loadSeason(query.get("week"));
   }catch{
     $("stats-status").textContent="Game stats are temporarily unavailable. Please reload to try again.";

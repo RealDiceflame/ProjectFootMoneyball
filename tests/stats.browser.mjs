@@ -8,6 +8,7 @@ import {readFile} from "node:fs/promises";
 import {fileURLToPath} from "node:url";
 import {resolve, extname, sep} from "node:path";
 import {defaultStatsWeek, selectedGames} from "../docs/stats-data.mjs";
+import {historicalStatsFixture} from "./helpers/historical-stats.mjs";
 
 const engines=createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || "playwright");
 const root=fileURLToPath(new URL("../docs/",import.meta.url));
@@ -29,13 +30,14 @@ before(async()=>{
 });
 after(async()=>{await browser?.close();if(server)await new Promise(done=>server.close(done));});
 
-async function open(query="",{extraSeason=false,snapshot=source}={}){
+async function open(query="",{extraSeason=false,snapshot=source,catalogue=null,archiveGame=null}={}){
   const context=await browser.newContext({viewport:{width:1440,height:1000},locale:"en-US"});
   const state={unavailable:false,requests:0},errors=[];
   await context.route("**/*",async route=>{
     const url=new URL(route.request().url());
     if(url.origin!==base)return route.abort();
-    if(url.pathname==="/data/game_stats/index.json")return route.fulfill({json:{schema_version:1,seasons:extraSeason?[2026,2025]:[2026],current_season:2026}});
+    if(url.pathname==="/data/game_stats/index.json")return route.fulfill({json:catalogue||{schema_version:1,seasons:extraSeason?[2026,2025]:[2026],current_season:2026}});
+    if(archiveGame&&url.pathname===`/data/game_stats/${archiveGame.season}/${archiveGame.game.game_id}.json`)return route.fulfill({json:archiveGame});
     if(url.pathname.endsWith("/summary.json")){
       state.requests++;
       return state.unavailable||url.pathname.includes("/2025/")
@@ -158,6 +160,31 @@ test("unavailable seasons clear previous context and source notes open from the 
     }
     await page.locator("#stats-season").selectOption("2026");await page.locator(".stats-game").first().waitFor();
     assert.equal(await page.locator("#stats-context .stats-spotlight").count(),3);
+    assert.deepEqual(errors,[]);
+  }finally{await context.close();}
+});
+
+test("historical regular-season results and leaders link to preserved franchise box scores",async()=>{
+  const {summary,bundle}=historicalStatsFixture();
+  const {context,page,errors}=await open("?season=2016&week=all",{snapshot:summary,
+    catalogue:{schema_version:1,current_season:2026,seasons:[2026,2016]},archiveGame:bundle});
+  try{
+    assert.equal(await value(page,"stats-season"),"2016");
+    assert.match(await page.locator("#stats-status").innerText(),/2016 historical regular-season archive/);
+    assert.doesNotMatch(await page.locator("#stats-status").innerText(),/refresh is delayed/);
+    assert.match(await page.locator(".stats-game").innerText(),/Oakland Raiders/);
+    assert.match(await page.locator(".stats-game").innerText(),/San Diego Chargers/);
+    assert.equal(await page.locator(".stats-game img").count(),0,"Historical pages do not imply modern logos are era-specific");
+    await page.locator("#view-leaders").click();await page.locator("#stats-results table").first().waitFor();
+    assert.equal(await value(page,"stats-season"),"2016");
+    assert.match(await page.locator("#stats-results").innerText(),/Archive Quarterback/);
+    await page.locator("#view-games").click();await page.locator(".stats-game").first().waitFor();
+    await page.locator(".stats-game").click();await page.locator("#game-stats table").first().waitFor();
+    assert.equal(new URL(page.url()).searchParams.get("game"),"2016_01_OAK_SD");
+    assert.match(await page.locator("#game-heading").innerText(),/Oakland Raiders at San Diego Chargers/);
+    assert.match(await page.locator("#game-status").innerText(),/historical regular-season archive/);
+    assert.doesNotMatch(await page.locator("#game-status").innerText(),/could not refresh|refresh is delayed/);
+    assert.equal(await page.getByRole("link",{name:"Download game data",exact:true}).getAttribute("href"),"data/game_stats/2016/2016_01_OAK_SD.json");
     assert.deepEqual(errors,[]);
   }finally{await context.close();}
 });

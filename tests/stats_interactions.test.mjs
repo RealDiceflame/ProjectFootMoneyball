@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import vm from "node:vm";
 import {readFileSync} from "node:fs";
 import * as statsData from "../docs/stats-data.mjs";
+import {gameTeamName} from "../docs/game-data.mjs";
+import {historicalStatsFixture} from "./helpers/historical-stats.mjs";
 import {TEAM_NAMES, scoreDisplay} from "../docs/scores-data.mjs";
 
 const saved = JSON.parse(readFileSync(new URL("../docs/data/game_stats/2026/summary.json", import.meta.url)));
@@ -30,11 +32,11 @@ async function page(query = "", responses = [{seasons: [2026]}, saved]) {
   const notesSummary = new Element("summary"); notesSummary.focus = () => {document.activeElement = notesSummary;};
   document.getElementById("stats-source-notes").querySelector = () => notesSummary;
   class Clock extends Date {static now() {return clock;}}
-  const context = vm.createContext({...statsData, TEAM_NAMES, document, location, history, URLSearchParams,
+  const context = vm.createContext({...statsData, TEAM_NAMES, gameTeamName, document, location, history, URLSearchParams,
     Date: Clock, AbortSignal, teamMark: () => new Element("img"), scoreDisplay: game => scoreDisplay(game, clock),
     selectedGames: (summary, week) => statsData.selectedGames(summary, week, clock),
     periodOverview: (summary, week) => statsData.periodOverview(summary, week, clock),
-    statsFreshness: checked => statsData.statsFreshness(checked, clock),
+    statsFreshness: (checked, unusedNow, options) => statsData.statsFreshness(checked, clock, options),
     setInterval(fn) {intervals.push(fn);}, async fetch(path) {
       requests.push(path); const value = responses.shift(); if (value instanceof Error) throw value;
       return {ok: true, json: async () => value};
@@ -135,4 +137,25 @@ test("published scorecards distinguish reported scores from box-score availabili
     assert.doesNotMatch(card.textContent, /Final/);
     assert.match(card.textContent, /Player & team box score/);
   }
+});
+
+test("explicit catalogue current season wins over an unrelated higher archive year",async()=>{
+  const view=await page("",[{seasons:[2027,2026,2016],current_season:2026},saved]);
+  assert.equal(view.nodes.get("stats-season").value,"2026");
+  assert.equal(view.requests[1],"data/game_stats/2026/summary.json");
+});
+
+test("historical stats use era labels and archive context instead of overdue live updates",async()=>{
+  const {summary}=historicalStatsFixture();
+  const view=await page("?season=2016&week=all",[{seasons:[2026,2016],current_season:2026},summary]);
+  const status=view.nodes.get("stats-status");
+  assert.match(status.textContent,/2016 historical regular-season archive/);
+  assert.doesNotMatch(status.textContent,/refresh is delayed/);
+  assert.equal(status.classes.has("stale"),false);
+  assert.match(view.nodes.get("stats-results").textContent,/Oakland Raiders/);
+  assert.match(view.nodes.get("stats-results").textContent,/San Diego Chargers/);
+  const card=view.nodes.get("stats-results").children[0];
+  assert.equal(card.href,"game.html?game=2016_01_OAK_SD");
+  assert.equal(descendants(card).filter(node=>node.tagName==="img").length,0);
+  assert.match(view.nodes.get("stats-description").textContent,/not a live feed/);
 });
