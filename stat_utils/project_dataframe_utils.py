@@ -9,6 +9,7 @@ import pandas as pd
 from functools import reduce
 import stat_utils.pandas_helpers as pdh
 from data_fetcher.adp_importer import _player_key, normalize_saved_adp
+from data_fetcher.player_identity import attach_player_ids
 
 # Canonical player alias map: map alternate display names to canonical pipeline name
 # Keep keys normalized (lowercase, stripped) and values canonical lowercase form used across outputs
@@ -227,17 +228,19 @@ def _identity_keys(frames):
             name = normalize_name(row.get('player'))
             position = _known_id(row.get('pos')).upper()
             fallback = (name, position)
-            frame_records.append((player_id, fallback))
+            frame_records.append((player_id, fallback, row.get('identity_status', '')))
             if player_id and name and position:
                 candidates.setdefault(fallback, set()).add(player_id)
         records.append(frame_records)
     keys = []
     for frame_number, rows in enumerate(records):
         current = []
-        for row_number, (player_id, fallback) in enumerate(rows):
+        for row_number, (player_id, fallback, status) in enumerate(rows):
             matches = candidates.get(fallback, set())
             if player_id:
                 current.append('id:' + player_id)
+            elif status in {'ambiguous', 'unresolved_provider_id'}:
+                current.append(f'unresolved:{frame_number}:{row_number}')
             elif len(matches) == 1:
                 current.append('id:' + next(iter(matches)))
             elif all(fallback) and len(matches) == 0:
@@ -248,7 +251,7 @@ def _identity_keys(frames):
     return keys
 
 def merge_full_adp(stats_path, adp_path, output_path):
-    """Merge fantasy stat CSV with ADP CSV on normalized player names."""
+    """Join by canonical/provider identity; retain unresolved rows for audit."""
     if not os.path.exists(stats_path):
         print(f"[WARN] Stats file not found at {stats_path}. Skipping.")
         return
@@ -257,7 +260,7 @@ def merge_full_adp(stats_path, adp_path, output_path):
         return
 
     stats_df = pd.read_csv(stats_path)
-    adp_df = normalize_saved_adp(pd.read_csv(adp_path))
+    adp_df = normalize_saved_adp(pd.read_csv(adp_path, dtype={c: str for c in ("player_id", "Sleeper_ID", "MFL_ID", "Yahoo_ID")}))
     adp_identity = adp_df.rename(columns={'Player': 'player', 'Position': 'pos'})
     stats_df['_identity'], adp_df['_identity'] = _identity_keys([stats_df, adp_identity])
     merged = stats_df.merge(
@@ -269,6 +272,9 @@ def merge_full_adp(stats_path, adp_path, output_path):
     )
     merged['player'] = merged['player'].fillna(merged['Player']).map(normalize_name)
     merged['pos'] = merged['pos'].fillna(merged['Position'])
+    if 'player_id_adp' in merged:
+        merged['player_id'] = merged['player_id'].fillna(merged['player_id_adp'])
+        merged = merged.drop(columns=['player_id_adp'])
     merged = merged.drop(columns=['_identity'])
     cols = ['player'] + [col for col in merged.columns if col != 'player']
     merged = merged[cols]
