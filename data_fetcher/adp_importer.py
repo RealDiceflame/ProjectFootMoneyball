@@ -6,11 +6,12 @@ from datetime import datetime, timezone
 from functools import reduce
 from pathlib import Path
 import re
-import unicodedata
 from zoneinfo import ZoneInfo
 
 import pandas as pd
 import requests
+
+from data_fetcher.player_identity import _player_key, attach_player_ids, clean_id
 
 
 SKILL_POSITIONS = {"QB", "RB", "WR", "TE"}
@@ -100,7 +101,6 @@ TEAM_CODES = {
     "LAC", "LAR", "LV", "MIA", "MIN", "NE", "NO", "NYG",
     "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS",
 }
-NAME_SUFFIXES = {"jr", "sr", "ii", "iii", "iv", "v"}
 TEAM_ALIASES = {
     "JAC": "JAX", "GBP": "GB", "KCC": "KC", "NEP": "NE",
     "NOS": "NO", "SFO": "SF", "TBB": "TB", "LVR": "LV",
@@ -119,24 +119,6 @@ def _split_player_and_team(value):
         return text, pd.NA
     return match.group(1).strip(), match.group(2)
 
-
-def _player_key(name, position) -> str:
-    """Return a provider-neutral identity key without collapsing same-name positions."""
-    text = unicodedata.normalize("NFKD", str(name)).encode("ascii", "ignore").decode()
-    # Existing stat snapshots omit punctuation within name tokens. Keep those
-    # identities compatible (Ja'Marr/Jamarr, Smith-Njigba/SmithNjigba).
-    text = re.sub(r"[.'\-]", "", text)
-    tokens = re.sub(r"[^a-z0-9]+", " ", text.casefold()).split()
-    while tokens and tokens[-1] in NAME_SUFFIXES:
-        tokens.pop()
-    # Providers spell initialisms as DJ, D.J. or D. J. Keep ordinary given
-    # names separate; only a leading run of single-letter tokens is joined.
-    initials = 0
-    while initials < len(tokens) - 1 and len(tokens[initials]) == 1:
-        initials += 1
-    if initials > 1:
-        tokens = ["".join(tokens[:initials]), *tokens[initials:]]
-    return f"{' '.join(tokens)}|{str(position).strip().upper()}"
 
 
 def _numeric_adp(value):
@@ -189,9 +171,9 @@ def normalize_saved_adp(frame: pd.DataFrame) -> pd.DataFrame:
     """
     if not {"Player", "Position"}.issubset(frame.columns):
         raise ValueError("Saved ADP requires Player and Position columns.")
-    result = frame.copy()
-    keys = [_player_key(name, pos) for name, pos in zip(result["Player"], result["Position"])]
-    derived = {"ADP", "Source_Count", "ADP_Spread", "ADP_StdDev"}
+    result = _identified_provider(frame, "saved")
+    keys = result.pop("_key").tolist()
+    derived = {"ADP", "Source_Count", "ADP_Spread", "ADP_StdDev", "identity_status"}
     records = []
     for _, group in result.groupby(keys, sort=False, dropna=False):
         record = group.iloc[0].to_dict()
@@ -239,7 +221,7 @@ def update_yahoo_snapshot(
     appended before the normal top-player cap is applied.
     """
     update_date = update_date or _today()
-    snapshot = pd.read_csv(source, sep=None, engine="python", encoding="utf-8-sig")
+    snapshot = pd.read_csv(source, sep=None, engine="python", encoding="utf-8-sig", dtype=str)
     player_column = _find_snapshot_column(
         snapshot.columns, {"player", "playername", "name", "fullname"}
     )
@@ -248,7 +230,7 @@ def update_yahoo_snapshot(
     yahoo_column = _find_snapshot_column(
         snapshot.columns,
         {"y", "yahoo", "yahooadp"},
-        startswith=("yahoo",),
+        startswith=("yahooadp",),
     )
     missing = [
         label
@@ -279,16 +261,17 @@ def update_yahoo_snapshot(
             "Yahoo": pd.to_numeric(snapshot[yahoo_column], errors="coerce"),
         }
     )
+    yahoo_id_column = _find_snapshot_column(snapshot.columns, {"yahooid", "yahooplayerid"})
+    if yahoo_id_column is not None:
+        provider["Yahoo_ID"] = snapshot[yahoo_id_column].map(clean_id)
     provider = provider[
         provider["Player"].ne("")
         & provider["Position"].isin(SKILL_POSITIONS)
         & provider["Yahoo"].between(1, 400, inclusive="both")
     ].copy()
-    provider["_key"] = [
-        _player_key(name, position)
-        for name, position in zip(provider["Player"], provider["Position"])
-    ]
-    provider = provider.sort_values("Yahoo").drop_duplicates("_key", keep="first")
+    provider = _identified_provider(provider, "Yahoo")
+    if provider["_key"].duplicated().any():
+        raise ValueError("Conflicting Yahoo identity; review snapshot rows.")
     if len(provider) < minimum_rows:
         raise ValueError(
             f"Yahoo snapshot contains only {len(provider)} usable players; "
@@ -298,24 +281,25 @@ def update_yahoo_snapshot(
     output_path = Path(output_path)
     if not output_path.exists():
         raise FileNotFoundError(f"The combined ADP file does not exist: {output_path}")
-    output = pd.read_csv(output_path)
+    output = pd.read_csv(output_path, dtype={c: str for c in ("player_id", "Sleeper_ID", "MFL_ID", "Yahoo_ID")})
     required = {"Player", "Team", "Position"}
     missing_output = required.difference(output.columns)
     if missing_output:
         raise ValueError(
             "Combined ADP file is missing: " + ", ".join(sorted(missing_output))
         )
-    output["_key"] = [
-        _player_key(name, position)
-        for name, position in zip(output["Player"], output["Position"])
-    ]
+    output = _identified_provider(normalize_saved_adp(output), "saved")
     yahoo_values = provider.set_index("_key")["Yahoo"]
     output["Yahoo"] = output["_key"].map(yahoo_values)
+    if "Yahoo_ID" in provider:
+        output["Yahoo_ID"] = output["_key"].map(provider.set_index("_key")["Yahoo_ID"])
 
     new_provider_rows = provider[~provider["_key"].isin(output["_key"])].copy()
     if not new_provider_rows.empty:
         additions = pd.DataFrame(index=new_provider_rows.index, columns=output.columns)
-        for column in ("_key", "Player", "Team", "Position", "Yahoo"):
+        for column in ("_key", "Player", "Team", "Position", "Yahoo", "player_id", "identity_status", "Yahoo_ID"):
+            if column not in new_provider_rows:
+                continue
             additions[column] = new_provider_rows[column]
         output = pd.concat([output, additions], ignore_index=True)
 
@@ -479,6 +463,25 @@ def fetch_mfl_adp(
     return frame
 
 
+def _identified_provider(frame, provider=""):
+    result = attach_player_ids(frame)
+    keys = []
+    for index, row in enumerate(result.to_dict("records")):
+        identity = clean_id(row.get("player_id"))
+        provider_ids = [(column, clean_id(row.get(column))) for column in ("Sleeper_ID", "MFL_ID", "Yahoo_ID") if clean_id(row.get(column))]
+        if identity:
+            key = "id:" + identity
+        elif provider_ids:
+            key = "provider:" + "|".join(f"{column}:{value}" for column, value in provider_ids)
+        elif row["identity_status"] == "ambiguous":
+            key = f"unresolved:{provider}:{index}:" + _player_key(row["Player"], row["Position"])
+        else:
+            key = _player_key(row["Player"], row["Position"])
+        keys.append(key)
+    result["_key"] = keys
+    return result
+
+
 def _validate_provider(frame: pd.DataFrame, column: str) -> pd.DataFrame:
     required = {"Player", "Team", "Position", column}
     missing = required.difference(frame.columns)
@@ -491,11 +494,9 @@ def _validate_provider(frame: pd.DataFrame, column: str) -> pd.DataFrame:
         result["Position"].isin(SKILL_POSITIONS)
         & result[column].between(1, 400, inclusive="both")
     ].copy()
-    result["_key"] = [
-        _player_key(name, position)
-        for name, position in zip(result["Player"], result["Position"])
-    ]
-    result = result.sort_values(column).drop_duplicates("_key", keep="first")
+    result = _identified_provider(result, column)
+    if result["_key"].duplicated().any():
+        raise ValueError(f"Conflicting duplicate {column} identity; review source records.")
     if len(result) < MIN_PROVIDER_ROWS:
         raise ValueError(
             f"{column} returned only {len(result)} usable players; refusing to replace good data."
@@ -506,7 +507,7 @@ def _validate_provider(frame: pd.DataFrame, column: str) -> pd.DataFrame:
 def _cached_provider(path: Path, column: str) -> tuple[pd.DataFrame | None, str | None]:
     if not path.exists():
         return None, None
-    cached = pd.read_csv(path)
+    cached = pd.read_csv(path, dtype={c: str for c in ("player_id", "Sleeper_ID", "MFL_ID", "Yahoo_ID")})
     if not {"Player", "Position", column}.issubset(cached.columns):
         return None, None
     if "Team" not in cached.columns:
@@ -515,11 +516,9 @@ def _cached_provider(path: Path, column: str) -> tuple[pd.DataFrame | None, str 
     cached = cached[cached[column].notna()].copy()
     if cached.empty:
         return None, None
-    cached["_key"] = [
-        _player_key(name, position)
-        for name, position in zip(cached["Player"], cached["Position"])
-    ]
-    cached = cached.sort_values(column).drop_duplicates("_key", keep="first")
+    cached = _identified_provider(normalize_saved_adp(cached), column)
+    if cached["_key"].duplicated().any():
+        raise ValueError(f"Conflicting cached {column} identity; review source records.")
     date_column = f"{column}_Updated"
     if date_column in cached.columns:
         dates = cached[date_column].dropna().astype(str)
@@ -532,6 +531,8 @@ def _cached_provider(path: Path, column: str) -> tuple[pd.DataFrame | None, str 
 
 def _provider_for_merge(frame: pd.DataFrame, column: str) -> pd.DataFrame:
     keep = ["_key", "Player", "Team", "Position", column]
+    if f"{column}_ID" in frame:
+        keep.append(f"{column}_ID")
     result = frame.loc[:, keep].copy()
     return result.rename(
         columns={
@@ -627,6 +628,11 @@ def build_direct_adp(
             if column in merged
             else pd.Series(pd.NA, index=merged.index, dtype="Float64")
         )
+    for provider in ADP_PROVIDERS:
+        if f"{provider}_ID" in merged:
+            output[f"{provider}_ID"] = merged[f"{provider}_ID"].map(clean_id)
+    output["player_id"] = merged["_key"].map(lambda key: key[3:] if str(key).startswith("id:") else pd.NA)
+    output = attach_player_ids(output)
     output = _adp_metrics(output)
     output = (
         output[
@@ -634,7 +640,6 @@ def build_direct_adp(
             & output["Position"].astype(str).str.upper().isin(SKILL_POSITIONS)
         ]
         .sort_values(["ADP", "Player"], kind="stable")
-        .head(MAX_PUBLISHED_PLAYERS)
         .reset_index(drop=True)
     )
     _write_mfl_provenance(output, health.get("MFL", {}))

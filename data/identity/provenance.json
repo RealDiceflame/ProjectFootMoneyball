@@ -1,0 +1,3325 @@
+{
+  "captured_at": "2026-10-30T19:02:18.335506+00:00",
+  "row_count": 18784,
+  "sources": {
+    "nflverse": {
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/players/players.csv",
+      "sha256": "3cfdc38a447abfe1a8b62836b68adbd25ef192514efe2179c30cf0235873bcad"
+    },
+    "fantasy": {
+      "url": "https://raw.githubusercontent.com/dynastyprocess/data/master/files/db_playerids.csv",
+      "sha256": "17a2424e7321db221037ce65eb139079185f01bb5e8df13333d7abb21169a476"
+    },
+    "sleeper": {
+      "url": "https://api.sleeper.app/v1/players/nfl",
+      "sha256": "883721ae01153c9d1755a6af465aee42c683ed592394fab105b5843af0ce54a3"
+    }
+  },
+  "excluded_links": [
+    {
+      "gsis_id": "00-0031021",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2132"
+    },
+    {
+      "gsis_id": "00-0028564",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "955"
+    },
+    {
+      "gsis_id": "00-0032637",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "3764"
+    },
+    {
+      "gsis_id": "00-0030653",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1899"
+    },
+    {
+      "gsis_id": "00-0030653",
+      "reason": "conflicting_provider_values",
+      "provider": "mfl_id",
+      "values": [
+        "11983",
+        "1883"
+      ]
+    },
+    {
+      "gsis_id": "00-0036379",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "6827"
+    },
+    {
+      "gsis_id": "00-0034584",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "5665"
+    },
+    {
+      "gsis_id": "00-0030677",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1998"
+    },
+    {
+      "gsis_id": "00-0034207",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "5275"
+    },
+    {
+      "gsis_id": "00-0031354",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2000"
+    },
+    {
+      "gsis_id": "00-0036553",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "7646"
+    },
+    {
+      "gsis_id": "00-0032181",
+      "reason": "conflicting_provider_values",
+      "provider": "espn_id",
+      "values": [
+        "2511350",
+        "2516049"
+      ]
+    },
+    {
+      "gsis_id": "00-0041561",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "13272"
+    },
+    {
+      "gsis_id": "00-0040630",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "13072"
+    },
+    {
+      "gsis_id": "00-0027325",
+      "reason": "conflicting_provider_values",
+      "provider": "espn_id",
+      "values": [
+        "13213",
+        "3166800"
+      ]
+    },
+    {
+      "gsis_id": "00-0041047",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "13353"
+    },
+    {
+      "gsis_id": "00-0039156",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "10906"
+    },
+    {
+      "gsis_id": "00-0036346",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "6917"
+    },
+    {
+      "gsis_id": "00-0032098",
+      "reason": "conflicting_provider_values",
+      "provider": "espn_id",
+      "values": [
+        "2519013",
+        "2544798"
+      ]
+    },
+    {
+      "gsis_id": "00-0036629",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "7715"
+    },
+    {
+      "gsis_id": "00-0026515",
+      "reason": "conflicting_provider_values",
+      "provider": "mfl_id",
+      "values": [
+        "10235",
+        "1858"
+      ]
+    },
+    {
+      "gsis_id": "00-0035393",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "6645"
+    },
+    {
+      "gsis_id": "00-0036729",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "7984"
+    },
+    {
+      "gsis_id": "00-0030932",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2153"
+    },
+    {
+      "gsis_id": "00-0034270",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "5133"
+    },
+    {
+      "gsis_id": "00-0031878",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2885"
+    },
+    {
+      "gsis_id": "00-0036378",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "6958"
+    },
+    {
+      "gsis_id": "00-0021175",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2601"
+    },
+    {
+      "gsis_id": "00-0036213",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "6831"
+    },
+    {
+      "gsis_id": "00-0034654",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "5619"
+    },
+    {
+      "gsis_id": "00-0034744",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "5028"
+    },
+    {
+      "gsis_id": "00-0025503",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "77"
+    },
+    {
+      "gsis_id": "00-0027009",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "418"
+    },
+    {
+      "gsis_id": "00-0032931",
+      "reason": "conflicting_provider_values",
+      "provider": "espn_id",
+      "values": [
+        "2577484",
+        "3140596"
+      ]
+    },
+    {
+      "gsis_id": "00-0029508",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1325"
+    },
+    {
+      "gsis_id": "00-0041279",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "13601"
+    },
+    {
+      "gsis_id": "00-0019770",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "692"
+    },
+    {
+      "gsis_id": "00-0030095",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1514"
+    },
+    {
+      "gsis_id": "00-0037190",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "8290"
+    },
+    {
+      "gsis_id": "00-0034362",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "5050"
+    },
+    {
+      "gsis_id": "00-0038724",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "11062"
+    },
+    {
+      "gsis_id": "00-0026937",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "496"
+    },
+    {
+      "gsis_id": "00-0033573",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "4214"
+    },
+    {
+      "gsis_id": "00-0031395",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2229"
+    },
+    {
+      "gsis_id": "00-0036853",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "7701"
+    },
+    {
+      "gsis_id": "00-0035988",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "6898"
+    },
+    {
+      "gsis_id": "00-0030999",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2048"
+    },
+    {
+      "gsis_id": "00-0039541",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "11886"
+    },
+    {
+      "gsis_id": "00-0031087",
+      "reason": "conflicting_provider_values",
+      "provider": "espn_id",
+      "values": [
+        "10411",
+        "17467"
+      ]
+    },
+    {
+      "gsis_id": "00-0031087",
+      "reason": "conflicting_provider_values",
+      "provider": "pfr_id",
+      "values": [
+        "HallAn01",
+        "HalxAn00"
+      ]
+    },
+    {
+      "gsis_id": "00-0031636",
+      "reason": "conflicting_provider_values",
+      "provider": "mfl_id",
+      "values": [
+        "13502",
+        "8463"
+      ]
+    },
+    {
+      "gsis_id": "00-0035848",
+      "reason": "conflicting_provider_values",
+      "provider": "pfr_id",
+      "values": [
+        "HarrDe09",
+        "HarrDe11"
+      ]
+    },
+    {
+      "gsis_id": "00-0028627",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1771"
+    },
+    {
+      "gsis_id": "00-0029610",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1117"
+    },
+    {
+      "gsis_id": "00-0039677",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "11376"
+    },
+    {
+      "gsis_id": "00-0020679",
+      "reason": "conflicting_provider_values",
+      "provider": "espn_id",
+      "values": [
+        "3923394",
+        "4260"
+      ]
+    },
+    {
+      "gsis_id": "00-0031518",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2568"
+    },
+    {
+      "gsis_id": "00-0034948",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "6104"
+    },
+    {
+      "gsis_id": "00-0032219",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2538"
+    },
+    {
+      "gsis_id": "00-0037095",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "8516"
+    },
+    {
+      "gsis_id": "00-0033533",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "4287"
+    },
+    {
+      "gsis_id": "00-0032935",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "3476"
+    },
+    {
+      "gsis_id": "00-0033975",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "4265"
+    },
+    {
+      "gsis_id": "00-0033879",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "4055"
+    },
+    {
+      "gsis_id": "00-0031059",
+      "reason": "conflicting_provider_values",
+      "provider": "espn_id",
+      "values": [
+        "16094",
+        "16904"
+      ]
+    },
+    {
+      "gsis_id": "00-0031059",
+      "reason": "conflicting_provider_values",
+      "provider": "pfr_id",
+      "values": [
+        "HuffMa00",
+        "MillSt00"
+      ]
+    },
+    {
+      "gsis_id": "00-0029266",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1080"
+    },
+    {
+      "gsis_id": "00-0028345",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1292"
+    },
+    {
+      "gsis_id": "00-0034971",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "5911"
+    },
+    {
+      "gsis_id": "00-0029193",
+      "reason": "conflicting_provider_values",
+      "provider": "espn_id",
+      "values": [
+        "14946",
+        "4079281"
+      ]
+    },
+    {
+      "gsis_id": "00-0034439",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "5094"
+    },
+    {
+      "gsis_id": "00-0030806",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2203"
+    },
+    {
+      "gsis_id": "00-0029654",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1226"
+    },
+    {
+      "gsis_id": "00-0036193",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "6848"
+    },
+    {
+      "gsis_id": "00-0029435",
+      "reason": "uncorroborated_identity",
+      "source": "fantasy"
+    },
+    {
+      "gsis_id": "00-0028370",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "3106"
+    },
+    {
+      "gsis_id": "00-0031130",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2110"
+    },
+    {
+      "gsis_id": "00-0034641",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2682"
+    },
+    {
+      "gsis_id": "00-0022828",
+      "reason": "conflicting_provider_values",
+      "provider": "mfl_id",
+      "values": [
+        "7595",
+        "9752"
+      ]
+    },
+    {
+      "gsis_id": "00-0033899",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "4026"
+    },
+    {
+      "gsis_id": "00-0029312",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1163"
+    },
+    {
+      "gsis_id": "00-0040870",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "13293"
+    },
+    {
+      "gsis_id": "00-0040259",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "13101"
+    },
+    {
+      "gsis_id": "00-0037420",
+      "reason": "conflicting_provider_values",
+      "provider": "pfr_id",
+      "values": [
+        "LassKw00",
+        "LassKw20"
+      ]
+    },
+    {
+      "gsis_id": "00-0033874",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "4059"
+    },
+    {
+      "gsis_id": "00-0041063",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "13485"
+    },
+    {
+      "gsis_id": "00-0030836",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2218"
+    },
+    {
+      "gsis_id": "00-0028543",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "853"
+    },
+    {
+      "gsis_id": "00-0033403",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "4393"
+    },
+    {
+      "gsis_id": "00-0031484",
+      "reason": "conflicting_provider_values",
+      "provider": "espn_id",
+      "values": [
+        "2531358",
+        "4071345"
+      ]
+    },
+    {
+      "gsis_id": "00-0038939",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "10928"
+    },
+    {
+      "gsis_id": "00-0029544",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1094"
+    },
+    {
+      "gsis_id": "00-0040186",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "12666"
+    },
+    {
+      "gsis_id": "00-0040869",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "13468"
+    },
+    {
+      "gsis_id": "00-0022888",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1399"
+    },
+    {
+      "gsis_id": "00-0022888",
+      "reason": "conflicting_provider_values",
+      "provider": "mfl_id",
+      "values": [
+        "12483",
+        "7639"
+      ]
+    },
+    {
+      "gsis_id": "00-0029107",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1047"
+    },
+    {
+      "gsis_id": "00-0036388",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "6788"
+    },
+    {
+      "gsis_id": "00-0040984",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "13852"
+    },
+    {
+      "gsis_id": "00-0033461",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "4090"
+    },
+    {
+      "gsis_id": "00-0036348",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "6901"
+    },
+    {
+      "gsis_id": "00-0041129",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "13403"
+    },
+    {
+      "gsis_id": "00-0036773",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "7860"
+    },
+    {
+      "gsis_id": "00-0032050",
+      "reason": "conflicting_provider_values",
+      "provider": "mfl_id",
+      "values": [
+        "12982",
+        "5738"
+      ]
+    },
+    {
+      "gsis_id": "00-0032430",
+      "reason": "conflicting_provider_values",
+      "provider": "espn_id",
+      "values": [
+        "2580052",
+        "2582138"
+      ]
+    },
+    {
+      "gsis_id": "00-0032430",
+      "reason": "conflicting_provider_values",
+      "provider": "pfr_id",
+      "values": [
+        "CartKy01",
+        "MorgDa01"
+      ]
+    },
+    {
+      "gsis_id": "00-0028532",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "958"
+    },
+    {
+      "gsis_id": "00-0034481",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "5159"
+    },
+    {
+      "gsis_id": "00-0027140",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "454"
+    },
+    {
+      "gsis_id": "00-0036949",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "7810"
+    },
+    {
+      "gsis_id": "00-0036902",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "7678"
+    },
+    {
+      "gsis_id": "00-0031074",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1955"
+    },
+    {
+      "gsis_id": "00-0037068",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "8193"
+    },
+    {
+      "gsis_id": "00-0039821",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "11700"
+    },
+    {
+      "gsis_id": "00-0035528",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "5851"
+    },
+    {
+      "gsis_id": "00-0033164",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "3934"
+    },
+    {
+      "gsis_id": "00-0033776",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "4616"
+    },
+    {
+      "gsis_id": "00-0036235",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "6997"
+    },
+    {
+      "gsis_id": "00-0041451",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "14034"
+    },
+    {
+      "gsis_id": "00-0031559",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2369"
+    },
+    {
+      "gsis_id": "00-0031612",
+      "reason": "conflicting_provider_values",
+      "provider": "espn_id",
+      "values": [
+        "2574010",
+        "2577467"
+      ]
+    },
+    {
+      "gsis_id": "00-0031612",
+      "reason": "conflicting_provider_values",
+      "provider": "pfr_id",
+      "values": [
+        "HarrAl00",
+        "RipkAa00"
+      ]
+    },
+    {
+      "gsis_id": "00-0037604",
+      "reason": "uncorroborated_identity",
+      "source": "fantasy"
+    },
+    {
+      "gsis_id": "00-0032851",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "3818"
+    },
+    {
+      "gsis_id": "00-0037542",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "8670"
+    },
+    {
+      "gsis_id": "00-0035275",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "6167"
+    },
+    {
+      "gsis_id": "00-0034487",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "5154"
+    },
+    {
+      "gsis_id": "00-0028256",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "985"
+    },
+    {
+      "gsis_id": "00-0028488",
+      "reason": "conflicting_provider_values",
+      "provider": "mfl_id",
+      "values": [
+        "10673",
+        "11361"
+      ]
+    },
+    {
+      "gsis_id": "00-0036642",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "7818"
+    },
+    {
+      "gsis_id": "00-0039652",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "12356"
+    },
+    {
+      "gsis_id": "00-0029112",
+      "reason": "conflicting_provider_values",
+      "provider": "espn_id",
+      "values": [
+        "15256",
+        "15356"
+      ]
+    },
+    {
+      "gsis_id": "00-0029112",
+      "reason": "conflicting_provider_values",
+      "provider": "pfr_id",
+      "values": [
+        "DaviBr01",
+        "SmitJa01"
+      ]
+    },
+    {
+      "gsis_id": "00-0031320",
+      "reason": "conflicting_provider_values",
+      "provider": "mfl_id",
+      "values": [
+        "12459",
+        "12571"
+      ]
+    },
+    {
+      "gsis_id": "00-0030086",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1458"
+    },
+    {
+      "gsis_id": "00-0032772",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "5547"
+    },
+    {
+      "gsis_id": "00-0038624",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "11006"
+    },
+    {
+      "gsis_id": "00-0029999",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1654"
+    },
+    {
+      "gsis_id": "00-0033731",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "4656"
+    },
+    {
+      "gsis_id": "00-0031072",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2208"
+    },
+    {
+      "gsis_id": "00-0029367",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1772"
+    },
+    {
+      "gsis_id": "00-0041218",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "13650"
+    },
+    {
+      "gsis_id": "00-0033870",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "4058"
+    },
+    {
+      "gsis_id": "00-0040296",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "12957"
+    },
+    {
+      "gsis_id": "00-0034603",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "5629"
+    },
+    {
+      "gsis_id": "00-0036666",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "7760"
+    },
+    {
+      "gsis_id": "00-0036440",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "7154"
+    },
+    {
+      "gsis_id": "00-0028019",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "889"
+    },
+    {
+      "gsis_id": "00-0033037",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "3249"
+    },
+    {
+      "gsis_id": "00-0030971",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2076"
+    },
+    {
+      "gsis_id": "00-0030944",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "2165"
+    },
+    {
+      "gsis_id": "00-0027043",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "753"
+    },
+    {
+      "gsis_id": "00-0030110",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1520"
+    },
+    {
+      "gsis_id": "00-0035718",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "6118"
+    },
+    {
+      "gsis_id": "00-0027349",
+      "reason": "conflicting_provider_values",
+      "provider": "mfl_id",
+      "values": [
+        "10075",
+        "8569"
+      ]
+    },
+    {
+      "gsis_id": "00-0034258",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "5539"
+    },
+    {
+      "gsis_id": "00-0036129",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "7065"
+    },
+    {
+      "gsis_id": "00-0029257",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "1179"
+    },
+    {
+      "gsis_id": "00-0034223",
+      "reason": "sleeper_not_corroborated",
+      "provider_id": "5402"
+    },
+    {
+      "gsis_id": "00-0025713",
+      "reason": "provider_collision",
+      "provider": "pfr_id",
+      "value": "SmitMa01"
+    },
+    {
+      "gsis_id": "00-0026246",
+      "reason": "provider_collision",
+      "provider": "pfr_id",
+      "value": "SmitMa01"
+    }
+  ],
+  "corroborated_discrepancies": [
+    {
+      "gsis_id": "00-0032273",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-07-21",
+      "fantasy_birth_date": "1992-06-30"
+    },
+    {
+      "gsis_id": "00-0030653",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-02-26",
+      "fantasy_birth_date": "1993-05-17"
+    },
+    {
+      "gsis_id": "00-0036020",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1998-12-29",
+      "fantasy_birth_date": "1998-12-30"
+    },
+    {
+      "gsis_id": "00-0027912",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-08-07",
+      "fantasy_birth_date": "1988-08-17"
+    },
+    {
+      "gsis_id": "00-0028163",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-08-06",
+      "fantasy_birth_date": "1988-08-08"
+    },
+    {
+      "gsis_id": "00-0025533",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1984-06-25",
+      "fantasy_birth_date": "1986-04-20"
+    },
+    {
+      "gsis_id": "00-0039676",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-11-05",
+      "fantasy_birth_date": "NA"
+    },
+    {
+      "gsis_id": "00-0030050",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-03-05",
+      "fantasy_birth_date": "1989-05-06"
+    },
+    {
+      "gsis_id": "00-0025507",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1984-09-28",
+      "fantasy_birth_date": "1984-08-28"
+    },
+    {
+      "gsis_id": "00-0027990",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-01-10",
+      "fantasy_birth_date": "1989-01-01"
+    },
+    {
+      "gsis_id": "00-0030525",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-03-15",
+      "fantasy_birth_date": "1991-03-15"
+    },
+    {
+      "gsis_id": "00-0034265",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-11-30",
+      "fantasy_birth_date": "1994-11-29"
+    },
+    {
+      "gsis_id": "00-0036447",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-04-24",
+      "fantasy_birth_date": "1995-05-24"
+    },
+    {
+      "gsis_id": "00-0037085",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-02-07",
+      "fantasy_birth_date": "2000-02-07"
+    },
+    {
+      "gsis_id": "00-0041404",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-04-26",
+      "fantasy_birth_date": "2005-01-01"
+    },
+    {
+      "gsis_id": "00-0027259",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-12-21",
+      "fantasy_birth_date": "1987-12-02"
+    },
+    {
+      "gsis_id": "00-0039000",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-04-03",
+      "fantasy_birth_date": "2001-03-03"
+    },
+    {
+      "gsis_id": "00-0029048",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-11-12",
+      "fantasy_birth_date": "1988-11-22"
+    },
+    {
+      "gsis_id": "00-0032741",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-02-27",
+      "fantasy_birth_date": "1994-06-27"
+    },
+    {
+      "gsis_id": "00-0040314",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-01-31",
+      "fantasy_birth_date": "2001-05-07"
+    },
+    {
+      "gsis_id": "00-0029770",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-10-03",
+      "fantasy_birth_date": "1990-10-03"
+    },
+    {
+      "gsis_id": "00-0023979",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1983-01-03",
+      "fantasy_birth_date": "1983-01-23"
+    },
+    {
+      "gsis_id": "00-0035862",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1998-09-12",
+      "fantasy_birth_date": "1998-08-12"
+    },
+    {
+      "gsis_id": "00-0039458",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-10-16",
+      "fantasy_birth_date": "1999-10-17"
+    },
+    {
+      "gsis_id": "00-0032181",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-12-20",
+      "fantasy_birth_date": "1991-12-20"
+    },
+    {
+      "gsis_id": "00-0039575",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-12-03",
+      "fantasy_birth_date": "1999-06-09"
+    },
+    {
+      "gsis_id": "00-0037580",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1997-09-12",
+      "fantasy_birth_date": "1997-12-12"
+    },
+    {
+      "gsis_id": "00-0024421",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1984-07-27",
+      "fantasy_birth_date": "1984-07-07"
+    },
+    {
+      "gsis_id": "00-0034422",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-07-26",
+      "fantasy_birth_date": "1996-12-28"
+    },
+    {
+      "gsis_id": "00-0038555",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2002-08-30",
+      "fantasy_birth_date": "2001-08-30"
+    },
+    {
+      "gsis_id": "00-0033066",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-06-03",
+      "fantasy_birth_date": "1995-03-06"
+    },
+    {
+      "gsis_id": "00-0036872",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1998-12-30",
+      "fantasy_birth_date": "1997-02-28"
+    },
+    {
+      "gsis_id": "00-0034208",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-07-30",
+      "fantasy_birth_date": "1995-06-30"
+    },
+    {
+      "gsis_id": "00-0028588",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-12-12",
+      "fantasy_birth_date": "1988-12-02"
+    },
+    {
+      "gsis_id": "00-0031303",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-12-26",
+      "fantasy_birth_date": "1991-04-02"
+    },
+    {
+      "gsis_id": "00-0040200",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2003-01-02",
+      "fantasy_birth_date": "2002-01-02"
+    },
+    {
+      "gsis_id": "00-0031407",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-04-28",
+      "fantasy_birth_date": "1991-12-16"
+    },
+    {
+      "gsis_id": "00-0040156",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2003-01-13",
+      "fantasy_birth_date": "2003-01-29"
+    },
+    {
+      "gsis_id": "00-0033368",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-06-26",
+      "fantasy_birth_date": "1991-05-01"
+    },
+    {
+      "gsis_id": "00-0036154",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1996-09-20",
+      "fantasy_birth_date": "1997-11-20"
+    },
+    {
+      "gsis_id": "00-0027789",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-08-31",
+      "fantasy_birth_date": "1989-08-14"
+    },
+    {
+      "gsis_id": "00-0031403",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-05-28",
+      "fantasy_birth_date": "1992-05-18"
+    },
+    {
+      "gsis_id": "00-0036346",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1997-10-28",
+      "fantasy_birth_date": "1998-10-28"
+    },
+    {
+      "gsis_id": "00-0031338",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-03-02",
+      "fantasy_birth_date": "1991-03-02"
+    },
+    {
+      "gsis_id": "00-0040231",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-06-06",
+      "fantasy_birth_date": "2001-06-05"
+    },
+    {
+      "gsis_id": "00-0038617",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-06-19",
+      "fantasy_birth_date": "2000-06-12"
+    },
+    {
+      "gsis_id": "00-0029143",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-03-05",
+      "fantasy_birth_date": "1989-03-06"
+    },
+    {
+      "gsis_id": "00-0037503",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-02-29",
+      "fantasy_birth_date": "2000-03-01"
+    },
+    {
+      "gsis_id": "00-0038100",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-05-05",
+      "fantasy_birth_date": "2000-05-29"
+    },
+    {
+      "gsis_id": "00-0024008",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1983-11-25",
+      "fantasy_birth_date": "1981-11-25"
+    },
+    {
+      "gsis_id": "00-0026358",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-06-19",
+      "fantasy_birth_date": "1984-09-14"
+    },
+    {
+      "gsis_id": "00-0030457",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-02-18",
+      "fantasy_birth_date": "1989-02-18"
+    },
+    {
+      "gsis_id": "00-0027744",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-01-18",
+      "fantasy_birth_date": "1987-01-16"
+    },
+    {
+      "gsis_id": "00-0038801",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-03-28",
+      "fantasy_birth_date": "2000-06-02"
+    },
+    {
+      "gsis_id": "00-0033338",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-09-05",
+      "fantasy_birth_date": "1993-09-05"
+    },
+    {
+      "gsis_id": "00-0035916",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1998-09-15",
+      "fantasy_birth_date": "1999-04-03"
+    },
+    {
+      "gsis_id": "00-0026515",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-05-24",
+      "fantasy_birth_date": "1972-08-23"
+    },
+    {
+      "gsis_id": "00-0032994",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-12-09",
+      "fantasy_birth_date": "1992-12-06"
+    },
+    {
+      "gsis_id": "00-0028051",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-01-07",
+      "fantasy_birth_date": "1988-09-07"
+    },
+    {
+      "gsis_id": "00-0038493",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-02-09",
+      "fantasy_birth_date": "1998-02-09"
+    },
+    {
+      "gsis_id": "00-0033464",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-12-20",
+      "fantasy_birth_date": "1993-12-29"
+    },
+    {
+      "gsis_id": "00-0034415",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1996-05-05",
+      "fantasy_birth_date": "1995-05-05"
+    },
+    {
+      "gsis_id": "00-0027659",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-09-21",
+      "fantasy_birth_date": "1988-09-21"
+    },
+    {
+      "gsis_id": "00-0032115",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-01-02",
+      "fantasy_birth_date": "1992-01-03"
+    },
+    {
+      "gsis_id": "00-0025544",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1985-07-07",
+      "fantasy_birth_date": "1985-07-08"
+    },
+    {
+      "gsis_id": "00-0039480",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-03-18",
+      "fantasy_birth_date": "NA"
+    },
+    {
+      "gsis_id": "00-0024588",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1983-11-01",
+      "fantasy_birth_date": "1983-11-13"
+    },
+    {
+      "gsis_id": "00-0027835",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-04-01",
+      "fantasy_birth_date": "1988-07-01"
+    },
+    {
+      "gsis_id": "00-0030421",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-10-20",
+      "fantasy_birth_date": "1990-05-02"
+    },
+    {
+      "gsis_id": "00-0041547",
+      "reason": "corroborated_rookie_date_discrepancy",
+      "provider_id": "13298",
+      "sleeper_birth_date": "2004-09-23",
+      "nflverse_birth_date": "2004-09-24"
+    },
+    {
+      "gsis_id": "00-0035533",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-10-23",
+      "fantasy_birth_date": "1995-10-03"
+    },
+    {
+      "gsis_id": "00-0023537",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1982-12-17",
+      "fantasy_birth_date": "1981-10-28"
+    },
+    {
+      "gsis_id": "00-0040301",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-07-25",
+      "fantasy_birth_date": "2001-07-26"
+    },
+    {
+      "gsis_id": "00-0020422",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1977-02-27",
+      "fantasy_birth_date": "1977-12-27"
+    },
+    {
+      "gsis_id": "00-0026580",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-10-01",
+      "fantasy_birth_date": "1982-03-11"
+    },
+    {
+      "gsis_id": "00-0036444",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1996-12-29",
+      "fantasy_birth_date": "1996-12-30"
+    },
+    {
+      "gsis_id": "00-0025764",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1984-09-03",
+      "fantasy_birth_date": "1984-01-01"
+    },
+    {
+      "gsis_id": "00-0036402",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1997-07-20",
+      "fantasy_birth_date": "1997-07-21"
+    },
+    {
+      "gsis_id": "00-0030722",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-08-31",
+      "fantasy_birth_date": "1991-08-03"
+    },
+    {
+      "gsis_id": "00-0030128",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-11-14",
+      "fantasy_birth_date": "1989-11-14"
+    },
+    {
+      "gsis_id": "00-0031283",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-10-30",
+      "fantasy_birth_date": "1991-10-31"
+    },
+    {
+      "gsis_id": "00-0032745",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-07-02",
+      "fantasy_birth_date": "1993-05-02"
+    },
+    {
+      "gsis_id": "00-0040887",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2002-09-25",
+      "fantasy_birth_date": "2003-09-15"
+    },
+    {
+      "gsis_id": "00-0027661",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-04-24",
+      "fantasy_birth_date": "1988-08-24"
+    },
+    {
+      "gsis_id": "00-0036349",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-03-03",
+      "fantasy_birth_date": "1999-03-31"
+    },
+    {
+      "gsis_id": "00-0027698",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-11-10",
+      "fantasy_birth_date": "1988-11-11"
+    },
+    {
+      "gsis_id": "00-0024796",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1985-06-17",
+      "fantasy_birth_date": "1985-06-07"
+    },
+    {
+      "gsis_id": "00-0040910",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2004-07-22",
+      "fantasy_birth_date": "2001-03-25"
+    },
+    {
+      "gsis_id": "00-0027941",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-03-13",
+      "fantasy_birth_date": "1989-11-18"
+    },
+    {
+      "gsis_id": "00-0037260",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-09-19",
+      "fantasy_birth_date": "1997-09-19"
+    },
+    {
+      "gsis_id": "00-0027863",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-10-11",
+      "fantasy_birth_date": "1980-03-27"
+    },
+    {
+      "gsis_id": "00-0036196",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-03-01",
+      "fantasy_birth_date": "1999-04-01"
+    },
+    {
+      "gsis_id": "00-0033539",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-11-16",
+      "fantasy_birth_date": "1995-11-16"
+    },
+    {
+      "gsis_id": "00-0039875",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-11-20",
+      "fantasy_birth_date": "1999-11-11"
+    },
+    {
+      "gsis_id": "00-0036481",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1997-12-24",
+      "fantasy_birth_date": "1998-12-24"
+    },
+    {
+      "gsis_id": "00-0027001",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-05-27",
+      "fantasy_birth_date": "1988-05-05"
+    },
+    {
+      "gsis_id": "00-0031947",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-09-03",
+      "fantasy_birth_date": "1992-09-23"
+    },
+    {
+      "gsis_id": "00-0033596",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-09-03",
+      "fantasy_birth_date": "1995-09-03"
+    },
+    {
+      "gsis_id": "00-0031380",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-10-10",
+      "fantasy_birth_date": "1991-08-10"
+    },
+    {
+      "gsis_id": "00-0032421",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-05-11",
+      "fantasy_birth_date": "1994-05-11"
+    },
+    {
+      "gsis_id": "00-0040328",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2002-10-13",
+      "fantasy_birth_date": "1996-05-18"
+    },
+    {
+      "gsis_id": "00-0033517",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-11-19",
+      "fantasy_birth_date": "1993-10-19"
+    },
+    {
+      "gsis_id": "00-0025435",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1985-09-21",
+      "fantasy_birth_date": "1985-11-21"
+    },
+    {
+      "gsis_id": "00-0041091",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2004-05-01",
+      "fantasy_birth_date": "2004-05-06"
+    },
+    {
+      "gsis_id": "00-0031425",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-04-28",
+      "fantasy_birth_date": "1992-02-24"
+    },
+    {
+      "gsis_id": "00-0032001",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-04-10",
+      "fantasy_birth_date": "1992-04-11"
+    },
+    {
+      "gsis_id": "00-0029055",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-12-21",
+      "fantasy_birth_date": "1988-12-28"
+    },
+    {
+      "gsis_id": "00-0035316",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-06-10",
+      "fantasy_birth_date": "1995-07-10"
+    },
+    {
+      "gsis_id": "00-0040234",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2003-03-15",
+      "fantasy_birth_date": "2003-05-13"
+    },
+    {
+      "gsis_id": "00-0040725",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2003-05-25",
+      "fantasy_birth_date": "2003-09-25"
+    },
+    {
+      "gsis_id": "00-0041508",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2005-09-07",
+      "fantasy_birth_date": "2004-09-07"
+    },
+    {
+      "gsis_id": "00-0031043",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-09-22",
+      "fantasy_birth_date": "1991-09-02"
+    },
+    {
+      "gsis_id": "00-0030574",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-05-28",
+      "fantasy_birth_date": "1992-05-28"
+    },
+    {
+      "gsis_id": "00-0030711",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-01-28",
+      "fantasy_birth_date": "1992-01-29"
+    },
+    {
+      "gsis_id": "00-0029240",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-09-28",
+      "fantasy_birth_date": "1989-09-29"
+    },
+    {
+      "gsis_id": "00-0022697",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1982-01-24",
+      "fantasy_birth_date": "1982-01-23"
+    },
+    {
+      "gsis_id": "00-0029972",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-05-07",
+      "fantasy_birth_date": "1990-03-07"
+    },
+    {
+      "gsis_id": "00-0029241",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-02-08",
+      "fantasy_birth_date": "1989-02-09"
+    },
+    {
+      "gsis_id": "00-0028295",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-07-20",
+      "fantasy_birth_date": "1988-07-28"
+    },
+    {
+      "gsis_id": "00-0019281",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1977-03-12",
+      "fantasy_birth_date": "1977-05-12"
+    },
+    {
+      "gsis_id": "00-0036863",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1998-06-12",
+      "fantasy_birth_date": "1998-07-15"
+    },
+    {
+      "gsis_id": "00-0037097",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-01-01",
+      "fantasy_birth_date": "1999-03-05"
+    },
+    {
+      "gsis_id": "00-0030502",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-08-31",
+      "fantasy_birth_date": "1990-01-01"
+    },
+    {
+      "gsis_id": "00-0027585",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-04-23",
+      "fantasy_birth_date": "1987-12-30"
+    },
+    {
+      "gsis_id": "00-0038648",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-01-11",
+      "fantasy_birth_date": "2001-01-11"
+    },
+    {
+      "gsis_id": "00-0040685",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2003-09-03",
+      "fantasy_birth_date": "2003-09-02"
+    },
+    {
+      "gsis_id": "00-0029878",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-11-07",
+      "fantasy_birth_date": "1990-11-07"
+    },
+    {
+      "gsis_id": "00-0028034",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-06-23",
+      "fantasy_birth_date": "1988-06-28"
+    },
+    {
+      "gsis_id": "00-0040329",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2003-07-03",
+      "fantasy_birth_date": "2002-07-23"
+    },
+    {
+      "gsis_id": "00-0027353",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-01-14",
+      "fantasy_birth_date": "2010-11-23"
+    },
+    {
+      "gsis_id": "00-0030999",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-04-10",
+      "fantasy_birth_date": "1992-07-19"
+    },
+    {
+      "gsis_id": "00-0031035",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-09-22",
+      "fantasy_birth_date": "1992-09-02"
+    },
+    {
+      "gsis_id": "00-0032634",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-02-04",
+      "fantasy_birth_date": "1994-02-24"
+    },
+    {
+      "gsis_id": "00-0026133",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-04-04",
+      "fantasy_birth_date": "1986-04-08"
+    },
+    {
+      "gsis_id": "00-0039945",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1998-03-07",
+      "fantasy_birth_date": "1998-07-03"
+    },
+    {
+      "gsis_id": "00-0027347",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1985-10-01",
+      "fantasy_birth_date": "1985-10-20"
+    },
+    {
+      "gsis_id": "00-0031636",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-07-27",
+      "fantasy_birth_date": "1982-09-17"
+    },
+    {
+      "gsis_id": "00-0028017",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-01-30",
+      "fantasy_birth_date": "1988-05-07"
+    },
+    {
+      "gsis_id": "00-0031799",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-10-09",
+      "fantasy_birth_date": "1992-06-04"
+    },
+    {
+      "gsis_id": "00-0032946",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-06-30",
+      "fantasy_birth_date": "1993-06-30"
+    },
+    {
+      "gsis_id": "00-0028845",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-04-27",
+      "fantasy_birth_date": "1982-09-09"
+    },
+    {
+      "gsis_id": "00-0026836",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-08-10",
+      "fantasy_birth_date": "2002-05-02"
+    },
+    {
+      "gsis_id": "00-0034730",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-06-09",
+      "fantasy_birth_date": "1996-06-09"
+    },
+    {
+      "gsis_id": "00-0028627",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-08-01",
+      "fantasy_birth_date": "1989-03-01"
+    },
+    {
+      "gsis_id": "00-0026940",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-08-26",
+      "fantasy_birth_date": "1986-08-06"
+    },
+    {
+      "gsis_id": "00-0039677",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-07-29",
+      "fantasy_birth_date": "1998-10-15"
+    },
+    {
+      "gsis_id": "00-0040604",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-05-02",
+      "fantasy_birth_date": "1999-10-20"
+    },
+    {
+      "gsis_id": "00-0030447",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-08-30",
+      "fantasy_birth_date": "1990-08-03"
+    },
+    {
+      "gsis_id": "00-0036302",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1997-08-27",
+      "fantasy_birth_date": "1997-08-25"
+    },
+    {
+      "gsis_id": "00-0038465",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-03-31",
+      "fantasy_birth_date": "2000-03-03"
+    },
+    {
+      "gsis_id": "00-0041490",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2003-07-28",
+      "fantasy_birth_date": "2003-06-28"
+    },
+    {
+      "gsis_id": "00-0041329",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2003-03-10",
+      "fantasy_birth_date": "2003-01-02"
+    },
+    {
+      "gsis_id": "00-0035340",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-06-13",
+      "fantasy_birth_date": "1995-06-03"
+    },
+    {
+      "gsis_id": "00-0037319",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1998-09-02",
+      "fantasy_birth_date": "1997-09-17"
+    },
+    {
+      "gsis_id": "00-0039395",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-04-01",
+      "fantasy_birth_date": "2001-04-04"
+    },
+    {
+      "gsis_id": "00-0025463",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1985-02-20",
+      "fantasy_birth_date": "1985-01-25"
+    },
+    {
+      "gsis_id": "00-0031625",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-10-03",
+      "fantasy_birth_date": "1991-10-31"
+    },
+    {
+      "gsis_id": "00-0023642",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1982-01-26",
+      "fantasy_birth_date": "1984-04-18"
+    },
+    {
+      "gsis_id": "00-0028237",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-10-24",
+      "fantasy_birth_date": "1988-10-24"
+    },
+    {
+      "gsis_id": "00-0040048",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-09-12",
+      "fantasy_birth_date": "2001-08-12"
+    },
+    {
+      "gsis_id": "00-0034107",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-09-27",
+      "fantasy_birth_date": "1997-09-27"
+    },
+    {
+      "gsis_id": "00-0025641",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1985-06-18",
+      "fantasy_birth_date": "1985-02-18"
+    },
+    {
+      "gsis_id": "00-0026539",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1985-10-26",
+      "fantasy_birth_date": "1985-10-28"
+    },
+    {
+      "gsis_id": "00-0028617",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-06-01",
+      "fantasy_birth_date": "1989-06-11"
+    },
+    {
+      "gsis_id": "00-0033533",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-06-25",
+      "fantasy_birth_date": "1993-06-25"
+    },
+    {
+      "gsis_id": "00-0027308",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-10-25",
+      "fantasy_birth_date": "1986-10-26"
+    },
+    {
+      "gsis_id": "00-0030251",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-12-17",
+      "fantasy_birth_date": "1990-01-18"
+    },
+    {
+      "gsis_id": "00-0026301",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1985-10-12",
+      "fantasy_birth_date": "1985-10-10"
+    },
+    {
+      "gsis_id": "00-0026625",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1985-10-13",
+      "fantasy_birth_date": "1985-10-31"
+    },
+    {
+      "gsis_id": "00-0041127",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2003-01-02",
+      "fantasy_birth_date": "2005-01-01"
+    },
+    {
+      "gsis_id": "00-0031719",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-05-25",
+      "fantasy_birth_date": "1994-05-25"
+    },
+    {
+      "gsis_id": "00-0030821",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-11-12",
+      "fantasy_birth_date": "1991-11-21"
+    },
+    {
+      "gsis_id": "00-0041055",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2004-04-22",
+      "fantasy_birth_date": "2003-05-10"
+    },
+    {
+      "gsis_id": "00-0040411",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-01-16",
+      "fantasy_birth_date": "NA"
+    },
+    {
+      "gsis_id": "00-0038656",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-09-08",
+      "fantasy_birth_date": "1998-09-08"
+    },
+    {
+      "gsis_id": "00-0038561",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-11-08",
+      "fantasy_birth_date": "2000-11-07"
+    },
+    {
+      "gsis_id": "00-0029215",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-03-31",
+      "fantasy_birth_date": "1990-06-20"
+    },
+    {
+      "gsis_id": "00-0038791",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-02-01",
+      "fantasy_birth_date": "1999-02-19"
+    },
+    {
+      "gsis_id": "00-0029193",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-11-01",
+      "fantasy_birth_date": "1987-01-11"
+    },
+    {
+      "gsis_id": "00-0018605",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1977-03-21",
+      "fantasy_birth_date": "1977-03-29"
+    },
+    {
+      "gsis_id": "00-0034440",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1996-04-22",
+      "fantasy_birth_date": "1995-04-22"
+    },
+    {
+      "gsis_id": "00-0033107",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-10-27",
+      "fantasy_birth_date": "1993-01-01"
+    },
+    {
+      "gsis_id": "00-0031001",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-06-24",
+      "fantasy_birth_date": "1991-06-09"
+    },
+    {
+      "gsis_id": "00-0027159",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-11-20",
+      "fantasy_birth_date": "1987-11-30"
+    },
+    {
+      "gsis_id": "00-0030771",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-12-26",
+      "fantasy_birth_date": "1991-12-26"
+    },
+    {
+      "gsis_id": "00-0029654",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-09-08",
+      "fantasy_birth_date": "1990-11-08"
+    },
+    {
+      "gsis_id": "00-0039757",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-01-03",
+      "fantasy_birth_date": "2001-03-01"
+    },
+    {
+      "gsis_id": "00-0033316",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-01-20",
+      "fantasy_birth_date": "1994-01-01"
+    },
+    {
+      "gsis_id": "00-0030126",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-07-17",
+      "fantasy_birth_date": "1978-12-18"
+    },
+    {
+      "gsis_id": "00-0038535",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1998-10-29",
+      "fantasy_birth_date": "1998-10-21"
+    },
+    {
+      "gsis_id": "00-0039061",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-09-02",
+      "fantasy_birth_date": "1999-09-03"
+    },
+    {
+      "gsis_id": "00-0035290",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-11-06",
+      "fantasy_birth_date": "1995-11-13"
+    },
+    {
+      "gsis_id": "00-0037663",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-01-08",
+      "fantasy_birth_date": "1999-01-07"
+    },
+    {
+      "gsis_id": "00-0037460",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-05-14",
+      "fantasy_birth_date": "1999-05-04"
+    },
+    {
+      "gsis_id": "00-0030322",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-09-10",
+      "fantasy_birth_date": "1990-09-10"
+    },
+    {
+      "gsis_id": "00-0036611",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1997-12-02",
+      "fantasy_birth_date": "1998-10-21"
+    },
+    {
+      "gsis_id": "00-0031243",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-07-10",
+      "fantasy_birth_date": "1992-07-17"
+    },
+    {
+      "gsis_id": "00-0028841",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-11-14",
+      "fantasy_birth_date": "1989-11-14"
+    },
+    {
+      "gsis_id": "00-0026350",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-05-02",
+      "fantasy_birth_date": "1986-12-20"
+    },
+    {
+      "gsis_id": "00-0008884",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1965-12-30",
+      "fantasy_birth_date": "1992-03-21"
+    },
+    {
+      "gsis_id": "00-0032239",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-09-26",
+      "fantasy_birth_date": "1992-08-26"
+    },
+    {
+      "gsis_id": "00-0041191",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-04-05",
+      "fantasy_birth_date": "2002-04-05"
+    },
+    {
+      "gsis_id": "00-0031939",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-03-07",
+      "fantasy_birth_date": "1992-11-17"
+    },
+    {
+      "gsis_id": "00-0022828",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1982-06-15",
+      "fantasy_birth_date": "1985-12-30"
+    },
+    {
+      "gsis_id": "00-0022828",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1982-06-15",
+      "fantasy_birth_date": "1982-06-13"
+    },
+    {
+      "gsis_id": "00-0040153",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2003-06-03",
+      "fantasy_birth_date": "2003-07-03"
+    },
+    {
+      "gsis_id": "00-0036935",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-11-11",
+      "fantasy_birth_date": "2000-12-11"
+    },
+    {
+      "gsis_id": "00-0041074",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2003-12-08",
+      "fantasy_birth_date": "2026-09-08"
+    },
+    {
+      "gsis_id": "00-0036632",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1998-12-27",
+      "fantasy_birth_date": "1999-12-27"
+    },
+    {
+      "gsis_id": "00-0039877",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-06-09",
+      "fantasy_birth_date": "1999-05-29"
+    },
+    {
+      "gsis_id": "00-0027779",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-11-18",
+      "fantasy_birth_date": "1986-11-11"
+    },
+    {
+      "gsis_id": "00-0009028",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1969-10-27",
+      "fantasy_birth_date": "NA"
+    },
+    {
+      "gsis_id": "00-0040944",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2004-10-29",
+      "fantasy_birth_date": "1989-08-03"
+    },
+    {
+      "gsis_id": "00-0028091",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-11-08",
+      "fantasy_birth_date": "1988-11-30"
+    },
+    {
+      "gsis_id": "00-0034317",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-12-26",
+      "fantasy_birth_date": "1993-12-26"
+    },
+    {
+      "gsis_id": "00-0040738",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-07-21",
+      "fantasy_birth_date": "2000-01-04"
+    },
+    {
+      "gsis_id": "00-0039815",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-12-20",
+      "fantasy_birth_date": "2000-12-20"
+    },
+    {
+      "gsis_id": "00-0027352",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-04-30",
+      "fantasy_birth_date": "1987-11-30"
+    },
+    {
+      "gsis_id": "00-0041084",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2004-01-28",
+      "fantasy_birth_date": "2003-01-28"
+    },
+    {
+      "gsis_id": "00-0040003",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2002-03-08",
+      "fantasy_birth_date": "2002-08-05"
+    },
+    {
+      "gsis_id": "00-0038406",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-06-09",
+      "fantasy_birth_date": "1999-06-06"
+    },
+    {
+      "gsis_id": "00-0027144",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-06-03",
+      "fantasy_birth_date": "1986-06-03"
+    },
+    {
+      "gsis_id": "00-0041446",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2004-06-13",
+      "fantasy_birth_date": "2003-06-13"
+    },
+    {
+      "gsis_id": "00-0033582",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-05-29",
+      "fantasy_birth_date": "1994-06-02"
+    },
+    {
+      "gsis_id": "00-0030836",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-03-28",
+      "fantasy_birth_date": "1981-10-20"
+    },
+    {
+      "gsis_id": "00-0039400",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2002-07-13",
+      "fantasy_birth_date": "2001-07-13"
+    },
+    {
+      "gsis_id": "00-0033970",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-08-05",
+      "fantasy_birth_date": "1994-08-15"
+    },
+    {
+      "gsis_id": "00-0030993",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-02-08",
+      "fantasy_birth_date": "1993-03-08"
+    },
+    {
+      "gsis_id": "00-0041272",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-09-22",
+      "fantasy_birth_date": "2001-09-08"
+    },
+    {
+      "gsis_id": "00-0027074",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-12-27",
+      "fantasy_birth_date": "1987-03-22"
+    },
+    {
+      "gsis_id": "00-0032653",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-02-25",
+      "fantasy_birth_date": "1994-05-24"
+    },
+    {
+      "gsis_id": "00-0027904",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-07-14",
+      "fantasy_birth_date": "1988-07-14"
+    },
+    {
+      "gsis_id": "00-0039915",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-11-11",
+      "fantasy_birth_date": "2001-11-01"
+    },
+    {
+      "gsis_id": "00-0022888",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1981-08-08",
+      "fantasy_birth_date": "1989-01-21"
+    },
+    {
+      "gsis_id": "00-0040118",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-08-07",
+      "fantasy_birth_date": "2002-08-07"
+    },
+    {
+      "gsis_id": "00-0023354",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1983-09-26",
+      "fantasy_birth_date": "1983-09-16"
+    },
+    {
+      "gsis_id": "00-0037354",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-06-29",
+      "fantasy_birth_date": "2000-06-29"
+    },
+    {
+      "gsis_id": "00-0029424",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-07-04",
+      "fantasy_birth_date": "1989-04-07"
+    },
+    {
+      "gsis_id": "00-0032934",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-03-05",
+      "fantasy_birth_date": "1993-05-03"
+    },
+    {
+      "gsis_id": "00-0030387",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-09-16",
+      "fantasy_birth_date": "1989-12-05"
+    },
+    {
+      "gsis_id": "00-0034523",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1996-06-20",
+      "fantasy_birth_date": "1997-06-20"
+    },
+    {
+      "gsis_id": "00-0040220",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-10-16",
+      "fantasy_birth_date": "2001-03-30"
+    },
+    {
+      "gsis_id": "00-0029541",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-01-01",
+      "fantasy_birth_date": "1990-01-11"
+    },
+    {
+      "gsis_id": "00-0026172",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1985-04-19",
+      "fantasy_birth_date": "1985-08-19"
+    },
+    {
+      "gsis_id": "00-0027749",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-03-06",
+      "fantasy_birth_date": "1986-03-16"
+    },
+    {
+      "gsis_id": "00-0032609",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-04-06",
+      "fantasy_birth_date": "1993-07-06"
+    },
+    {
+      "gsis_id": "00-0035257",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1996-06-19",
+      "fantasy_birth_date": "1996-06-16"
+    },
+    {
+      "gsis_id": "00-0027055",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-07-09",
+      "fantasy_birth_date": "1987-07-07"
+    },
+    {
+      "gsis_id": "00-0027776",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-04-06",
+      "fantasy_birth_date": "1988-04-05"
+    },
+    {
+      "gsis_id": "00-0032400",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-07-20",
+      "fantasy_birth_date": "1993-07-20"
+    },
+    {
+      "gsis_id": "00-0031097",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-05-17",
+      "fantasy_birth_date": "1992-05-27"
+    },
+    {
+      "gsis_id": "00-0035327",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-12-15",
+      "fantasy_birth_date": "1993-09-28"
+    },
+    {
+      "gsis_id": "00-0029234",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-07-05",
+      "fantasy_birth_date": "1989-07-12"
+    },
+    {
+      "gsis_id": "00-0028532",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-03-23",
+      "fantasy_birth_date": "1988-03-28"
+    },
+    {
+      "gsis_id": "00-0028992",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-09-24",
+      "fantasy_birth_date": "1988-09-27"
+    },
+    {
+      "gsis_id": "00-0030131",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-01-31",
+      "fantasy_birth_date": "1990-01-30"
+    },
+    {
+      "gsis_id": "00-0028328",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-07-27",
+      "fantasy_birth_date": "1980-02-23"
+    },
+    {
+      "gsis_id": "00-0031300",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-12-22",
+      "fantasy_birth_date": "1990-12-20"
+    },
+    {
+      "gsis_id": "00-0040551",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-07-08",
+      "fantasy_birth_date": "2000-08-02"
+    },
+    {
+      "gsis_id": "00-0028191",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-12-01",
+      "fantasy_birth_date": "1988-12-01"
+    },
+    {
+      "gsis_id": "00-0037181",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-06-09",
+      "fantasy_birth_date": "1999-07-09"
+    },
+    {
+      "gsis_id": "00-0036458",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-11-26",
+      "fantasy_birth_date": "1994-11-25"
+    },
+    {
+      "gsis_id": "00-0040906",
+      "reason": "corroborated_rookie_date_discrepancy",
+      "provider_id": "13404",
+      "sleeper_birth_date": "2002-02-07",
+      "nflverse_birth_date": "2002-02-06"
+    },
+    {
+      "gsis_id": "00-0031961",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-01-19",
+      "fantasy_birth_date": "1990-01-01"
+    },
+    {
+      "gsis_id": "00-0029366",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-11-11",
+      "fantasy_birth_date": "1988-11-14"
+    },
+    {
+      "gsis_id": "00-0040752",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2003-09-29",
+      "fantasy_birth_date": "2003-09-20"
+    },
+    {
+      "gsis_id": "00-0041552",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2003-05-14",
+      "fantasy_birth_date": "2003-04-14"
+    },
+    {
+      "gsis_id": "00-0040404",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2002-09-27",
+      "fantasy_birth_date": "NA"
+    },
+    {
+      "gsis_id": "00-0036244",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-01-07",
+      "fantasy_birth_date": "1999-01-08"
+    },
+    {
+      "gsis_id": "00-0028026",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-08-17",
+      "fantasy_birth_date": "1988-07-18"
+    },
+    {
+      "gsis_id": "00-0037182",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-11-12",
+      "fantasy_birth_date": "1999-12-12"
+    },
+    {
+      "gsis_id": "00-0028016",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-02-08",
+      "fantasy_birth_date": "1988-05-07"
+    },
+    {
+      "gsis_id": "00-0012922",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1966-10-11",
+      "fantasy_birth_date": "1986-02-14"
+    },
+    {
+      "gsis_id": "00-0036208",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1996-05-17",
+      "fantasy_birth_date": "1996-05-14"
+    },
+    {
+      "gsis_id": "00-0031084",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-08-07",
+      "fantasy_birth_date": "1991-04-07"
+    },
+    {
+      "gsis_id": "00-0026180",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-08-11",
+      "fantasy_birth_date": "1986-08-08"
+    },
+    {
+      "gsis_id": "00-0029830",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-02-05",
+      "fantasy_birth_date": "1990-02-04"
+    },
+    {
+      "gsis_id": "00-0028736",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-03-09",
+      "fantasy_birth_date": "1988-03-06"
+    },
+    {
+      "gsis_id": "00-0033776",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-06-24",
+      "fantasy_birth_date": "1994-06-24"
+    },
+    {
+      "gsis_id": "00-0036133",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1996-09-20",
+      "fantasy_birth_date": "1996-09-21"
+    },
+    {
+      "gsis_id": "00-0034442",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-10-11",
+      "fantasy_birth_date": "1996-06-17"
+    },
+    {
+      "gsis_id": "00-0030853",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-12-16",
+      "fantasy_birth_date": "NA"
+    },
+    {
+      "gsis_id": "00-0033058",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-09-23",
+      "fantasy_birth_date": "1993-09-24"
+    },
+    {
+      "gsis_id": "00-0028108",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-09-07",
+      "fantasy_birth_date": "1988-09-07"
+    },
+    {
+      "gsis_id": "00-0040008",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2002-04-12",
+      "fantasy_birth_date": "2001-04-08"
+    },
+    {
+      "gsis_id": "00-0025951",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1984-12-29",
+      "fantasy_birth_date": "1986-12-29"
+    },
+    {
+      "gsis_id": "00-0030573",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-11-29",
+      "fantasy_birth_date": "1990-11-30"
+    },
+    {
+      "gsis_id": "00-0029675",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-07-10",
+      "fantasy_birth_date": "1991-07-10"
+    },
+    {
+      "gsis_id": "00-0032111",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-03-12",
+      "fantasy_birth_date": "1993-05-12"
+    },
+    {
+      "gsis_id": "00-0032041",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-12-28",
+      "fantasy_birth_date": "1991-12-30"
+    },
+    {
+      "gsis_id": "00-0033920",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-05-09",
+      "fantasy_birth_date": "1994-01-01"
+    },
+    {
+      "gsis_id": "00-0019706",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1977-03-26",
+      "fantasy_birth_date": "1977-03-25"
+    },
+    {
+      "gsis_id": "00-0036899",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1997-11-10",
+      "fantasy_birth_date": "1998-11-10"
+    },
+    {
+      "gsis_id": "00-0026522",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-04-23",
+      "fantasy_birth_date": "1987-04-27"
+    },
+    {
+      "gsis_id": "00-0025489",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1983-04-27",
+      "fantasy_birth_date": "1983-04-28"
+    },
+    {
+      "gsis_id": "00-0038611",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-09-26",
+      "fantasy_birth_date": "2000-09-26"
+    },
+    {
+      "gsis_id": "00-0037542",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1997-08-24",
+      "fantasy_birth_date": "1997-08-27"
+    },
+    {
+      "gsis_id": "00-0033535",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-03-15",
+      "fantasy_birth_date": "1993-03-05"
+    },
+    {
+      "gsis_id": "00-0028249",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-03-16",
+      "fantasy_birth_date": "1988-03-06"
+    },
+    {
+      "gsis_id": "00-0021273",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1979-05-15",
+      "fantasy_birth_date": "1978-05-15"
+    },
+    {
+      "gsis_id": "00-0034403",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1996-06-07",
+      "fantasy_birth_date": "1996-06-02"
+    },
+    {
+      "gsis_id": "00-0031398",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-01-17",
+      "fantasy_birth_date": "1990-01-07"
+    },
+    {
+      "gsis_id": "00-0032973",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-10-11",
+      "fantasy_birth_date": "1995-04-08"
+    },
+    {
+      "gsis_id": "00-0039003",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-12-31",
+      "fantasy_birth_date": "2001-12-31"
+    },
+    {
+      "gsis_id": "00-0040643",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-11-23",
+      "fantasy_birth_date": "2002-11-23"
+    },
+    {
+      "gsis_id": "00-0038896",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-03-08",
+      "fantasy_birth_date": "2001-03-08"
+    },
+    {
+      "gsis_id": "00-0034121",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1996-05-10",
+      "fantasy_birth_date": "1996-03-10"
+    },
+    {
+      "gsis_id": "00-0037645",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-11-02",
+      "fantasy_birth_date": "1999-10-02"
+    },
+    {
+      "gsis_id": "00-0033706",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-10-12",
+      "fantasy_birth_date": "1994-12-12"
+    },
+    {
+      "gsis_id": "00-0029957",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-11-09",
+      "fantasy_birth_date": "1990-09-20"
+    },
+    {
+      "gsis_id": "00-0025523",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1984-09-22",
+      "fantasy_birth_date": "1984-09-09"
+    },
+    {
+      "gsis_id": "00-0033896",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-10-24",
+      "fantasy_birth_date": "1994-01-01"
+    },
+    {
+      "gsis_id": "00-0029191",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-06-28",
+      "fantasy_birth_date": "1988-06-28"
+    },
+    {
+      "gsis_id": "00-0041381",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2002-08-14",
+      "fantasy_birth_date": "2004-08-14"
+    },
+    {
+      "gsis_id": "00-0030147",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-09-17",
+      "fantasy_birth_date": "1990-11-17"
+    },
+    {
+      "gsis_id": "00-0028256",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-04-26",
+      "fantasy_birth_date": "1990-04-29"
+    },
+    {
+      "gsis_id": "00-0035359",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-05-29",
+      "fantasy_birth_date": "1996-05-29"
+    },
+    {
+      "gsis_id": "00-0028488",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-08-17",
+      "fantasy_birth_date": "1990-10-15"
+    },
+    {
+      "gsis_id": "00-0027787",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-03-18",
+      "fantasy_birth_date": "1986-03-16"
+    },
+    {
+      "gsis_id": "00-0026217",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1985-11-29",
+      "fantasy_birth_date": "1985-01-29"
+    },
+    {
+      "gsis_id": "00-0025466",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1984-11-21",
+      "fantasy_birth_date": "1984-11-11"
+    },
+    {
+      "gsis_id": "00-0040406",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-12-24",
+      "fantasy_birth_date": "NA"
+    },
+    {
+      "gsis_id": "00-0035004",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1996-08-06",
+      "fantasy_birth_date": "1996-08-01"
+    },
+    {
+      "gsis_id": "00-0032782",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-01-20",
+      "fantasy_birth_date": "1994-01-26"
+    },
+    {
+      "gsis_id": "00-0015080",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1976-04-19",
+      "fantasy_birth_date": "1976-04-09"
+    },
+    {
+      "gsis_id": "00-0027945",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-09-25",
+      "fantasy_birth_date": "1989-11-30"
+    },
+    {
+      "gsis_id": "00-0024707",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1984-06-12",
+      "fantasy_birth_date": "1981-10-21"
+    },
+    {
+      "gsis_id": "00-0041382",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2004-07-01",
+      "fantasy_birth_date": "2004-01-01"
+    },
+    {
+      "gsis_id": "00-0030123",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-03-20",
+      "fantasy_birth_date": "1990-03-23"
+    },
+    {
+      "gsis_id": "00-0038696",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-11-06",
+      "fantasy_birth_date": "1999-11-01"
+    },
+    {
+      "gsis_id": "00-0031320",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-12-21",
+      "fantasy_birth_date": "1988-04-15"
+    },
+    {
+      "gsis_id": "00-0025713",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1984-02-07",
+      "fantasy_birth_date": "1985-01-11"
+    },
+    {
+      "gsis_id": "00-0026215",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-09-03",
+      "fantasy_birth_date": "1986-09-13"
+    },
+    {
+      "gsis_id": "00-0032820",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-05-03",
+      "fantasy_birth_date": "1993-03-03"
+    },
+    {
+      "gsis_id": "00-0028605",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-08-19",
+      "fantasy_birth_date": "1987-01-01"
+    },
+    {
+      "gsis_id": "00-0025464",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1983-11-24",
+      "fantasy_birth_date": "1984-11-24"
+    },
+    {
+      "gsis_id": "00-0028656",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-08-04",
+      "fantasy_birth_date": "1988-08-08"
+    },
+    {
+      "gsis_id": "00-0027861",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-08-05",
+      "fantasy_birth_date": "1987-08-15"
+    },
+    {
+      "gsis_id": "00-0039325",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2002-10-01",
+      "fantasy_birth_date": "2002-10-21"
+    },
+    {
+      "gsis_id": "00-0027820",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-08-28",
+      "fantasy_birth_date": "1975-02-21"
+    },
+    {
+      "gsis_id": "00-0036925",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1998-07-19",
+      "fantasy_birth_date": "1998-06-19"
+    },
+    {
+      "gsis_id": "00-0033731",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-12-21",
+      "fantasy_birth_date": "1993-11-01"
+    },
+    {
+      "gsis_id": "00-0033545",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-12-31",
+      "fantasy_birth_date": "1996-01-01"
+    },
+    {
+      "gsis_id": "00-0032057",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-02-12",
+      "fantasy_birth_date": "1992-02-18"
+    },
+    {
+      "gsis_id": "00-0035016",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1997-03-05",
+      "fantasy_birth_date": "1997-05-05"
+    },
+    {
+      "gsis_id": "00-0041217",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2002-03-15",
+      "fantasy_birth_date": "2002-02-06"
+    },
+    {
+      "gsis_id": "00-0036561",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-05-03",
+      "fantasy_birth_date": "1998-11-20"
+    },
+    {
+      "gsis_id": "00-0037815",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-07-01",
+      "fantasy_birth_date": "2000-01-07"
+    },
+    {
+      "gsis_id": "00-0041354",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2004-05-30",
+      "fantasy_birth_date": "NA"
+    },
+    {
+      "gsis_id": "00-0028908",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1990-03-17",
+      "fantasy_birth_date": "1989-03-17"
+    },
+    {
+      "gsis_id": "00-0035283",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1995-06-15",
+      "fantasy_birth_date": "1995-12-25"
+    },
+    {
+      "gsis_id": "00-0030855",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-04-27",
+      "fantasy_birth_date": "1990-04-27"
+    },
+    {
+      "gsis_id": "00-0033977",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1996-02-08",
+      "fantasy_birth_date": "1995-11-02"
+    },
+    {
+      "gsis_id": "00-0025574",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1984-10-09",
+      "fantasy_birth_date": "1982-10-09"
+    },
+    {
+      "gsis_id": "00-0033546",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-02-18",
+      "fantasy_birth_date": "1994-02-28"
+    },
+    {
+      "gsis_id": "00-0027655",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-06-23",
+      "fantasy_birth_date": "1987-06-23"
+    },
+    {
+      "gsis_id": "00-0016689",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1968-06-16",
+      "fantasy_birth_date": "1970-06-16"
+    },
+    {
+      "gsis_id": "00-0040719",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2002-02-14",
+      "fantasy_birth_date": "2003-02-14"
+    },
+    {
+      "gsis_id": "00-0019778",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1978-05-03",
+      "fantasy_birth_date": "1978-06-03"
+    },
+    {
+      "gsis_id": "00-0021607",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1980-03-30",
+      "fantasy_birth_date": "1980-09-07"
+    },
+    {
+      "gsis_id": "00-0027028",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1985-12-12",
+      "fantasy_birth_date": "1985-12-01"
+    },
+    {
+      "gsis_id": "00-0031334",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-06-18",
+      "fantasy_birth_date": "1991-05-13"
+    },
+    {
+      "gsis_id": "00-0036559",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1998-09-16",
+      "fantasy_birth_date": "1998-09-15"
+    },
+    {
+      "gsis_id": "00-0032256",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-10-01",
+      "fantasy_birth_date": "1991-10-21"
+    },
+    {
+      "gsis_id": "00-0039880",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-10-20",
+      "fantasy_birth_date": "2001-01-04"
+    },
+    {
+      "gsis_id": "00-0031931",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-06-01",
+      "fantasy_birth_date": "1990-10-18"
+    },
+    {
+      "gsis_id": "00-0031173",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-11-27",
+      "fantasy_birth_date": "1992-11-27"
+    },
+    {
+      "gsis_id": "00-0035303",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1997-08-27",
+      "fantasy_birth_date": "1997-08-25"
+    },
+    {
+      "gsis_id": "00-0031375",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-01-28",
+      "fantasy_birth_date": "1991-01-21"
+    },
+    {
+      "gsis_id": "00-0040408",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-08-10",
+      "fantasy_birth_date": "1998-08-25"
+    },
+    {
+      "gsis_id": "00-0029731",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-02-02",
+      "fantasy_birth_date": "1989-02-22"
+    },
+    {
+      "gsis_id": "00-0030786",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-04-14",
+      "fantasy_birth_date": "1992-04-19"
+    },
+    {
+      "gsis_id": "00-0036573",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-06-20",
+      "fantasy_birth_date": "2000-01-01"
+    },
+    {
+      "gsis_id": "00-0039684",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-11-10",
+      "fantasy_birth_date": "2000-11-10"
+    },
+    {
+      "gsis_id": "00-0041106",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2002-10-23",
+      "fantasy_birth_date": "2003-10-23"
+    },
+    {
+      "gsis_id": "00-0039595",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1999-11-15",
+      "fantasy_birth_date": "2000-11-15"
+    },
+    {
+      "gsis_id": "00-0031821",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-08-03",
+      "fantasy_birth_date": "1973-06-29"
+    },
+    {
+      "gsis_id": "00-0032915",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-12-11",
+      "fantasy_birth_date": "1990-09-02"
+    },
+    {
+      "gsis_id": "00-0028140",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-07-20",
+      "fantasy_birth_date": "1989-11-30"
+    },
+    {
+      "gsis_id": "00-0027452",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1988-07-03",
+      "fantasy_birth_date": "1996-05-17"
+    },
+    {
+      "gsis_id": "00-0027043",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-04-23",
+      "fantasy_birth_date": "1986-03-23"
+    },
+    {
+      "gsis_id": "00-0040429",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2000-06-09",
+      "fantasy_birth_date": "2001-06-09"
+    },
+    {
+      "gsis_id": "00-0032250",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-12-05",
+      "fantasy_birth_date": "1992-05-20"
+    },
+    {
+      "gsis_id": "00-0024348",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1983-06-10",
+      "fantasy_birth_date": "1984-03-19"
+    },
+    {
+      "gsis_id": "00-0027349",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1986-06-29",
+      "fantasy_birth_date": "1981-09-21"
+    },
+    {
+      "gsis_id": "00-0030286",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1991-05-09",
+      "fantasy_birth_date": "1991-06-09"
+    },
+    {
+      "gsis_id": "00-0040672",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2003-02-24",
+      "fantasy_birth_date": "2003-02-25"
+    },
+    {
+      "gsis_id": "00-0030141",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1989-11-18",
+      "fantasy_birth_date": "1989-09-26"
+    },
+    {
+      "gsis_id": "00-0027879",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1987-09-08",
+      "fantasy_birth_date": "1987-05-30"
+    },
+    {
+      "gsis_id": "00-0033544",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1996-08-16",
+      "fantasy_birth_date": "1996-01-01"
+    },
+    {
+      "gsis_id": "00-0039596",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "2001-06-06",
+      "fantasy_birth_date": "NA"
+    },
+    {
+      "gsis_id": "00-0034941",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1992-03-02",
+      "fantasy_birth_date": "1992-03-03"
+    },
+    {
+      "gsis_id": "00-0026444",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1985-06-05",
+      "fantasy_birth_date": "1987-06-05"
+    },
+    {
+      "gsis_id": "00-0033913",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1993-08-25",
+      "fantasy_birth_date": "1993-10-25"
+    },
+    {
+      "gsis_id": "00-0035833",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1997-02-08",
+      "fantasy_birth_date": "1997-02-18"
+    },
+    {
+      "gsis_id": "00-0032979",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-08-29",
+      "fantasy_birth_date": "1994-08-28"
+    },
+    {
+      "gsis_id": "00-0034266",
+      "reason": "corroborated_source_date_discrepancy",
+      "nflverse_birth_date": "1994-11-15",
+      "fantasy_birth_date": "1995-11-15"
+    }
+  ]
+}
