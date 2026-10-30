@@ -1,5 +1,5 @@
-import {TEAM_NAMES, scoreDisplay} from "./scores-data.mjs?v=20260915-weather1";
-import {validGameId} from "./game-data.mjs?v=20260915-games1";
+import {scoreDisplay} from "./scores-data.mjs?v=20260915-weather1";
+import {validGameId, gameTeamName} from "./game-data.mjs?v=20261030-historical1";
 
 export function statsSummary(value, season) {
   if (value?.schema_version !== 1 || value.season !== season || value.season_type !== "REG"
@@ -8,7 +8,7 @@ export function statsSummary(value, season) {
   const seen = new Set();
   for (const game of value.games) {
     if (!validGameId(game?.game_id) || Number(game.game_id.slice(0,4)) !== season || seen.has(game.game_id)
-        || !Object.hasOwn(TEAM_NAMES, game.home) || !Object.hasOwn(TEAM_NAMES, game.away) || game.home === game.away
+        || gameTeamName(game.home) === null || gameTeamName(game.away) === null || game.home === game.away
         || !Number.isInteger(game.week) || game.week < 1 || game.week > 18
         || typeof game.stats_available !== "boolean") throw new Error("Invalid stats game");
     seen.add(game.game_id);
@@ -44,10 +44,10 @@ export function periodOverview(summary, week, now = Date.now()) {
     checked_at: summary.checked_at};
 }
 
-export function statsFreshness(checkedAt, now = Date.now()) {
+export function statsFreshness(checkedAt, now = Date.now(), {historical = false} = {}) {
   const time = Date.parse(checkedAt);
   const valid = Number.isFinite(time) && time <= now + 300000;
-  return {valid, stale: !valid || now - time > 7 * 3600000};
+  return {valid, stale: !valid || (!historical && now - time > 7 * 3600000)};
 }
 
 export function metricUnit(metric) {
@@ -81,6 +81,6 @@ export function selectedGames(summary, week, now = Date.now()) {
 export function coverageText(summary, week, now = Date.now()) {
   const available = summary.periods[week]?.game_count || 0;
   const pending = selectedGames(summary,week,now).filter(game=>!game.stats_available).length;
-  return `${summary.season} regular season · ${week === "all" ? "Season totals" : "Week " + week} · ${available} game box score${available === 1 ? "" : "s"}`
+  return `${summary.season} ${summary.historical === true ? "historical regular-season archive" : "regular season"} · ${week === "all" ? "Season totals" : "Week " + week} · ${available} game box score${available === 1 ? "" : "s"}`
     + (pending ? ` · ${pending} reported game${pending === 1 ? "" : "s"} awaiting stats` : "");
 }

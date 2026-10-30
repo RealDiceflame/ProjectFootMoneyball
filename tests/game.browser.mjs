@@ -6,6 +6,7 @@ import {createServer} from "node:http";
 import {readFile} from "node:fs/promises";
 import {fileURLToPath} from "node:url";
 import {resolve, extname, sep} from "node:path";
+import {historicalStatsFixture} from "./helpers/historical-stats.mjs";
 
 const engines = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || "playwright");
 const root = fileURLToPath(new URL("../docs/", import.meta.url));
@@ -31,13 +32,14 @@ before(async () => {
 });
 after(async () => { await browser?.close(); if (server) await new Promise(done => server.close(done)); });
 
-async function open({invalid = false, missingScores = false, missingStats = false} = {}) {
+async function open({invalid = false, missingScores = false, missingStats = false, historical = false} = {}) {
   const context = await browser.newContext({viewport: {width: 1440, height: 1000}});
-  const state = {bundle: structuredClone(saved), board: structuredClone(scores), missingScores, missingStats, requests: 0};
+  const state = {bundle: historical?historicalStatsFixture().bundle:structuredClone(saved), board: structuredClone(scores), missingScores, missingStats, requests: 0};
+  const selectedId=state.bundle.game.game_id;
   state.board.checked_at = new Date(now).toISOString();
-  if (!state.board.games.some(game => game.game_id === gameId)) state.board.games.push(structuredClone(saved.game));
+  if (!state.board.games.some(game => game.game_id === selectedId)) state.board.games.push(structuredClone(state.bundle.game));
   const name = "QA <img src=x onerror=alert(1)>";
-  const row = state.bundle.players.find(row => row[state.bundle.player_columns.indexOf("team")] === saved.game.away
+  const row = state.bundle.players.find(row => row[state.bundle.player_columns.indexOf("team")] === state.bundle.game.away
     && row[state.bundle.player_columns.indexOf("player_id")]);
   for (const [key, value] of Object.entries({player_display_name: name, passing_yards: -2, passing_tds: 0, passing_interceptions: null, def_sacks: 0.5})) {
     const index = state.bundle.player_columns.indexOf(key);
@@ -51,7 +53,7 @@ async function open({invalid = false, missingScores = false, missingStats = fals
       state.requests++;
       return state.missingScores ? route.fulfill({status: 404, body: "Unavailable"}) : route.fulfill({json: state.board});
     }
-    if (url.pathname === `/data/game_stats/2026/${gameId}.json`) {
+    if (url.pathname === `/data/game_stats/${state.bundle.season}/${selectedId}.json`) {
       return state.missingStats ? route.fulfill({status: 404, body: "Pending"}) : route.fulfill({json: state.bundle});
     }
     return route.continue();
@@ -60,7 +62,7 @@ async function open({invalid = false, missingScores = false, missingStats = fals
   page.setDefaultTimeout(15000);
   page.on("pageerror", error => errors.push(error.message));
   await page.clock.install({time: new Date(now)});
-  await page.goto(`${base}/game.html?game=${invalid ? "invalid-game" : gameId}`);
+  await page.goto(`${base}/game.html?game=${invalid ? "invalid-game" : selectedId}`);
   return {page, context, state, errors, name};
 }
 
@@ -118,4 +120,24 @@ test("pending and invalid games offer truthful recovery instead of empty statist
       assert.deepEqual(errors, []);
     } finally { await context.close(); }
   }
+});
+
+test("historical game archives remain usable without a current-season scoreboard",async()=>{
+  const {page,context,errors}=await open({historical:true,missingScores:true});
+  try{
+    await page.locator("#game-stats table").first().waitFor();
+    assert.match(await page.locator("#game-heading").innerText(),/Oakland Raiders at San Diego Chargers/);
+    const status=await page.locator("#game-status").innerText();
+    assert.match(status,/2016 historical regular-season archive/);
+    assert.match(status,/Historical statistics may be corrected/);
+    assert.doesNotMatch(status,/Some data could not refresh|Score refresh is delayed/);
+    assert.equal(await page.locator("#game-summary img").count(),0);
+    assert.equal(await page.getByRole("link",{name:"Download game data",exact:true}).getAttribute("href"),"data/game_stats/2016/2016_01_OAK_SD.json");
+    for(const id of ["game-results-link","game-leaders-link"]){
+      const link=new URL(await page.locator(`#${id}`).getAttribute("href"),base);
+      assert.equal(link.searchParams.get("season"),"2016");
+      assert.equal(link.searchParams.get("week"),"1");
+    }
+    assert.deepEqual(errors,[]);
+  }finally{await context.close();}
 });

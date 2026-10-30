@@ -19,7 +19,26 @@ RELEASES = {
 }
 IDENTITY = {"player_id", "player_name", "player_display_name", "position", "position_group",
             "headshot_url", "season_type", "game_id", "team", "opponent_team"}
+GSIS_ID = re.compile(r"^00-[0-9]{7}$")
 GAME_ID = re.compile(r"^\d{4}_\d{2}_[A-Z]{2,3}_[A-Z]{2,3}$")
+FRANCHISE_CODES = ({"LV", "OAK"}, {"LAC", "SD"}, {"LA", "STL"})
+
+
+def team_for_game(value, game):
+    """Resolve current franchise codes to the exact sides of a historical game.
+
+    nflverse's old game IDs retain OAK/SD while its statistical team columns can
+    use LV/LAC. Never rewrite the game identity or match unrelated teams.
+    """
+    code = TEAM_ALIASES.get(value, value)
+    sides = {game["home"], game["away"]}
+    if code in sides:
+        return code
+    for franchise in FRANCHISE_CODES:
+        matches = franchise & sides
+        if code in franchise and len(matches) == 1:
+            return next(iter(matches))
+    return code
 
 
 def download(url):
@@ -48,10 +67,18 @@ def parse_stats(content, kind, season, schedule):
         game = schedule.get(game_id)
         if not GAME_ID.fullmatch(game_id) or not game:
             raise ValueError(f"Unknown stats game: {game_id}")
-        team, opponent = (TEAM_ALIASES.get(source[key], source[key]) for key in ("team", "opponent_team"))
+        team, opponent = (team_for_game(source[key], game) for key in ("team", "opponent_team"))
+        # A missing opponent can be recovered from an exact game + valid team.
+        # Raw downloads retain the omission; this does not fill a statistical value.
+        if opponent == "" and team in {game["home"], game["away"]}:
+            opponent = game["away"] if team == game["home"] else game["home"]
         if {team, opponent} != {game["home"], game["away"]} or team == opponent or int(source["week"]) != game["week"]:
             raise ValueError(f"Game identity mismatch: {game_id}")
-        identity = (game_id, team, source.get("player_id")) if kind == "players" else (game_id, team)
+        player_id = (source.get("player_id") or "").strip()
+        if kind == "players" and player_id and not GSIS_ID.fullmatch(player_id):
+            raise ValueError(f"Invalid player ID in {game_id}")
+        # A named person appears once per game; anonymous events stay team-scoped.
+        identity = ((game_id, player_id) if player_id else (game_id, "anonymous", team)) if kind == "players" else (game_id, team)
         if identity in seen:
             raise ValueError(f"Duplicate {kind} row: {game_id}")
         seen.add(identity)
@@ -95,18 +122,18 @@ def encoded(value):
     return (json.dumps(value, ensure_ascii=False, separators=(",", ":"), allow_nan=False) + "\n").encode("utf-8")
 
 
-def refresh_game_stats(root, season, *, fetch=download, now=None):
+def build_game_archive(root, season, schedule, *, fetch=download, now=None,
+                       historical=False, schedule_source=None):
+    """Validate a whole season and prepare artifacts without writing any files."""
     root = Path(root)
     now = now or datetime.now(timezone.utc)
     collected_at = now.isoformat()
-    board = read_json(root / "docs/data/scores.json", {})
-    if board.get("season") != season:
-        raise ValueError("Scoreboard season does not match stats season")
-    schedule = {game["game_id"]: game for game in board["games"]}
     public = root / "docs/data/game_stats"
     season_path = public / str(season)
     prior = read_json(season_path / "index.json", {"games": {}})
     source_info, downloads, tables = {}, {}, {}
+    if schedule_source:
+        source_info["schedule"] = schedule_source
     for kind, pattern in RELEASES.items():
         url = pattern.format(season=season)
         content, modified = fetch(url)
@@ -118,6 +145,9 @@ def refresh_game_stats(root, season, *, fetch=download, now=None):
     player_columns, players = tables["players"]
     if not teams or set(teams) != set(players):
         raise ValueError("Incomplete team/player game coverage; last-good archive retained")
+    if historical and set(teams) != set(schedule):
+        missing = sorted(set(schedule) - set(teams))
+        raise ValueError(f"Incomplete historical game coverage for {season}: {missing[:5]}")
     if not set(prior["games"]).issubset(teams):
         raise ValueError("Previously archived games disappeared; last-good archive retained")
     artifacts, index = {}, {}
@@ -147,9 +177,16 @@ def refresh_game_stats(root, season, *, fetch=download, now=None):
             "team_columns": team_columns, "teams": [[row[key] for key in team_columns] for row in team_rows],
             "player_columns": player_columns, "players": [[row[key] for key in player_columns] for row in player_rows],
         }
-        digest = hashlib.sha256(encoded(values)).hexdigest()
+        if historical:
+            values["historical"] = True
+        # Keep the existing semantic checksum contract used by the database.
+        digest = hashlib.sha256(encoded({key: value for key, value in values.items()
+                                        if key != "historical"})).hexdigest()
         if previous and previous.get("content_sha256") == digest:
             artifact = previous
+            if historical and not previous.get("historical"):
+                artifact = {**previous, "historical": True}
+                artifacts[season_path / f"{identity}.json"] = encoded(artifact)
         else:
             artifact = {**values, "first_collected_at": (previous or {}).get("first_collected_at", collected_at),
                         "updated_at": collected_at, "content_sha256": digest, "sources": source_info,
@@ -165,11 +202,30 @@ def refresh_game_stats(root, season, *, fetch=download, now=None):
         "checked_at": collected_at, "sources": source_info, "games": index})
     artifacts[season_path / "summary.json"] = encoded(
         build_stats_summary(season, schedule, players, index, collected_at))
+    if historical:
+        season_index = json.loads(artifacts[season_path / "index.json"])
+        season_index.update(historical=True, expected_games=len(schedule), coverage_status="complete")
+        artifacts[season_path / "index.json"] = encoded(season_index)
+        summary = json.loads(artifacts[season_path / "summary.json"])
+        summary.update(historical=True, coverage_status="complete")
+        artifacts[season_path / "summary.json"] = encoded(summary)
+    return artifacts, len(index)
+
+
+def refresh_game_stats(root, season, *, fetch=download, now=None):
+    root = Path(root)
+    now = now or datetime.now(timezone.utc)
+    board = read_json(root / "docs/data/scores.json", {})
+    if board.get("season") != season:
+        raise ValueError("Scoreboard season does not match stats season")
+    schedule = {game["game_id"]: game for game in board["games"]}
+    artifacts, count = build_game_archive(root, season, schedule, fetch=fetch, now=now)
+    public = root / "docs/data/game_stats"
     catalogue = read_json(public / "index.json", {"schema_version": 1, "seasons": []})
     catalogue["seasons"] = sorted(set(catalogue["seasons"]) | {season}, reverse=True)
-    catalogue["checked_at"] = collected_at
+    catalogue["checked_at"] = now.isoformat()
     catalogue["current_season"] = season
     artifacts[public / "index.json"] = encoded(catalogue)
     for path, content in artifacts.items():
         write_atomic(path, content)
-    return len(index)
+    return count

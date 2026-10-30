@@ -1,10 +1,18 @@
-import {TEAM_NAMES, scoreDisplay, gameConditions} from "./scores-data.mjs?v=20260915-weather1";
+import {scoreDisplay, gameConditions} from "./scores-data.mjs?v=20260915-weather1";
 import {teamMark} from "./team-logos.mjs?v=20260915-games1";
-import {ID_FIELDS, TEAM_SUMMARY, validGameId, validGameIdentity, gameSnapshotTime, unpackStats, statGroups, statLabel, statValue, activeStatRows} from "./game-data.mjs?v=20261027-tools1";
+import {ID_FIELDS, TEAM_SUMMARY, validGameId, validGameIdentity, gameTeamName, gameSnapshotTime, unpackStats, statGroups, statLabel, statValue, activeStatRows} from "./game-data.mjs?v=20261030-historical1";
 const $ = id=>document.getElementById(id);
 const el = (tag,text,className) => {const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;};
 const gameId = new URLSearchParams(location.search).get("game");
-let busy=false,lastAttempt=0,lastBundle=null,lastGame=null,signature=null;
+let busy=false,lastAttempt=0,lastBundle=null,lastGame=null,signature=null,historicalView=false;
+
+function gameMark(team) {
+  if (!historicalView && !["OAK","SD","STL"].includes(team)) return teamMark(team);
+  // Preserve historical franchise codes without presenting a modern logo as an
+  // era-specific asset, or requesting a nonexistent null image URL.
+  const mark=el("span",team,"team-logo");mark.setAttribute("aria-hidden","true");return mark;
+}
+const teamName = team => gameTeamName(team,Number(gameId?.slice(0,4)));
 
 function table(headers, rows, caption) {
   const wrapper=el("div",undefined,"game-table-wrap");wrapper.tabIndex=0;wrapper.setAttribute("role","region");wrapper.setAttribute("aria-label",caption);
@@ -16,7 +24,7 @@ function table(headers, rows, caption) {
 
 function teamTable(teams, game, keys, caption) {
   const byTeam=Object.fromEntries(teams.map(row=>[row.team,row]));
-  return table(["Statistic",`Away · ${TEAM_NAMES[game.away]}`,`Home · ${TEAM_NAMES[game.home]}`],
+  return table(["Statistic",`Away · ${teamName(game.away)}`,`Home · ${teamName(game.home)}`],
     keys.map(key=>[statLabel(key),statValue(byTeam[game.away]?.[key]),statValue(byTeam[game.home]?.[key])]),caption);
 }
 
@@ -24,7 +32,7 @@ function playerTeamPanel(rows, keys, game, side, category) {
   const team=game[side], label=side==="away"?"Away":"Home";
   const panel=el("section",undefined,"game-stat-team");panel.dataset.team=team;panel.dataset.side=side;
   const heading=el("h4",undefined,"game-stat-team-heading");
-  heading.append(teamMark(team),el("span",`${label} · ${TEAM_NAMES[team]}`));
+  heading.append(gameMark(team),el("span",`${label} · ${teamName(team)}`));
   panel.append(heading);
   // Partition source rows by team, never by name: names need not be unique.
   const teamRows=rows.filter(row=>row.team===team);
@@ -34,22 +42,27 @@ function playerTeamPanel(rows, keys, game, side, category) {
   }
   const values=teamRows.map(row=>[row.player_id?(row.player_display_name||row.player_name||row.player_id):"Uncredited team events",
     row.position||"—",...keys.map(key=>statValue(row[key]))]);
-  panel.append(table(["Player","Position",...keys.map(statLabel)],values,`${label} ${TEAM_NAMES[team]} · ${category}`));
+  panel.append(table(["Player","Position",...keys.map(statLabel)],values,`${label} ${teamName(team)} · ${category}`));
   return panel;
 }
 
 function render(game, bundle) {
-  const title=`${TEAM_NAMES[game.away]} at ${TEAM_NAMES[game.home]}`;
+  historicalView=bundle?.historical===true;
+  const context=new URLSearchParams({season:gameId.slice(0,4),week:String(game.week)});
+  $("game-results-link").href=`stats.html?${context}`;
+  context.set("view","leaders");$("game-leaders-link").href=`stats.html?${context}`;
+  const title=`${teamName(game.away)} at ${teamName(game.home)}`;
   $("game-heading").textContent=title;document.title=`${title} · OutlierBaseline`;
   const display=scoreDisplay(game), summary=$("game-summary");
   summary.replaceChildren(...["away","home"].map(side=>{
-    const row=el("div",undefined,"game-team"),mark=teamMark(game[side]);mark.width=48;mark.height=48;
+    const row=el("div",undefined,"game-team"),mark=gameMark(game[side]);mark.width=48;mark.height=48;
     const name=el("div",undefined,"game-team-name");
-    name.append(el("small",side==="away"?"Away":"Home"),el("span",TEAM_NAMES[game[side]]));
+    name.append(el("small",side==="away"?"Away":"Home"),el("span",teamName(game[side])));
     row.append(mark,name,el("strong",display[side]));return row;
   }));
   const time=game.kickoff?new Date(game.kickoff).toLocaleString(undefined,{dateStyle:"medium",timeStyle:"short"}):"Time TBD";
-  $("game-status").textContent=`Week ${game.week} · ${time} · ${display.label}`;
+  const historical=bundle?.historical===true;
+  $("game-status").textContent=`${historical?`${bundle.season} historical regular-season archive · `:""}Week ${game.week} · ${time} · ${display.label}`;
   $("game-status").classList.remove("stale");
   const conditions=gameConditions(game);
   $("game-conditions").textContent=[game.stadium,conditions.location,conditions.weather].filter(Boolean).join(" · ");
@@ -60,7 +73,8 @@ function render(game, bundle) {
   }
   const {teams,players}=unpackStats(bundle,gameId);
   const statsTime=gameSnapshotTime(bundle.updated_at);
-  $("game-status").textContent+=statsTime.valid?` · Stats updated ${new Date(bundle.updated_at).toLocaleString()}`:" · Stats update time unavailable";
+  $("game-status").textContent+=statsTime.valid?` · ${historical?"Archive snapshot":"Stats updated"} ${new Date(bundle.updated_at).toLocaleString()}`:" · Stats update time unavailable";
+  if(historical)$("game-status").textContent+=" · Historical statistics may be corrected";
   if(!statsTime.valid)$("game-status").classList.add("stale");
   const nextSignature=bundle.content_sha256 || JSON.stringify([bundle.team_columns,bundle.player_columns,bundle.teams,bundle.players]);
   if(signature===nextSignature)return;
@@ -109,11 +123,12 @@ async function load() {
     try{if(bundle)unpackStats(bundle,gameId);}catch{bundle=lastBundle;statsFailed=true;}
     if(lastBundle&&!bundle){bundle=lastBundle;statsFailed=true;}
     const scoreGame=Array.isArray(board?.games)?board.games.find(row=>validGameIdentity(row,gameId)):null;
-    const scoreFailed=scoreResult.status==="rejected" || !scoreGame;
-    const game=scoreGame||bundle?.game||lastGame;
+    const historical=bundle?.historical===true;
+    const scoreFailed=!historical && (scoreResult.status==="rejected" || !scoreGame);
+    const game=(historical?bundle.game:scoreGame||bundle?.game)||lastGame;
     if(!validGameIdentity(game,gameId))throw new Error("Unknown game");
     render(game,bundle);lastGame=game;lastBundle=bundle;
-    if(scoreGame){
+    if(scoreGame&&!historical){
       const checked=gameSnapshotTime(board.checked_at);
       if(checked.stale){
         $("game-status").textContent+=checked.valid?" · Score refresh is delayed":" · Score check time unavailable";

@@ -1,0 +1,62 @@
+name: Backfill historical weekly stats
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_season:
+        description: First completed season (2016–2025)
+        default: "2016"
+        required: true
+        type: string
+      end_season:
+        description: Last completed season (2016–2025)
+        default: "2025"
+        required: true
+        type: string
+  # Seed the archive when this workflow is first installed. Later reruns are
+  # explicit and bounded; the normal six-hour job still updates only this year.
+  push:
+    branches: [main]
+    paths: [".github/workflows/backfill-game-stats.yml"]
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: update-game-stats
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate all historical sources before writing
+        env:
+          START_SEASON: ${{ inputs.start_season || '2016' }}
+          END_SEASON: ${{ inputs.end_season || '2025' }}
+        run: python backfill_game_stats.py --start-season "$START_SEASON" --end-season "$END_SEASON"
+      - name: Validate complete archive with the offline database importer
+        run: python database_stats.py plan
+      - name: Commit validated historical archive
+        run: |
+          git add docs/data/game_stats data/game_stats
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Backfill historical weekly offense, defense and special teams"
+            python scripts/push_snapshot.py
+          fi
+      - name: Publish historical game pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python -m pip install requests
+          python scripts/request_pages_build.py
