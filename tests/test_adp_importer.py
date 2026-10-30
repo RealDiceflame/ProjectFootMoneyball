@@ -13,6 +13,54 @@ from data_fetcher.adp_importer import (
 )
 
 
+def test_saved_dj_moore_aliases_coalesce_complementary_adp_without_new_dates():
+    saved = pd.DataFrame([
+        {"Player": "DJ Moore", "Position": "WR", "Team": "BUF", "Yahoo": 61.3,
+         "Sleeper": 49.9, "MFL": None, "ADP": 55.6, "Source_Count": 2,
+         "Yahoo_Updated": "2026-08-29", "Sleeper_Updated": "2026-10-30"},
+        {"Player": "D.J. Moore", "Position": "WR", "Team": "BUF", "Yahoo": None,
+         "Sleeper": None, "MFL": 63.89, "ADP": 63.89, "Source_Count": 1,
+         "MFL_Updated": "2026-10-22", "MFL_Period": "ALL"},
+    ])
+    before = saved.copy(deep=True)
+    result = importer.normalize_saved_adp(saved)
+    assert len(result) == 1
+    row = result.iloc[0]
+    assert [row[key] for key in importer.ADP_PROVIDERS] == [61.3, 49.9, 63.89]
+    assert row["ADP"] == pytest.approx((61.3 + 49.9 + 63.89) / 3)
+    assert row["Source_Count"] == 3
+    assert row["ADP_Spread"] == pytest.approx(63.89 - 49.9)
+    assert row["ADP_StdDev"] == pytest.approx(pd.Series([61.3, 49.9, 63.89]).std())
+    assert [row[key] for key in ["Yahoo_Updated", "Sleeper_Updated", "MFL_Updated", "MFL_Period"]] == ["2026-08-29", "2026-10-30", "2026-10-22", "ALL"]
+    pd.testing.assert_frame_equal(saved, before)
+
+
+def test_initial_alias_keys_keep_positions_and_ordinary_names_distinct():
+    keys = {importer._player_key(name, "WR") for name in ["DJ Moore", "D.J. Moore", "D. J. Moore"]}
+    assert len(keys) == 1
+    assert importer._player_key("DJ Moore", "QB") not in keys
+    assert importer._player_key("Jo Ann Smith", "WR") != importer._player_key("Joann Smith", "WR")
+
+
+@pytest.mark.parametrize("column,values", [("Sleeper", [49.9, 52.0]), ("player_id", ["00-0000001", "00-0000002"])])
+def test_saved_adp_alias_conflicts_require_review(column, values):
+    saved = pd.DataFrame({"Player": ["DJ Moore", "D. J. Moore"], "Position": ["WR", "WR"], column: values})
+    with pytest.raises(ValueError, match="Conflicting saved ADP"):
+        importer.normalize_saved_adp(saved)
+
+
+def test_live_provider_merge_combines_dj_moore_initial_spellings(tmp_path, monkeypatch):
+    monkeypatch.setattr(importer, "MIN_PROVIDER_ROWS", 1)
+    monkeypatch.setattr(importer, "fetch_sleeper_adp", lambda *a, **k: pd.DataFrame([
+        {"Player": "DJ Moore", "Position": "WR", "Team": "BUF", "Sleeper": 49.9}]))
+    monkeypatch.setattr(importer, "fetch_mfl_adp", lambda *a, **k: pd.DataFrame([
+        {"Player": "D. J. Moore", "Position": "WR", "Team": "BUF", "MFL": 63.89}]))
+    result = build_direct_adp(tmp_path / "adp.csv", season=2026, update_date="2026-10-30")
+    assert len(result) == 1
+    assert result.iloc[0]["Source_Count"] == 2
+    assert result.iloc[0]["ADP"] == pytest.approx((49.9 + 63.89) / 2)
+
+
 def test_build_combined_adp_keeps_platform_values(tmp_path):
     source = tmp_path / "adp.html"
     output = tmp_path / "adp.csv"

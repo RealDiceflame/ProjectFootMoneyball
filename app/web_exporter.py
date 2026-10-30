@@ -33,6 +33,7 @@ WEB_COLUMNS = (
     "Sleeper",
     "MFL",
     "draft_tag",
+    "scoring_coverage",
 )
 
 SPECIAL_TEAMS_COLUMNS = (
@@ -77,6 +78,14 @@ def export_web_rankings(
 
     for path in files:
         frame = pd.read_csv(path)
+        if 'scoring_coverage' not in frame:
+            frame['scoring_coverage'] = 'unknown'
+        # A CSV display placeholder is not a reusable player identifier.
+        if 'player_id' in frame:
+            frame['player_id'] = frame['player_id'].replace({'-': None, '': None})
+            known_ids = frame['player_id'].dropna()
+            if known_ids.duplicated().any():
+                raise ValueError(f'{path.name} contains duplicate player IDs.')
         frame["draft_tag"] = market_tags(frame["market_value"])
         missing = [column for column in WEB_COLUMNS if column not in frame.columns]
         if missing:
@@ -99,7 +108,7 @@ def export_web_rankings(
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = destination.with_suffix(destination.suffix + ".tmp")
     temporary.write_text(
-        json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
+        json.dumps(payload, ensure_ascii=False, separators=(",", ":"), allow_nan=False),
         encoding="utf-8",
     )
     temporary.replace(destination)

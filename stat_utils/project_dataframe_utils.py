@@ -8,6 +8,7 @@ from pathlib import Path
 import pandas as pd
 from functools import reduce
 import stat_utils.pandas_helpers as pdh
+from data_fetcher.adp_importer import _player_key, normalize_saved_adp
 
 # Canonical player alias map: map alternate display names to canonical pipeline name
 # Keep keys normalized (lowercase, stripped) and values canonical lowercase form used across outputs
@@ -48,6 +49,12 @@ def load_nflverse_stat_tables(csv_path):
     source = pd.read_csv(csv_path)
     if "season_type" in source.columns:
         source = source[source["season_type"].eq("REG")].copy()
+    # nflverse can include an anonymous aggregate row (not an individual player).
+    # Do not assign it a made-up identity or let it enter player projections.
+    named = source['player_display_name'].notna() & source['player_display_name'].astype(str).str.strip().ne('')
+    if not named.all():
+        print(f'[WARN] Excluding {(~named).sum()} unnamed source aggregate(s).')
+        source = source.loc[named].copy()
 
     player = source["player_display_name"]
     player_id = source["player_id"] if "player_id" in source.columns else pd.Series(pd.NA, index=source.index)
@@ -61,6 +68,11 @@ def load_nflverse_stat_tables(csv_path):
         "gs": pd.NA,
         "fmb": source["fumbles_total"],
     }
+    # Keep turnover losses distinct from total fumbles; optional source fields
+    # stay unknown when absent rather than becoming observed zeroes.
+    for field in ("fumbles_lost_total", "passing_2pt_conversions",
+                  "rushing_2pt_conversions", "receiving_2pt_conversions", "special_teams_tds"):
+        common[field] = source[field] if field in source else pd.NA
 
     passing = pd.DataFrame({
         **common,
@@ -70,7 +82,6 @@ def load_nflverse_stat_tables(csv_path):
         "td": source["passing_tds"],
         "int": source["passing_interceptions"],
     })
-    passing = passing[pd.to_numeric(passing["att"], errors="coerce").fillna(0).gt(0)]
 
     rushing = pd.DataFrame({
         **common,
@@ -78,7 +89,6 @@ def load_nflverse_stat_tables(csv_path):
         "rushing_yds": source["rushing_yards"],
         "rushing_td": source["rushing_tds"],
     })
-    rushing = rushing[pd.to_numeric(rushing["rushing_att"], errors="coerce").fillna(0).gt(0)]
 
     receiving = pd.DataFrame({
         **common,
@@ -87,11 +97,10 @@ def load_nflverse_stat_tables(csv_path):
         "receiving_yds": source["receiving_yards"],
         "receiving_td": source["receiving_tds"],
     })
-    receiving = receiving[
-        pd.to_numeric(receiving["receiving_tgt"], errors="coerce").fillna(0).gt(0)
-    ]
-
-    print(f"[OK] Loaded 2025 regular-season stats from nflverse: {csv_path}")
+    # The season file explicitly supplies zeroes for unused stat categories.
+    # Retain them: removing non-passers would turn known zero passing stats into
+    # missing values during the outer join.
+    print(f"[OK] Loaded regular-season stats from nflverse: {csv_path}")
     return [(passing, "Passing"), (rushing, "Rushing"), (receiving, "Receiving")]
 
 def save_and_report_merged_stats(df, output_dir, filename="all_stats_merged.csv"):
@@ -191,28 +200,52 @@ def clean_adp_dataframe(adp_df):
     return adp_df
 
 def normalize_name(name):
-    """Normalize player name for matching: remove punctuation, lowercase, first/last word only."""
-    name = str(name).strip()
-    name = re.sub(r'[^\w\s]', '', name)
-    parts = name.split()
-    if len(parts) >= 2:
-        # If the last token is a generational suffix (Jr, Sr, II, III, etc.),
-        # skip it and use the preceding token as the last name for matching.
-        suffixes = {'jr', 'sr', 'ii', 'iii', 'iv', 'v'}
-        last = parts[-1].lower()
-        if last in suffixes:
-            # If name is "First Jr" -> return just the first name
-            if len(parts) == 2:
-                return parts[0].lower()
-            # Otherwise use the token before the suffix as last name
-            last = parts[-2].lower()
-        canon = f"{parts[0].lower()} {last}"
-        # Apply alias map: if this normalized name maps to a canonical player alias,
-        # return the canonical name instead so ADP merges align with stat names.
-        if canon in PLAYER_ALIAS_MAP:
-            return PLAYER_ALIAS_MAP[canon]
-        return canon
-    return name.lower()
+    """Normalize aliases without discarding potentially distinguishing name tokens."""
+    if pd.isna(name) or str(name).strip().casefold() in {'', '-', 'nan', 'none', '<na>'}:
+        return ''
+    canon = _player_key(name, '').rsplit('|', 1)[0]
+    return PLAYER_ALIAS_MAP.get(canon, canon)
+
+
+def _known_id(value):
+    if pd.isna(value) or str(value).strip().casefold() in {'', '-', 'nan', 'none', '<na>'}:
+        return ''
+    return str(value).strip()
+
+
+def _identity_keys(frames):
+    """Prefer source IDs; only resolve an ID-less name/position when unambiguous.
+
+    Names and positions are evidence, never permission to overwrite two known
+    IDs. Team is deliberately not an identity component: players get traded.
+    """
+    records, candidates = [], {}
+    for frame in frames:
+        frame_records = []
+        for _, row in frame.iterrows():
+            player_id = _known_id(row.get('player_id'))
+            name = normalize_name(row.get('player'))
+            position = _known_id(row.get('pos')).upper()
+            fallback = (name, position)
+            frame_records.append((player_id, fallback))
+            if player_id and name and position:
+                candidates.setdefault(fallback, set()).add(player_id)
+        records.append(frame_records)
+    keys = []
+    for frame_number, rows in enumerate(records):
+        current = []
+        for row_number, (player_id, fallback) in enumerate(rows):
+            matches = candidates.get(fallback, set())
+            if player_id:
+                current.append('id:' + player_id)
+            elif len(matches) == 1:
+                current.append('id:' + next(iter(matches)))
+            elif all(fallback) and len(matches) == 0:
+                current.append('name:' + '|'.join(fallback))
+            else:
+                current.append(f'unresolved:{frame_number}:{row_number}')
+        keys.append(current)
+    return keys
 
 def merge_full_adp(stats_path, adp_path, output_path):
     """Merge fantasy stat CSV with ADP CSV on normalized player names."""
@@ -224,26 +257,19 @@ def merge_full_adp(stats_path, adp_path, output_path):
         return
 
     stats_df = pd.read_csv(stats_path)
-    adp_df = pd.read_csv(adp_path)
-
-    stats_df['player'] = stats_df['player'].astype(str)
-    stats_df['player_clean'] = stats_df['player'].apply(normalize_name)
-
-    if 'player_clean' not in adp_df.columns:
-        guessed_col = next((col for col in adp_df.columns if 'player' in col.lower()), None)
-        if guessed_col:
-            adp_df['player_clean'] = adp_df[guessed_col].apply(normalize_name)
-        else:
-            raise KeyError("No suitable 'player' column found in ADP file.")
-
+    adp_df = normalize_saved_adp(pd.read_csv(adp_path))
+    adp_identity = adp_df.rename(columns={'Player': 'player', 'Position': 'pos'})
+    stats_df['_identity'], adp_df['_identity'] = _identity_keys([stats_df, adp_identity])
     merged = stats_df.merge(
         adp_df,
-        on='player_clean',
+        on='_identity',
         how='outer',
-        suffixes=('', '_adp')
+        suffixes=('', '_adp'),
+        validate='one_to_one',
     )
-    merged['player'] = merged['player_clean']
-    merged = merged.drop(columns=['player_clean'])
+    merged['player'] = merged['player'].fillna(merged['Player']).map(normalize_name)
+    merged['pos'] = merged['pos'].fillna(merged['Position'])
+    merged = merged.drop(columns=['_identity'])
     cols = ['player'] + [col for col in merged.columns if col != 'player']
     merged = merged[cols]
     merged.to_csv(output_path, index=False, na_rep='-')
@@ -253,7 +279,10 @@ def build_final_player_stats(input_path, output_path):
     """Finalize player stats: clean, deduplicate, sort, save to CSV."""
     df = pd.read_csv(input_path)
     # Example: keep only relevant columns, drop duplicates, sort, etc.
-    df = df.drop_duplicates(subset=["player"], keep="first")
+    df = df.drop_duplicates()
+    keys = _identity_keys([df])[0]
+    if pd.Series(keys).duplicated().any():
+        raise ValueError('Conflicting duplicate player records require review before scoring.')
     df = df.sort_values(by=["player"])
     df.to_csv(output_path, index=False, na_rep='-')
     print(f"[OK] Final player stats saved to: {output_path}")
@@ -307,7 +336,8 @@ def clean_all(df):
     df = unify_specific_columns(df, ["g", "gs"])
     columns_file = Path(__file__).resolve().parents[1] / "resources" / "columns_to_drop.txt"
     try:
-        df = pdh.drop_columns_from_file(df, filepath=columns_file)
+        df = pdh.drop_columns_from_file(df, filepath=columns_file,
+                                       keep_patterns=['fumbles_lost_total', 'special_teams_tds'])
     except FileNotFoundError:
         pass
     df = reorder_core_columns(df)
@@ -412,7 +442,9 @@ def clean_and_prepare(df, source_name):
     # If this is the Passing source, create 'passing_' prefixed duplicates for all stat columns
     try:
         if isinstance(source_name, str) and 'pass' in source_name.strip().lower():
-            identity = {'player', 'player_id', 'pos', 'team', 'age', 'g', 'gs', 'rk', 'awards', 'fmb'}
+            identity = {'player', 'player_id', 'pos', 'team', 'age', 'g', 'gs', 'rk', 'awards', 'fmb',
+                        'fumbles_lost_total', 'rushing_2pt_conversions', 'receiving_2pt_conversions',
+                        'special_teams_tds'}
             for col in list(df.columns):
                 col_l = str(col).strip().lower()
                 if col_l in identity:
@@ -433,14 +465,21 @@ def merge_stats(dfs_with_labels):
     if not dfs_with_labels:
         return pd.DataFrame()
     cleaned_dfs = [clean_and_prepare(df, label) for df, label in dfs_with_labels]
-    merged_df = reduce(lambda left, right: pd.merge(left, right, on="player", how="outer"), cleaned_dfs)
+    for frame, keys in zip(cleaned_dfs, _identity_keys(cleaned_dfs)):
+        frame['_identity'] = keys
+        if frame['_identity'].duplicated().any():
+            raise ValueError('Duplicate source player records require review before merging.')
+    merged_df = reduce(lambda left, right: pd.merge(left, right, on="_identity", how="outer",
+                                                  validate='one_to_one'), cleaned_dfs)
+    merged_df = auto_unify_columns(merged_df).drop(columns='_identity')
     print("[INFO] Final columns after cleaning in merged dataset:")
     for col in merged_df.columns:
         print(f" - {col}")
     return merged_df
 
 def unify_player_column(df):
-    player_cols = sorted({col for col in df.columns if "player" in col.lower()}, key=str.lower)
+    player_cols = [col for col in df.columns if col in {'player', 'player_x', 'player_y',
+                                                      'player_name', 'player_display_name'}]
     if not player_cols:
         print("[WARN] No player-like columns found.")
         return df
@@ -448,9 +487,10 @@ def unify_player_column(df):
     if 'player' not in df.columns:
         # take first player-like column
         df = df.rename(columns={player_cols[0]: 'player'})
-    if df.filter(regex='(?i)player').shape[1] > 1:
+        player_cols[0] = 'player'
+    if len(player_cols) > 1:
         print("[INFO] Unifying duplicated 'player' columns...")
-        df['player'] = df.filter(regex='(?i)player').bfill(axis=1).iloc[:, 0]
+        df['player'] = df[player_cols].bfill(axis=1).iloc[:, 0]
         df = df.loc[:, ~df.columns.duplicated()]
     df['player'] = df['player'].astype(str).str.strip().str.lower()
     # Move 'player' to front
@@ -470,14 +510,12 @@ def unify_specific_columns(df, target_columns):
 
 def fill_identity_columns(df, identity_cols=["age", "team", "pos"]):
     for col in identity_cols:
-        matches = [c for c in df.columns if c.lower().startswith(col.lower())]
+        matches = [c for c in df.columns if c.lower() in {col.lower(), col.lower() + '_x', col.lower() + '_y'}]
         if not matches:
             continue
         print(f"[INFO] Filling identity column: {col} from {matches}")
         temp = df[matches].bfill(axis=1).iloc[:, 0]
-        # compute per-player mode
-        mode_series = df.assign(_temp=temp).groupby('player')['_temp'].agg(lambda x: x.dropna().mode().iloc[0] if not x.dropna().empty else None)
-        df[col] = df['player'].map(mode_series)
+        df[col] = temp
         for c in matches:
             if c != col:
                 df.drop(columns=c, inplace=True, errors='ignore')
@@ -518,10 +556,8 @@ def ensure_games_column(df):
         df['g'] = df[candidates[0]]
         return df
 
-    # If still not found, default to full season (17 games) so regression can proceed.
-    # This is a safe fallback when games-played info is not available; caller will have a warning.
-    df['g'] = 17
-    print("[WARN] No games-played column found; defaulting 'g' to 17 for all players.")
+    df['g'] = float('nan')
+    print("[WARN] No games-played column found; per-game projections remain unavailable.")
     return df
 
 
@@ -583,7 +619,7 @@ def load_rookie_predictions(file_path):
     numeric_cols = ['g', 'cmp', 'att', 'yds', 'td', 'int', 'rushing_att', 'rushing_yds', 'rushing_td', 'receiving_rec', 'receiving_yds', 'receiving_td', 'fmb']
     for col in numeric_cols:
         if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+            df[col] = pd.to_numeric(df[col], errors='coerce')
         else:
             df[col] = 0
 
@@ -622,67 +658,18 @@ def append_rookies_to_stats(stats_df, rookie_file_path):
             stats_df['is_rookie'].fillna(False).astype(str).str.casefold().isin({'true', '1', 'yes'})
         )
 
-    # Which rookies are new vs present
-    stats_players = set(stats_df['player'])
-    rookies_present = rookies[rookies['player'].isin(stats_players)].copy()
-    rookies_to_add = rookies[~rookies['player'].isin(stats_players)].copy()
-
-    updated = 0
-    # Upsert: for rookies already present, fill missing/zero numeric fields from projections
-    if not rookies_present.empty:
-        # base numeric columns from rookies
-        numeric_base = ['g', 'cmp', 'att', 'yds', 'td', 'int', 'rushing_att', 'rushing_yds', 'rushing_td', 'receiving_rec', 'receiving_yds', 'receiving_td', 'fmb']
-        for _, rrow in rookies_present.iterrows():
-            pname = rrow['player']
-            mask = stats_df['player'] == pname
-            if not mask.any():
-                continue
-            stats_df.loc[mask, 'is_rookie'] = True
-            for base_col in numeric_base:
-                # build candidate columns to try updating in the stats_df
-                candidates = [base_col]
-                # common passing bases often appear in stats as passing_<base>
-                if base_col in {'cmp', 'att', 'yds', 'td', 'int'}:
-                    candidates.append('passing_' + base_col)
-                # ensure receiving/rushing canonical names are also considered without prefix
-                if base_col in {'receiving_rec', 'receiving_yds', 'receiving_td'}:
-                    # sometimes sources use 'rec' / 'recs' etc.; we'll also try base variants
-                    candidates.append(base_col.replace('receiving_', ''))
-
-                for col in candidates:
-                    if col not in stats_df.columns:
-                        # create column if missing in stats_df so we can upsert into it
-                        stats_df[col] = pd.NA
-                    try:
-                        # consider missing or zero as replaceable
-                        stats_vals = pd.to_numeric(stats_df.loc[mask, col], errors='coerce')
-                        replace_mask = stats_vals.isna() | (stats_vals == 0)
-                        if replace_mask.any():
-                            stats_df.loc[mask, col] = stats_df.loc[mask, col].where(~replace_mask, other=rrow.get(base_col, 0))
-                            updated += int(replace_mask.sum())
-                    except Exception:
-                        # if non-numeric column, skip
-                        continue
-
-    # Append rookies that are not present already
-    combined = stats_df
-    if not rookies_to_add.empty:
-        # Before appending, create passing_ prefixed copies for passing-related rookie columns
-        # so that downstream logic sees 'passing_' fields consistently.
-        rookies_to_add = rookies_to_add.copy()
-        for col in list(rookies_to_add.columns):
-            if col in {'cmp', 'att', 'yds', 'td', 'int'}:
-                pref = 'passing_' + col
-                if pref not in rookies_to_add.columns:
-                    rookies_to_add[pref] = rookies_to_add[col]
-
-        combined = pd.concat([combined, rookies_to_add], ignore_index=True, sort=False)
-        print(f"[INFO] Appended {len(rookies_to_add)} rookie projection(s) to stats.")
-    else:
-        print("[INFO] No new rookies to append — all present in stats.")
-
-    if updated:
-        print(f"[INFO] Updated {updated} numeric field(s) for existing players from rookie projections.")
+    # Completed historical observations are never overwritten with projections.
+    # Position distinguishes same-name athletes; unresolved same-name/position
+    # cases require an explicit ID mapping rather than a speculative upsert.
+    existing = {(normalize_name(row['player']), str(row.get('pos', '')).upper())
+                for _, row in stats_df.iterrows()}
+    mask = [(normalize_name(row['player']), str(row.get('pos', '')).upper()) not in existing
+            for _, row in rookies.iterrows()]
+    rookies_to_add = rookies.loc[mask].copy()
+    for col in ('cmp', 'att', 'yds', 'td', 'int'):
+        rookies_to_add['passing_' + col] = rookies_to_add[col]
+    combined = pd.concat([stats_df, rookies_to_add], ignore_index=True, sort=False)
+    print(f"[INFO] Appended {len(rookies_to_add)} separate rookie projection(s).")
 
     combined['is_rookie'] = combined['is_rookie'].fillna(False).astype(bool)
     return combined

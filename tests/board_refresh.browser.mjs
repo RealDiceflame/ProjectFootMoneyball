@@ -96,6 +96,34 @@ function changeRankedValue(data, player, column, value) {
 const selectedRow = page => page.locator("#table-body tr").first();
 const sourceRecovered = page => page.waitForFunction(() => !document.querySelector("#source-status").textContent.includes("unavailable"));
 
+test("rankings labels partial scoring estimates across formats and clears the note for legacy snapshots", async () => {
+  const board = await open("rankings.html", values => {
+    let coverage = values.rankings.columns.indexOf("scoring_coverage");
+    if (coverage < 0) { coverage = values.rankings.columns.length; values.rankings.columns.push("scoring_coverage"); }
+    for (const rows of Object.values(values.rankings.boards)) {
+      for (const row of rows) row[coverage] = "full";
+      rows[0][coverage] = "core_only";
+    }
+  });
+  const {page, context, values, errors} = board;
+  try {
+    const note = page.locator("#scoring-coverage-note");
+    await note.waitFor({state: "visible"});
+    assert.equal(await note.textContent(), "1 player estimate uses partial scoring data. Some fumble or two-point conversion adjustments may be missing.");
+    await page.selectOption("#teams", "10");
+    assert.equal(await note.isVisible(), true, "Format changes keep the coverage warning");
+    // Older snapshots have no coverage metadata; they must not retain a stale
+    // warning or be promoted to a claim of complete scoring coverage.
+    const coverage = values.rankings.columns.indexOf("scoring_coverage");
+    values.rankings.columns.splice(coverage, 1);
+    for (const rows of Object.values(values.rankings.boards)) for (const row of rows) row.splice(coverage, 1);
+    await board.tick();
+    await note.waitFor({state: "hidden"});
+    assert.equal(await note.textContent(), "");
+    assert.deepEqual(errors, []);
+  } finally { await context.close(); }
+});
+
 test("rankings refresh preserves room settings, search, filters, sort, drafted state and imported personal ADP", async () => {
   const board = await open("rankings.html"), {page, context, values, errors} = board;
   try {

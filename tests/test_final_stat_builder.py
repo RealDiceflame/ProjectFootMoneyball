@@ -53,7 +53,7 @@ def test_load_nflverse_stat_tables_splits_categories(tmp_path):
 
     passing, rushing, receiving = load_nflverse_stat_tables(source_path)
 
-    assert passing[0].empty
+    assert passing[0].iloc[0]['att'] == 0  # Source knows this player did not pass.
     assert rushing[0].iloc[0]["rushing_yds"] == 900
     assert rushing[0].iloc[0]["player_id"] == "00-0012345"
     assert receiving[0].iloc[0]["receiving_rec"] == 40

@@ -1,14 +1,11 @@
-import {ageOnSeptemberFirst, ageChangeFactor} from './projection-model.mjs';
+import {ageOnSeptemberFirst, ageChangeFactor} from './projection-model.mjs?v=20261030-scoring1';
 import {classifyInjury} from './injury-status.mjs';
+import {scoreFantasyStats} from './fantasy-scoring.mjs?v=20261030-scoring1';
 
 // Versioned, deliberately transparent research model. Never fit a past value
 // snapshot with today's injuries, rankings, or knowledge of later results.
 export const MODEL_VERSION = 'production-value-v1';
 const POSITIONS = ['QB', 'RB', 'WR', 'TE'];
-const CORE = ['passing_yards', 'passing_tds', 'passing_interceptions', 'rushing_yards',
-  'rushing_tds', 'receptions', 'receiving_yards', 'receiving_tds'];
-const EXTRA = ['fumbles_lost_total', 'passing_2pt_conversions', 'rushing_2pt_conversions',
-  'receiving_2pt_conversions', 'special_teams_tds'];
 const finite = value => typeof value === 'number' && Number.isFinite(value);
 const round = (value, digits = 2) => Number.isFinite(value) ? Number(value.toFixed(digits)) : null;
 const mean = values => values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
@@ -28,20 +25,7 @@ export function valueFormatKey(settings = {}) {
 }
 
 export function scoreValueStats(row, settings = {}, {allowLegacy = false} = {}) {
-  if (!CORE.every(key => finite(row?.[key]))) return {points: null, complete: false};
-  const complete = EXTRA.every(key => finite(row?.[key]));
-  if (!complete && !allowLegacy) return {points: null, complete: false};
-  const s = normalizeValueSettings(settings), n = key => finite(row[key]) ? Number(row[key]) : 0;
-  const ppr = {Standard: 0, 'Half PPR': 0.5, 'Full PPR': 1}[s.ppr];
-  const bonus = row.pos === 'TE' && s.tePremium === '+0.5' ? 0.5 : 0;
-  let points = n('passing_yards') * .04 + n('passing_tds') * 4 - n('passing_interceptions') * 2
-    + n('rushing_yards') * .1 + n('rushing_tds') * 6 + n('receptions') * (ppr + bonus)
-    + n('receiving_yards') * .1 + n('receiving_tds') * 6;
-  // Legacy priors are explicitly core-only. Total fumbles are never substituted
-  // for lost fumbles. Do not mix a partial subset of the optional adjustments.
-  if (complete) points += -n('fumbles_lost_total') * 2 + 2 * (n('passing_2pt_conversions')
-    + n('rushing_2pt_conversions') + n('receiving_2pt_conversions')) + n('special_teams_tds') * 6;
-  return {points, complete};
+  return scoreFantasyStats(row, normalizeValueSettings(settings), {allowLegacy});
 }
 
 function reportIndex(news) {
@@ -64,10 +48,10 @@ function historicalContext(history, reports, season, settings) {
       && Number(row.season) < season && Number(row.games) > 0);
     byId.set(id, {record, rows, birth});
     for (const row of rows) {
-      const scored = scoreValueStats({...row, pos: record.pos}, settings, {allowLegacy: true});
+      const scored = scoreValueStats({...row, pos: row.pos || record.pos}, settings, {allowLegacy: true});
       const age = ageOnSeptemberFirst(birth, Number(row.season));
       if (scored.points !== null && row.games >= 4 && finite(age) && age >= 20 && age <= 45)
-        samples.push({identity: id, pos: record.pos, season: Number(row.season), age,
+        samples.push({identity: id, pos: row.pos || record.pos, season: Number(row.season), age,
           games: Number(row.games), fantasy_points_per_game: scored.points / Number(row.games)});
     }
   }
@@ -88,7 +72,7 @@ function priorForPlayer(player, context, season, settings, birth) {
   for (const row of source.rows) {
     const gap = season - Number(row.season);
     if (gap < 1 || gap > 3) continue; // Calendar years, not the last three nonempty rows.
-    const scored = scoreValueStats({...row, pos: player.pos}, settings, {allowLegacy: true});
+    const scored = scoreValueStats({...row, pos: row.pos || player.pos}, settings, {allowLegacy: true});
     if (scored.points === null) continue;
     let rate = scored.points / Number(row.games);
     if (birth) for (let year = Number(row.season) + 1; year <= season; year++) {
@@ -171,7 +155,7 @@ export function buildValueBoard({rankings = {}, history = {}, news = {}, inputs}
     const year1 = rate === null ? null : Math.max(0, rate) * futureFactors[0].factor * 17;
     const year2 = year1 === null ? null : year1 * futureFactors[1].factor;
     if (!scheduleKnown) notes.push('Current team schedule unavailable; remaining-season value is not rated.');
-    if (prior.legacy) notes.push('Some historical priors contain core scoring only; missing fumble-loss/2-point data were not invented.');
+    if (prior.legacy) notes.push('Some historical priors have partial scoring coverage; known adjustments are included and missing fumble-loss/2-point data were not invented.');
     if (!finite(age)) notes.push('Birth date unavailable; no age adjustment.');
     if (!currentRoster) notes.push('Current roster snapshot unavailable; team uses the latest archived appearance or saved ranking.');
     if (!injury.current) notes.push('Current injury status unknown; absence is not proof of health.');

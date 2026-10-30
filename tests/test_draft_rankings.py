@@ -152,3 +152,23 @@ def test_larger_leagues_use_a_deeper_replacement_player():
         sixteen_team["player"] == "QB 1", "vorp"
     ].iloc[0]
     assert sixteen_team_qb1 > eight_team_qb1
+
+
+def test_projection_uses_lost_fumbles_and_complete_optional_scoring():
+    row=_player('Tight End','TE',100,receptions=10)
+    row.update({'fmb':5,'fumbles_lost_total':1,'passing_2pt_conversions':0,
+                'rushing_2pt_conversions':1,'receiving_2pt_conversions':0,'special_teams_tds':1})
+    # 100 yards-based points + 10 receptions * (0.5 + 0.5) - 2 + 2 + 6.
+    assert calculate_projected_points(pd.DataFrame([row]),0.5,0.5).iloc[0]==116
+
+
+def test_unknown_projection_is_excluded_from_rank_and_replacement_pool():
+    valid=_player('Known','RB',100)
+    unknown=_player('Unknown','RB',200);unknown['g']=None
+    unknown_stat=_player('Unknown stats','RB',300);unknown_stat['rushing_yds']=None
+    data=pd.DataFrame([valid,unknown,unknown_stat])
+    points=calculate_projected_points(data)
+    assert points.iloc[1:].isna().all()
+    ranked=build_draft_ranking(data,format_name='test')
+    assert ranked['player'].tolist()==['Known']
+    assert ranked['replacement_points'].notna().all()

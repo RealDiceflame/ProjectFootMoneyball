@@ -62,6 +62,9 @@ def calculate_fantasy_value_vs_adp(input_csv_path, output_csv_path):
 
     # Ensure ADP numeric
     df[adp_col] = pd.to_numeric(df[adp_col], errors='coerce')
+    valid_adp = np.isfinite(df[adp_col]) & df[adp_col].gt(0)
+    games = pd.to_numeric(df[games_col], errors='coerce')
+    games = games.where(np.isfinite(games) & games.gt(0))
 
     for base_col, label in scoring:
         if base_col not in df.columns:
@@ -71,7 +74,8 @@ def calculate_fantasy_value_vs_adp(input_csv_path, output_csv_path):
         proj_col = f"{base_col}_proj_17g"
 
         # Compute per-game and 17-game projections (safe division)
-        df[per_game_col] = pd.to_numeric(df[base_col], errors='coerce') / pd.to_numeric(df[games_col], errors='coerce')
+        points = pd.to_numeric(df[base_col], errors='coerce')
+        df[per_game_col] = points.where(np.isfinite(points)) / games
         df[proj_col] = df[per_game_col] * 17
 
         results_for_type = []
@@ -80,7 +84,7 @@ def calculate_fantasy_value_vs_adp(input_csv_path, output_csv_path):
         for position in df[pos_col].dropna().unique():
             df_pos = df[df[pos_col] == position].copy()
             # Drop rows without ADP or projected points
-            df_pos = df_pos.dropna(subset=[adp_col, proj_col])
+            df_pos = df_pos.loc[valid_adp & np.isfinite(df_pos[proj_col])]
             if len(df_pos) < 2:
                 # Not enough data to fit a model
                 continue
