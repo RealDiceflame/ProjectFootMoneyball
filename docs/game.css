@@ -48,7 +48,7 @@
 .pbp-note a { color: var(--lime); }
 .pbp-controls { display: flex; flex-wrap: wrap; gap: 20px; margin: 20px 0; }
 .pbp-controls[hidden] { display: none; }
-.pbp-controls label { display: grid; gap: 8px; font-size: .875rem; min-width: 150px; }
+.pbp-control { display: grid; gap: 8px; font-size: .875rem; min-width: 150px; }
 .pbp-controls select { color: inherit; background: #102c23; border: 1px solid var(--line); border-radius: 6px; padding: 12px; font: inherit; min-height: 44px; }
 .pbp-list { list-style: none; padding: 0; margin: 0; }
 .pbp-event { padding: 18px; border-bottom: 1px solid var(--line); border-left: 3px solid transparent; }
@@ -64,4 +64,4 @@
 .pbp-drive summary small { display: block; color: var(--muted); font-weight: 400; padding-left: 18px; }
 #pbp-download { display: inline-block; margin-top: 16px; }
 #pbp-download[hidden] { display: none; }
-@media(max-width:600px) { .pbp-controls { gap: 12px; } .pbp-controls label { flex: 1 1 140px; } .pbp-event { padding: 14px; } .pbp-drive-result { display: block; margin-left: 18px; } }
+@media(max-width:600px) { .pbp-controls { gap: 12px; } .pbp-control { flex: 1 1 140px; } .pbp-event { padding: 14px; } .pbp-drive-result { display: block; margin-left: 18px; } }
