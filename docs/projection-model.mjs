@@ -2,9 +2,8 @@ import {
   fantasyPoints,
   historyKey,
   historyRows,
-  normalizeHistoryName,
   sampleStandardDeviation,
-} from "./player-history.mjs?v=20260909-archive1";
+} from "./player-history.mjs?v=20261030-scoring1";
 
 const POSITIONS = ["QB", "RB", "WR", "TE"];
 const RECENCY_WEIGHTS = [5, 3, 2];
@@ -20,7 +19,7 @@ export function normalizeProjectionSettings(settings = {}) {
 }
 
 function numberOrNull(value) {
-  if (value === null || value === undefined || value === "" || value === "-") return null;
+  if ((typeof value !== "number" && typeof value !== "string") || (typeof value === "string" && !value.trim())) return null;
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
 }
@@ -48,33 +47,38 @@ export function ageOnSeptemberFirst(birthDate, season) {
 }
 
 function playerIdentity(player) {
-  const playerId = String(player?.player_id || "").trim();
-  if (playerId && !["-", "nan", "none"].includes(playerId.toLocaleLowerCase())) return `id:${playerId}`;
-  return `name:${normalizeHistoryName(player?.player)}|${String(player?.pos || "").toUpperCase()}`;
+  return historyKey(player);
 }
 
 function reportLookup(newsBundle) {
   const lookup = new Map();
+  const unique = (key, report) => lookup.set(key, lookup.has(key) ? null : report);
   Object.values(newsBundle?.reports || {}).forEach(report => {
-    lookup.set(playerIdentity(report), report);
+    if (!report || typeof report !== "object") return;
+    unique(playerIdentity(report), report);
     const listedTeam = String(report?.listed_team || report?.team || "").toUpperCase();
-    lookup.set(`listed:${String(report?.player || "").trim().toLocaleLowerCase()}|${listedTeam}`, report);
+    unique(`listed:${String(report?.player || "").trim().toLocaleLowerCase()}|${listedTeam}`, report);
   });
   return lookup;
 }
 
 function reportFromLookup(lookup, player) {
   const identity = playerIdentity(player);
-  if (lookup.has(identity)) return lookup.get(identity);
   const listedTeam = String(player?.listed_team || player?.team || "").toUpperCase();
-  return lookup.get(`listed:${String(player?.player || "").trim().toLocaleLowerCase()}|${listedTeam}`) || null;
+  const candidates = [lookup.get(identity), lookup.get(`listed:${String(player?.player || "").trim().toLocaleLowerCase()}|${listedTeam}`)];
+  return candidates.find(report => {
+    if (!report) return false;
+    const reportId = playerIdentity(report), position = String(player?.pos || "").toUpperCase(), reportPosition = String(report.pos || "").toUpperCase();
+    return !(identity.startsWith("id:") && reportId.startsWith("id:") && identity !== reportId)
+      && (!position || !reportPosition || position === reportPosition);
+  }) || null;
 }
 
 export function reportForPlayer(newsBundle, player) {
   return reportFromLookup(reportLookup(newsBundle), player);
 }
 
-export function buildPositionSamples(players, historyBundle, newsBundle, settings) {
+export function buildPositionSamples(players, historyBundle, newsBundle, settings, projectionSeason = null) {
   const reports = reportLookup(newsBundle);
   const rankedByKey = new Map((players || []).map(player => [historyKey(player), player]));
   const samples = [];
@@ -84,19 +88,20 @@ export function buildPositionSamples(players, historyBundle, newsBundle, setting
     const player = { ...rankedByKey.get(key), ...record, history_key: key };
     if (!player.player || !POSITIONS.includes(String(player?.pos || "").toUpperCase())) continue;
     const identity = playerIdentity(player);
-    const report = reports.get(identity)
-      || reports.get(`listed:${String(player?.player || "").trim().toLocaleLowerCase()}|${String(player?.listed_team || player?.team || "").toUpperCase()}`);
+    const report = reportFromLookup(reports, player);
     const birthDate = player.birth_date || report?.birth_date;
     if (!birthDate) continue;
     for (const row of historyRows(historyBundle, player)) {
       const games = numberOrNull(row.games);
       const season = numberOrNull(row.season);
       if (games === null || games < 4 || season === null) continue;
+      if (Number.isInteger(projectionSeason) && season >= projectionSeason) continue;
       const position = String(row.pos || player.pos).toUpperCase();
       if (!POSITIONS.includes(position)) continue;
       const sampleKey = `${identity}|${season}`;
       if (seen.has(sampleKey)) continue;
       const points = fantasyPoints({ ...row, pos: position }, settings);
+      if (points === null) continue;
       const pointsPerGame = points / games;
       const age = ageOnSeptemberFirst(birthDate, season);
       if (!Number.isFinite(pointsPerGame) || !Number.isFinite(age) || age < 20 || age > 45) continue;
@@ -185,7 +190,8 @@ function playerSeasonRows(player, historyBundle, settings) {
     .map(row => {
       const games = numberOrNull(row.games);
       if (games === null || games <= 0) return null;
-      const fantasyPointsTotal = fantasyPoints({ ...row, pos: player.pos }, settings);
+      const fantasyPointsTotal = fantasyPoints({ ...row, pos: row.pos || player.pos }, settings);
+      if (fantasyPointsTotal === null) return null;
       return {
         ...row,
         season: Number(row.season),
@@ -204,9 +210,10 @@ export function projectPlayer(player, historyBundle, newsBundle, settings, proje
     : reportForPlayer(newsBundle, player);
   const birthDate = historyBundle?.players?.[historyKey(player)]?.birth_date || report?.birth_date;
   const age = ageOnSeptemberFirst(birthDate, projectionSeason);
-  const seasons = playerSeasonRows(player, historyBundle, settings);
+  const seasons = playerSeasonRows(player, historyBundle, settings).filter(row => row.season < projectionSeason);
   const existingProjection = numberOrNull(player?.projected_points);
-  const allSamples = samples || buildPositionSamples([player], historyBundle, newsBundle, settings);
+  const allSamples = samples ? samples.filter(sample => sample.season < projectionSeason)
+    : buildPositionSamples([player], historyBundle, newsBundle, settings, projectionSeason);
   const position = String(player?.pos || "").toUpperCase();
   const curve = context?.curves?.[position] || positionAgeCurve(allSamples, position);
   const cohort = nearestCurvePoint(curve, age);
@@ -313,7 +320,7 @@ function replacementCounts(settings) {
 
 export function applyProjectionModel(rows, historyBundle, newsBundle, settings, projectionSeason) {
   const baseRows = (rows || []).map(row => ({ ...row }));
-  const samples = buildPositionSamples(baseRows, historyBundle, newsBundle, settings);
+  const samples = buildPositionSamples(baseRows, historyBundle, newsBundle, settings, projectionSeason);
   const context = {
     reports: reportLookup(newsBundle),
     ageChanges: new Map(),

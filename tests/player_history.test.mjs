@@ -43,7 +43,7 @@ test("recalculates historical points for PPR and TE premium settings", () => {
   const stats = {
     pos: "TE", passing_yards: 0, passing_tds: 0, passing_interceptions: 0,
     rushing_yards: 10, rushing_tds: 1, receptions: 50, receiving_yards: 600,
-    receiving_tds: 5, fumbles_total: 1,
+    receiving_tds: 5, fumbles_total: 3, fumbles_lost_total: 1,
   };
   assert.equal(fantasyPoints(stats, { ppr: "Standard", tePremium: "Off" }), 95);
   assert.equal(fantasyPoints(stats, { ppr: "Half PPR", tePremium: "+0.5" }), 145);

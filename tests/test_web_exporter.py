@@ -106,3 +106,23 @@ def test_export_special_teams_builds_compact_market_payload(tmp_path):
     assert payload["rows"][0][payload["columns"].index("adp")] == 101.8
     assert payload["source_dates"] == {"Sleeper": "2026-09-04", "MFL": "2026-09-04"}
     assert "NFL" not in payload["columns"]
+
+
+def test_web_export_uses_null_for_missing_ids_and_rejects_duplicate_known_ids(tmp_path):
+    for teams in TEAM_SIZES:
+        for number in range(12):
+            pd.DataFrame([{**_ranking_row(0), 'player_id': '-', 'scoring_coverage': 'core_only'}]).to_csv(
+                tmp_path / f'draft_rankings_{teams}team_format_{number}.csv', index=False)
+    destination = tmp_path / 'rankings.json'
+    options = dict(projection_season=2026, stat_season=2025, adp_updated='2026-10-30')
+    export_web_rankings(tmp_path, destination, **options)
+    payload = json.loads(destination.read_text())
+    row = next(iter(payload['boards'].values()))[0]
+    assert row[payload['columns'].index('player_id')] is None
+    assert row[payload['columns'].index('scoring_coverage')] == 'core_only'
+    previous = destination.read_bytes()
+    pd.DataFrame([_ranking_row(0), {**_ranking_row(1), 'player': 'Other spelling'}]).to_csv(
+        tmp_path / 'draft_rankings_8team_format_0.csv', index=False)
+    with pytest.raises(ValueError, match='duplicate player IDs'):
+        export_web_rankings(tmp_path, destination, **options)
+    assert destination.read_bytes() == previous

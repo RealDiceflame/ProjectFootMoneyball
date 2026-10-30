@@ -11,6 +11,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from stat_utils.data_analytics.fantasy_points import calculate_fantasy_points
+
 
 SKILL_POSITIONS = ("QB", "RB", "WR", "TE")
 ADP_PROVIDERS = ("Yahoo", "Sleeper", "MFL")
@@ -32,20 +34,12 @@ def calculate_projected_points(
     reception_value = pd.Series(base_ppr, index=df.index, dtype=float)
     reception_value.loc[positions == "TE"] += te_premium
 
-    season_points = (
-        _numeric(df, "passing_yds") * 0.04
-        + _numeric(df, "passing_td") * 4
-        - _numeric(df, "passing_int") * 2
-        + _numeric(df, "rushing_yds") * 0.1
-        + _numeric(df, "rushing_td") * 6
-        + _numeric(df, "receiving_rec") * reception_value
-        + _numeric(df, "receiving_yds") * 0.1
-        + _numeric(df, "receiving_td") * 6
-        - _numeric(df, "fmb") * 2
-    )
-
-    games = _numeric(df, "g").where(lambda values: values > 0, 17.0)
+    scored = calculate_fantasy_points(df, "standard")
+    season_points = scored["fantasy_points"] + scored["rec"] * reception_value
+    games = pd.to_numeric(df["g"], errors="coerce") if "g" in df else pd.Series(float("nan"), index=df.index)
+    games = games.where((games > 0) & games.lt(float("inf")))
     return season_points / games * 17
+
 
 
 def _replacement_ranks(teams: int, qb_starters: int) -> dict[str, int]:
@@ -100,11 +94,14 @@ def build_draft_ranking(
     if "Player" in ranking.columns:
         display_names = ranking["Player"].astype(str).str.strip()
         ranking["player"] = display_names.where(display_names.ne(""), ranking["player"])
+    ranking["scoring_coverage"] = calculate_fantasy_points(ranking, "standard")["scoring_coverage"]
     ranking["projected_points"] = calculate_projected_points(
         ranking,
         base_ppr=base_ppr,
         te_premium=te_premium,
     )
+    # Unknown scoring/rates cannot enter replacement pools or regression fits.
+    ranking = ranking[ranking["projected_points"].notna()].copy()
     for provider in ADP_PROVIDERS:
         ranking[provider] = pd.to_numeric(ranking.get(provider), errors="coerce")
     market = ranking.loc[:, list(ADP_PROVIDERS)].apply(
@@ -166,6 +163,7 @@ def build_draft_ranking(
         "pos",
         "position_rank",
         "projected_points",
+        "scoring_coverage",
         "replacement_points",
         "vorp",
         "market_expected_points",

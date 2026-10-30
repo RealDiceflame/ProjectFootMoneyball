@@ -123,9 +123,19 @@ def _split_player_and_team(value):
 def _player_key(name, position) -> str:
     """Return a provider-neutral identity key without collapsing same-name positions."""
     text = unicodedata.normalize("NFKD", str(name)).encode("ascii", "ignore").decode()
+    # Existing stat snapshots omit punctuation within name tokens. Keep those
+    # identities compatible (Ja'Marr/Jamarr, Smith-Njigba/SmithNjigba).
+    text = re.sub(r"[.'\-]", "", text)
     tokens = re.sub(r"[^a-z0-9]+", " ", text.casefold()).split()
     while tokens and tokens[-1] in NAME_SUFFIXES:
         tokens.pop()
+    # Providers spell initialisms as DJ, D.J. or D. J. Keep ordinary given
+    # names separate; only a leading run of single-letter tokens is joined.
+    initials = 0
+    while initials < len(tokens) - 1 and len(tokens[initials]) == 1:
+        initials += 1
+    if initials > 1:
+        tokens = ["".join(tokens[:initials]), *tokens[initials:]]
     return f"{' '.join(tokens)}|{str(position).strip().upper()}"
 
 
@@ -168,6 +178,39 @@ def _adp_metrics(frame: pd.DataFrame) -> pd.DataFrame:
     result.loc[result["Source_Count"] < 2, "ADP_Spread"] = pd.NA
     result.loc[result["Source_Count"] < 2, "ADP_StdDev"] = pd.NA
     return result
+
+
+def normalize_saved_adp(frame: pd.DataFrame) -> pd.DataFrame:
+    """Coalesce equivalent saved names without fetching or changing source dates.
+
+    Only complementary/equal provider values and metadata can be combined.
+    Conflicting values (including explicit IDs) require review, not a guess.
+    Input and output use the importer's Player/Position/provider column names.
+    """
+    if not {"Player", "Position"}.issubset(frame.columns):
+        raise ValueError("Saved ADP requires Player and Position columns.")
+    result = frame.copy()
+    keys = [_player_key(name, pos) for name, pos in zip(result["Player"], result["Position"])]
+    derived = {"ADP", "Source_Count", "ADP_Spread", "ADP_StdDev"}
+    records = []
+    for _, group in result.groupby(keys, sort=False, dropna=False):
+        record = group.iloc[0].to_dict()
+        for column in result.columns:
+            if column == "Player" or column in derived:
+                continue
+            values = group[column].dropna()
+            values = values[values.astype(str).str.strip().ne("")]
+            if column in ADP_PROVIDERS:
+                values = pd.to_numeric(values, errors="raise")
+            unique = values.unique()
+            if len(unique) > 1:
+                raise ValueError(f"Conflicting saved ADP {column} for {record['Player']}; review identity before combining.")
+            record[column] = unique[0] if len(unique) else pd.NA
+        records.append(record)
+    output = pd.DataFrame(records, columns=result.columns)
+    output = _adp_metrics(output)
+    output.attrs = frame.attrs.copy()
+    return output
 
 
 def _normalized_header(value) -> str:

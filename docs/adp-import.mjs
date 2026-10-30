@@ -198,39 +198,52 @@ function keyCounts(items, keyBuilder) {
   return counts;
 }
 
+function playerId(value) {
+  const id = String(value ?? "").trim();
+  return id && !["-", "nan", "none", "null", "undefined", "n/a"].includes(id.toLowerCase()) ? id : "";
+}
+
 export function applyPersonalAdp(rows, snapshot) {
-  if (!snapshot?.entries?.length) return { rows: rows.map(row => ({ ...row })), matched: 0 };
-  const entries = snapshot.entries.map(entry => ({
+  if (!Array.isArray(snapshot?.entries) || !snapshot.entries.length) return { rows: rows.map(row => ({ ...row })), matched: 0 };
+  const entries = snapshot.entries.filter(entry => entry && typeof entry === "object" && adpNumber(entry.adp) !== null).map(entry => ({
     ...entry,
+    adp: adpNumber(entry.adp),
+    _id: playerId(entry.playerId),
     _name: normalizedName(entry.player),
     _team: normalizedTeam(entry.team),
     _position: normalizedPosition(entry.position),
   }));
-  const byId = uniqueLookup(entries, entry => String(entry.playerId || "").trim());
+  const byId = uniqueLookup(entries, entry => entry._id);
   const byNamePositionTeam = uniqueLookup(entries, entry => entry._name && entry._position && entry._team ? `${entry._name}|${entry._position}|${entry._team}` : "");
   const byNamePosition = uniqueLookup(entries, entry => entry._name && entry._position ? `${entry._name}|${entry._position}` : "");
   const byNameTeam = uniqueLookup(entries, entry => entry._name && entry._team ? `${entry._name}|${entry._team}` : "");
   const byName = uniqueLookup(entries, entry => entry._name);
   const preparedRows = rows.map(row => ({
     row,
+    id: playerId(row.player_id),
     name: normalizedName(row.player),
     position: normalizedPosition(row.pos),
     team: normalizedTeam(row.current_team || row.team),
     listedTeam: normalizedTeam(row.listed_team || row.team),
   }));
+  const baseIdCounts = keyCounts(preparedRows, item => item.id);
+  const baseNamePositionTeamCounts = keyCounts(preparedRows, item => item.name && item.position && item.team ? `${item.name}|${item.position}|${item.team}` : "");
   const baseNamePositionCounts = keyCounts(preparedRows, item => item.name && item.position ? `${item.name}|${item.position}` : "");
   const baseNameTeamCounts = keyCounts(preparedRows, item => item.name && item.team ? `${item.name}|${item.team}` : "");
   const baseNameCounts = keyCounts(preparedRows, item => item.name);
   let matched = 0;
-  const updated = preparedRows.map(({ row, name, position, team, listedTeam }) => {
-    const id = String(row.player_id || "").trim();
-    const entry = (id && byId.get(id))
-      || byNamePositionTeam.get(`${name}|${position}|${team}`)
-      || byNamePositionTeam.get(`${name}|${position}|${listedTeam}`)
-      || (baseNamePositionCounts.get(`${name}|${position}`) === 1 && byNamePosition.get(`${name}|${position}`))
-      || (baseNameTeamCounts.get(`${name}|${team}`) === 1 && byNameTeam.get(`${name}|${team}`))
-      || (baseNameTeamCounts.get(`${name}|${listedTeam}`) === 1 && byNameTeam.get(`${name}|${listedTeam}`))
-      || (baseNameCounts.get(name) === 1 && byName.get(name));
+  const updated = preparedRows.map(({ row, id, name, position, team, listedTeam }) => {
+    const candidates = [(id && baseIdCounts.get(id) === 1 && byId.get(id)),
+      (baseNamePositionTeamCounts.get(`${name}|${position}|${team}`) === 1 && byNamePositionTeam.get(`${name}|${position}|${team}`)),
+      (baseNamePositionCounts.get(`${name}|${position}`) === 1 && byNamePositionTeam.get(`${name}|${position}|${listedTeam}`)),
+      (baseNamePositionCounts.get(`${name}|${position}`) === 1 && byNamePosition.get(`${name}|${position}`)),
+      (baseNameTeamCounts.get(`${name}|${team}`) === 1 && byNameTeam.get(`${name}|${team}`)),
+      (baseNameTeamCounts.get(`${name}|${listedTeam}`) === 1 && byNameTeam.get(`${name}|${listedTeam}`)),
+      (baseNameCounts.get(name) === 1 && byName.get(name))];
+    // A name fallback cannot overrule a conflicting stable identity or an
+    // explicit position. Placeholder IDs never identify a person.
+    const entry = candidates.find(candidate => candidate && (!id || !candidate._id || id === candidate._id)
+      && (!position || !candidate._position || position === candidate._position));
     if (!entry) return { ...row };
     matched += 1;
     const next = {

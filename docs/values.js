@@ -1,4 +1,4 @@
-import {MODEL_VERSION, valueFormatKey, buildValueBoard} from "./player-values.mjs?v=20260928-values1";
+import {MODEL_VERSION, valueFormatKey, buildValueBoard} from "./player-values.mjs?v=20261030-scoring1";
 import {fetchSnapshot, startAutoRefresh, preserveView, snapshotSignature} from "./auto-refresh.mjs?v=20260927-refresh1";
 import {validateRankings, validateHistory, validateReports} from "./snapshot-validation.mjs?v=20260927-refresh1";
 

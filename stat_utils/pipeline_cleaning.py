@@ -14,13 +14,16 @@ KEEP_COLUMNS = (
     "receiving_tgt", "receiving_rec", "receiving_yds", "receiving_td", "receiving_tds",
     "Yahoo", "Sleeper", "MFL", "ADP", "Source_Count", "ADP_Spread", "ADP_StdDev",
     "MFL_Source", "Source_Updated",
+    "fumbles_lost_total", "passing_2pt_conversions", "rushing_2pt_conversions",
+    "receiving_2pt_conversions", "special_teams_tds", "scoring_coverage",
 )
 ALLOWED_PREFIX_COLUMNS = {
-    "passing": {"passing_att", "passing_cmp", "passing_yds", "passing_td", "passing_int"},
-    "rushing": {"rushing_att", "rushing_yds", "rushing_td"},
+    "passing": {"passing_att", "passing_cmp", "passing_yds", "passing_td", "passing_int", "passing_2pt_conversions"},
+    "rushing": {"rushing_att", "rushing_yds", "rushing_td", "rushing_2pt_conversions"},
     "receiving": {
         "receiving_tgt", "receiving_rec", "receiving_yds", "receiving_td", "receiving_tds",
         "recieving_tgt", "recieving_rec", "recieving_yds", "recieving_td", "recieving_tds",
+        "receiving_2pt_conversions",
     },
 }
 

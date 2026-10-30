@@ -1,5 +1,5 @@
-import {fantasyPoints} from "./player-history.mjs?v=20260909-archive1";
-import {POSITIONS, roundPositionExpectations} from "./projection-model.mjs?v=20260909-capital1";
+import {fantasyPoints} from "./player-history.mjs?v=20261030-scoring1";
+import {POSITIONS, roundPositionExpectations} from "./projection-model.mjs?v=20261030-scoring1";
 
 export function historicalRoundExpectations(bundle, settings, selectedSeason = "all", maximumRound = 15) {
   const available = [...new Set((bundle?.seasons || []).filter(Number.isInteger))].sort((a, b) => a - b);
@@ -15,7 +15,9 @@ export function historicalRoundExpectations(bundle, settings, selectedSeason = "
       const key = `${row.season}|${row.player_id}`;
       if (row.season !== season || !row.player_id || !POSITIONS.includes(row.pos) || !Number.isFinite(row.adp) || row.adp <= 0 || !Number.isFinite(row.games) || row.games <= 0 || seen.has(key)) continue;
       seen.add(key);
-      rows.push({...row, actual_points: fantasyPoints(row, settings)});
+      const actual_points = fantasyPoints(row, settings);
+      if (actual_points === null) continue;
+      rows.push({...row, actual_points});
     }
   }
   const teamCount = Math.max(1, Number(settings?.teams) || 12);

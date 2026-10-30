@@ -3,10 +3,10 @@ import {
   buildPersonalAdp,
   inspectAdpText,
   recalculateMarketMetrics,
-} from "./adp-import.mjs";
-import { historyAnalytics, historyRows, historyWindow } from "./player-history.mjs?v=20260909-archive1";
+} from "./adp-import.mjs?v=20261030-scoring1";
+import { historyAnalytics, historyRows, historyWindow } from "./player-history.mjs?v=20261030-scoring1";
 import { mergeSpecialTeams, specialTeamRows } from "./live-board.mjs";
-import { applyProjectionModel } from "./projection-model.mjs?v=20260909-archive1";
+import { applyProjectionModel } from "./projection-model.mjs?v=20261030-scoring1";
 import {startAutoRefresh, fetchSnapshot, snapshotSignature, preserveView} from "./auto-refresh.mjs?v=20260927-refresh1";
 import {validateRankings, validateReports, validateHistory, validateSpecialTeams} from "./snapshot-validation.mjs?v=20260927-refresh1";
 import {classifyInjury} from "./injury-status.mjs?v=20260927-refresh1";
@@ -62,6 +62,7 @@ const ui = {
   sourceStatus: document.querySelector("#source-status"),
   boardHeading: document.querySelector("#board-heading"),
   boardSummary: document.querySelector("#board-summary"),
+  scoringCoverageNote: document.querySelector("#scoring-coverage-note"),
   adpModeTitle: document.querySelector("#adp-mode-title"),
   adpModeDetail: document.querySelector("#adp-mode-detail"),
   importAdp: document.querySelector("#import-adp"),
@@ -1257,6 +1258,11 @@ function render() {
   const draftedCount = allRows.filter(row => state.drafted.has(playerKey(row))).length;
   const importText = personalAdpIsActive() ? ` · ${state.personalAdpMatches} personal ADP matches` : "";
   ui.boardSummary.textContent = `Age Curve v1 · showing ${state.visibleRows.length} of ${allRows.length} entries · ${draftedCount} drafted${importText} · click any heading to sort`;
+  const partialCount = allRows.filter(row => row.scoring_coverage === "core_only").length;
+  ui.scoringCoverageNote.hidden = partialCount === 0;
+  ui.scoringCoverageNote.textContent = partialCount
+    ? `${partialCount} player estimate${partialCount === 1 ? " uses" : "s use"} partial scoring data. Some fumble or two-point conversion adjustments may be missing.`
+    : "";
   updateAdpMode();
   ui.emptyState.classList.toggle("hidden", state.visibleRows.length !== 0);
   ui.tableShell.setAttribute("aria-busy", "false");
