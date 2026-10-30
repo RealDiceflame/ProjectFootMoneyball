@@ -32,3 +32,12 @@
 .game-page footer p { line-height: 1.6; }
 @media(max-width:600px) { .game-page th, .game-page td { padding: 10px; } .game-summary { gap: 10px; } }
 @media(max-width:900px) { .game-stat-sides { grid-template-columns: minmax(0,1fr); gap: 20px; } }
+
+#game-snaps { scroll-margin-top: 24px; }
+#game-snaps-status, .game-snap-key, .game-snap-note { color: var(--muted); font-size: .875rem; line-height: 1.6; }
+#game-snaps-status.stale { color: #ffc979; }
+.game-snap-note a { color: var(--lime); text-underline-offset: 3px; }
+.game-snap-sides th:first-child { min-width: 8rem; max-width: 12rem; }
+.game-snap-sides th, .game-snap-sides td { padding: 10px 8px; font-variant-numeric: tabular-nums; }
+.game-snap-sides thead th { white-space: normal; }
+.game-snap-sides { margin-bottom: 16px; }

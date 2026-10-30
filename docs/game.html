@@ -6,7 +6,7 @@
   <meta name="description" content="NFL game scores, team comparisons and player box scores on OutlierBaseline.">
   <title>Game stats · OutlierBaseline</title>
   <link rel="stylesheet" href="styles.css?v=20260928-layout2">
-  <link rel="stylesheet" href="game.css?v=20260915-split1">
+  <link rel="stylesheet" href="game.css?v=20261030-snaps1">
   <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
   <link rel="stylesheet" href="tools.css?v=20261027-tools-editorial1">
 </head>
@@ -17,20 +17,28 @@
   </header>
   <main id="main-content" tabindex="-1">
     <header class="tool-masthead"><div><p class="tool-kicker">NFL / Game report</p><h1 id="game-heading">Game stats</h1></div><p class="tool-description">Reported scores, team comparisons and recorded player production. A dash means unavailable, not zero.</p></header>
-    <nav class="tool-related-links" aria-label="Related game research"><a id="game-results-link" href="stats.html">All game results <span aria-hidden="true">↗</span></a><a id="game-leaders-link" href="stats.html?view=leaders">League leaders <span aria-hidden="true">↗</span></a><a href="survivor.html#matchup-heading">Matchup Lab <span aria-hidden="true">↗</span></a></nav>
+    <nav class="tool-related-links" aria-label="Related game research"><a id="game-results-link" href="stats.html">All game results <span aria-hidden="true">↗</span></a><a id="game-leaders-link" href="stats.html?view=leaders">League leaders <span aria-hidden="true">↗</span></a><a href="#game-snaps">Snap counts <span aria-hidden="true">↓</span></a><a href="survivor.html#matchup-heading">Matchup Lab <span aria-hidden="true">↗</span></a></nav>
     <p id="game-status" class="tool-source-band" role="status">Loading game…</p>
     <div id="game-summary" class="game-summary"></div>
     <p id="game-conditions"></p>
     <section class="tool-results" aria-labelledby="game-box-heading"><div class="tool-section-heading"><p class="tool-section-kicker">The recorded game</p><h2 id="game-box-heading">Team &amp; player box scores</h2></div><div id="game-stats"></div></section>
+    <section id="game-snaps" class="tool-results" aria-labelledby="game-snaps-heading">
+      <div class="tool-section-heading"><p class="tool-section-kicker">Playing time</p><h2 id="game-snaps-heading">Snap counts &amp; participation</h2></div>
+      <p class="game-snap-key">Each column shows <strong>snaps · snap %</strong> for offense, defense or special teams. Players can appear here without recording box-score statistics.</p>
+      <p id="game-snaps-status" role="status">Loading participation…</p>
+      <p id="game-snaps-issues" class="game-snap-note" role="status"></p>
+      <div id="game-snaps-tables"></div>
+      <p class="game-snap-note">Source: <a href="https://github.com/nflverse/nflverse-data/releases/tag/snap_counts" target="_blank" rel="noopener noreferrer">Pro Football Reference via nflverse</a>. Historical and delayed reports, not continuous live scoring. A missing row means unknown participation, not “did not play”; a dash means unavailable, not zero. ID-unlinked players retain their PFR identity and are not joined to NFL statistics by name.</p>
+    </section>
     <noscript>Enable JavaScript to view game statistics.</noscript>
   </main>
   <footer data-compact="true"><span>OutlierBaseline</span><details><summary>Sources &amp; data notes</summary>
     <p>Team and player statistics: <a href="https://github.com/nflverse/nflverse-data" target="_blank" rel="noopener noreferrer">nflverse</a>, <a href="https://github.com/nflverse/nflverse-data/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Selected and formatted by OutlierBaseline. Team marks belong to their respective owners.</p>
-    <p>Box scores usually arrive after games and may be corrected later. A dash means unavailable, not zero. These releases do not include possession time, third/fourth-down conversion rates, snap counts or play-by-play. Player rows cover recorded statistics, not the full active roster. Anonymous source events are kept separate from named players.</p>
+    <p>Box scores usually arrive after games and may be corrected later. A dash means unavailable, not zero. These releases do not include possession time, third/fourth-down conversion rates or play-by-play. Snap counts come from a separate PFR/nflverse dataset shown above. Player rows cover recorded statistics, not the full active roster. Anonymous source events are kept separate from named players.</p>
     <p>Regular-season data is archived by season and game for future research. Historical archives may receive source corrections; their age is not a live-feed outage. Historical franchise codes are preserved and shown instead of modern team marks. These are observed results, not predictions; preserving them does not automatically retrain a model.</p>
     <p>Weather: reported stadium conditions from nflverse or saved <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noopener noreferrer">National Weather Service</a> kickoff forecasts. Forecasts are not observations; indoor venues are marked separately. Future forecasts generally become available within seven days. Weather may be unavailable for international venues.</p>
   </details></footer>
   <script type="module" src="site-nav.js?v=20260930-no-leagues1"></script>
-  <script type="module" src="game.js?v=20261030-historical1"></script>
+  <script type="module" src="game.js?v=20261030-snaps1"></script>
 </body>
 </html>

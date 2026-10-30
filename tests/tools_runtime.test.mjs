@@ -6,6 +6,7 @@ import {normalizeProjectionSettings} from "../docs/projection-model.mjs";
 import {safeOddsUrl, predictionContractRows} from "../docs/odds-board.mjs";
 import {snapshotAgeNote} from "../docs/lab-refresh.mjs";
 import * as gameData from "../docs/game-data.mjs";
+import * as snapData from "../docs/snap-data.mjs";
 import {TEAM_NAMES, scoreDisplay, gameConditions} from "../docs/scores-data.mjs";
 
 test("unsupported shared projection formats recover to published settings", () => {
@@ -76,10 +77,11 @@ async function gamePage(responses) {
   const nodes = new Map(), intervals = [];
   const document = {hidden: false, getElementById(id) {if (!nodes.has(id)) nodes.set(id, new Element()); return nodes.get(id);},
     createElement: tag => new Element(tag), addEventListener() {}};
-  const context = vm.createContext({...gameData, TEAM_NAMES, scoreDisplay, gameConditions, document,
+  const context = vm.createContext({...gameData, ...snapData, TEAM_NAMES, scoreDisplay, gameConditions, document,
     location: {search: `?game=${archive.game.game_id}`}, URLSearchParams, Date, AbortSignal,
     teamMark: () => new Element("img"), setInterval(fn) {intervals.push(fn);},
-    async fetch() {const result = responses.shift(); if (result instanceof Error) throw result;
+    async fetch(url) {if (url.startsWith("data/snap_counts/")) return {status: 404, ok: false};
+      const result = responses.shift(); if (result instanceof Error) throw result;
       return result === null ? {status: 404, ok: false} : {status: 200, ok: true, json: async () => result};}});
   const source = readFileSync(new URL("../docs/game.js", import.meta.url), "utf8").replace(/^import[^\n]*\r?\n/gm, "");
   new vm.Script(source).runInContext(context);
