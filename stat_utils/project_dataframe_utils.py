@@ -3,12 +3,15 @@ project_dataframe_utils.py - cleaned utilities (ASCII-safe) for ProjectFootMoney
 """
 
 import os
+import logging
 import re
 from pathlib import Path
 import pandas as pd
 from functools import reduce
 import stat_utils.pandas_helpers as pdh
 from data_fetcher.adp_importer import _player_key, normalize_saved_adp
+
+logger = logging.getLogger(__name__)
 
 # Canonical player alias map: map alternate display names to canonical pipeline name
 # Keep keys normalized (lowercase, stripped) and values canonical lowercase form used across outputs
@@ -47,13 +50,19 @@ def fetch_and_normalize_stat_tables(stat_urls):
 def load_nflverse_stat_tables(csv_path):
     """Convert nflverse season totals into this project's three stat tables."""
     source = pd.read_csv(csv_path)
+    pdh.warn_missing_columns(source, [
+        "player_display_name", "position", "recent_team", "games", "fumbles_total",
+        "completions", "attempts", "passing_yards", "passing_tds", "passing_interceptions",
+        "carries", "rushing_yards", "rushing_tds", "targets", "receptions",
+        "receiving_yards", "receiving_tds",
+    ], "load_nflverse_stat_tables")
     if "season_type" in source.columns:
         source = source[source["season_type"].eq("REG")].copy()
     # nflverse can include an anonymous aggregate row (not an individual player).
     # Do not assign it a made-up identity or let it enter player projections.
     named = source['player_display_name'].notna() & source['player_display_name'].astype(str).str.strip().ne('')
     if not named.all():
-        print(f'[WARN] Excluding {(~named).sum()} unnamed source aggregate(s).')
+        logger.warning("Excluding %s unnamed source aggregate(s).", (~named).sum())
         source = source.loc[named].copy()
 
     player = source["player_display_name"]
@@ -100,28 +109,28 @@ def load_nflverse_stat_tables(csv_path):
     # The season file explicitly supplies zeroes for unused stat categories.
     # Retain them: removing non-passers would turn known zero passing stats into
     # missing values during the outer join.
-    print(f"[OK] Loaded regular-season stats from nflverse: {csv_path}")
+    logger.info("Loaded regular-season stats from nflverse: %s", csv_path)
     return [(passing, "Passing"), (rushing, "Rushing"), (receiving, "Receiving")]
 
 def save_and_report_merged_stats(df, output_dir, filename="all_stats_merged.csv"):
     """
-    Save merged stats DataFrame to CSV and print summary info.
+    Save merged stats DataFrame to CSV and log a concise summary.
     """
+    before_columns = list(df.columns)
     # Remove ambiguous base 'att' column if present (we keep passing_att/rushing_att)
     if 'att' in df.columns:
-        print("[INFO] Removing ambiguous 'att' column from merged stats before save.")
+        logger.info("Removing ambiguous 'att' column from merged stats before save.")
         try:
             df = df.drop(columns=['att'])
         except Exception:
             pass
 
+    pdh.log_column_changes(before_columns, df, "save_and_report_merged_stats")
     merged_stats_path = os.path.join(output_dir, filename)
     df.to_csv(merged_stats_path, index=False, na_rep='-')
-    print(f"[OK] Merged stats saved to: {merged_stats_path}")
-    print(f"[INFO] DataFrame shape: {df.shape}")
-    print("Columns:")
-    for c in df.columns:
-        print(f" - {c}")
+    logger.info("Merged stats saved to: %s", merged_stats_path)
+    logger.debug("Merged stats saved", extra={"event": "stats_saved", "rows": len(df), "column_count": len(df.columns)})
+
 
 def normalize_col(col):
     """Normalize column names.
@@ -161,6 +170,7 @@ def normalize_stat_dataframe(df):
     # Reset index if 'player' is index
     if df.index.name and str(df.index.name).lower() == 'player':
         df = df.reset_index()
+    before_columns = list(df.columns)
     # Normalize all column names
     df.columns = [normalize_col(col) for col in df.columns]
     # Prefer the actual name over identifiers, regardless of source column order.
@@ -177,6 +187,8 @@ def normalize_stat_dataframe(df):
     # Normalize all player names
     if 'player' in df.columns:
         df.loc[:, 'player'] = df['player'].apply(normalize_player)
+    pdh.log_column_changes(before_columns, df, 'normalize_stat_dataframe')
+    pdh.warn_missing_columns(df, ['player'], 'normalize_stat_dataframe')
     return df
 
 def clean_adp_dataframe(adp_df):
@@ -244,16 +256,21 @@ def _identity_keys(frames):
                 current.append('name:' + '|'.join(fallback))
             else:
                 current.append(f'unresolved:{frame_number}:{row_number}')
+        unresolved_count = sum(key.startswith('unresolved:') for key in current)
+        if unresolved_count:
+            logger.warning("Unresolved player identities remain separate", extra={
+                "event": "unresolved_player_identities", "frame_number": frame_number,
+                "unresolved_count": unresolved_count})
         keys.append(current)
     return keys
 
 def merge_full_adp(stats_path, adp_path, output_path):
     """Merge fantasy stat CSV with ADP CSV on normalized player names."""
     if not os.path.exists(stats_path):
-        print(f"[WARN] Stats file not found at {stats_path}. Skipping.")
+        logger.warning("Stats file not found at %s. Skipping.", stats_path)
         return
     if not os.path.exists(adp_path):
-        print(f"[WARN] ADP file not found at {adp_path}. Skipping.")
+        logger.warning("ADP file not found at %s. Skipping.", adp_path)
         return
 
     stats_df = pd.read_csv(stats_path)
@@ -273,7 +290,7 @@ def merge_full_adp(stats_path, adp_path, output_path):
     cols = ['player'] + [col for col in merged.columns if col != 'player']
     merged = merged[cols]
     merged.to_csv(output_path, index=False, na_rep='-')
-    print(f"[OK] Merged ADP and saved to {output_path}")
+    logger.info("Merged ADP and saved to %s", output_path)
 
 def build_final_player_stats(input_path, output_path):
     """Finalize player stats: clean, deduplicate, sort, save to CSV."""
@@ -285,7 +302,7 @@ def build_final_player_stats(input_path, output_path):
         raise ValueError('Conflicting duplicate player records require review before scoring.')
     df = df.sort_values(by=["player"])
     df.to_csv(output_path, index=False, na_rep='-')
-    print(f"[OK] Final player stats saved to: {output_path}")
+    logger.info("Final player stats saved to: %s", output_path)
 
 def apply_aliases(df):
     alias_map = {
@@ -303,6 +320,7 @@ def reorder_core_columns(df):
     return pdh.reorder_columns(df, ['player', 'pos', 'team', 'age', 'g', 'gs'])
 
 def auto_unify_columns(df):
+    before_columns = list(df.columns)
     suffixes = ["_x", "_y"]
     identity_cols = {"age", "team", "pos"}
     base_candidates = set()
@@ -313,7 +331,7 @@ def auto_unify_columns(df):
                 if base not in {"g", "gs"} and base not in identity_cols:
                     base_candidates.add(base)
     if base_candidates:
-        print(f"[INFO] Auto-unifying columns: {sorted(base_candidates)}")
+        logger.debug("Consolidating merge aliases", extra={"event": "alias_consolidation", "targets": sorted(base_candidates)})
         for base_col in sorted(base_candidates):
             # Only pandas merge suffixes describe the same field. A metric such
             # as yards_per_attempt must never fill or disappear into yards.
@@ -325,26 +343,24 @@ def auto_unify_columns(df):
                 if col != base_col:
                     df.drop(columns=col, inplace=True, errors="ignore")
     else:
-        print("[INFO] No _x/_y columns to unify.")
+        logger.debug("No merge aliases to consolidate")
+    pdh.log_column_changes(before_columns, df, "auto_unify_columns")
     return df
 
 def clean_all(df):
+    before_columns = list(df.columns)
     df = pdh.normalize_column_names(df)
     df = apply_aliases(df)
     df = drop_known_extras(df)
     df = auto_unify_columns(df)
     df = unify_specific_columns(df, ["g", "gs"])
     columns_file = Path(__file__).resolve().parents[1] / "resources" / "columns_to_drop.txt"
-    try:
-        df = pdh.drop_columns_from_file(df, filepath=columns_file,
-                                       keep_patterns=['fumbles_lost_total', 'special_teams_tds'])
-    except FileNotFoundError:
-        pass
+    df = pdh.drop_columns_from_file(df, filepath=columns_file,
+                                    keep_patterns=['fumbles_lost_total', 'special_teams_tds'])
     df = reorder_core_columns(df)
     df = pdh.fill_nulls(df)
-    print("\n\nFinal columns after cleanup and consolidation:")
-    for col in df.columns:
-        print(f" - {col}")
+    pdh.log_column_changes(before_columns, df, "clean_all")
+    pdh.warn_missing_columns(df, ["player", "pos", "g"], "clean_all")
     return df
 
 # --- Project-specific player name normalization ---
@@ -369,17 +385,16 @@ def deduplicate_by_team(df):
 def fetch_stat_category(label, url, output_path):
     from data_fetcher.data_fetcher import DataFetcher
     try:
-        print(f"[INFO] Fetching {label} stats...")
+        logger.info("Fetching %s stats...", label)
         fetcher = DataFetcher(url=url, save_path=output_path)
         fetcher.fetch_data()
         df = fetcher.get_data()
-        print(df.head())
+        logger.debug("Stats fetched", extra={"event": "stats_fetched", "source": label, "rows": len(df), "column_count": len(df.columns)})
         return df
     except Exception as e:
-        import logging
-        logging.error(f"Error while fetching {label} stats: {e}")
+        logger.error("Error while fetching %s stats: %s", label, e)
         if os.path.exists(output_path):
-            logging.warning(
+            logger.warning(
                 "Using cached %s stats from %s because the live fetch failed.",
                 label,
                 output_path,
@@ -391,6 +406,7 @@ def fetch_stat_category(label, url, output_path):
         return None
 
 def clean_and_prepare(df, source_name):
+    before_columns = list(df.columns)
     df = df.copy()
     # Flatten MultiIndex if present
     if isinstance(df.columns, pd.MultiIndex):
@@ -401,8 +417,7 @@ def clean_and_prepare(df, source_name):
     # Normalize column names to a canonical form
     df.columns = [normalize_col(c) for c in cleaned_cols]
 
-    print(f"[INFO] {source_name} columns after flattening:")
-    print(list(df.columns))
+    pdh.log_column_changes(before_columns, df, "clean_and_prepare", source=str(source_name))
 
     # Try to find a player-like column
     player_col = None
@@ -429,6 +444,7 @@ def clean_and_prepare(df, source_name):
             player_col = 'player'
 
     if player_col is None:
+        pdh.warn_missing_columns(df, ["player"], str(source_name))
         raise ValueError(f"{source_name} DataFrame does not contain a recognizable 'player' column.")
 
     # Create canonical lowercase 'player' column
@@ -472,16 +488,14 @@ def merge_stats(dfs_with_labels):
     merged_df = reduce(lambda left, right: pd.merge(left, right, on="_identity", how="outer",
                                                   validate='one_to_one'), cleaned_dfs)
     merged_df = auto_unify_columns(merged_df).drop(columns='_identity')
-    print("[INFO] Final columns after cleaning in merged dataset:")
-    for col in merged_df.columns:
-        print(f" - {col}")
+    logger.debug("Stats merged", extra={"event": "stats_merged", "rows": len(merged_df), "column_count": len(merged_df.columns)})
     return merged_df
 
 def unify_player_column(df):
     player_cols = [col for col in df.columns if col in {'player', 'player_x', 'player_y',
                                                       'player_name', 'player_display_name'}]
     if not player_cols:
-        print("[WARN] No player-like columns found.")
+        pdh.warn_missing_columns(df, ["player"], "unify_player_column")
         return df
     # Rename any non-canonical player columns to 'player' and backfill if necessary
     if 'player' not in df.columns:
@@ -489,7 +503,7 @@ def unify_player_column(df):
         df = df.rename(columns={player_cols[0]: 'player'})
         player_cols[0] = 'player'
     if len(player_cols) > 1:
-        print("[INFO] Unifying duplicated 'player' columns...")
+        logger.info("Unifying duplicated 'player' columns...")
         df['player'] = df[player_cols].bfill(axis=1).iloc[:, 0]
         df = df.loc[:, ~df.columns.duplicated()]
     df['player'] = df['player'].astype(str).str.strip().str.lower()
@@ -500,25 +514,29 @@ def unify_player_column(df):
     return df[cols]
 
 def unify_specific_columns(df, target_columns):
+    before_columns = list(df.columns)
     for base_col in target_columns:
         matches = [col for col in df.columns if col == base_col or col.startswith(f"{base_col}_")]
         if len(matches) > 1:
-            print(f"[INFO] Unifying manually: {matches}")
+            logger.debug("Consolidating aliases", extra={"event": "alias_consolidation", "target": base_col, "aliases": matches})
             df[base_col] = df[matches].bfill(axis=1).iloc[:, 0]
             df.drop(columns=[col for col in matches if col != base_col], inplace=True)
+    pdh.log_column_changes(before_columns, df, "unify_specific_columns")
     return df
 
 def fill_identity_columns(df, identity_cols=["age", "team", "pos"]):
+    before_columns = list(df.columns)
     for col in identity_cols:
         matches = [c for c in df.columns if c.lower() in {col.lower(), col.lower() + '_x', col.lower() + '_y'}]
         if not matches:
             continue
-        print(f"[INFO] Filling identity column: {col} from {matches}")
+        logger.debug("Consolidating identity aliases", extra={"event": "alias_consolidation", "target": col, "aliases": matches})
         temp = df[matches].bfill(axis=1).iloc[:, 0]
         df[col] = temp
         for c in matches:
             if c != col:
                 df.drop(columns=c, inplace=True, errors='ignore')
+    pdh.log_column_changes(before_columns, df, "fill_identity_columns")
     return df
 
 
@@ -534,6 +552,7 @@ def ensure_pos_column(df):
     if candidates:
         df['pos'] = df[candidates[0]]
         return df
+    pdh.warn_missing_columns(df, ["pos"], "ensure_pos_column")
     # not found — return df unchanged (caller can decide to raise)
     return df
 
@@ -556,8 +575,8 @@ def ensure_games_column(df):
         df['g'] = df[candidates[0]]
         return df
 
+    pdh.warn_missing_columns(df, ['g'], 'ensure_games_column')
     df['g'] = float('nan')
-    print("[WARN] No games-played column found; per-game projections remain unavailable.")
     return df
 
 
@@ -568,7 +587,7 @@ def load_rookie_predictions(file_path):
     yds, td, int, rushing_yds, rushing_td, receiving_rec, receiving_yds, receiving_td, fmb, etc.).
     """
     if not os.path.exists(file_path):
-        print(f"[WARN] Rookie predictions file not found: {file_path}")
+        logger.warning("Rookie predictions file not found: %s", file_path)
         return pd.DataFrame()
 
     df = pd.read_csv(file_path)
@@ -610,7 +629,7 @@ def load_rookie_predictions(file_path):
         if guessed:
             df = df.rename(columns={guessed: 'player'})
         else:
-            print("[WARN] No player column found in rookie predictions; skipping file.")
+            pdh.warn_missing_columns(df, ["player"], "load_rookie_predictions; skipping file")
             return pd.DataFrame()
 
     df.loc[:, 'player'] = df['player'].astype(str).apply(normalize_player)
@@ -669,7 +688,7 @@ def append_rookies_to_stats(stats_df, rookie_file_path):
     for col in ('cmp', 'att', 'yds', 'td', 'int'):
         rookies_to_add['passing_' + col] = rookies_to_add[col]
     combined = pd.concat([stats_df, rookies_to_add], ignore_index=True, sort=False)
-    print(f"[INFO] Appended {len(rookies_to_add)} separate rookie projection(s).")
+    logger.info("Appended %s separate rookie projection(s).", len(rookies_to_add))
 
     combined['is_rookie'] = combined['is_rookie'].fillna(False).astype(bool)
     return combined
