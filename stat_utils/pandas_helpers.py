@@ -5,8 +5,29 @@ pandas_helpers.py – Generic, reusable pandas DataFrame utilities
 
 import pandas as pd
 import re
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def log_column_changes(before, df, stage, **context):
+    """Record ordered schemas (including duplicates) only when debugging."""
+    if logger.isEnabledFor(logging.DEBUG):
+        after = list(df.columns)
+        logger.debug("Column transformation: %s", stage, extra={
+            "event": "column_changes", "stage": stage,
+            "columns_before": before, "columns_after": after, **context})
+
+
+def warn_missing_columns(df, required, stage):
+    missing = [col for col in required if col not in df.columns]
+    if missing:
+        logger.warning("Missing required fields in %s: %s", stage, missing, extra={
+            "event": "missing_required_fields", "stage": stage, "missing_fields": missing})
+
 
 def alias_bfill(df, target_field, possible_columns):
+    before = list(df.columns)
     matching_cols = [col for col in df.columns if col.strip().lower() in [c.lower() for c in possible_columns]]
     if matching_cols:
         # Backfill across matching alias columns and assign to the canonical target field
@@ -16,10 +37,16 @@ def alias_bfill(df, target_field, possible_columns):
         cols_to_drop = [col for col in matching_cols if col != target_field]
         if cols_to_drop:
             df.drop(columns=cols_to_drop, inplace=True, errors='ignore')
+    if matching_cols:
+        logger.debug("Consolidating aliases for %s", target_field, extra={
+            "event": "alias_consolidation", "target": target_field, "aliases": matching_cols})
+    log_column_changes(before, df, "alias_bfill")
     return df
 
 def drop_columns(df: pd.DataFrame, columns_to_drop: list[str]) -> pd.DataFrame:
-    return df.drop(columns=[col for col in columns_to_drop if col in df.columns], errors='ignore')
+    result = df.drop(columns=[col for col in columns_to_drop if col in df.columns], errors='ignore')
+    log_column_changes(list(df.columns), result, 'drop_columns')
+    return result
 
 def reorder_columns(df, preferred_order):
     existing_preferred = [col for col in preferred_order if col in df.columns]
@@ -30,7 +57,9 @@ def fill_nulls(df, fill_value=''):
     return df.fillna(fill_value)
 
 def normalize_column_names(df):
+    before = list(df.columns)
     df.columns = [col.strip().lower() for col in df.columns]
+    log_column_changes(before, df, "normalize_column_names")
     return df
 
 def flatten_multiindex(df: pd.DataFrame) -> pd.DataFrame:
@@ -42,7 +71,7 @@ def drop_columns_from_file(df, filepath="columns_to_drop.txt", keep_patterns=Non
         with open(filepath, "r") as f:
             patterns = [line.strip().lower() for line in f if line.strip()]
     except FileNotFoundError:
-        print(f"[WARN] '{filepath}' not found. No columns dropped.")
+        logger.warning("Column removal source file missing: %s", filepath, extra={"event": "missing_source_file", "source_path": str(filepath)})
         return df
 
     if not patterns:
@@ -71,9 +100,9 @@ def drop_columns_from_file(df, filepath="columns_to_drop.txt", keep_patterns=Non
                 to_remove.add(orig)
 
     if to_remove:
-        print(f"[INFO] Dropping columns from {filepath}: {sorted(to_remove)}")
-        df = df.drop(columns=list(to_remove), errors='ignore')
+        logger.debug("Dropping configured columns", extra={"event": "columns_dropped", "source_path": str(filepath), "dropped_columns": sorted(to_remove)})
+        df = drop_columns(df, list(to_remove))
     else:
-        print(f"[INFO] No matching columns found to drop from {filepath}")
+        logger.debug("No configured columns to drop", extra={"event": "columns_dropped", "source_path": str(filepath), "dropped_columns": []})
 
     return df
