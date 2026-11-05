@@ -83,13 +83,19 @@ async function layout(page, name, width) {
 test("Projection keeps wide graphs and its capital table inside labeled regions at every breakpoint", async () => {
   const {page, context, errors} = await open("projection");
   try {
+    const requests = [];
+    page.on("request", request => requests.push(request.url()));
+    await page.goto(`${base}/projection.html?roundSeason=2024`);
     await page.locator("#age-chart svg").waitFor();
+    assert.deepEqual(await page.locator("#round-map-season option").evaluateAll(options => options.map(option => option.value)), ["current"]);
+    assert.ok(requests.every(url => !/draft_capital_history|myfantasyleague/.test(url)));
+    assert.doesNotMatch(await page.locator("#projection-content").innerText(), /MFL|MyFantasyLeague|historical draft/i);
     await page.selectOption("#model-position", "WR");
-    await page.selectOption("#round-map-season", "2024");
+    await page.selectOption("#round-map-season", "current");
     const selected = await page.inputValue("#model-player");
     for (const width of widths) await layout(page, "projection", width);
     assert.equal(await page.inputValue("#model-player"), selected);
-    assert.equal(await page.inputValue("#round-map-season"), "2024");
+    assert.equal(await page.inputValue("#round-map-season"), "current");
     await page.setViewportSize({width: 320, height: 1000});
     await page.locator("#age-chart").focus();
     await page.keyboard.press("ArrowRight");

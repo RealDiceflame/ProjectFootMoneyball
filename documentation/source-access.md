@@ -16,13 +16,15 @@ python refresh_draft_board.py --yahoo-snapshot "PATH-TO-FILE.csv" --keep-stats -
 
 The CSV must contain Player/Name, Position/Pos, and Yahoo/Y! columns. Import dates are snapshot capture dates, not Yahoo publication timestamps. The scheduled job intentionally retains this manual snapshot. Do not work around authorization by scraping protected pages or copying browser tokens.
 
-## MyFantasyLeague: recent drafts and season aggregates differ
+## Retired MFL market data
 
-The official [MFL API reference](https://api.myfantasyleague.com/2026/api_info?STATE=details) documents `PERIOD=RECENT` and `PERIOD=ALL` as distinct current-season ADP windows. `PERIOD` does not apply to previous seasons. This adapter requests 12-team PPR redraft leagues, actual plus mock drafts, and a 5% draft-selection cutoff. These filters do not establish a specific starting-QB count, PPR amount, or TE premium.
-
-A valid recent response with no player entries and `totalDrafts=0` means no recent qualifying drafts, not a broken HTTP endpoint. Only that case triggers one `ALL` request with identical league filters. A valid, sufficiently complete aggregate is labeled `status=fallback`, `freshness=season_aggregate`, and `actual_period=ALL`; CSVs preserve `MFL_Period` and `MFL_Source`. The capture date records the new download, not new recent draft activity or the provider's publication time.
-
-Transport errors, malformed recent responses, or insufficient samples never trigger a broader window. If either attempted window fails validation, the existing per-provider fallback retains its last-good values, original capture date, and sampling window. Both skill-position and K/DST refreshes follow this rule. A legacy CSV without window evidence is labeled unknown, not guessed. Manual Yahoo imports and skipped ADP refreshes preserve MFL's saved window. Neither MFL window is guaranteed to be a preseason-only snapshot, so a model must not silently treat the season aggregate as recent market evidence or a leakage-free preseason baseline.
+As of November 5, 2026, MFL is excluded from scheduled ADP imports, cached/manual
+ADP normalization, consensus calculations, exports and public comparisons. The
+MFL-dependent historical draft-round feed and public dataset are removed. Current
+player ADP uses Sleeper plus the manual Yahoo snapshot; kicker/defense ADP uses
+Sleeper only. Historical player statistics and age curves still use nflverse.
+Static provider-ID mappings remain identity evidence and do not fetch or publish
+MFL market data. Previous release notes remain historical records.
 
 ## Licensed sportsbooks: existing adapters need owner-supplied keys
 

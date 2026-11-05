@@ -15,7 +15,7 @@ from stat_utils.data_analytics.fantasy_points import calculate_fantasy_points
 
 
 SKILL_POSITIONS = ("QB", "RB", "WR", "TE")
-ADP_PROVIDERS = ("Yahoo", "Sleeper", "MFL")
+ADP_PROVIDERS = ("Yahoo", "Sleeper")
 
 
 def _numeric(df: pd.DataFrame, column: str) -> pd.Series:
@@ -175,7 +175,6 @@ def build_draft_ranking(
         "value_vs_adp",
         "Yahoo",
         "Sleeper",
-        "MFL",
         "format",
     ]
     for column in output_columns:

@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {readFileSync} from "node:fs";
 import {draftTiming} from "../docs/draft-timing.mjs";
-import {historicalRoundExpectations} from "../docs/draft-capital.mjs";
 
 const current = (id, pos, adp, points) => ({player_id: id, pos, adp, projected_points: points});
 function historicalRows(drops = [30, 30, 30, 30, 30], pos = "RB") {
@@ -79,17 +78,4 @@ test("invalid data and duplicate player-seasons cannot manufacture a signal", ()
   assert.throws(() => draftTiming([], {waitRounds: 0}), /Invalid/);
   assert.throws(() => draftTiming([], {teams: 0}), /Invalid/);
   assert.deepEqual(draftTiming([]).rounds[0].priorities, []);
-});
-
-test("published historical signals are reproducible and format rescoring reaches the comparisons", () => {
-  const bundle = JSON.parse(readFileSync(new URL("../docs/data/draft_capital_history.json", import.meta.url), "utf8"));
-  const plain = historicalRoundExpectations(bundle, {teams: 12, ppr: "Standard", tePremium: "Off"});
-  const premium = historicalRoundExpectations(bundle, {teams: 12, ppr: "Full PPR", tePremium: "+0.5"});
-  const a = draftTiming(plain.rows, {historical: true}), b = draftTiming(premium.rows, {historical: true});
-  assert.notEqual(cell(a, 8, "TE").drop, cell(b, 8, "TE").drop);
-  assert.deepEqual(a, draftTiming(plain.rows, {historical: true}));
-  for (const round of a.rounds) for (const c of round.cells) if (c.priority) {
-    assert.ok(c.signal && c.drop >= 10 && c.years >= 5);
-    assert.ok(c.declining_years / c.years >= 2 / 3);
-  }
 });

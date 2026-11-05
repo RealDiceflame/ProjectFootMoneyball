@@ -104,3 +104,10 @@ The saved registry still contains 18,784 canonical IDs and 52,657 provider links
 every provider/ID pair has only one owner. Local validation passed 484 Python tests
 (58 database-dependent skips) and 228 JavaScript tests. Browser CI and publication
 are verified separately on the final PR revision.
+
+## November 5 market-source removal
+
+MFL market observations are no longer imported, averaged or published. Existing
+MFL IDs in the reviewed registry remain static identity evidence; this does not
+subscribe to or request MFL data. The earlier rebuild counts above describe those
+release snapshots, not the reduced-source boards.

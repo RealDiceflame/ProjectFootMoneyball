@@ -14,7 +14,6 @@ STAGES = [
      ["docs/data/rankings.json", "docs/data/special_teams.json", "data/ADP/combined_adp_2026.csv", "data/ADP/special_teams_adp_2026.csv", "data/stats/nflverse_player_stats_2025.csv"]),
     ("news", ["update_player_news.py"], ["docs/data/player_news.json"]),
     ("history", ["update_player_history.py"], ["docs/data/player_history.json"]),
-    ("draft_capital", ["update_draft_capital_history.py"], ["docs/data/draft_capital_history.json"]),
     ("odds", ["update_odds_board.py"], ["docs/data/nfl_odds.json"]),
     ("teams", ["update_survivor_board.py"], ["docs/data/survivor.json"]),
 ]
@@ -49,7 +48,7 @@ def source_result(name, ok, snapshot, previous, ended, *, extra_providers=None):
                 "note": "Retained snapshot metadata; provider checks were not confirmed during this failed stage. " + row.get("note", ""),
             }
         return {**result, "status": "failed", "freshness": "stale", "note": "Refresh failed; last-good snapshot retained.", "providers": retained}
-    if name in {"history", "draft_capital"}:
+    if name == "history":
         return {**result, "status": "historical", "freshness": "historical",
                 "last_success": previous.get("last_success") or snapshot.get("generated_at"),
                 "note": "Completed-season historical archive; not a live feed."}

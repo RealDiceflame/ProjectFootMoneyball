@@ -66,7 +66,7 @@ def test_manual_and_historical_sources_do_not_count_as_refresh_failures():
         "stats": {"status": "historical", "season": 2025},
     }}, {}, "2026-09-27")
     assert result["status"] == "success"
-    archive = source_result("draft_capital", True, {"generated_at": "2026-01-01"}, {}, "2026-09-27")
+    archive = source_result("history", True, {"generated_at": "2026-01-01"}, {}, "2026-09-27")
     assert archive["status"] == archive["freshness"] == "historical"
     assert archive["last_success"] == "2026-01-01"
 

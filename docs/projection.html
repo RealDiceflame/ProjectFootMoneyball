@@ -96,11 +96,11 @@
           <div>
             <p class="eyebrow">Draft capital map</p>
             <h2 id="round-map-heading">Expected season points by position and round</h2>
-            <p id="round-map-description">Compare this season's projections with actual season scoring grouped by historical draft position.</p>
+            <p id="round-map-description">Compare current projected scoring by position and draft round.</p>
           </div>
         </div>
         <div class="round-map-controls">
-          <label for="round-map-season">Season view<select id="round-map-season"><option value="all">All historical seasons</option><option value="current">Current projections</option></select></label>
+          <label for="round-map-season">Season view<select id="round-map-season"><option value="current">Current projections</option></select></label>
           <label for="round-map-wait">Compare waiting<select id="round-map-wait"><option value="1">1 round</option><option value="2">2 rounds</option></select></label>
           <p id="round-map-coverage" role="status"></p>
         </div>
@@ -109,7 +109,7 @@
         <p class="round-chart-legend"><span class="legend-qb">● QB</span> <span class="legend-rb">● RB</span> <span class="legend-wr">● WR</span> <span class="legend-te">● TE</span> · Choose one position to show average ± one scoring SD.</p>
         <p class="lab-scroll-hint">Scroll inside the graph or the table below to compare all rounds and positions.</p>
         <div id="round-points-chart" class="age-chart-shell" tabindex="0" role="region" aria-label="Round scoring graph; scroll horizontally"></div>
-        <p class="round-map-note">Lines show scoring averages, not a promise of availability or the best roster strategy. Gaps mean missing data. Historical variation is not a calibrated forecast interval.</p>
+        <p class="round-map-note">Lines show scoring averages, not a promise of availability or the best roster strategy. Gaps mean missing data. Scoring variation is not a calibrated forecast interval.</p>
         <section class="draft-timing" aria-labelledby="draft-timing-heading">
           <h3 id="draft-timing-heading">Where does waiting cost the most?</h3>
           <p id="draft-timing-summary" class="round-map-note" role="status"></p>
@@ -117,14 +117,12 @@
           <details class="draft-timing-method">
             <summary>How to use the timing guide</summary>
             <p>Compare a position in this round with the same position one or two rounds later. A target window means one of the largest qualifying scoring drops from waiting—not the highest raw fantasy score. Positions within five season points of the largest drop share the timing priority.</p>
-            <p>Historical comparisons use only years represented in both rounds and give each matching year equal weight. A signal requires at least five shared seasons, ten player-seasons and five distinct players on each side, a mean drop of at least ten season points, and a decline in at least two-thirds of the shared years. These are transparent screening rules, not a statistical confidence test. Single-year views show differences but cannot establish a multi-year signal.</p>
             <p>Current-season timing uses the model's projected points; one player on each side is sufficient for a comparison, so it is labeled projection-only. Missing rounds stay unavailable. No declining curve is imposed: later-round averages can be higher.</p>
-            <p>This assumes you still need the positions being compared. It does not know your roster, draft slot, keeper rules, or which players will actually remain. An ADP round is an average, not a promise of availability. A quiet window is not proof a position is bad or safe to ignore; bench upside and individual bargains still matter. Historical ADP format limitations apply to every historical timing label. These labels do not change player rankings or the separate Market +/- draft tags.</p>
+            <p>This assumes you still need the positions being compared. It does not know your roster, draft slot, keeper rules, or which players will actually remain. An ADP round is an average, not a promise of availability. A quiet window is not proof a position is bad or safe to ignore; bench upside and individual bargains still matter. These labels do not change player rankings or the separate Market +/- draft tags.</p>
           </details>
         </section>
         <div class="round-map-shell" id="round-map" tabindex="0" role="region" aria-label="Draft capital map; scroll horizontally"></div>
         <p id="round-map-limitations" class="round-map-note"></p>
-        <p class="round-map-note">Historical sources: <a href="https://api.myfantasyleague.com/2026/api_info?STATE=details&amp;TYPE=adp" target="_blank" rel="noopener noreferrer">MyFantasyLeague ADP API</a> · <a href="https://github.com/nflverse/nflverse-data/releases/tag/stats_player" target="_blank" rel="noopener noreferrer">nflverse regular-season statistics</a>.</p>
       </section>
 
       <section class="model-methodology" aria-labelledby="method-heading">
@@ -146,7 +144,7 @@
   </main>
 
   <footer><span>OutlierBaseline · Age Curve v1</span><a href="rankings.html">Use these projections on the live rankings board</a></footer>
-  <script type="module" src="projection.js?v=20261030-scoring1"></script>
+  <script type="module" src="projection.js?v=20261105-no-mfl1"></script>
   <script type="module" src="site-nav.js?v=20260930-no-leagues1"></script>
 </body>
 </html>

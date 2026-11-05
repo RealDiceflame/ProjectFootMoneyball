@@ -16,7 +16,6 @@ from data_fetcher.adp_importer import (
     build_direct_adp,
     build_special_teams_adp,
     latest_adp_date,
-    saved_mfl_provenance,
     update_yahoo_snapshot,
 )
 from app.draft_board_exporter import export_switchable_draft_board
@@ -37,10 +36,6 @@ def saved_adp_health(path, *, state="cached", attempted_at=None):
         "timestamp_kind": "snapshot",
         "note": "User-supplied Yahoo snapshot; date records its import." if provider == "Yahoo" else "Saved snapshot capture date; provider publication time is not supplied.",
     } for provider, date in adp_source_dates(path).items()}
-    if "MFL" in health:
-        health["MFL"].update(saved_mfl_provenance(path))
-        if health["MFL"].get("actual_period") == "ALL":
-            health["MFL"]["note"] += " MFL values use the broader season aggregate, not recent-draft ADP."
     return health
 
 

@@ -103,8 +103,11 @@ def test_export_special_teams_builds_compact_market_payload(tmp_path):
     payload = json.loads(destination.read_text(encoding="utf-8"))
 
     assert payload["rows"][0][payload["columns"].index("position_rank")] == "DST1"
-    assert payload["rows"][0][payload["columns"].index("adp")] == 101.8
-    assert payload["source_dates"] == {"Sleeper": "2026-09-04", "MFL": "2026-09-04"}
+    assert payload["rows"][0][payload["columns"].index("adp")] == 99.0
+    assert payload["source_dates"] == {"Sleeper": "2026-09-04"}
+    assert "MFL" not in payload["columns"]
+    assert payload["rows"][0][payload["columns"].index("source_count")] == 1
+    assert payload["rows"][0][payload["columns"].index("adp_stddev")] is None
     assert "NFL" not in payload["columns"]
 
 
