@@ -94,12 +94,12 @@ def test_rankings_keep_each_available_adp_source_across_league_formats():
     for ranking in (half_ppr, full_ppr, two_qb):
         assert "NFL" not in ranking.columns
         rb1 = ranking.loc[ranking["player"] == "RB 1"].iloc[0]
-        assert round(rb1["adp"], 2) == 5.67
-        assert rb1["source_count"] == 3
-        assert rb1[["Yahoo", "Sleeper", "MFL"]].tolist() == [1, 3, 13]
+        assert round(rb1["adp"], 2) == 2.0
+        assert rb1["source_count"] == 2
+        assert rb1[["Yahoo", "Sleeper"]].tolist() == [1, 3]
+        assert "MFL" not in ranking
         rb2 = ranking.loc[ranking["player"] == "RB 2"].iloc[0]
         assert rb2["source_count"] == 2
-        assert pd.isna(rb2["MFL"])
         assert rb2[["Yahoo", "Sleeper"]].notna().all()
         assert pd.notna(rb2["adp"])
         assert ranking["market_value"].notna().all()

@@ -29,7 +29,7 @@ before(async () => {
 });
 after(async () => { await browser?.close(); if (server) await new Promise(done => server.close(done)); });
 
-async function open(path) {
+async function open(path, query = "") {
   const context = await browser.newContext({viewport: {width: 1440, height: 1000}, reducedMotion: "reduce"});
   await context.route("**/*", route => {
     const url = new URL(route.request().url());
@@ -37,12 +37,13 @@ async function open(path) {
     const key = /^\/data\/(.+)\.json$/.exec(url.pathname)?.[1];
     return Object.hasOwn(snapshots, key) ? route.fulfill({json: snapshots[key]}) : route.continue();
   });
-  const page = await context.newPage(), errors = [];
+  const page = await context.newPage(), errors = [], requests = [];
   page.setDefaultTimeout(20000);
   page.on("pageerror", error => errors.push(error.message));
+  page.on("request", request => requests.push(request.url()));
   await page.clock.install({time: new Date(labNow)});
-  await page.goto(`${base}/${path}.html`);
-  return {context, page, errors};
+  await page.goto(`${base}/${path}.html${query}`);
+  return {context, page, errors, requests};
 }
 
 async function layout(page, name, width) {
@@ -81,15 +82,19 @@ async function layout(page, name, width) {
 }
 
 test("Projection keeps wide graphs and its capital table inside labeled regions at every breakpoint", async () => {
-  const {page, context, errors} = await open("projection");
+  const {page, context, errors, requests} = await open("projection", "?roundSeason=2024");
   try {
     await page.locator("#age-chart svg").waitFor();
+    assert.deepEqual(await page.locator("#round-map-season option").evaluateAll(options => options.map(option => option.value)), ["current"]);
+    assert.ok(requests.every(url => !/draft_capital_history|myfantasyleague/.test(url)));
+    assert.doesNotMatch(await page.locator("#projection-content").innerText(), /MFL|MyFantasyLeague/i);
+    assert.match(await page.locator("#round-map-heading").innerText(), /projected points by position and round/);
     await page.selectOption("#model-position", "WR");
-    await page.selectOption("#round-map-season", "2024");
+    await page.selectOption("#round-map-season", "current");
     const selected = await page.inputValue("#model-player");
     for (const width of widths) await layout(page, "projection", width);
     assert.equal(await page.inputValue("#model-player"), selected);
-    assert.equal(await page.inputValue("#round-map-season"), "2024");
+    assert.equal(await page.inputValue("#round-map-season"), "current");
     await page.setViewportSize({width: 320, height: 1000});
     await page.locator("#age-chart").focus();
     await page.keyboard.press("ArrowRight");

@@ -107,12 +107,12 @@ test("career-relative view compares each player's own observed peak and keeps th
   assert.deepEqual(roundLineSegments([{round: 1, pos: "RB", mean: 100, count: 2}, {round: 3, pos: "RB", mean: 90, count: 2}], "RB").map(part => part.length), [1, 1]);
 });
 
-test("new page controls, shared menus and historical default are wired", () => {
+test("new page controls, shared menus and current draft-round view are wired", () => {
   const html = readFileSync(new URL("../docs/league.html", import.meta.url), "utf8"), js = readFileSync(new URL("../docs/league.js", import.meta.url), "utf8");
   const ids = [...html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
   assert.equal(ids.length, new Set(ids).size);
   for (const [, id] of js.matchAll(/\$\("([^"]+)"\)/g)) assert.ok(ids.includes(id), id);
   const projection = readFileSync(new URL("../docs/projection.js", import.meta.url), "utf8");
-  assert.match(projection, /roundSeason: params.get\("roundSeason"\) \|\| "all"/);
+  assert.match(projection, /roundSeason: "current"/);
   for (const page of ["index", "projection", "survivor", "special-teams", "odds", "league"]) assert.match(readFileSync(new URL(`../docs/${page}.html`, import.meta.url), "utf8"), /site-nav.js/);
 });

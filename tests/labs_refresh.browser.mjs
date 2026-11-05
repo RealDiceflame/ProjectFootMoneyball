@@ -15,7 +15,7 @@ const root = fileURLToPath(new URL("../docs/", import.meta.url));
 const originals = {};
 let browser, server, base, leagueResult;
 before(async () => {
-  for (const key of ["rankings", "player_history", "player_news", "draft_capital_history"]) originals[key] = JSON.parse(await readFile(resolve(root, "data", `${key}.json`), "utf8"));
+  for (const key of ["rankings", "player_history", "player_news"]) originals[key] = JSON.parse(await readFile(resolve(root, "data", `${key}.json`), "utf8"));
   Object.assign(originals, await readLabSnapshots());
   leagueResult = simulateLeague(originals.survivor, {trials: 100, seed: 42, now});
   server = createServer(async (request, response) => {
@@ -92,7 +92,7 @@ test("projection replaces changed snapshots while retaining player, format, seas
     await page.waitForFunction(() => !document.querySelector("#projection-content").classList.contains("hidden"));
     await page.selectOption("#model-position", "WR");
     await page.selectOption("#model-teams", "10");
-    await page.selectOption("#round-map-season", "2024");
+    await page.selectOption("#round-map-season", "current");
     await page.selectOption("#round-map-wait", "2");
     await page.selectOption("#age-view", "career");
     const player = await page.locator("#model-player option").nth(2).getAttribute("value");
@@ -117,7 +117,7 @@ test("projection replaces changed snapshots while retaining player, format, seas
     await page.waitForFunction(season => document.querySelector("#projection-status").textContent.startsWith(`${season} model`), values.rankings.projection_season);
     assert.equal(await page.inputValue("#model-player"), player);
     assert.equal(await page.inputValue("#model-teams"), "10");
-    assert.equal(await page.inputValue("#round-map-season"), "2024");
+    assert.equal(await page.inputValue("#round-map-season"), "current");
     assert.equal(await page.inputValue("#round-map-wait"), "2");
     assert.equal(await page.inputValue("#age-view"), "career");
     assert.equal(await page.locator("#model-player option").count(), count);

@@ -115,7 +115,8 @@ def test_adp_aliases_combine_without_joining_same_name_other_position(tmp_path, 
     merge_full_adp(stats_path, adp_path, out)
     result = pd.read_csv(out, na_values='-').set_index('player_id')
     assert len(result) == 2
-    assert result.loc['receiver-id', ['Yahoo', 'Sleeper', 'MFL', 'ADP']].tolist() == [60, 50, 70, 60]
+    assert result.loc['receiver-id', ['Yahoo', 'Sleeper', 'ADP']].tolist() == [60, 50, 55]
+    assert 'MFL' not in result
     assert pd.isna(result.loc['defender-id', 'ADP'])
 
 

@@ -16,7 +16,6 @@ const columns = [
   { key: "adp_stddev", label: "ADP SD", width: 82, kind: "number" },
   { key: "source_count", label: "Sources", width: 74, kind: "number" },
   { key: "Sleeper", label: "Sleeper", width: 80, kind: "number" },
-  { key: "MFL", label: "MFL", width: 78, kind: "number" },
 ];
 
 const ui = {

@@ -31,7 +31,6 @@ WEB_COLUMNS = (
     "value_vs_adp",
     "Yahoo",
     "Sleeper",
-    "MFL",
     "draft_tag",
     "scoring_coverage",
 )
@@ -46,7 +45,6 @@ SPECIAL_TEAMS_COLUMNS = (
     "source_count",
     "adp_stddev",
     "Sleeper",
-    "MFL",
 )
 
 
@@ -99,7 +97,7 @@ def export_web_rankings(
         "projection_season": projection_season,
         "stat_season": stat_season,
         "adp_updated": adp_updated,
-        "adp_sources": adp_sources or {},
+        "adp_sources": {key: value for key, value in (adp_sources or {}).items() if key in {"Yahoo", "Sleeper"}},
         "generated_at": datetime.fromtimestamp(newest_file, timezone.utc).isoformat(),
         "columns": list(WEB_COLUMNS),
         "boards": boards,
@@ -125,12 +123,14 @@ def export_special_teams(
     source = Path(source)
     destination = Path(destination)
     frame = pd.read_csv(source)
-    market = frame.loc[:, ["Sleeper", "MFL"]].apply(pd.to_numeric, errors="coerce")
+    market = frame.loc[:, ["Sleeper"]].apply(pd.to_numeric, errors="coerce")
     frame["ADP"] = market.mean(axis=1)
     frame["Source_Count"] = market.notna().sum(axis=1)
     frame["ADP_StdDev"] = market.std(axis=1, ddof=1)
     frame.loc[frame["Source_Count"] < 2, "ADP_StdDev"] = pd.NA
+    frame = frame[frame["ADP"].notna()].copy()
     frame = frame.sort_values(["ADP", "Player"], kind="stable").reset_index(drop=True)
+    frame["Position_Rank"] = frame["Position"] + frame.groupby("Position").cumcount().add(1).astype(str)
     frame.insert(0, "overall_rank", frame.index + 1)
     frame = frame.rename(
         columns={
@@ -152,7 +152,7 @@ def export_special_teams(
         .where(pd.notna(frame.loc[:, SPECIAL_TEAMS_COLUMNS]), None)
     )
     source_dates = {}
-    for provider in ("Sleeper", "MFL"):
+    for provider in ("Sleeper",):
         date_column = f"{provider}_Updated"
         if date_column in frame:
             dates = frame[date_column].dropna().astype(str)
