@@ -34,7 +34,13 @@ function page(responses = [bundle()]) {
     createElement: tag => new Element(tag), addEventListener(key, fn) {this.events[key] = fn;}};
   class Clock extends Date {static now() {return NOW;}}
   let requests = 0;
-  const context = vm.createContext({...helpers, document, Date: Clock, AbortSignal,
+  // Imported helpers retain their own global Date; give them the same fixture
+  // clock as the page so saved stories do not expire as the real date advances.
+  const context = vm.createContext({...helpers,
+    injuryFeed: bundle => helpers.injuryFeed(bundle, NOW),
+    snapshotFreshness: value => helpers.snapshotFreshness(value, NOW),
+    leagueHeadlineCards: bundle => helpers.leagueHeadlineCards(bundle, NOW),
+    document, Date: Clock, AbortSignal,
     setTimeout(fn) {const id = {}; timers.set(id, fn); return id;}, clearTimeout(id) {timers.delete(id);},
     setInterval(fn) {intervals.push(fn);},
     async fetch() {requests++; const response = responses.shift(); if (response instanceof Error) throw response;

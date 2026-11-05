@@ -1,0 +1,70 @@
+name: Update snap counts
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_season:
+        description: First season (2016–2026; blank means current season)
+        default: ""
+        type: string
+      end_season:
+        description: Last season (2016–2026; blank means current season)
+        default: ""
+        type: string
+  push:
+    branches: [main]
+    paths: ["app/snap_counts.py", "update_snap_counts.py", ".github/workflows/update-snap-counts.yml"]
+  schedule:
+    - cron: "20 0,6,12,18 * * *"
+      timezone: "America/New_York"
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: update-snap-counts
+  cancel-in-progress: false
+
+jobs:
+  snaps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate snap counts before writing
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          START_SEASON: ${{ inputs.start_season }}
+          END_SEASON: ${{ inputs.end_season }}
+        run: |
+          if [ "$EVENT_NAME" = "push" ]; then
+            python update_snap_counts.py --start-season 2016 --end-season 2026
+          elif [ -n "$START_SEASON" ] && [ -n "$END_SEASON" ]; then
+            python update_snap_counts.py --start-season "$START_SEASON" --end-season "$END_SEASON"
+          elif [ -n "$START_SEASON$END_SEASON" ]; then
+            echo "Provide both start and end seasons."
+            exit 1
+          else
+            python update_snap_counts.py
+          fi
+      - name: Commit validated participation archive
+        run: |
+          git add docs/data/snap_counts data/snap_counts
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Update offensive, defensive and special-teams snap counts"
+            python scripts/push_snapshot.py
+          fi
+      - name: Publish participation archive
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python -m pip install requests
+          python scripts/request_pages_build.py

@@ -81,3 +81,25 @@ All eleven rookie IDs resolve; their partial scoring flags remain intact.
 The refresh retained the October 22 MFL snapshot after the MFL request failed.
 Identity matching does not make that source current. Some name-only and unknown
 provider records still require review and remain in the combined ADP audit data.
+
+## November 5, 2026 integration review
+
+Integrated the diagnostics release and current main, preserving the snap-count
+and play-by-play checks alongside the new identity tests. Rebuilt from the current
+2025 baseline and freshly retrieved November 5 Sleeper/MFL observations. Yahoo
+remains the explicitly labelled August 29 manual snapshot. Generated October 30
+ADP/ranking files were replaced with this rebuild rather than restored over newer
+data during conflict resolution.
+
+All 60 boards now contain 229 unique, identified players. Every one of the prior
+219 players remains, with identical projected points and scoring-coverage labels
+across all formats (13,140 player/format comparisons). Eleven existing rookie
+estimates now have canonical IDs; ten additional players have usable baseline
+statistics. Rankings and market-relative values can change with the current ADP.
+The combined ADP audit retains 423 rows: 329 identified, 93 unresolved provider
+IDs, and one unmatched name. Unknown provider IDs are not assigned by name.
+
+The saved registry still contains 18,784 canonical IDs and 52,657 provider links;
+every provider/ID pair has only one owner. Local validation passed 484 Python tests
+(58 database-dependent skips) and 228 JavaScript tests. Browser CI and publication
+are verified separately on the final PR revision.
