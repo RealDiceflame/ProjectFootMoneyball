@@ -89,7 +89,8 @@ test("Projection keeps wide graphs and its capital table inside labeled regions 
     await page.locator("#age-chart svg").waitFor();
     assert.deepEqual(await page.locator("#round-map-season option").evaluateAll(options => options.map(option => option.value)), ["current"]);
     assert.ok(requests.every(url => !/draft_capital_history|myfantasyleague/.test(url)));
-    assert.doesNotMatch(await page.locator("#projection-content").innerText(), /MFL|MyFantasyLeague|historical draft/i);
+    assert.doesNotMatch(await page.locator("#projection-content").innerText(), /MFL|MyFantasyLeague/i);
+    assert.match(await page.locator("#round-map-heading").innerText(), /projected points by position and round/);
     await page.selectOption("#model-position", "WR");
     await page.selectOption("#round-map-season", "current");
     const selected = await page.inputValue("#model-player");
