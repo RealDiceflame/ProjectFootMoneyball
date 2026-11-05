@@ -63,6 +63,10 @@ rookie prediction CSV was absent in this checkout, so this comparison covers
 historical saved-source cleaning; existing rookie integrity/scoring tests cover
 projection behavior. No live fetching or production output replacement was needed.
 
+The website reliability workflow runs both direct diagnostic/helper test files
+alongside its existing Python checks. Install `requirements.txt` first; it includes
+the `schedule` dependency imported by the shared `DataFetcher` module.
+
 Run focused regressions with:
 
 ```sh
