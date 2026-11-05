@@ -87,9 +87,10 @@ provider records still require review and remain in the combined ADP audit data.
 Integrated the diagnostics release and current main, preserving the snap-count
 and play-by-play checks alongside the new identity tests. Rebuilt from the current
 2025 baseline and freshly retrieved November 5 Sleeper/MFL observations. Yahoo
-remains the explicitly labelled August 29 manual snapshot. Generated October 30
-ADP/ranking files were replaced with this rebuild rather than restored over newer
-data during conflict resolution.
+remains the explicitly labelled August 29 manual snapshot. Generated ADP/ranking
+files are excluded from this PR so it can merge alongside scheduled data updates.
+The existing refresh workflow rebuilds and publishes them from current inputs
+after merge. The counts below describe the reviewed local rebuild.
 
 All 60 boards now contain 229 unique, identified players. Every one of the prior
 219 players remains, with identical projected points and scoring-coverage labels
