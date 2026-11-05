@@ -42,7 +42,7 @@ def test_initial_alias_keys_keep_positions_and_ordinary_names_distinct():
     assert importer._player_key("Jo Ann Smith", "WR") != importer._player_key("Joann Smith", "WR")
 
 
-@pytest.mark.parametrize("column,values", [("Sleeper", [49.9, 52.0]), ("player_id", ["00-0000001", "00-0000002"])])
+@pytest.mark.parametrize("column,values", [("Sleeper", [49.9, 52.0])])
 def test_saved_adp_alias_conflicts_require_review(column, values):
     saved = pd.DataFrame({"Player": ["DJ Moore", "D. J. Moore"], "Position": ["WR", "WR"], column: values})
     with pytest.raises(ValueError, match="Conflicting saved ADP"):
@@ -146,7 +146,10 @@ class _FakeResponse:
         return self.payload
 
 
-def test_build_direct_adp_merges_live_feeds_and_preserves_yahoo(tmp_path):
+def test_build_direct_adp_merges_live_feeds_and_preserves_yahoo(tmp_path, monkeypatch):
+    from data_fetcher import player_identity
+    registry = player_identity.PlayerRegistry([dict(gsis_id=f"test-{n}", name=f"Player {n}", position=("QB", "RB", "WR", "TE")[(n-1)%4], sleeper_id=str(n), mfl_id=str(n)) for n in range(1,121)])
+    monkeypatch.setattr(player_identity, "default_registry", lambda: registry)
     output = tmp_path / "combined.csv"
     pd.DataFrame(
         {
@@ -197,6 +200,9 @@ def test_build_direct_adp_merges_live_feeds_and_preserves_yahoo(tmp_path):
     )
 
     player = result.loc[result["Player"] == "Player 1"].iloc[0]
+    assert player["player_id"] == "test-1"
+    assert player["Sleeper_ID"] == "1"
+    assert player["MFL_ID"] == "1"
     assert player["Yahoo"] == 9.0
     assert player["Sleeper"] == 1.0
     assert player["MFL"] == 7.0
@@ -493,3 +499,27 @@ def test_special_teams_cannot_replace_valid_snapshot_with_incomplete_provider_da
     with pytest.raises(RuntimeError, match="two usable sources"):
         importer.build_special_teams_adp(output, season=2026, update_date="2026-09-27")
     assert output.read_bytes() == before
+
+
+def test_saved_adp_keeps_two_known_same_name_ids_separate():
+    rows=pd.DataFrame([{'Player':'Alex Smith','Position':'WR','player_id':'one','Sleeper':10},
+                       {'Player':'Alex Smith','Position':'WR','player_id':'two','Sleeper':20}])
+    result=importer.normalize_saved_adp(rows)
+    assert result.player_id.tolist()==['one','two']
+    assert result.Sleeper.tolist()==[10,20]
+
+
+def test_unresolved_adp_candidates_cannot_displace_identified_players(tmp_path, monkeypatch):
+    from data_fetcher import player_identity
+    monkeypatch.setattr(importer, 'MIN_PROVIDER_ROWS', 1)
+    monkeypatch.setattr(importer, 'MAX_PUBLISHED_PLAYERS', 1)
+    registry = player_identity.PlayerRegistry([dict(gsis_id='known',name='Known Player',position='RB',sleeper_id='known-provider')])
+    monkeypatch.setattr(player_identity, 'default_registry', lambda: registry)
+    monkeypatch.setattr(importer, 'fetch_sleeper_adp', lambda *a, **k: pd.DataFrame([
+        dict(Player='Unknown',Position='RB',Team='BUF',Sleeper=1,Sleeper_ID='unresolved'),
+        dict(Player='Known Player',Position='RB',Team='BUF',Sleeper=200,Sleeper_ID='known-provider')]))
+    monkeypatch.setattr(importer, 'fetch_mfl_adp', lambda *a, **k: (_ for _ in ()).throw(requests.RequestException()))
+    result=build_direct_adp(tmp_path/'adp.csv',season=2026)
+    assert len(result)==2
+    assert result.loc[result.Player.eq('Known Player'),'player_id'].iloc[0]=='known'
+    assert result.loc[result.Player.eq('Unknown'),'identity_status'].iloc[0]=='unresolved_provider_id'

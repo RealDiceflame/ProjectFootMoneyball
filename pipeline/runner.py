@@ -9,6 +9,7 @@ from config import (
     TE_RECEPTION_BONUS, get_stat_urls,
 )
 from data_fetcher.adp_importer import latest_adp_date
+from data_fetcher.player_identity import attach_player_ids
 from data_fetcher.rookie_prop_projections import build_rookie_prop_projections
 from stat_utils.data_analytics.draft_rankings import save_default_draft_rankings
 from stat_utils.data_analytics.fantasy_points import calculate_and_save_fantasy_points
@@ -53,7 +54,7 @@ def _load_stats(paths):
     stats = unify_player_column(stats)
     stats = unify_specific_columns(stats, target_columns=["g", "gs"])
     stats = fill_identity_columns(stats, identity_cols=["age", "team", "pos", "fmb"])
-    return clean_all(auto_unify_columns(stats))
+    return attach_player_ids(clean_all(auto_unify_columns(stats)))
 
 
 def _build_stat_outputs(paths):

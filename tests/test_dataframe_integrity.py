@@ -99,7 +99,10 @@ def test_ambiguous_idless_name_does_not_attach_to_either_known_person():
     assert result.loc[result.player_id.notna(), 'receiving_yds'].isna().all()
 
 
-def test_adp_aliases_combine_without_joining_same_name_other_position(tmp_path):
+def test_adp_aliases_combine_without_joining_same_name_other_position(tmp_path, monkeypatch):
+    from data_fetcher import player_identity
+    registry = player_identity.PlayerRegistry([dict(gsis_id='receiver-id', name='DJ Moore', position='WR')])
+    monkeypatch.setattr(player_identity, 'default_registry', lambda: registry)
     stats_path, adp_path, out = (tmp_path / name for name in ['stats.csv', 'adp.csv', 'out.csv'])
     pd.DataFrame([
         {'player': 'DJ Moore', 'player_id': 'receiver-id', 'pos': 'WR', 'fantasy_points': 100},
