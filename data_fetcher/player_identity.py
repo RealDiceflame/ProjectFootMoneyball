@@ -6,6 +6,16 @@ import pandas as pd
 
 NAME_SUFFIXES = {"jr", "sr", "ii", "iii", "iv", "v"}
 PROVIDER_COLUMNS = {"Sleeper_ID": "sleeper_id", "MFL_ID": "mfl_id", "ESPN_ID": "espn_id", "Yahoo_ID": "yahoo_id", "PFR_ID": "pfr_id"}
+OFFENSIVE_POSITIONS = frozenset({"QB", "RB", "WR", "TE"})
+
+
+def select_fantasy_position(primary, eligible, allowed=OFFENSIVE_POSITIONS):
+    """Keep the primary position, or use one unambiguous eligible alternative."""
+    primary = clean_id(primary).upper()
+    if primary in allowed:
+        return primary
+    candidates = {clean_id(p).upper() for p in eligible} & set(allowed)
+    return next(iter(candidates)) if len(candidates) == 1 else primary
 
 def _player_key(name, position) -> str:
     """Return a provider-neutral identity key without collapsing same-name positions."""
@@ -44,9 +54,11 @@ class PlayerRegistry:
             if not identity:
                 raise ValueError("Registry row requires a GSIS ID")
             self.ids.setdefault(identity, []).append(row)
+            positions = {row.get("position", ""), *clean_id(row.get("position_aliases")).split(";")}
             for name in [row.get("name", ""), *str(row.get("aliases", "")).split(";")]:
                 if name:
-                    self.names.setdefault(_player_key(name, row.get("position", "")), set()).add(identity)
+                    for position in positions - {""}:
+                        self.names.setdefault(_player_key(name, position), set()).add(identity)
             for column, source in PROVIDER_COLUMNS.items():
                 value = clean_id(row.get(source))
                 if value:
@@ -93,6 +105,14 @@ class PlayerRegistry:
         result["player_id"] = [identity or pd.NA for identity, _ in resolved]
         result["identity_status"] = [status for _, status in resolved]
         return result
+
+    def offensive_position(self, identity, primary):
+        """Use reviewed eligibility for a known person, never a name-only guess."""
+        positions = set()
+        for record in self.ids.get(clean_id(identity), []):
+            positions.add(record.get("position", ""))
+            positions.update(clean_id(record.get("position_aliases")).split(";"))
+        return select_fantasy_position(primary, positions)
 
 
 @lru_cache(maxsize=1)
