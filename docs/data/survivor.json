@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "generated_at": "2026-11-08T11:10:33.331862+00:00",
+  "generated_at": "2026-11-08T17:10:24.950577+00:00",
   "model_version": "Team Baseline v1",
   "source": {
     "name": "nflverse schedules and results",
@@ -11,7 +11,7 @@
     "current_season_games": 122,
     "training_first": "2023-09-08T00:20:00+00:00",
     "training_last": "2026-11-06T01:15:00+00:00",
-    "margin_sd": 12.645893209022297,
+    "margin_sd": 12.645965545174638,
     "tie_probability": 0.0026362038664323375
   },
   "league_points": 22.88,
@@ -74,7 +74,7 @@
     {
       "team": "CAR",
       "name": "Carolina Panthers",
-      "offense": -1.76,
+      "offense": -1.75,
       "defense": -2.13,
       "current_season": {
         "games": 7,
@@ -339,7 +339,7 @@
       "team": "SF",
       "name": "San Francisco 49ers",
       "offense": 2.41,
-      "defense": 0.89,
+      "defense": 0.88,
       "current_season": {
         "games": 7,
         "points_for": 28.14,
@@ -2222,14 +2222,8 @@
       "away_score": null,
       "neutral": true,
       "stadium": "Bernabeu",
-      "status": "scheduled",
-      "model": {
-        "home_points": 23.8,
-        "away_points": 26.5,
-        "home_win": 0.41485,
-        "away_win": 0.582514,
-        "tie": 0.002636
-      },
+      "status": "locked",
+      "model": null,
       "market": null
     },
     {
@@ -2247,8 +2241,8 @@
       "model": {
         "home_points": 19.7,
         "away_points": 24.5,
-        "home_win": 0.351628,
-        "away_win": 0.645736,
+        "home_win": 0.351654,
+        "away_win": 0.64571,
         "tie": 0.002636
       },
       "market": null
@@ -2289,8 +2283,8 @@
       "model": {
         "home_points": 25.3,
         "away_points": 16.5,
-        "home_win": 0.755996,
-        "away_win": 0.241368,
+        "home_win": 0.755973,
+        "away_win": 0.241391,
         "tie": 0.002636
       },
       "market": null
@@ -2310,8 +2304,8 @@
       "model": {
         "home_points": 22.3,
         "away_points": 28.1,
-        "home_win": 0.322979,
-        "away_win": 0.674385,
+        "home_win": 0.32301,
+        "away_win": 0.674354,
         "tie": 0.002636
       },
       "market": null
@@ -2331,8 +2325,8 @@
       "model": {
         "home_points": 21.5,
         "away_points": 18.7,
-        "home_win": 0.586186,
-        "away_win": 0.411178,
+        "home_win": 0.586183,
+        "away_win": 0.411181,
         "tie": 0.002636
       },
       "market": null
@@ -2352,8 +2346,8 @@
       "model": {
         "home_points": 23.5,
         "away_points": 18.9,
-        "home_win": 0.640503,
-        "away_win": 0.356861,
+        "home_win": 0.640491,
+        "away_win": 0.356873,
         "tie": 0.002636
       },
       "market": null
@@ -2373,8 +2367,8 @@
       "model": {
         "home_points": 22.1,
         "away_points": 26.8,
-        "home_win": 0.355383,
-        "away_win": 0.641981,
+        "home_win": 0.35541,
+        "away_win": 0.641954,
         "tie": 0.002636
       },
       "market": null
@@ -2394,8 +2388,8 @@
       "model": {
         "home_points": 19.6,
         "away_points": 20.9,
-        "home_win": 0.459253,
-        "away_win": 0.538111,
+        "home_win": 0.459266,
+        "away_win": 0.538098,
         "tie": 0.002636
       },
       "market": null
@@ -2415,8 +2409,8 @@
       "model": {
         "home_points": 28.7,
         "away_points": 19.4,
-        "home_win": 0.766565,
-        "away_win": 0.230799,
+        "home_win": 0.76654,
+        "away_win": 0.230824,
         "tie": 0.002636
       },
       "market": null
@@ -2436,8 +2430,8 @@
       "model": {
         "home_points": 21.8,
         "away_points": 20.7,
-        "home_win": 0.536023,
-        "away_win": 0.461341,
+        "home_win": 0.536029,
+        "away_win": 0.461335,
         "tie": 0.002636
       },
       "market": null
@@ -2457,8 +2451,8 @@
       "model": {
         "home_points": 28.0,
         "away_points": 18.8,
-        "home_win": 0.762734,
-        "away_win": 0.23463,
+        "home_win": 0.762712,
+        "away_win": 0.234652,
         "tie": 0.002636
       },
       "market": null
@@ -2478,8 +2472,8 @@
       "model": {
         "home_points": 24.3,
         "away_points": 21.8,
-        "home_win": 0.576587,
-        "away_win": 0.420777,
+        "home_win": 0.576581,
+        "away_win": 0.420783,
         "tie": 0.002636
       },
       "market": null
@@ -2499,8 +2493,8 @@
       "model": {
         "home_points": 22.3,
         "away_points": 23.2,
-        "home_win": 0.469448,
-        "away_win": 0.527916,
+        "home_win": 0.469457,
+        "away_win": 0.527907,
         "tie": 0.002636
       },
       "market": null
@@ -2520,8 +2514,8 @@
       "model": {
         "home_points": 24.2,
         "away_points": 23.0,
-        "home_win": 0.534067,
-        "away_win": 0.463297,
+        "home_win": 0.53407,
+        "away_win": 0.463294,
         "tie": 0.002636
       },
       "market": null
@@ -2541,8 +2535,8 @@
       "model": {
         "home_points": 26.2,
         "away_points": 23.6,
-        "home_win": 0.579682,
-        "away_win": 0.417682,
+        "home_win": 0.579668,
+        "away_win": 0.417696,
         "tie": 0.002636
       },
       "market": null
@@ -2562,8 +2556,8 @@
       "model": {
         "home_points": 19.7,
         "away_points": 22.3,
-        "home_win": 0.416209,
-        "away_win": 0.581155,
+        "home_win": 0.416228,
+        "away_win": 0.581136,
         "tie": 0.002636
       },
       "market": null
@@ -2583,8 +2577,8 @@
       "model": {
         "home_points": 17.6,
         "away_points": 21.6,
-        "home_win": 0.373034,
-        "away_win": 0.62433,
+        "home_win": 0.373058,
+        "away_win": 0.624306,
         "tie": 0.002636
       },
       "market": null
@@ -2604,8 +2598,8 @@
       "model": {
         "home_points": 19.7,
         "away_points": 18.8,
-        "home_win": 0.526078,
-        "away_win": 0.471286,
+        "home_win": 0.526083,
+        "away_win": 0.471281,
         "tie": 0.002636
       },
       "market": null
@@ -2625,8 +2619,8 @@
       "model": {
         "home_points": 25.6,
         "away_points": 22.3,
-        "home_win": 0.600643,
-        "away_win": 0.396721,
+        "home_win": 0.600635,
+        "away_win": 0.396729,
         "tie": 0.002636
       },
       "market": null
@@ -2646,8 +2640,8 @@
       "model": {
         "home_points": 24.0,
         "away_points": 21.2,
-        "home_win": 0.583845,
-        "away_win": 0.413519,
+        "home_win": 0.583843,
+        "away_win": 0.413521,
         "tie": 0.002636
       },
       "market": null
@@ -2667,8 +2661,8 @@
       "model": {
         "home_points": 20.8,
         "away_points": 29.5,
-        "home_win": 0.243415,
-        "away_win": 0.753949,
+        "home_win": 0.24345,
+        "away_win": 0.753914,
         "tie": 0.002636
       },
       "market": null
@@ -2688,8 +2682,8 @@
       "model": {
         "home_points": 17.6,
         "away_points": 26.9,
-        "home_win": 0.230916,
-        "away_win": 0.766448,
+        "home_win": 0.23095,
+        "away_win": 0.766414,
         "tie": 0.002636
       },
       "market": null
@@ -2709,8 +2703,8 @@
       "model": {
         "home_points": 21.7,
         "away_points": 27.3,
-        "home_win": 0.325999,
-        "away_win": 0.671365,
+        "home_win": 0.326024,
+        "away_win": 0.67134,
         "tie": 0.002636
       },
       "market": null
@@ -2730,8 +2724,8 @@
       "model": {
         "home_points": 19.3,
         "away_points": 26.0,
-        "home_win": 0.296082,
-        "away_win": 0.701282,
+        "home_win": 0.296114,
+        "away_win": 0.70125,
         "tie": 0.002636
       },
       "market": null
@@ -2751,8 +2745,8 @@
       "model": {
         "home_points": 25.3,
         "away_points": 28.0,
-        "home_win": 0.412954,
-        "away_win": 0.58441,
+        "home_win": 0.412975,
+        "away_win": 0.584389,
         "tie": 0.002636
       },
       "market": null
@@ -2772,8 +2766,8 @@
       "model": {
         "home_points": 24.9,
         "away_points": 23.7,
-        "home_win": 0.537577,
-        "away_win": 0.459787,
+        "home_win": 0.537578,
+        "away_win": 0.459786,
         "tie": 0.002636
       },
       "market": null
@@ -2793,8 +2787,8 @@
       "model": {
         "home_points": 23.9,
         "away_points": 20.1,
-        "home_win": 0.616556,
-        "away_win": 0.380808,
+        "home_win": 0.616549,
+        "away_win": 0.380815,
         "tie": 0.002636
       },
       "market": null
@@ -2814,8 +2808,8 @@
       "model": {
         "home_points": 25.8,
         "away_points": 21.1,
-        "home_win": 0.643853,
-        "away_win": 0.353511,
+        "home_win": 0.643842,
+        "away_win": 0.353522,
         "tie": 0.002636
       },
       "market": null
@@ -2835,8 +2829,8 @@
       "model": {
         "home_points": 30.0,
         "away_points": 20.0,
-        "home_win": 0.785199,
-        "away_win": 0.212165,
+        "home_win": 0.785174,
+        "away_win": 0.21219,
         "tie": 0.002636
       },
       "market": null
@@ -2856,8 +2850,8 @@
       "model": {
         "home_points": 22.1,
         "away_points": 25.5,
-        "home_win": 0.395261,
-        "away_win": 0.602103,
+        "home_win": 0.395282,
+        "away_win": 0.602082,
         "tie": 0.002636
       },
       "market": null
@@ -2877,8 +2871,8 @@
       "model": {
         "home_points": 26.0,
         "away_points": 19.7,
-        "home_win": 0.687918,
-        "away_win": 0.309446,
+        "home_win": 0.687899,
+        "away_win": 0.309465,
         "tie": 0.002636
       },
       "market": null
@@ -2898,8 +2892,8 @@
       "model": {
         "home_points": 28.7,
         "away_points": 21.9,
-        "home_win": 0.704032,
-        "away_win": 0.293332,
+        "home_win": 0.704016,
+        "away_win": 0.293348,
         "tie": 0.002636
       },
       "market": null
@@ -2919,8 +2913,8 @@
       "model": {
         "home_points": 27.8,
         "away_points": 22.9,
-        "home_win": 0.648989,
-        "away_win": 0.348375,
+        "home_win": 0.648973,
+        "away_win": 0.348391,
         "tie": 0.002636
       },
       "market": null
@@ -2940,8 +2934,8 @@
       "model": {
         "home_points": 26.1,
         "away_points": 18.7,
-        "home_win": 0.719517,
-        "away_win": 0.277847,
+        "home_win": 0.719501,
+        "away_win": 0.277863,
         "tie": 0.002636
       },
       "market": null
@@ -2961,8 +2955,8 @@
       "model": {
         "home_points": 19.5,
         "away_points": 25.5,
-        "home_win": 0.316696,
-        "away_win": 0.680668,
+        "home_win": 0.316725,
+        "away_win": 0.680639,
         "tie": 0.002636
       },
       "market": null
@@ -2982,8 +2976,8 @@
       "model": {
         "home_points": 23.6,
         "away_points": 18.2,
-        "home_win": 0.664471,
-        "away_win": 0.332893,
+        "home_win": 0.664456,
+        "away_win": 0.332908,
         "tie": 0.002636
       },
       "market": null
@@ -3003,8 +2997,8 @@
       "model": {
         "home_points": 26.6,
         "away_points": 18.1,
-        "home_win": 0.747101,
-        "away_win": 0.250263,
+        "home_win": 0.747078,
+        "away_win": 0.250286,
         "tie": 0.002636
       },
       "market": null
@@ -3024,8 +3018,8 @@
       "model": {
         "home_points": 20.7,
         "away_points": 20.2,
-        "home_win": 0.515004,
-        "away_win": 0.48236,
+        "home_win": 0.515009,
+        "away_win": 0.482355,
         "tie": 0.002636
       },
       "market": null
@@ -3066,8 +3060,8 @@
       "model": {
         "home_points": 25.7,
         "away_points": 27.3,
-        "home_win": 0.44724,
-        "away_win": 0.550124,
+        "home_win": 0.447255,
+        "away_win": 0.550109,
         "tie": 0.002636
       },
       "market": null
@@ -3087,8 +3081,8 @@
       "model": {
         "home_points": 24.1,
         "away_points": 20.9,
-        "home_win": 0.598414,
-        "away_win": 0.39895,
+        "home_win": 0.598409,
+        "away_win": 0.398955,
         "tie": 0.002636
       },
       "market": null
@@ -3108,8 +3102,8 @@
       "model": {
         "home_points": 28.1,
         "away_points": 24.1,
-        "home_win": 0.622743,
-        "away_win": 0.374621,
+        "home_win": 0.622734,
+        "away_win": 0.37463,
         "tie": 0.002636
       },
       "market": null
@@ -3129,8 +3123,8 @@
       "model": {
         "home_points": 24.9,
         "away_points": 24.3,
-        "home_win": 0.516478,
-        "away_win": 0.480886,
+        "home_win": 0.516484,
+        "away_win": 0.48088,
         "tie": 0.002636
       },
       "market": null
@@ -3150,8 +3144,8 @@
       "model": {
         "home_points": 26.2,
         "away_points": 21.5,
-        "home_win": 0.644115,
-        "away_win": 0.353249,
+        "home_win": 0.644104,
+        "away_win": 0.35326,
         "tie": 0.002636
       },
       "market": null
@@ -3171,8 +3165,8 @@
       "model": {
         "home_points": 20.9,
         "away_points": 20.7,
-        "home_win": 0.504032,
-        "away_win": 0.493332,
+        "home_win": 0.504041,
+        "away_win": 0.493323,
         "tie": 0.002636
       },
       "market": null
@@ -3192,8 +3186,8 @@
       "model": {
         "home_points": 27.5,
         "away_points": 22.4,
-        "home_win": 0.654044,
-        "away_win": 0.34332,
+        "home_win": 0.65403,
+        "away_win": 0.343334,
         "tie": 0.002636
       },
       "market": null
@@ -3234,8 +3228,8 @@
       "model": {
         "home_points": 23.7,
         "away_points": 21.5,
-        "home_win": 0.569584,
-        "away_win": 0.42778,
+        "home_win": 0.569582,
+        "away_win": 0.427782,
         "tie": 0.002636
       },
       "market": null
@@ -3255,8 +3249,8 @@
       "model": {
         "home_points": 25.8,
         "away_points": 22.5,
-        "home_win": 0.59863,
-        "away_win": 0.398734,
+        "home_win": 0.598621,
+        "away_win": 0.398743,
         "tie": 0.002636
       },
       "market": null
@@ -3276,8 +3270,8 @@
       "model": {
         "home_points": 23.8,
         "away_points": 20.3,
-        "home_win": 0.607472,
-        "away_win": 0.389892,
+        "home_win": 0.607466,
+        "away_win": 0.389898,
         "tie": 0.002636
       },
       "market": null
@@ -3297,8 +3291,8 @@
       "model": {
         "home_points": 23.1,
         "away_points": 16.7,
-        "home_win": 0.692897,
-        "away_win": 0.304467,
+        "home_win": 0.692878,
+        "away_win": 0.304486,
         "tie": 0.002636
       },
       "market": null
@@ -3318,8 +3312,8 @@
       "model": {
         "home_points": 28.5,
         "away_points": 16.0,
-        "home_win": 0.836109,
-        "away_win": 0.161255,
+        "home_win": 0.836083,
+        "away_win": 0.161281,
         "tie": 0.002636
       },
       "market": null
@@ -3339,8 +3333,8 @@
       "model": {
         "home_points": 25.4,
         "away_points": 24.8,
-        "home_win": 0.517207,
-        "away_win": 0.480157,
+        "home_win": 0.517208,
+        "away_win": 0.480156,
         "tie": 0.002636
       },
       "market": null
@@ -3360,8 +3354,8 @@
       "model": {
         "home_points": 23.5,
         "away_points": 22.6,
-        "home_win": 0.528061,
-        "away_win": 0.469303,
+        "home_win": 0.528065,
+        "away_win": 0.469299,
         "tie": 0.002636
       },
       "market": null
@@ -3381,8 +3375,8 @@
       "model": {
         "home_points": 19.9,
         "away_points": 21.1,
-        "home_win": 0.459194,
-        "away_win": 0.53817,
+        "home_win": 0.459205,
+        "away_win": 0.538159,
         "tie": 0.002636
       },
       "market": null
@@ -3402,8 +3396,8 @@
       "model": {
         "home_points": 26.0,
         "away_points": 19.5,
-        "home_win": 0.694447,
-        "away_win": 0.302917,
+        "home_win": 0.694431,
+        "away_win": 0.302933,
         "tie": 0.002636
       },
       "market": null
@@ -3423,8 +3417,8 @@
       "model": {
         "home_points": 23.3,
         "away_points": 20.2,
-        "home_win": 0.594098,
-        "away_win": 0.403266,
+        "home_win": 0.594092,
+        "away_win": 0.403272,
         "tie": 0.002636
       },
       "market": null
@@ -3444,8 +3438,8 @@
       "model": {
         "home_points": 23.1,
         "away_points": 27.8,
-        "home_win": 0.35486,
-        "away_win": 0.642504,
+        "home_win": 0.354888,
+        "away_win": 0.642476,
         "tie": 0.002636
       },
       "market": null
@@ -3465,8 +3459,8 @@
       "model": {
         "home_points": 22.7,
         "away_points": 23.8,
-        "home_win": 0.464459,
-        "away_win": 0.532905,
+        "home_win": 0.464468,
+        "away_win": 0.532896,
         "tie": 0.002636
       },
       "market": null
@@ -3486,8 +3480,8 @@
       "model": {
         "home_points": 21.6,
         "away_points": 24.7,
-        "home_win": 0.403299,
-        "away_win": 0.594065,
+        "home_win": 0.403319,
+        "away_win": 0.594045,
         "tie": 0.002636
       },
       "market": null
@@ -3507,8 +3501,8 @@
       "model": {
         "home_points": 19.9,
         "away_points": 23.2,
-        "home_win": 0.396613,
-        "away_win": 0.600751,
+        "home_win": 0.396637,
+        "away_win": 0.600727,
         "tie": 0.002636
       },
       "market": null
@@ -3528,8 +3522,8 @@
       "model": {
         "home_points": 21.0,
         "away_points": 25.7,
-        "home_win": 0.35383,
-        "away_win": 0.643534,
+        "home_win": 0.353858,
+        "away_win": 0.643506,
         "tie": 0.002636
       },
       "market": null
@@ -3549,8 +3543,8 @@
       "model": {
         "home_points": 22.8,
         "away_points": 19.1,
-        "home_win": 0.615444,
-        "away_win": 0.38192,
+        "home_win": 0.615438,
+        "away_win": 0.381926,
         "tie": 0.002636
       },
       "market": null
@@ -3570,8 +3564,8 @@
       "model": {
         "home_points": 22.3,
         "away_points": 24.4,
-        "home_win": 0.431297,
-        "away_win": 0.566067,
+        "home_win": 0.431312,
+        "away_win": 0.566052,
         "tie": 0.002636
       },
       "market": null
@@ -3591,8 +3585,8 @@
       "model": {
         "home_points": 21.7,
         "away_points": 23.7,
-        "home_win": 0.438016,
-        "away_win": 0.559348,
+        "home_win": 0.438026,
+        "away_win": 0.559338,
         "tie": 0.002636
       },
       "market": null
@@ -3611,9 +3605,9 @@
       "status": "scheduled",
       "model": {
         "home_points": 25.0,
-        "away_points": 17.8,
-        "home_win": 0.713377,
-        "away_win": 0.283987,
+        "away_points": 17.9,
+        "home_win": 0.713356,
+        "away_win": 0.284008,
         "tie": 0.002636
       },
       "market": null
@@ -3633,8 +3627,8 @@
       "model": {
         "home_points": 24.5,
         "away_points": 16.1,
-        "home_win": 0.743387,
-        "away_win": 0.253977,
+        "home_win": 0.743363,
+        "away_win": 0.254001,
         "tie": 0.002636
       },
       "market": null
@@ -3654,8 +3648,8 @@
       "model": {
         "home_points": 23.7,
         "away_points": 25.8,
-        "home_win": 0.433569,
-        "away_win": 0.563795,
+        "home_win": 0.433586,
+        "away_win": 0.563778,
         "tie": 0.002636
       },
       "market": null
@@ -3675,8 +3669,8 @@
       "model": {
         "home_points": 21.2,
         "away_points": 20.3,
-        "home_win": 0.529159,
-        "away_win": 0.468205,
+        "home_win": 0.529164,
+        "away_win": 0.4682,
         "tie": 0.002636
       },
       "market": null
@@ -3696,8 +3690,8 @@
       "model": {
         "home_points": 28.6,
         "away_points": 22.0,
-        "home_win": 0.697967,
-        "away_win": 0.299397,
+        "home_win": 0.697947,
+        "away_win": 0.299417,
         "tie": 0.002636
       },
       "market": null
@@ -3717,8 +3711,8 @@
       "model": {
         "home_points": 19.6,
         "away_points": 19.1,
-        "home_win": 0.513013,
-        "away_win": 0.484351,
+        "home_win": 0.513022,
+        "away_win": 0.484342,
         "tie": 0.002636
       },
       "market": null
@@ -3738,8 +3732,8 @@
       "model": {
         "home_points": 24.1,
         "away_points": 22.5,
-        "home_win": 0.550181,
-        "away_win": 0.447183,
+        "home_win": 0.55018,
+        "away_win": 0.447184,
         "tie": 0.002636
       },
       "market": null
@@ -3759,8 +3753,8 @@
       "model": {
         "home_points": 22.8,
         "away_points": 22.4,
-        "home_win": 0.513815,
-        "away_win": 0.483549,
+        "home_win": 0.513819,
+        "away_win": 0.483545,
         "tie": 0.002636
       },
       "market": null
@@ -3780,8 +3774,8 @@
       "model": {
         "home_points": 20.2,
         "away_points": 20.6,
-        "home_win": 0.48683,
-        "away_win": 0.510534,
+        "home_win": 0.486839,
+        "away_win": 0.510525,
         "tie": 0.002636
       },
       "market": null
@@ -3801,8 +3795,8 @@
       "model": {
         "home_points": 31.2,
         "away_points": 19.0,
-        "home_win": 0.830468,
-        "away_win": 0.166896,
+        "home_win": 0.83044,
+        "away_win": 0.166924,
         "tie": 0.002636
       },
       "market": null
@@ -3822,8 +3816,8 @@
       "model": {
         "home_points": 21.1,
         "away_points": 24.5,
-        "home_win": 0.393752,
-        "away_win": 0.603612,
+        "home_win": 0.393775,
+        "away_win": 0.603589,
         "tie": 0.002636
       },
       "market": null
@@ -3843,8 +3837,8 @@
       "model": {
         "home_points": 18.7,
         "away_points": 24.5,
-        "home_win": 0.320074,
-        "away_win": 0.67729,
+        "home_win": 0.320102,
+        "away_win": 0.677262,
         "tie": 0.002636
       },
       "market": null
@@ -3864,8 +3858,8 @@
       "model": {
         "home_points": 24.7,
         "away_points": 21.7,
-        "home_win": 0.592226,
-        "away_win": 0.405138,
+        "home_win": 0.592223,
+        "away_win": 0.405141,
         "tie": 0.002636
       },
       "market": null
@@ -3885,8 +3879,8 @@
       "model": {
         "home_points": 21.6,
         "away_points": 24.3,
-        "home_win": 0.416199,
-        "away_win": 0.581165,
+        "home_win": 0.416218,
+        "away_win": 0.581146,
         "tie": 0.002636
       },
       "market": null
@@ -3906,8 +3900,8 @@
       "model": {
         "home_points": 20.8,
         "away_points": 22.5,
-        "home_win": 0.447697,
-        "away_win": 0.549667,
+        "home_win": 0.447712,
+        "away_win": 0.549652,
         "tie": 0.002636
       },
       "market": null
@@ -3927,8 +3921,8 @@
       "model": {
         "home_points": 23.8,
         "away_points": 23.8,
-        "home_win": 0.500071,
-        "away_win": 0.497293,
+        "home_win": 0.500079,
+        "away_win": 0.497285,
         "tie": 0.002636
       },
       "market": null
@@ -3948,8 +3942,8 @@
       "model": {
         "home_points": 26.2,
         "away_points": 17.6,
-        "home_win": 0.749511,
-        "away_win": 0.247853,
+        "home_win": 0.749486,
+        "away_win": 0.247878,
         "tie": 0.002636
       },
       "market": null
@@ -3969,8 +3963,8 @@
       "model": {
         "home_points": 24.7,
         "away_points": 23.6,
-        "home_win": 0.535723,
-        "away_win": 0.461641,
+        "home_win": 0.535725,
+        "away_win": 0.461639,
         "tie": 0.002636
       },
       "market": null
@@ -3990,8 +3984,8 @@
       "model": {
         "home_points": 23.8,
         "away_points": 25.5,
-        "home_win": 0.44651,
-        "away_win": 0.550854,
+        "home_win": 0.446523,
+        "away_win": 0.550841,
         "tie": 0.002636
       },
       "market": null
@@ -4011,8 +4005,8 @@
       "model": {
         "home_points": 24.2,
         "away_points": 19.1,
-        "home_win": 0.655547,
-        "away_win": 0.341817,
+        "home_win": 0.655534,
+        "away_win": 0.34183,
         "tie": 0.002636
       },
       "market": null
@@ -4032,8 +4026,8 @@
       "model": {
         "home_points": 20.6,
         "away_points": 23.4,
-        "home_win": 0.409863,
-        "away_win": 0.587501,
+        "home_win": 0.409882,
+        "away_win": 0.587482,
         "tie": 0.002636
       },
       "market": null
@@ -4053,8 +4047,8 @@
       "model": {
         "home_points": 19.8,
         "away_points": 22.1,
-        "home_win": 0.424322,
-        "away_win": 0.573042,
+        "home_win": 0.424341,
+        "away_win": 0.573023,
         "tie": 0.002636
       },
       "market": null
@@ -4074,8 +4068,8 @@
       "model": {
         "home_points": 28.5,
         "away_points": 23.4,
-        "home_win": 0.654898,
-        "away_win": 0.342466,
+        "home_win": 0.654887,
+        "away_win": 0.342477,
         "tie": 0.002636
       },
       "market": null
@@ -4095,8 +4089,8 @@
       "model": {
         "home_points": 24.1,
         "away_points": 27.1,
-        "home_win": 0.405629,
-        "away_win": 0.591735,
+        "home_win": 0.405648,
+        "away_win": 0.591716,
         "tie": 0.002636
       },
       "market": null
@@ -4116,8 +4110,8 @@
       "model": {
         "home_points": 24.9,
         "away_points": 18.1,
-        "home_win": 0.703071,
-        "away_win": 0.294293,
+        "home_win": 0.703051,
+        "away_win": 0.294313,
         "tie": 0.002636
       },
       "market": null
@@ -4137,8 +4131,8 @@
       "model": {
         "home_points": 21.2,
         "away_points": 22.5,
-        "home_win": 0.45852,
-        "away_win": 0.538844,
+        "home_win": 0.458531,
+        "away_win": 0.538833,
         "tie": 0.002636
       },
       "market": null
@@ -4158,8 +4152,8 @@
       "model": {
         "home_points": 21.6,
         "away_points": 19.0,
-        "home_win": 0.578304,
-        "away_win": 0.41906,
+        "home_win": 0.578302,
+        "away_win": 0.419062,
         "tie": 0.002636
       },
       "market": null
@@ -4179,8 +4173,8 @@
       "model": {
         "home_points": 23.3,
         "away_points": 21.7,
-        "home_win": 0.549848,
-        "away_win": 0.447516,
+        "home_win": 0.54985,
+        "away_win": 0.447514,
         "tie": 0.002636
       },
       "market": null
@@ -4200,8 +4194,8 @@
       "model": {
         "home_points": 24.8,
         "away_points": 19.4,
-        "home_win": 0.662797,
-        "away_win": 0.334567,
+        "home_win": 0.662783,
+        "away_win": 0.334581,
         "tie": 0.002636
       },
       "market": null
@@ -4221,8 +4215,8 @@
       "model": {
         "home_points": 22.3,
         "away_points": 25.5,
-        "home_win": 0.396624,
-        "away_win": 0.60074,
+        "home_win": 0.396645,
+        "away_win": 0.600719,
         "tie": 0.002636
       },
       "market": null
@@ -4242,8 +4236,8 @@
       "model": {
         "home_points": 24.2,
         "away_points": 23.2,
-        "home_win": 0.531521,
-        "away_win": 0.465843,
+        "home_win": 0.531524,
+        "away_win": 0.46584,
         "tie": 0.002636
       },
       "market": null
@@ -4263,8 +4257,8 @@
       "model": {
         "home_points": 25.2,
         "away_points": 22.1,
-        "home_win": 0.59314,
-        "away_win": 0.404224,
+        "home_win": 0.593132,
+        "away_win": 0.404232,
         "tie": 0.002636
       },
       "market": null
@@ -4284,8 +4278,8 @@
       "model": {
         "home_points": 29.6,
         "away_points": 23.2,
-        "home_win": 0.69123,
-        "away_win": 0.306134,
+        "home_win": 0.691211,
+        "away_win": 0.306153,
         "tie": 0.002636
       },
       "market": null
@@ -4305,8 +4299,8 @@
       "model": {
         "home_points": 19.7,
         "away_points": 25.0,
-        "home_win": 0.33714,
-        "away_win": 0.660224,
+        "home_win": 0.337167,
+        "away_win": 0.660197,
         "tie": 0.002636
       },
       "market": null
@@ -4326,8 +4320,8 @@
       "model": {
         "home_points": 23.0,
         "away_points": 22.8,
-        "home_win": 0.503741,
-        "away_win": 0.493623,
+        "home_win": 0.503748,
+        "away_win": 0.493616,
         "tie": 0.002636
       },
       "market": null
@@ -4347,8 +4341,8 @@
       "model": {
         "home_points": 21.6,
         "away_points": 19.4,
-        "home_win": 0.566368,
-        "away_win": 0.430996,
+        "home_win": 0.566365,
+        "away_win": 0.430999,
         "tie": 0.002636
       },
       "market": null
@@ -4368,8 +4362,8 @@
       "model": {
         "home_points": 20.5,
         "away_points": 20.6,
-        "home_win": 0.495035,
-        "away_win": 0.502329,
+        "home_win": 0.495044,
+        "away_win": 0.50232,
         "tie": 0.002636
       },
       "market": null
@@ -4389,8 +4383,8 @@
       "model": {
         "home_points": 23.2,
         "away_points": 21.8,
-        "home_win": 0.541899,
-        "away_win": 0.455465,
+        "home_win": 0.5419,
+        "away_win": 0.455464,
         "tie": 0.002636
       },
       "market": null
@@ -4410,8 +4404,8 @@
       "model": {
         "home_points": 23.9,
         "away_points": 25.2,
-        "home_win": 0.458442,
-        "away_win": 0.538922,
+        "home_win": 0.458454,
+        "away_win": 0.53891,
         "tie": 0.002636
       },
       "market": null
@@ -4431,8 +4425,8 @@
       "model": {
         "home_points": 23.7,
         "away_points": 21.8,
-        "home_win": 0.556645,
-        "away_win": 0.440719,
+        "home_win": 0.556644,
+        "away_win": 0.44072,
         "tie": 0.002636
       },
       "market": null
@@ -4452,8 +4446,8 @@
       "model": {
         "home_points": 21.6,
         "away_points": 23.0,
-        "home_win": 0.455255,
-        "away_win": 0.542109,
+        "home_win": 0.455267,
+        "away_win": 0.542097,
         "tie": 0.002636
       },
       "market": null
@@ -4473,8 +4467,8 @@
       "model": {
         "home_points": 24.6,
         "away_points": 18.0,
-        "home_win": 0.69756,
-        "away_win": 0.299804,
+        "home_win": 0.697543,
+        "away_win": 0.299821,
         "tie": 0.002636
       },
       "market": null
@@ -4494,8 +4488,8 @@
       "model": {
         "home_points": 26.8,
         "away_points": 27.3,
-        "home_win": 0.482594,
-        "away_win": 0.51477,
+        "home_win": 0.482602,
+        "away_win": 0.514762,
         "tie": 0.002636
       },
       "market": null
@@ -4515,8 +4509,8 @@
       "model": {
         "home_points": 20.6,
         "away_points": 20.9,
-        "home_win": 0.488445,
-        "away_win": 0.508919,
+        "home_win": 0.488455,
+        "away_win": 0.508909,
         "tie": 0.002636
       },
       "market": null
@@ -4536,8 +4530,8 @@
       "model": {
         "home_points": 24.7,
         "away_points": 17.7,
-        "home_win": 0.708182,
-        "away_win": 0.289182,
+        "home_win": 0.708161,
+        "away_win": 0.289203,
         "tie": 0.002636
       },
       "market": null
@@ -4557,8 +4551,8 @@
       "model": {
         "home_points": 24.7,
         "away_points": 22.3,
-        "home_win": 0.573673,
-        "away_win": 0.423691,
+        "home_win": 0.573676,
+        "away_win": 0.423688,
         "tie": 0.002636
       },
       "market": null
@@ -4578,8 +4572,8 @@
       "model": {
         "home_points": 19.2,
         "away_points": 24.3,
-        "home_win": 0.342916,
-        "away_win": 0.654448,
+        "home_win": 0.342941,
+        "away_win": 0.654423,
         "tie": 0.002636
       },
       "market": null
@@ -4599,8 +4593,8 @@
       "model": {
         "home_points": 25.2,
         "away_points": 18.7,
-        "home_win": 0.696189,
-        "away_win": 0.301175,
+        "home_win": 0.696173,
+        "away_win": 0.301191,
         "tie": 0.002636
       },
       "market": null
@@ -4620,8 +4614,8 @@
       "model": {
         "home_points": 24.5,
         "away_points": 20.9,
-        "home_win": 0.607927,
-        "away_win": 0.389437,
+        "home_win": 0.60792,
+        "away_win": 0.389444,
         "tie": 0.002636
       },
       "market": null
@@ -4641,8 +4635,8 @@
       "model": {
         "home_points": 22.3,
         "away_points": 21.7,
-        "home_win": 0.516674,
-        "away_win": 0.48069,
+        "home_win": 0.51668,
+        "away_win": 0.480684,
         "tie": 0.002636
       },
       "market": null
@@ -4662,8 +4656,8 @@
       "model": {
         "home_points": 23.8,
         "away_points": 27.8,
-        "home_win": 0.373771,
-        "away_win": 0.623593,
+        "home_win": 0.373794,
+        "away_win": 0.62357,
         "tie": 0.002636
       },
       "market": null
@@ -4683,8 +4677,8 @@
       "model": {
         "home_points": 29.8,
         "away_points": 20.9,
-        "home_win": 0.757754,
-        "away_win": 0.23961,
+        "home_win": 0.757728,
+        "away_win": 0.239636,
         "tie": 0.002636
       },
       "market": null
@@ -4704,8 +4698,8 @@
       "model": {
         "home_points": 26.8,
         "away_points": 25.5,
-        "home_win": 0.538401,
-        "away_win": 0.458963,
+        "home_win": 0.538403,
+        "away_win": 0.458961,
         "tie": 0.002636
       },
       "market": null
@@ -4725,8 +4719,8 @@
       "model": {
         "home_points": 23.4,
         "away_points": 21.0,
-        "home_win": 0.573312,
-        "away_win": 0.424052,
+        "home_win": 0.573309,
+        "away_win": 0.424055,
         "tie": 0.002636
       },
       "market": null
@@ -4746,8 +4740,8 @@
       "model": {
         "home_points": 19.3,
         "away_points": 25.6,
-        "home_win": 0.309827,
-        "away_win": 0.687537,
+        "home_win": 0.309858,
+        "away_win": 0.687506,
         "tie": 0.002636
       },
       "market": null
@@ -4767,8 +4761,8 @@
       "model": {
         "home_points": 21.7,
         "away_points": 22.7,
-        "home_win": 0.468967,
-        "away_win": 0.528397,
+        "home_win": 0.46898,
+        "away_win": 0.528384,
         "tie": 0.002636
       },
       "market": null
@@ -4788,8 +4782,8 @@
       "model": {
         "home_points": 27.3,
         "away_points": 23.8,
-        "home_win": 0.609496,
-        "away_win": 0.387868,
+        "home_win": 0.609489,
+        "away_win": 0.387875,
         "tie": 0.002636
       },
       "market": null
@@ -4809,8 +4803,8 @@
       "model": {
         "home_points": 28.2,
         "away_points": 19.5,
-        "home_win": 0.753078,
-        "away_win": 0.244286,
+        "home_win": 0.753056,
+        "away_win": 0.244308,
         "tie": 0.002636
       },
       "market": null
@@ -4830,8 +4824,8 @@
       "model": {
         "home_points": 18.7,
         "away_points": 20.5,
-        "home_win": 0.44179,
-        "away_win": 0.555574,
+        "home_win": 0.441804,
+        "away_win": 0.55556,
         "tie": 0.002636
       },
       "market": null
@@ -4851,8 +4845,8 @@
       "model": {
         "home_points": 21.6,
         "away_points": 28.4,
-        "home_win": 0.292702,
-        "away_win": 0.704662,
+        "home_win": 0.292733,
+        "away_win": 0.704631,
         "tie": 0.002636
       },
       "market": null
@@ -4872,8 +4866,8 @@
       "model": {
         "home_points": 21.6,
         "away_points": 20.8,
-        "home_win": 0.524048,
-        "away_win": 0.473316,
+        "home_win": 0.524054,
+        "away_win": 0.47331,
         "tie": 0.002636
       },
       "market": null
@@ -4893,8 +4887,8 @@
       "model": {
         "home_points": 16.6,
         "away_points": 22.9,
-        "home_win": 0.310222,
-        "away_win": 0.687142,
+        "home_win": 0.310254,
+        "away_win": 0.68711,
         "tie": 0.002636
       },
       "market": null
@@ -4914,8 +4908,8 @@
       "model": {
         "home_points": 22.5,
         "away_points": 23.6,
-        "home_win": 0.46378,
-        "away_win": 0.533584,
+        "home_win": 0.463795,
+        "away_win": 0.533569,
         "tie": 0.002636
       },
       "market": null
@@ -4935,8 +4929,8 @@
       "model": {
         "home_points": 18.3,
         "away_points": 24.0,
-        "home_win": 0.323466,
-        "away_win": 0.673898,
+        "home_win": 0.323492,
+        "away_win": 0.673872,
         "tie": 0.002636
       },
       "market": null
@@ -4956,8 +4950,8 @@
       "model": {
         "home_points": 25.6,
         "away_points": 23.2,
-        "home_win": 0.574761,
-        "away_win": 0.422603,
+        "home_win": 0.574755,
+        "away_win": 0.422609,
         "tie": 0.002636
       },
       "market": null
@@ -4977,8 +4971,8 @@
       "model": {
         "home_points": 25.7,
         "away_points": 26.5,
-        "home_win": 0.473517,
-        "away_win": 0.523847,
+        "home_win": 0.473529,
+        "away_win": 0.523835,
         "tie": 0.002636
       },
       "market": null
@@ -4998,8 +4992,8 @@
       "model": {
         "home_points": 24.8,
         "away_points": 19.9,
-        "home_win": 0.649557,
-        "away_win": 0.347807,
+        "home_win": 0.649543,
+        "away_win": 0.347821,
         "tie": 0.002636
       },
       "market": null
@@ -5019,8 +5013,8 @@
       "model": {
         "home_points": 22.0,
         "away_points": 20.0,
-        "home_win": 0.562036,
-        "away_win": 0.435328,
+        "home_win": 0.562034,
+        "away_win": 0.43533,
         "tie": 0.002636
       },
       "market": null
@@ -5040,8 +5034,8 @@
       "model": {
         "home_points": 22.1,
         "away_points": 27.4,
-        "home_win": 0.338193,
-        "away_win": 0.659171,
+        "home_win": 0.338217,
+        "away_win": 0.659147,
         "tie": 0.002636
       },
       "market": null
@@ -5061,8 +5055,8 @@
       "model": {
         "home_points": 23.3,
         "away_points": 21.7,
-        "home_win": 0.548207,
-        "away_win": 0.449157,
+        "home_win": 0.548206,
+        "away_win": 0.449158,
         "tie": 0.002636
       },
       "market": null
@@ -5082,8 +5076,8 @@
       "model": {
         "home_points": 31.1,
         "away_points": 19.2,
-        "home_win": 0.826009,
-        "away_win": 0.171355,
+        "home_win": 0.825983,
+        "away_win": 0.171381,
         "tie": 0.002636
       },
       "market": null
@@ -5103,8 +5097,8 @@
       "model": {
         "home_points": 22.7,
         "away_points": 23.0,
-        "home_win": 0.489227,
-        "away_win": 0.508137,
+        "home_win": 0.489235,
+        "away_win": 0.508129,
         "tie": 0.002636
       },
       "market": null
@@ -5124,8 +5118,8 @@
       "model": {
         "home_points": 26.3,
         "away_points": 20.0,
-        "home_win": 0.688165,
-        "away_win": 0.309199,
+        "home_win": 0.688149,
+        "away_win": 0.309215,
         "tie": 0.002636
       },
       "market": null
@@ -5145,8 +5139,8 @@
       "model": {
         "home_points": 22.9,
         "away_points": 17.7,
-        "home_win": 0.659633,
-        "away_win": 0.337731,
+        "home_win": 0.65962,
+        "away_win": 0.337744,
         "tie": 0.002636
       },
       "market": null
@@ -5166,8 +5160,8 @@
       "model": {
         "home_points": 24.5,
         "away_points": 25.1,
-        "home_win": 0.480685,
-        "away_win": 0.516679,
+        "home_win": 0.480695,
+        "away_win": 0.516669,
         "tie": 0.002636
       },
       "market": null
@@ -5187,8 +5181,8 @@
       "model": {
         "home_points": 26.1,
         "away_points": 16.5,
-        "home_win": 0.774204,
-        "away_win": 0.22316,
+        "home_win": 0.77418,
+        "away_win": 0.223184,
         "tie": 0.002636
       },
       "market": null
@@ -5208,8 +5202,8 @@
       "model": {
         "home_points": 22.2,
         "away_points": 26.6,
-        "home_win": 0.363117,
-        "away_win": 0.634247,
+        "home_win": 0.363139,
+        "away_win": 0.634225,
         "tie": 0.002636
       },
       "market": null
@@ -5229,8 +5223,8 @@
       "model": {
         "home_points": 25.8,
         "away_points": 17.5,
-        "home_win": 0.741027,
-        "away_win": 0.256337,
+        "home_win": 0.741006,
+        "away_win": 0.256358,
         "tie": 0.002636
       },
       "market": null
@@ -5250,8 +5244,8 @@
       "model": {
         "home_points": 23.5,
         "away_points": 22.1,
-        "home_win": 0.541391,
-        "away_win": 0.455973,
+        "home_win": 0.541394,
+        "away_win": 0.45597,
         "tie": 0.002636
       },
       "market": null
@@ -5271,8 +5265,8 @@
       "model": {
         "home_points": 21.8,
         "away_points": 19.3,
-        "home_win": 0.578853,
-        "away_win": 0.418511,
+        "home_win": 0.578849,
+        "away_win": 0.418515,
         "tie": 0.002636
       },
       "market": null
@@ -5292,8 +5286,8 @@
       "model": {
         "home_points": 24.8,
         "away_points": 18.4,
-        "home_win": 0.691655,
-        "away_win": 0.305709,
+        "home_win": 0.691639,
+        "away_win": 0.305725,
         "tie": 0.002636
       },
       "market": null
@@ -5313,8 +5307,8 @@
       "model": {
         "home_points": 21.0,
         "away_points": 23.2,
-        "home_win": 0.430906,
-        "away_win": 0.566458,
+        "home_win": 0.430923,
+        "away_win": 0.566441,
         "tie": 0.002636
       },
       "market": null
@@ -5334,8 +5328,8 @@
       "model": {
         "home_points": 20.5,
         "away_points": 21.9,
-        "home_win": 0.454767,
-        "away_win": 0.542597,
+        "home_win": 0.454781,
+        "away_win": 0.542583,
         "tie": 0.002636
       },
       "market": null
@@ -5355,8 +5349,8 @@
       "model": {
         "home_points": 27.0,
         "away_points": 26.9,
-        "home_win": 0.502405,
-        "away_win": 0.494959,
+        "home_win": 0.502412,
+        "away_win": 0.494952,
         "tie": 0.002636
       },
       "market": null
@@ -5372,2722 +5366,2722 @@
       [
         4.7,
         -1.0,
-        0.22161993
+        0.22151478
       ],
       [
         9.7,
         5.4,
-        0.22203973
+        0.22193438
       ],
       [
         -9.8,
         -1.6,
-        0.22275683
+        0.22265114
       ],
       [
         4.8,
         10.4,
-        0.22275683
+        0.22265114
       ],
       [
         2.6,
         -2.5,
-        0.22275683
+        0.22265114
       ],
       [
         -13.6,
         -2.0,
-        0.22275683
+        0.22265114
       ],
       [
         2.9,
         7.7,
-        0.22275683
+        0.22265114
       ],
       [
         -6.5,
         -4.5,
-        0.22275683
+        0.22265114
       ],
       [
         22.8,
         -5.7,
-        0.22275683
+        0.22265114
       ],
       [
         -14.4,
         6.7,
-        0.22275683
+        0.22265114
       ],
       [
         -1.3,
         -11.2,
-        0.22281118
+        0.22270547
       ],
       [
         2.2,
         0.1,
-        0.22281118
+        0.22270547
       ],
       [
         -5.0,
         7.5,
-        0.22281706
+        0.22271134
       ],
       [
         11.4,
         2.4,
-        0.22281706
+        0.22271134
       ],
       [
         0.3,
         -2.9,
-        0.22288612
+        0.22278037
       ],
       [
         5.8,
         4.7,
-        0.22330832
+        0.22320237
       ],
       [
         -13.9,
         5.6,
-        0.22458416
+        0.2244776
       ],
       [
         -2.2,
         8.6,
-        0.22573776
+        0.22563065
       ],
       [
         -16.6,
         3.2,
-        0.22573776
+        0.22563065
       ],
       [
         -7.7,
         24.1,
-        0.22573776
+        0.22563065
       ],
       [
         -8.6,
         -2.1,
-        0.22573776
+        0.22563065
       ],
       [
         -10.4,
         -10.8,
-        0.22573776
+        0.22563065
       ],
       [
         -10.1,
         -3.1,
-        0.22573776
+        0.22563065
       ],
       [
         2.2,
         -7.5,
-        0.22573776
+        0.22563065
       ],
       [
         -1.2,
         3.6,
-        0.22573776
+        0.22563065
       ],
       [
         -3.4,
         6.9,
-        0.22573776
+        0.22563065
       ],
       [
         -1.0,
         -2.3,
-        0.22573776
+        0.22563065
       ],
       [
         18.5,
         -13.8,
-        0.22579284
+        0.22568571
       ],
       [
         -13.6,
         -5.9,
-        0.22579879
+        0.22569166
       ],
       [
         1.0,
         5.2,
-        0.22579879
+        0.22569166
       ],
       [
         -3.8,
         -7.6,
-        0.22586878
+        0.22576161
       ],
       [
         -6.3,
         2.2,
-        0.22629663
+        0.22618926
       ],
       [
         5.7,
         -14.8,
-        0.22758954
+        0.22748156
       ],
       [
         -8.7,
         4.1,
-        0.22875857
+        0.22865004
       ],
       [
         -2.6,
         -5.5,
-        0.22875857
+        0.22865004
       ],
       [
         9.7,
         -12.2,
-        0.22875857
+        0.22865004
       ],
       [
         -14.1,
         -7.3,
-        0.22875857
+        0.22865004
       ],
       [
         -0.5,
         -8.8,
-        0.22875857
+        0.22865004
       ],
       [
         -16.1,
         8.6,
-        0.22875857
+        0.22865004
       ],
       [
         -6.0,
         8.6,
-        0.22875857
+        0.22865004
       ],
       [
         -2.3,
         19.9,
-        0.22881439
+        0.22870583
       ],
       [
         -0.4,
         -20.9,
-        0.22881439
+        0.22870583
       ],
       [
         -11.6,
         -5.4,
-        0.22882043
+        0.22871186
       ],
       [
         -0.6,
         5.7,
-        0.22882043
+        0.22871186
       ],
       [
         6.6,
         -0.9,
-        0.22882043
+        0.22871186
       ],
       [
         -2.2,
         -1.7,
-        0.22889135
+        0.22878275
       ],
       [
         19.9,
         -7.7,
-        0.22931132
+        0.22920252
       ],
       [
         5.3,
         19.1,
-        0.22932493
+        0.22921612
       ],
       [
         -3.7,
         -5.8,
-        0.23063514
+        0.23052571
       ],
       [
         6.8,
         1.2,
-        0.23181982
+        0.23170983
       ],
       [
         4.3,
         9.7,
-        0.23181982
+        0.23170983
       ],
       [
         2.1,
         -3.9,
-        0.23181982
+        0.23170983
       ],
       [
         5.8,
         10.0,
-        0.23181982
+        0.23170983
       ],
       [
         2.0,
         -1.0,
-        0.23181982
+        0.23170983
       ],
       [
         7.1,
         3.8,
-        0.23181982
+        0.23170983
       ],
       [
         -10.7,
         -8.3,
-        0.23181982
+        0.23170983
       ],
       [
         9.9,
         -6.3,
-        0.23181982
+        0.23170983
       ],
       [
         -12.4,
         20.3,
-        0.23187638
+        0.23176637
       ],
       [
         4.7,
         -2.4,
-        0.23187638
+        0.23176637
       ],
       [
         -11.1,
         -5.8,
-        0.2318825
+        0.23177248
       ],
       [
         -2.6,
         -5.2,
-        0.2318825
+        0.23177248
       ],
       [
         12.3,
         -13.6,
-        0.23195437
+        0.23184432
       ],
       [
         -13.0,
         12.0,
-        0.23237996
+        0.2322697
       ],
       [
         16.7,
         6.8,
-        0.23239375
+        0.23228349
       ],
       [
         16.3,
         8.8,
-        0.2337215
+        0.2336106
       ],
       [
         1.0,
         -1.0,
-        0.23485698
+        0.23474554
       ],
       [
         12.3,
         -7.7,
-        0.23492203
+        0.23481056
       ],
       [
         15.6,
         16.7,
-        0.23492203
+        0.23481056
       ],
       [
         3.8,
         -6.3,
-        0.23492203
+        0.23481056
       ],
       [
         13.1,
         12.5,
-        0.23492203
+        0.23481056
       ],
       [
         -11.1,
         -5.8,
-        0.23492203
+        0.23481056
       ],
       [
         11.3,
         -10.6,
-        0.23492203
+        0.23481056
       ],
       [
         12.5,
         -1.6,
-        0.23497935
+        0.23486786
       ],
       [
         -6.2,
         6.2,
-        0.23497935
+        0.23486786
       ],
       [
         -3.6,
         1.5,
-        0.23498555
+        0.23487405
       ],
       [
         -3.7,
         11.4,
-        0.23498555
+        0.23487405
       ],
       [
         -2.8,
         -2.8,
-        0.23505838
+        0.23494686
       ],
       [
         2.8,
         -6.8,
-        0.23550364
+        0.2353919
       ],
       [
         2.6,
         10.8,
-        0.23684915
+        0.23673678
       ],
       [
         12.9,
         -5.5,
-        0.23799983
+        0.23788691
       ],
       [
         1.0,
         4.1,
-        0.23806575
+        0.2379528
       ],
       [
         7.4,
         -6.8,
-        0.23806575
+        0.2379528
       ],
       [
         0.7,
         23.2,
-        0.23806575
+        0.2379528
       ],
       [
         4.0,
         31.9,
-        0.23806575
+        0.2379528
       ],
       [
         -5.9,
         -5.0,
-        0.23806575
+        0.2379528
       ],
       [
         -6.1,
         -0.9,
-        0.23806575
+        0.2379528
       ],
       [
         -5.3,
         3.3,
-        0.23812384
+        0.23801086
       ],
       [
         -6.8,
         13.0,
-        0.23812384
+        0.23801086
       ],
       [
         0.0,
         15.9,
-        0.23813012
+        0.23801713
       ],
       [
         -19.5,
         24.3,
-        0.23813012
+        0.23801713
       ],
       [
         -14.0,
         -6.0,
-        0.23820393
+        0.23809091
       ],
       [
         2.2,
         -0.8,
-        0.23865514
+        0.23854191
       ],
       [
         -13.3,
         14.3,
-        0.24001866
+        0.23990478
       ],
       [
         11.4,
         -4.0,
-        0.24118474
+        0.2410703
       ],
       [
         -9.4,
         11.6,
-        0.24125154
+        0.24113707
       ],
       [
         7.4,
         -6.6,
-        0.24125154
+        0.24113707
       ],
       [
         -8.6,
         -2.2,
-        0.24125154
+        0.24113707
       ],
       [
         -1.3,
         2.8,
-        0.24125154
+        0.24113707
       ],
       [
         -8.0,
         -13.8,
-        0.24125154
+        0.24113707
       ],
       [
         4.5,
         7.2,
-        0.24125154
+        0.24113707
       ],
       [
         -16.8,
         5.1,
-        0.24125154
+        0.24113707
       ],
       [
         -4.0,
         -5.6,
-        0.24131041
+        0.24119591
       ],
       [
         14.0,
         -12.7,
-        0.24131041
+        0.24119591
       ],
       [
         -6.0,
         7.3,
-        0.24131677
+        0.24120227
       ],
       [
         17.4,
         0.1,
-        0.24139157
+        0.24127704
       ],
       [
         8.9,
         17.7,
-        0.24184882
+        0.24173407
       ],
       [
         -4.8,
         -8.2,
-        0.24186317
+        0.24174842
       ],
       [
         7.9,
         -2.7,
-        0.24323059
+        0.24311519
       ],
       [
         -8.2,
         13.2,
-        0.24447996
+        0.24436397
       ],
       [
         8.9,
         -0.9,
-        0.24447996
+        0.24436397
       ],
       [
         25.3,
         -4.8,
-        0.24447996
+        0.24436397
       ],
       [
         -0.6,
         -1.8,
-        0.24447996
+        0.24436397
       ],
       [
         5.4,
         6.0,
-        0.24447996
+        0.24436397
       ],
       [
         1.7,
         7.1,
-        0.24447996
+        0.24436397
       ],
       [
         6.3,
         4.3,
-        0.24447996
+        0.24436397
       ],
       [
         0.8,
         11.5,
-        0.24447996
+        0.24436397
       ],
       [
         3.8,
         -12.9,
-        0.24453962
+        0.24442359
       ],
       [
         -11.7,
         4.8,
-        0.24453962
+        0.24442359
       ],
       [
         2.9,
         -1.4,
-        0.24454607
+        0.24443004
       ],
       [
         0.9,
         2.8,
-        0.24454607
+        0.24443004
       ],
       [
         -5.4,
         -7.8,
-        0.24454607
+        0.24443004
       ],
       [
         3.7,
         1.2,
-        0.24462187
+        0.2445058
       ],
       [
         4.9,
         4.1,
-        0.24508524
+        0.24496895
       ],
       [
         0.4,
         -6.8,
-        0.2464855
+        0.24636855
       ],
       [
         5.1,
         -5.0,
-        0.24777119
+        0.24765364
       ],
       [
         15.5,
         -8.7,
-        0.24777119
+        0.24765364
       ],
       [
         2.1,
         8.2,
-        0.24777119
+        0.24765364
       ],
       [
         4.7,
         -2.6,
-        0.24777119
+        0.24765364
       ],
       [
         15.3,
         3.1,
-        0.24777119
+        0.24765364
       ],
       [
         -10.7,
         6.5,
-        0.24777119
+        0.24765364
       ],
       [
         1.2,
         5.6,
-        0.24777119
+        0.24765364
       ],
       [
         -0.1,
         -1.4,
-        0.24777119
+        0.24765364
       ],
       [
         6.9,
         -13.3,
-        0.24783165
+        0.24771406
       ],
       [
         0.7,
         2.3,
-        0.24783165
+        0.24771406
       ],
       [
         -10.8,
         -0.9,
-        0.24783819
+        0.2477206
       ],
       [
         -3.6,
         3.8,
-        0.24783819
+        0.2477206
       ],
       [
         -4.7,
         -7.4,
-        0.24791501
+        0.24779738
       ],
       [
         4.9,
         4.5,
-        0.24838462
+        0.24826677
       ],
       [
         6.9,
         12.4,
-        0.24980373
+        0.2496852
       ],
       [
         2.3,
         -4.2,
-        0.25101734
+        0.25089824
       ],
       [
         -18.6,
         1.6,
-        0.25108686
+        0.25096773
       ],
       [
         -0.1,
         3.4,
-        0.25108686
+        0.25096773
       ],
       [
         -15.1,
         -11.9,
-        0.25108686
+        0.25096773
       ],
       [
         -8.5,
         -3.0,
-        0.25108686
+        0.25096773
       ],
       [
         -4.0,
         -3.3,
-        0.25108686
+        0.25096773
       ],
       [
         -2.3,
         -1.8,
-        0.25108686
+        0.25096773
       ],
       [
         6.2,
         6.4,
-        0.25108686
+        0.25096773
       ],
       [
         3.5,
         0.3,
-        0.25114813
+        0.25102897
       ],
       [
         8.9,
         -13.6,
-        0.25115475
+        0.25103559
       ],
       [
         -20.6,
         10.2,
-        0.25115475
+        0.25103559
       ],
       [
         1.2,
         -0.3,
-        0.2512326
+        0.2511134
       ],
       [
         -9.0,
         1.5,
-        0.25170849
+        0.25158907
       ],
       [
         -2.2,
         -3.3,
-        0.2531466
+        0.25302649
       ],
       [
         -1.4,
         -2.4,
-        0.2544469
+        0.25432618
       ],
       [
         23.2,
         -14.5,
-        0.2544469
+        0.25432618
       ],
       [
         9.0,
         -1.9,
-        0.2544469
+        0.25432618
       ],
       [
         2.5,
         7.6,
-        0.2544469
+        0.25432618
       ],
       [
         12.2,
         -5.6,
-        0.2544469
+        0.25432618
       ],
       [
         6.1,
         7.8,
-        0.2544469
+        0.25432618
       ],
       [
         -2.4,
         -7.0,
-        0.2544469
+        0.25432618
       ],
       [
         -6.1,
         0.2,
-        0.2544469
+        0.25432618
       ],
       [
         15.6,
         -13.2,
-        0.25450899
+        0.25438823
       ],
       [
         -10.7,
         0.4,
-        0.25450899
+        0.25438823
       ],
       [
         5.5,
         0.1,
-        0.2545157
+        0.25439494
       ],
       [
         10.2,
         4.8,
-        0.25459459
+        0.2544738
       ],
       [
         -16.7,
         13.6,
-        0.25507685
+        0.25495583
       ],
       [
         5.3,
         -1.0,
-        0.2565342
+        0.25641248
       ],
       [
         11.0,
         3.7,
-        0.25785191
+        0.25772957
       ],
       [
         7.2,
         8.3,
-        0.25785191
+        0.25772957
       ],
       [
         3.8,
         13.7,
-        0.25785191
+        0.25772957
       ],
       [
         -16.4,
         -3.9,
-        0.25785191
+        0.25772957
       ],
       [
         10.6,
         -3.1,
-        0.25785191
+        0.25772957
       ],
       [
         -11.8,
         7.4,
-        0.25785191
+        0.25772957
       ],
       [
         1.6,
         8.3,
-        0.25785191
+        0.25772957
       ],
       [
         -1.7,
         7.3,
-        0.25791482
+        0.25779245
       ],
       [
         15.6,
         -13.5,
-        0.25792163
+        0.25779925
       ],
       [
         -8.8,
         -15.8,
-        0.25792163
+        0.25779925
       ],
       [
         -2.6,
         13.0,
-        0.25800157
+        0.25787916
       ],
       [
         1.1,
         6.1,
-        0.25849029
+        0.25836764
       ],
       [
         -5.2,
         1.5,
-        0.25980776
+        0.25968449
       ],
       [
         0.9,
         2.8,
-        0.25989001
+        0.2597667
       ],
       [
         4.8,
         -3.9,
-        0.25996885
+        0.2598455
       ],
       [
         -8.0,
         -0.8,
-        0.26035311
+        0.26022959
       ],
       [
         -7.7,
         -5.5,
-        0.26130248
+        0.2611785
       ],
       [
         15.0,
         23.1,
-        0.26130248
+        0.2611785
       ],
       [
         -2.6,
         0.6,
-        0.26130248
+        0.2611785
       ],
       [
         -2.1,
         2.6,
-        0.26130248
+        0.2611785
       ],
       [
         3.1,
         4.8,
-        0.26130248
+        0.2611785
       ],
       [
         1.0,
         4.9,
-        0.26130248
+        0.2611785
       ],
       [
         17.4,
         -2.0,
-        0.26130248
+        0.2611785
       ],
       [
         4.3,
         0.1,
-        0.26136623
+        0.26124223
       ],
       [
         -9.8,
         0.1,
-        0.26136623
+        0.26124223
       ],
       [
         -7.6,
         1.0,
-        0.26137313
+        0.26124912
       ],
       [
         9.0,
         -11.6,
-        0.26145414
+        0.26133009
       ],
       [
         18.5,
         14.0,
-        0.2619494
+        0.26182511
       ],
       [
         7.4,
         8.9,
-        0.26344601
+        0.26332101
       ],
       [
         8.1,
         7.7,
-        0.26479922
+        0.26467358
       ],
       [
         16.9,
         2.4,
-        0.26479922
+        0.26467358
       ],
       [
         -7.2,
         -7.4,
-        0.26479922
+        0.26467358
       ],
       [
         -7.6,
         -0.3,
-        0.26479922
+        0.26467358
       ],
       [
         4.0,
         -3.8,
-        0.26479922
+        0.26467358
       ],
       [
         1.9,
         -6.9,
-        0.26479922
+        0.26467358
       ],
       [
         -16.3,
         -11.3,
-        0.26479922
+        0.26467358
       ],
       [
         -4.9,
         7.6,
-        0.26486383
+        0.26473817
       ],
       [
         23.5,
         16.0,
-        0.26487082
+        0.26474515
       ],
       [
         12.6,
         -5.2,
-        0.26487082
+        0.26474515
       ],
       [
         -4.5,
         -1.6,
-        0.26495292
+        0.26482721
       ],
       [
         -7.7,
         2.1,
-        0.2654548
+        0.26532885
       ],
       [
         -20.6,
         -8.4,
-        0.26697144
+        0.26684477
       ],
       [
         -6.1,
         3.4,
-        0.26834276
+        0.26821544
       ],
       [
         -12.4,
         -2.8,
-        0.26834276
+        0.26821544
       ],
       [
         -3.2,
         -10.9,
-        0.26834276
+        0.26821544
       ],
       [
         3.4,
         12.6,
-        0.26834276
+        0.26821544
       ],
       [
         -6.1,
         -1.6,
-        0.26834276
+        0.26821544
       ],
       [
         -2.9,
         9.9,
-        0.26834276
+        0.26821544
       ],
       [
         5.3,
         11.8,
-        0.26834276
+        0.26821544
       ],
       [
         7.6,
         -1.6,
-        0.26841532
+        0.26828796
       ],
       [
         6.8,
         -6.3,
-        0.26841532
+        0.26828796
       ],
       [
         15.8,
         22.5,
-        0.26841532
+        0.26828796
       ],
       [
         -5.6,
         18.9,
-        0.26841532
+        0.26828796
       ],
       [
         3.2,
         -6.3,
-        0.26841532
+        0.26828796
       ],
       [
         -9.4,
         6.7,
-        0.26849851
+        0.26837112
       ],
       [
         5.3,
         -6.3,
-        0.26900179
+        0.26887416
       ],
       [
         -14.4,
         -6.4,
-        0.26901243
+        0.2688848
       ],
       [
         12.5,
         7.0,
-        0.27054405
+        0.27041568
       ],
       [
         2.1,
         1.4,
-        0.2714178
+        0.27128902
       ],
       [
         9.0,
         -1.8,
-        0.27149297
+        0.27136416
       ],
       [
         12.1,
         -10.5,
-        0.27193372
+        0.2718047
       ],
       [
         15.9,
         6.1,
-        0.27193372
+        0.2718047
       ],
       [
         -4.0,
         6.9,
-        0.27193372
+        0.2718047
       ],
       [
         -3.2,
         -15.5,
-        0.27193372
+        0.2718047
       ],
       [
         14.5,
         10.2,
-        0.27193372
+        0.2718047
       ],
       [
         -11.3,
         -2.9,
-        0.27193372
+        0.2718047
       ],
       [
         13.1,
         6.6,
-        0.27193372
+        0.2718047
       ],
       [
         1.9,
         4.0,
-        0.27200007
+        0.27187102
       ],
       [
         -4.9,
         4.9,
-        0.27200724
+        0.27187819
       ],
       [
         -4.1,
         -7.1,
-        0.27200724
+        0.27187819
       ],
       [
         7.0,
         -7.0,
-        0.27200724
+        0.27187819
       ],
       [
         1.0,
         0.0,
-        0.27209156
+        0.27196246
       ],
       [
         9.3,
         -19.3,
-        0.27260696
+        0.27247762
       ],
       [
         -9.3,
         8.2,
-        0.27348737
+        0.27335761
       ],
       [
         -18.9,
         5.2,
-        0.27356312
+        0.27343333
       ],
       [
         -18.5,
         -15.8,
-        0.27416446
+        0.27403438
       ],
       [
         -11.8,
         18.8,
-        0.2750499
+        0.2749194
       ],
       [
         4.6,
         1.4,
-        0.27512609
+        0.27499555
       ],
       [
         -12.0,
         -11.7,
-        0.27520774
+        0.27507716
       ],
       [
         11.2,
         -2.5,
-        0.27557273
+        0.27544198
       ],
       [
         -3.1,
         -7.0,
-        0.27557273
+        0.27544198
       ],
       [
         -13.3,
         6.1,
-        0.27557273
+        0.27544198
       ],
       [
         25.1,
         11.7,
-        0.27557273
+        0.27544198
       ],
       [
         14.0,
         -15.8,
-        0.27557273
+        0.27544198
       ],
       [
         19.5,
         -3.0,
-        0.27557273
+        0.27544198
       ],
       [
         -18.4,
         -2.8,
-        0.27563997
+        0.27550919
       ],
       [
         4.2,
         2.6,
-        0.27564724
+        0.27551646
       ],
       [
         4.7,
         1.7,
-        0.27573268
+        0.27560186
       ],
       [
         9.0,
         14.7,
-        0.27625498
+        0.27612391
       ],
       [
         6.7,
         -6.6,
-        0.27880782
+        0.27867554
       ],
       [
         -6.4,
         -3.8,
-        0.27888504
+        0.27875272
       ],
       [
         12.2,
         25.5,
-        0.27926044
+        0.27912794
       ],
       [
         -8.5,
         -0.5,
-        0.27926044
+        0.27912794
       ],
       [
         -3.6,
         7.4,
-        0.27926044
+        0.27912794
       ],
       [
         1.7,
         1.0,
-        0.27926044
+        0.27912794
       ],
       [
         5.1,
         -11.6,
-        0.27926044
+        0.27912794
       ],
       [
         -7.7,
         -2.5,
-        0.27926044
+        0.27912794
       ],
       [
         1.7,
         -0.1,
-        0.27926044
+        0.27912794
       ],
       [
         -6.6,
         1.5,
-        0.27926044
+        0.27912794
       ],
       [
         25.5,
         -0.7,
-        0.27933595
+        0.27920341
       ],
       [
         17.9,
         -22.2,
-        0.27933595
+        0.27920341
       ],
       [
         1.9,
         9.6,
-        0.27933595
+        0.27920341
       ],
       [
         -0.3,
         11.5,
-        0.27933595
+        0.27920341
       ],
       [
         12.3,
         -2.4,
-        0.27933595
+        0.27920341
       ],
       [
         2.8,
         -14.0,
-        0.27942253
+        0.27928995
       ],
       [
         -3.1,
         -1.1,
-        0.44239893
+        0.44218903
       ],
       [
         6.7,
         -0.7,
-        0.44322817
+        0.44301787
       ],
       [
         -2.0,
         -1.4,
-        0.44466841
+        0.44445744
       ],
       [
         -6.1,
         -7.7,
-        0.44466841
+        0.44445744
       ],
       [
         10.0,
         -16.3,
-        0.44466841
+        0.44445744
       ],
       [
         0.3,
         -9.7,
-        0.44466841
+        0.44445744
       ],
       [
         -7.4,
         0.0,
-        0.44466841
+        0.44445744
       ],
       [
         -10.1,
         -0.8,
-        0.44466841
+        0.44445744
       ],
       [
         12.9,
         14.1,
-        0.44466841
+        0.44445744
       ],
       [
         -4.4,
         -13.2,
-        0.44466841
+        0.44445744
       ],
       [
         -5.5,
         -5.0,
-        0.44477691
+        0.44456588
       ],
       [
         -9.9,
         -6.1,
-        0.44477691
+        0.44456588
       ],
       [
         2.2,
         -12.5,
-        0.44478865
+        0.44457761
       ],
       [
         -9.0,
         -11.1,
-        0.44478865
+        0.44457761
       ],
       [
         14.9,
         15.6,
-        0.44492651
+        0.44471541
       ],
       [
         3.9,
         4.9,
-        0.44576931
+        0.44555781
       ],
       [
         0.2,
         -2.4,
-        0.44831615
+        0.44810344
       ],
       [
         12.3,
         0.0,
-        0.45061896
+        0.45040516
       ],
       [
         4.6,
         6.2,
-        0.45061896
+        0.45040516
       ],
       [
         14.9,
         19.3,
-        0.45061896
+        0.45040516
       ],
       [
         23.2,
         2.2,
-        0.45061896
+        0.45040516
       ],
       [
         3.2,
         15.4,
-        0.45061896
+        0.45040516
       ],
       [
         -0.1,
         3.3,
-        0.45061896
+        0.45040516
       ],
       [
         -10.8,
         3.0,
-        0.45061896
+        0.45040516
       ],
       [
         -5.4,
         11.5,
-        0.45061896
+        0.45040516
       ],
       [
         -0.7,
         11.1,
-        0.45061896
+        0.45040516
       ],
       [
         0.0,
         3.0,
-        0.45072891
+        0.45051506
       ],
       [
         7.0,
         4.7,
-        0.45072891
+        0.45051506
       ],
       [
         -5.9,
         -1.8,
-        0.4507408
+        0.45052694
       ],
       [
         -19.9,
         2.5,
-        0.45088051
+        0.45066659
       ],
       [
         -2.4,
         -2.6,
-        0.4516899
+        0.4514756
       ],
       [
         -11.4,
         -2.4,
-        0.45179714
+        0.45158278
       ],
       [
         1.4,
         0.5,
-        0.4543155
+        0.45409995
       ],
       [
         9.0,
         -24.4,
-        0.45664913
+        0.45643247
       ],
       [
         -5.4,
         -14.2,
-        0.45664913
+        0.45643247
       ],
       [
         -4.6,
         -10.7,
-        0.45664913
+        0.45643247
       ],
       [
         23.0,
         -12.7,
-        0.45664913
+        0.45643247
       ],
       [
         -5.1,
         0.2,
-        0.45664913
+        0.45643247
       ],
       [
         7.7,
         6.4,
-        0.45664913
+        0.45643247
       ],
       [
         3.3,
         9.1,
-        0.45664913
+        0.45643247
       ],
       [
         -2.1,
         17.8,
-        0.45664913
+        0.45643247
       ],
       [
         16.4,
         3.5,
-        0.45664913
+        0.45643247
       ],
       [
         0.2,
         -0.1,
-        0.45676056
+        0.45654384
       ],
       [
         20.9,
         -6.2,
-        0.45676056
+        0.45654384
       ],
       [
         8.0,
         -9.9,
-        0.4567726
+        0.45655588
       ],
       [
         -10.0,
         -5.4,
-        0.4567726
+        0.45655588
       ],
       [
         -8.5,
         -1.0,
-        0.45691419
+        0.4566974
       ],
       [
         1.8,
         12.1,
-        0.45777969
+        0.45756249
       ],
       [
         -2.4,
         0.8,
-        0.46039515
+        0.46017671
       ],
       [
         4.1,
         -1.7,
-        0.46263186
+        0.46241236
       ],
       [
         10.6,
         3.6,
-        0.46276
+        0.46254044
       ],
       [
         1.5,
         0.6,
-        0.46276
+        0.46254044
       ],
       [
         3.5,
         -7.7,
-        0.46276
+        0.46254044
       ],
       [
         2.1,
         -17.2,
-        0.46276
+        0.46254044
       ],
       [
         19.3,
         -6.1,
-        0.46276
+        0.46254044
       ],
       [
         3.3,
         -4.7,
-        0.46276
+        0.46254044
       ],
       [
         0.9,
         7.4,
-        0.46276
+        0.46254044
       ],
       [
         1.6,
         -1.6,
-        0.46287292
+        0.4626533
       ],
       [
         -4.4,
         7.1,
-        0.46287292
+        0.4626533
       ],
       [
         14.0,
         -4.0,
-        0.46288513
+        0.46266551
       ],
       [
         2.0,
         4.3,
-        0.46288513
+        0.46266551
       ],
       [
         17.7,
         15.6,
-        0.4630286
+        0.46280891
       ],
       [
         2.6,
         1.1,
-        0.46386898
+        0.46364889
       ],
       [
         2.0,
         -19.0,
-        0.46390569
+        0.46368558
       ],
       [
         0.1,
         4.1,
-        0.46655615
+        0.46633478
       ],
       [
         -0.6,
         -3.2,
-        0.46882279
+        0.46860036
       ],
       [
         -17.3,
         25.2,
-        0.46895265
+        0.46873015
       ],
       [
         5.3,
         -0.9,
-        0.46895265
+        0.46873015
       ],
       [
         14.5,
         -15.2,
-        0.46895265
+        0.46873015
       ],
       [
         3.5,
         -3.8,
-        0.46895265
+        0.46873015
       ],
       [
         -1.8,
         13.3,
-        0.46895265
+        0.46873015
       ],
       [
         -7.8,
         0.8,
-        0.46895265
+        0.46873015
       ],
       [
         -4.4,
         4.3,
-        0.46906707
+        0.46884452
       ],
       [
         10.9,
         15.8,
-        0.46906707
+        0.46884452
       ],
       [
         -0.1,
         7.3,
-        0.46907945
+        0.46885689
       ],
       [
         -15.8,
         6.1,
-        0.46907945
+        0.46885689
       ],
       [
         -9.2,
         5.9,
-        0.46922484
+        0.46900221
       ],
       [
         11.0,
         5.6,
-        0.47011366
+        0.46989061
       ],
       [
         16.0,
         -7.7,
-        0.47279959
+        0.47257527
       ],
       [
         -7.2,
         -10.9,
-        0.47509657
+        0.47487116
       ],
       [
         -24.6,
         -4.7,
-        0.47522816
+        0.47500269
       ],
       [
         6.9,
         0.0,
-        0.47522816
+        0.47500269
       ],
       [
         5.7,
         5.2,
-        0.47522816
+        0.47500269
       ],
       [
         -10.7,
         -2.6,
-        0.47522816
+        0.47500269
       ],
       [
         4.7,
         7.0,
-        0.47522816
+        0.47500269
       ],
       [
         -2.7,
         6.1,
-        0.47522816
+        0.47500269
       ],
       [
         0.0,
         -7.6,
-        0.47522816
+        0.47500269
       ],
       [
         -3.2,
         -9.3,
-        0.47534412
+        0.47511859
       ],
       [
         -0.9,
         -2.5,
-        0.47535666
+        0.47513112
       ],
       [
         4.9,
         -3.7,
-        0.47535666
+        0.47513112
       ],
       [
         6.1,
         -8.9,
-        0.475504
+        0.47527839
       ],
       [
         2.6,
         -12.9,
-        0.47636702
+        0.476141
       ],
       [
         -1.6,
         3.9,
-        0.47640472
+        0.47617868
       ],
       [
         9.5,
         8.5,
-        0.47912659
+        0.47889926
       ],
       [
         -13.2,
         12.4,
-        0.48145431
+        0.48122587
       ],
       [
         2.9,
         -5.7,
-        0.48158766
+        0.48135916
       ],
       [
         9.9,
         -16.2,
-        0.48158766
+        0.48135916
       ],
       [
         4.9,
         -16.4,
-        0.48158766
+        0.48135916
       ],
       [
         -1.8,
         5.7,
-        0.48158766
+        0.48135916
       ],
       [
         -18.5,
         -6.6,
-        0.48158766
+        0.48135916
       ],
       [
         -6.7,
         10.6,
-        0.48158766
+        0.48135916
       ],
       [
         8.7,
         16.7,
-        0.48170517
+        0.48147662
       ],
       [
         -1.2,
         16.5,
-        0.48170517
+        0.48147662
       ],
       [
         1.8,
         3.2,
-        0.48171787
+        0.48148932
       ],
       [
         16.7,
         -3.2,
-        0.48171787
+        0.48148932
       ],
       [
         -5.1,
         -9.4,
-        0.48186719
+        0.48163856
       ],
       [
         -6.1,
         -14.3,
-        0.48273221
+        0.48250317
       ],
       [
         4.5,
         -0.6,
-        0.48284681
+        0.48261772
       ],
       [
         14.5,
         -11.5,
-        0.48553825
+        0.48530788
       ],
       [
         -13.8,
         12.8,
-        0.48803226
+        0.4878007
       ],
       [
         2.6,
         -4.3,
-        0.48803226
+        0.4878007
       ],
       [
         -11.4,
         11.6,
-        0.48803226
+        0.4878007
       ],
       [
         12.4,
         18.4,
-        0.48803226
+        0.4878007
       ],
       [
         4.4,
         -5.4,
-        0.48803226
+        0.4878007
       ],
       [
         10.7,
         -4.3,
-        0.48803226
+        0.4878007
       ],
       [
         10.9,
         3.0,
-        0.48803226
+        0.4878007
       ],
       [
         -18.6,
         -1.1,
-        0.48815134
+        0.48791973
       ],
       [
         17.8,
         1.6,
-        0.48816421
+        0.4879326
       ],
       [
         10.1,
         -4.6,
-        0.48816421
+        0.4879326
       ],
       [
         3.9,
         12.7,
-        0.48831552
+        0.48808384
       ],
       [
         1.2,
         -12.9,
-        0.48924051
+        0.48900838
       ],
       [
         -18.1,
         2.1,
-        0.49203571
+        0.49180226
       ],
       [
         16.3,
         24.1,
-        0.49460223
+        0.49436756
       ],
       [
         -5.2,
         6.2,
-        0.49460223
+        0.49436756
       ],
       [
         -16.3,
         -0.4,
-        0.49460223
+        0.49436756
       ],
       [
         -6.1,
         -2.0,
-        0.49460223
+        0.49436756
       ],
       [
         1.6,
         4.3,
-        0.49460223
+        0.49436756
       ],
       [
         4.2,
         10.7,
-        0.49460223
+        0.49436756
       ],
       [
         2.6,
         -2.9,
-        0.49460223
+        0.49436756
       ],
       [
         1.6,
         3.0,
-        0.49460223
+        0.49436756
       ],
       [
         9.3,
         -7.0,
-        0.49472291
+        0.49448819
       ],
       [
         7.6,
         9.0,
-        0.49472291
+        0.49448819
       ],
       [
         2.7,
         -0.4,
-        0.49473596
+        0.49450123
       ],
       [
         -10.1,
         14.0,
-        0.49488931
+        0.4946545
       ],
       [
         -10.3,
         3.5,
-        0.49582675
+        0.49559149
       ],
       [
         -15.9,
         -9.6,
-        0.49865958
+        0.49842299
       ],
       [
         5.6,
         3.0,
-        0.5010822
+        0.50084445
       ],
       [
         -14.5,
         -4.1,
-        0.50122099
+        0.50098318
       ],
       [
         -0.6,
         0.8,
-        0.50122099
+        0.50098318
       ],
       [
         12.5,
         11.0,
-        0.50122099
+        0.50098318
       ],
       [
         7.7,
         -14.4,
-        0.50122099
+        0.50098318
       ],
       [
         -4.7,
         3.0,
-        0.50122099
+        0.50098318
       ],
       [
         5.5,
         1.7,
-        0.50122099
+        0.50098318
       ],
       [
         -2.2,
         9.3,
-        0.50122099
+        0.50098318
       ],
       [
         18.5,
         2.0,
-        0.50134329
+        0.50110542
       ],
       [
         2.9,
         20.9,
-        0.50135651
+        0.50111864
       ],
       [
         -1.4,
         14.5,
-        0.50135651
+        0.50111864
       ],
       [
         1.6,
         -9.6,
-        0.50151191
+        0.50127396
       ],
       [
         -17.5,
         -12.3,
-        0.50246189
+        0.50222349
       ],
       [
         4.1,
         -4.6,
-        0.50533264
+        0.50509287
       ],
       [
         -9.1,
         -10.7,
-        0.50778767
+        0.50754674
       ],
       [
         2.6,
         11.3,
-        0.50792832
+        0.50768732
       ],
       [
         16.2,
         9.7,
-        0.50792832
+        0.50768732
       ],
       [
         13.5,
         -17.1,
-        0.50792832
+        0.50768732
       ],
       [
         -8.1,
         -0.9,
-        0.50792832
+        0.50768732
       ],
       [
         1.4,
         2.9,
-        0.50792832
+        0.50768732
       ],
       [
         7.4,
         -10.8,
-        0.50792832
+        0.50768732
       ],
       [
         -4.6,
         -7.0,
-        0.50792832
+        0.50768732
       ],
       [
         -1.1,
         17.5,
-        0.50805225
+        0.5078112
       ],
       [
         -2.9,
         -2.5,
-        0.50805225
+        0.5078112
       ],
       [
         -3.1,
         -2.5,
-        0.50806565
+        0.5078246
       ],
       [
         1.3,
         -1.5,
-        0.50806565
+        0.5078246
       ],
       [
         -9.1,
         -17.2,
-        0.50822313
+        0.507982
       ],
       [
         -7.5,
         8.3,
-        0.50918583
+        0.50894424
       ],
       [
         0.8,
         -5.3,
-        0.51209499
+        0.51185202
       ],
       [
         -5.3,
         -8.0,
-        0.5147254
+        0.51448119
       ],
       [
         8.9,
         6.7,
-        0.5147254
+        0.51448119
       ],
       [
         -5.0,
         2.2,
-        0.5147254
+        0.51448119
       ],
       [
         2.8,
         9.6,
-        0.5147254
+        0.51448119
       ],
       [
         -1.2,
         -13.6,
-        0.5147254
+        0.51448119
       ],
       [
         -3.4,
         -0.6,
-        0.5147254
+        0.51448119
       ],
       [
         5.7,
         4.7,
-        0.5147254
+        0.51448119
       ],
       [
         -0.2,
         4.7,
-        0.514851
+        0.51460672
       ],
       [
         -10.8,
         5.2,
-        0.514851
+        0.51460672
       ],
       [
         -0.3,
         -5.1,
-        0.51486458
+        0.5146203
       ],
       [
         -11.9,
         3.9,
-        0.51486458
+        0.5146203
       ],
       [
         9.1,
         -14.6,
-        0.51502417
+        0.51477981
       ],
       [
         -8.0,
         -8.8,
-        0.51599974
+        0.51575492
       ],
       [
         -3.1,
         9.2,
-        0.51865022
+        0.51840414
       ],
       [
         7.8,
         2.9,
-        0.51879387
+        0.51854772
       ],
       [
         -17.2,
         10.1,
-        0.51895125
+        0.51870503
       ],
       [
         -11.5,
         5.1,
-        0.51971833
+        0.51947174
       ],
       [
         13.1,
         2.9,
-        0.52161345
+        0.52136596
       ],
       [
         -11.5,
         3.0,
-        0.52161345
+        0.52136596
       ],
       [
         -7.8,
         -1.7,
-        0.52161345
+        0.52136596
       ],
       [
         -2.9,
         -1.3,
-        0.52161345
+        0.52136596
       ],
       [
         5.0,
         3.4,
-        0.52161345
+        0.52136596
       ],
       [
         -7.0,
         -4.5,
-        0.52161345
+        0.52136596
       ],
       [
         -17.3,
         1.6,
-        0.52161345
+        0.52136596
       ],
       [
         1.3,
         -20.3,
-        0.52174073
+        0.52149318
       ],
       [
         5.9,
         -2.8,
-        0.52175449
+        0.52150693
       ],
       [
         -15.6,
         0.5,
-        0.52175449
+        0.52150693
       ],
       [
         4.2,
         3.1,
-        0.52191621
+        0.52166858
       ],
       [
         9.0,
         -3.1,
-        0.52290484
+        0.52265674
       ],
       [
         11.9,
         6.3,
-        0.52589238
+        0.52564287
       ],
       [
         -11.7,
         12.5,
-        0.52859367
+        0.52834287
       ],
       [
         -3.9,
         7.3,
-        0.52859367
+        0.52834287
       ],
       [
         6.8,
         11.7,
-        0.52859367
+        0.52834287
       ],
       [
         6.9,
         13.9,
-        0.52859367
+        0.52834287
       ],
       [
         11.3,
         -4.7,
-        0.52859367
+        0.52834287
       ],
       [
         5.6,
         -20.9,
-        0.52859367
+        0.52834287
       ],
       [
         -11.4,
         12.1,
-        0.52859367
+        0.52834287
       ],
       [
         -5.6,
         5.7,
-        0.52859367
+        0.52834287
       ],
       [
         -0.9,
         0.7,
-        0.52872265
+        0.52847179
       ],
       [
         -4.5,
         20.7,
-        0.5287366
+        0.52848573
       ],
       [
         2.2,
         2.4,
-        0.5287366
+        0.52848573
       ],
       [
         -12.5,
         2.3,
-        0.52890048
+        0.52864954
       ],
       [
         0.1,
         -3.0,
-        0.52990234
+        0.52965092
       ],
       [
         1.6,
         8.8,
-        0.53292987
+        0.53267701
       ],
       [
         6.9,
         -15.5,
-        0.5356673
+        0.53541315
       ],
       [
         -25.2,
         -4.1,
-        0.5356673
+        0.53541315
       ],
       [
         15.5,
         1.7,
-        0.5356673
+        0.53541315
       ],
       [
         23.1,
         1.2,
-        0.5356673
+        0.53541315
       ],
       [
         -10.4,
         -2.9,
-        0.5356673
+        0.53541315
       ],
       [
         9.4,
         9.3,
-        0.5356673
+        0.53541315
       ],
       [
         -2.5,
         5.7,
-        0.5356673
+        0.53541315
       ],
       [
         4.5,
         -15.8,
-        0.5356673
+        0.53541315
       ],
       [
         12.6,
         4.9,
-        0.53581214
+        0.53555792
       ],
       [
         15.6,
         8.4,
-        0.53581214
+        0.53555792
       ],
       [
         -2.7,
         -1.6,
-        0.53581214
+        0.53555792
       ],
       [
         -9.4,
         -5.6,
-        0.53581214
+        0.53555792
       ],
       [
         9.3,
         7.6,
-        0.53581214
+        0.53555792
       ],
       [
         1.0,
         10.0,
-        0.53597822
+        0.53572392
       ],
       [
         5.3,
         -5.6,
-        0.53699349
+        0.5367387
       ],
       [
         14.2,
         15.1,
-        0.54006152
+        0.53980528
       ],
       [
         -3.1,
         3.7,
-        0.54197722
+        0.54172007
       ],
       [
         0.6,
         -7.4,
-        0.54212019
+        0.54186297
       ],
       [
         2.0,
         -5.0,
-        0.54283559
+        0.54257804
       ],
       [
         0.9,
         -4.5,
-        0.54283559
+        0.54257804
       ],
       [
         -8.3,
         9.2,
-        0.54283559
+        0.54257804
       ],
       [
         -5.9,
         22.0,
-        0.54283559
+        0.54257804
       ],
       [
         6.9,
         -12.8,
-        0.54283559
+        0.54257804
       ],
       [
         -6.5,
         -7.4,
-        0.54283559
+        0.54257804
       ],
       [
         9.1,
         -15.7,
-        0.54283559
+        0.54257804
       ],
       [
         -5.8,
         3.9,
-        0.54296805
+        0.54271043
       ],
       [
         -4.4,
         13.5,
-        0.54296805
+        0.54271043
       ],
       [
         -5.2,
         8.0,
-        0.54298237
+        0.54272474
       ],
       [
         -1.9,
         6.6,
-        0.54298237
+        0.54272474
       ],
       [
         -1.7,
         8.9,
-        0.54315067
+        0.54289297
       ],
       [
         2.5,
         23.7,
-        0.54417952
+        0.54392133
       ],
       [
         -3.9,
         3.2,
-        0.54697474
+        0.54671523
       ],
       [
         -0.4,
         -16.0,
-        0.54712625
+        0.54686666
       ],
       [
         -9.3,
         0.6,
-        0.54728862
+        0.54702895
       ],
       [
         -5.2,
         0.4,
-        0.54920822
+        0.54894764
       ],
       [
         0.1,
         19.1,
-        0.54936034
+        0.54909969
       ],
       [
         -8.6,
         1.1,
-        0.55009981
+        0.54983881
       ],
       [
         9.1,
         -10.4,
-        0.55009981
+        0.54983881
       ],
       [
         -5.5,
         -15.8,
-        0.55009981
+        0.54983881
       ],
       [
         -8.3,
         -1.4,
-        0.55009981
+        0.54983881
       ],
       [
         -3.7,
         -6.4,
-        0.55009981
+        0.54983881
       ],
       [
         -9.8,
         19.3,
-        0.55009981
+        0.54983881
       ],
       [
         6.3,
         13.5,
-        0.55009981
+        0.54983881
       ],
       [
         -11.6,
         13.7,
-        0.55023403
+        0.54997297
       ],
       [
         -14.2,
         -9.6,
-        0.55024855
+        0.54998748
       ],
       [
         16.0,
         17.2,
-        0.5504191
+        0.55015795
       ],
       [
         6.3,
         -1.9,
-        0.55146172
+        0.55120008
       ],
       [
         -10.6,
         -4.7,
-        0.55655771
+        0.55629365
       ],
       [
         -21.3,
         -10.6,
-        0.55671187
+        0.55644773
       ],
       [
         -3.3,
         -3.1,
-        0.55746123
+        0.55719674
       ],
       [
         -8.1,
         -0.5,
-        0.55746123
+        0.55719674
       ],
       [
         13.3,
         9.6,
-        0.55746123
+        0.55719674
       ],
       [
         13.9,
         -10.9,
-        0.55746123
+        0.55719674
       ],
       [
         -5.3,
         -18.0,
-        0.55746123
+        0.55719674
       ],
       [
         9.4,
         -9.1,
-        0.55746123
+        0.55719674
       ],
       [
         4.4,
         -9.5,
-        0.55761196
+        0.5573474
       ],
       [
         -8.3,
         -8.8,
-        0.55761196
+        0.5573474
       ],
       [
         -3.6,
         -17.1,
-        0.55761196
+        0.5573474
       ],
       [
         8.3,
         0.6,
-        0.55761196
+        0.5573474
       ],
       [
         -2.6,
         -11.4,
-        0.55761196
+        0.5573474
       ],
       [
         14.3,
         -10.1,
-        0.55761196
+        0.5573474
       ],
       [
         -10.4,
         5.6,
-        0.55761196
+        0.5573474
       ],
       [
         4.3,
         0.4,
-        0.5577848
+        0.55752015
       ]
     ],
     "description": "Home error, away error, recency weight. Prior two regular seasons, forecasts fitted before each week. Centered in the simulator; not calibrated prediction intervals."
