@@ -21,6 +21,21 @@ This covers KC Concepcion's September 23/24 source disagreement without changing
 either source date. Conflicting provider claims are omitted, never picked by
 row order.
 
+For provider IDs in an explicitly reviewed ADP snapshot, the builder can fill a
+missing DynastyProcess crosswalk using an exact normalized full name, birth date,
+position and college agreement between nflverse and Sleeper. It requires one
+candidate, verifies any explicit Sleeper GSIS ID, and rejects provider collisions.
+An existing rejected crosswalk claim cannot use this fallback. Supplemental links
+and the reviewed ADP digest are recorded in `provenance.json`; normal refreshes
+still use the saved registry without discovering new links.
+
+`position` retains the NFL primary position. `position_aliases` records offensive
+fantasy eligibility from a corroborated Sleeper ID. Name lookups index those
+aliases without relaxing ambiguity checks. For an NFL position outside QB/RB/WR/TE,
+the ranking pipeline uses an offensive alternative only when exactly one is
+supported by that player's canonical ID. Stats totals and source files retain
+their original meaning; this does not add defensive fantasy scoring.
+
 At import time:
 
 1. Preserve any existing canonical ID and resolve supplied provider IDs.
@@ -52,7 +67,8 @@ Download the three URLs recorded in `scripts/build_player_registry.py`, then run
 python scripts/build_player_registry.py \
   --nflverse /path/to/players.csv \
   --fantasy /path/to/db_playerids.csv \
-  --sleeper /path/to/sleeper-players.json
+  --sleeper /path/to/sleeper-players.json \
+  --adp data/ADP/combined_adp_2026.csv
 python -m pytest tests/test_player_identity.py tests/test_adp_importer.py tests/test_dataframe_integrity.py -q
 ```
 
@@ -111,3 +127,33 @@ MFL market observations are no longer imported, averaged or published. Existing
 MFL IDs in the reviewed registry remain static identity evidence; this does not
 subscribe to or request MFL data. The earlier rebuild counts above describe those
 release snapshots, not the reduced-source boards.
+
+## November 5 ranking-coverage review
+
+The prepared rebuild contains 228 identified players in each of 60 formats.
+Travis Hunter is added as WR using GSIS `00-0040718`: nflverse lists CB, while
+Sleeper `12530` explicitly lists DB and WR. His existing seven-game 2025 receiving
+baseline supplies the same 17-game projection calculation as other players.
+Yahoo's 126.3 and Sleeper's 193.9 ADP combine into 160.1; the Yahoo capture date
+remains August 29. His NFL position, raw statistics and permanent ID are unchanged.
+
+All 227 previously ranked players remain. Projected points and scoring coverage
+are identical across all 13,620 prior player/format comparisons. Relative ranks,
+replacement values and fitted market expectations may change when a player joins
+the comparison pool. The new player has full scoring-field coverage; that label
+does not promise a full season of observations or forecast accuracy.
+
+Of the original 94 unresolved ADP records, 16 now resolve: Hunter through reviewed
+position eligibility and 15 through corroborated missing crosswalk links. The 15
+still lack a usable 2025 scoring baseline or existing approved rookie estimate;
+establishing an identity does not invent a projection. The other 78 remain in the
+audit. Supporting eligible positions also admits Gabe Nabers (identified) and
+John Raine (unresolved) into the ADP audit; neither has a usable baseline. The
+prepared refresh therefore retains 422 ADP rows: 343 identified and 79 unresolved.
+
+The registry has 18,788 canonical identities, including four new nflverse rows.
+All prior canonical IDs and provider links are preserved; 15 Sleeper links are
+added and 100 rows have reviewed offensive position alternatives. The dated
+[coverage review](ranking-identity-review-2026-11-05.md) and its CSV document the
+unresolved cases. These are local validation results; CI and publication must be
+verified on the final revision separately.

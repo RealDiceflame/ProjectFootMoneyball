@@ -30,3 +30,15 @@ def test_saved_source_scores_survive_category_merges_and_cleanup(mode, ppr):
     pd.testing.assert_series_equal(scored.fantasy_points, expected, check_names=False,
                                    check_dtype=False, atol=1e-8, rtol=0)
     assert scored.scoring_coverage.eq('full').all()
+
+
+def test_two_way_receiving_stats_keep_canonical_id_and_enter_offensive_position():
+    path = ROOT / 'data/stats/nflverse_player_stats_2025.csv'
+    raw = pd.read_csv(path).set_index('player_id').loc['00-0040718']
+    assert raw.position == 'CB' and raw.receptions > 0
+    cleaned = clean_all(merge_stats(load_nflverse_stat_tables(path)))
+    hunter = cleaned.loc[cleaned.player_id.eq('00-0040718')]
+    assert len(hunter) == 1 and hunter.iloc[0].pos == 'WR'
+    assert hunter.iloc[0].receiving_rec == raw.receptions
+    assert hunter.iloc[0].receiving_yds == raw.receiving_yards
+    assert hunter.iloc[0].receiving_td == raw.receiving_tds
