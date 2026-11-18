@@ -88,24 +88,35 @@ def test_bounded_permissions_checkout_runtime_and_dependencies():
     assert re.findall(r"^\s+run: python -m pip (.+)$", TEXT, re.MULTILINE) == [
         "install -r requirements-database.txt",
     ]
-    assert re.findall(r"^\s+- uses: (.+)$", TEXT, re.MULTILINE) == [
-        "actions/checkout@v4", "actions/setup-python@v5",
+    assert re.findall(r"uses: (actions/[\w-]+@v\d+)", TEXT) == [
+        "actions/checkout@v4", "actions/setup-python@v5", "actions/upload-artifact@v4", "actions/upload-artifact@v4",
     ]
 
 
 def test_database_credentials_are_step_scoped_and_only_sync_runs():
-    assert re.findall(r"^\s+env:\s*$", TEXT, re.MULTILINE) == ["        env:"]
+    assert re.findall(r"^\s+env:\s*$", TEXT, re.MULTILINE) == ["        env:", "        env:"]
     assert "OUTLIER_DATABASE_URL: ${{ vars.OUTLIER_DATABASE_URL }}" in TEXT
     assert "OUTLIER_DATABASE_PASSWORD: ${{ secrets.OUTLIER_DATABASE_PASSWORD }}" in TEXT
     assert "OUTLIER_DATABASE_CA_CERT: ${{ vars.OUTLIER_DATABASE_CA_CERT }}" in TEXT
     assert "OUTLIER_DATABASE_SSLROOTCERT: ${{ runner.temp }}/outlier-database-ca.pem" in TEXT
-    assert re.findall(r"secrets\.([A-Z_]+)", TEXT) == ["OUTLIER_DATABASE_PASSWORD"]
-    assert re.findall(r"python database_stats\.py ([^\n]+)", TEXT) == ["sync"]
-    assert len(re.findall(r"^\s*if:", TEXT, re.MULTILINE)) == 1
+    assert re.findall(r"secrets\.([A-Z_]+)", TEXT) == ["OUTLIER_DATABASE_PASSWORD", "OUTLIER_DATABASE_PASSWORD"]
+    assert re.findall(r"python database_stats\.py ([^\n]+)", TEXT) == [
+        'sync --health-report "$RUNNER_TEMP/stats-sync-health.json"',
+        'export-check --output-dir "$RUNNER_TEMP/stats-shadow" --report "$RUNNER_TEMP/stats-export-report.json"',
+    ]
+    assert len(re.findall(r"^\s*if:", TEXT, re.MULTILINE)) == 2
     assert "continue-on-error" not in TEXT
     for forbidden in ("migrate", "git push", "git commit", "git add", "publish_scoreboard",
-                      "upload-artifact", "download-artifact", "deploy-pages", "docs/data", "GITHUB_TOKEN"):
+                      "download-artifact", "deploy-pages", "docs/data", "GITHUB_TOKEN"):
         assert forbidden not in TEXT
+
+
+def test_only_aggregate_reports_are_uploaded_and_health_precedes_shadow():
+    paths = re.findall(r"^\s+path: (.+)$", TEXT, re.MULTILINE)
+    assert paths == ["${{ runner.temp }}/stats-sync-health.json", "${{ runner.temp }}/stats-export-report.json"]
+    assert TEXT.index("name: stats-sync-health") < TEXT.index("python database_stats.py export-check")
+    assert "STATS_SYNC_UPSTREAM_RUN_ID: ${{ github.event.workflow_run.id || '' }}" in TEXT
+    assert "retention-days: 14" in TEXT
 
 
 @pytest.fixture

@@ -58,14 +58,25 @@ def sync_connection_url(prompt_password=False):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", nargs="?", choices=["plan", "check", "migrate", "import", "status", "verify", "prepare-sync", "sync"], default="plan")
+    parser.add_argument("command", nargs="?", choices=["plan", "check", "migrate", "import", "status", "verify", "prepare-sync", "sync", "export-check"], default="plan")
     parser.add_argument("--prompt-password", action="store_true",
                         help="Privately enter the password for an OUTLIER_DATABASE_URL containing [YOUR-PASSWORD]")
+    parser.add_argument("--health-report", type=Path, help="Write aggregate health evidence after a successful sync")
+    parser.add_argument("--output-dir", type=Path, help="New private shadow-export directory outside the checkout")
+    parser.add_argument("--report", type=Path, help="New comparison report outside the checkout")
+    parser.add_argument("--reference-root", type=Path, help="Checkout to compare against; export-check only")
     args = parser.parse_args(argv)
     if args.command == "plan" and args.prompt_password:
         parser.error("plan is offline and does not need a password")
     if args.command == "prepare-sync" and not args.prompt_password:
         parser.error("prepare-sync requires interactive --prompt-password")
+    if args.health_report and args.command != "sync":
+        parser.error("--health-report is only available with sync")
+    if args.command == "export-check":
+        if not args.output_dir or not args.report:
+            parser.error("export-check requires --output-dir and --report")
+    elif args.output_dir or args.report or args.reference_root:
+        parser.error("--output-dir, --report and --reference-root are only available with export-check")
     try:
         if args.command == "prepare-sync":
             certificate = os.environ.get("OUTLIER_DATABASE_SSLROOTCERT", "")
@@ -76,7 +87,7 @@ def main(argv=None):
             print(json.dumps({"mode": "read-only plan", **import_plan(snapshots)}, indent=2))
             return 0
         from app.stats_database import check_connection, connect_database, database_counts, import_snapshots, migrate
-        url = (sync_connection_url(args.prompt_password) if args.command == "sync"
+        url = (sync_connection_url(args.prompt_password) if args.command in {"sync", "export-check"}
                else prompt_connection_url() if args.prompt_password else None)
         with connect_database(url) as conn:
             if args.command == "check":
@@ -107,7 +118,21 @@ def main(argv=None):
                 print("Restricted updater login enabled. Automatic sync remains off until you configure GitHub.")
             elif args.command == "sync":
                 from app.stats_access import sync_database
-                print(json.dumps(sync_database(conn, snapshots), indent=2))
+                result = sync_database(conn, snapshots)
+                if args.health_report:
+                    from app.stats_monitor import write_health_report
+                    write_health_report(conn, result, args.health_report)
+                print(json.dumps(result, indent=2))
+            elif args.command == "export-check":
+                from app.stats_access import require_ingest_connection
+                from app.stats_export import export_and_compare
+                require_ingest_connection(conn)
+                result = export_and_compare(conn, args.reference_root or ROOT, args.output_dir, args.report)
+                print(json.dumps({key: result[key] for key in
+                    ("verified", "database_verified", "artifacts_compared", "artifacts_matched",
+                     "output_created", "website_changed", "ready_for_cutover")}, indent=2))
+                if not result["verified"]:
+                    return 1
             else:
                 print(json.dumps(database_counts(conn), indent=2))
         return 0

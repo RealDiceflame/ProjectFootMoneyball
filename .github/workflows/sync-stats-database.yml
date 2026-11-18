@@ -41,6 +41,7 @@ jobs:
           OUTLIER_DATABASE_PASSWORD: ${{ secrets.OUTLIER_DATABASE_PASSWORD }}
           OUTLIER_DATABASE_CA_CERT: ${{ vars.OUTLIER_DATABASE_CA_CERT }}
           OUTLIER_DATABASE_SSLROOTCERT: ${{ runner.temp }}/outlier-database-ca.pem
+          STATS_SYNC_UPSTREAM_RUN_ID: ${{ github.event.workflow_run.id || '' }}
         run: |
           python - <<'PY'
           import os
@@ -64,4 +65,27 @@ jobs:
               print("Database sync could not prepare the CA certificate.", file=sys.stderr)
               raise SystemExit(1) from None
           PY
-          python database_stats.py sync
+          python database_stats.py sync --health-report "$RUNNER_TEMP/stats-sync-health.json"
+      - name: Save aggregate sync health
+        uses: actions/upload-artifact@v4
+        with:
+          name: stats-sync-health
+          overwrite: true
+          path: ${{ runner.temp }}/stats-sync-health.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Compare a private shadow export with the published archive
+        env:
+          OUTLIER_DATABASE_URL: ${{ vars.OUTLIER_DATABASE_URL }}
+          OUTLIER_DATABASE_PASSWORD: ${{ secrets.OUTLIER_DATABASE_PASSWORD }}
+          OUTLIER_DATABASE_SSLROOTCERT: ${{ runner.temp }}/outlier-database-ca.pem
+        run: python database_stats.py export-check --output-dir "$RUNNER_TEMP/stats-shadow" --report "$RUNNER_TEMP/stats-export-report.json"
+      - name: Save shadow comparison report without exported records
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stats-shadow-parity
+          overwrite: true
+          path: ${{ runner.temp }}/stats-export-report.json
+          if-no-files-found: ignore
+          retention-days: 14

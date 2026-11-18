@@ -5,6 +5,11 @@ Supabase project, production credentials, or public database API is created
 automatically. Scheduled sync is opt-in and disabled until its GitHub variable
 and credentials are configured by the owner.
 
+See the [database operations guide](database-operations.md) for the update chain,
+backup recovery, monitoring alerts and read-only website export comparisons.
+The [monitor configuration](database-monitoring.md) describes the required
+activation setting and alert thresholds.
+
 The current CSV/JSON collectors and website keep working unchanged. Phase one
 imports the maintained 2016–2025 fantasy-player season archive and saved
 regular-season game box scores. Saved coverage grows as collectors add games;
@@ -139,9 +144,11 @@ are serialized. Set `STATS_DATABASE_SYNC_ENABLED=false` to stop future sync jobs
 explicit owner operation, followed by updating the GitHub secret.
 
 After configuring the settings, manually run this workflow and confirm success
-before relying on scheduled runs. The public frontend still reads existing JSON.
-Database-backed JSON export and the website switch are a later stage, after the
-metadata-vintage limitations and full artifact parity have been addressed.
+before relying on scheduled runs. It saves an aggregate health report after
+verification and then checks a separate database-backed statistics export.
+The public frontend still reads existing JSON. Export comparison reports list
+all remaining file-supplied metadata and schedule inputs; no automatic website
+switch is performed.
 
 ## What is stored
 
@@ -184,11 +191,11 @@ historical backtests without importing genuine earlier archived vintages.
 Original CSV files and Git history remain intact. Database snapshots are not a
 substitute for an independently restorable database backup.
 
-Next: verify the real project's SQL totals, activate restricted sync, then build
-a database-backed JSON exporter in parallel with the existing exporter. Only
-switch website reads after full artifact parity checks pass. Injuries, ADP,
-odds history, account permissions, and fantasy league storage are later phases,
-not silently enabled by this importer.
+The database-backed statistics exporter runs in parallel with the existing
+website data path. Before switching website reads, resolve the reported
+companion inputs and metadata-vintage gaps and require full artifact parity.
+Injuries, ADP, odds history, account permissions, and fantasy league storage are
+later phases, not silently enabled by this importer.
 
 ## Tests
 
