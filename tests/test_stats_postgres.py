@@ -136,7 +136,14 @@ def test_private_schema_and_raw_nulls_are_preserved(conn, snapshots):
     import_snapshots(conn, snapshots)
     anonymous = conn.execute("SELECT stats FROM ob_stats.current_player_game_stats WHERE player_id IS NULL").fetchone()
     assert anonymous is not None
-    assert conn.execute("SELECT count(*) FROM ob_stats.players WHERE display_name='Josh Johnson'").fetchone()[0] == 2
+    same_name_ids = {player["player_id"] for snapshot in snapshots for player in snapshot.players
+                     if player["name"] == "Josh Johnson"}
+    assert len(same_name_ids) >= 2
+    # All source identities must survive, even if a later observation renames one.
+    stored_ids = {row[0] for row in conn.execute(
+        "SELECT player_id FROM ob_stats.players WHERE player_id = ANY(%s)",
+        (sorted(same_name_ids),)).fetchall()}
+    assert stored_ids == same_name_ids
     assert not conn.execute("SELECT has_schema_privilege('public','ob_stats','USAGE')").fetchone()[0]
     tables = conn.execute("""SELECT relname, relrowsecurity FROM pg_class c
         JOIN pg_namespace n ON n.oid=c.relnamespace

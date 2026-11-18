@@ -11,6 +11,7 @@ from urllib.parse import urlsplit
 
 import pytest
 
+from app import stats_verification
 from app.stats_database import import_snapshots, migrate
 from app.stats_import import load_saved_stats, prepare_snapshot
 from app.stats_verification import GAME_METRICS, verify_database
@@ -72,12 +73,39 @@ class Result:
         return self.rows[0] if self.rows else None
 
 
+class ArchiveCursor:
+    """Named-cursor protocol; iteration records bounded transfer batches."""
+    def __init__(self, connection, name):
+        self.connection, self.name = connection, name
+        self.itersize, self.closed = None, False
+        self.batches = []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.closed = True
+
+    def execute(self, query, params):
+        assert not self.closed
+        self.query, self.params = query, params
+        self.rows = self.connection.execute(query, params).rows
+
+    def __iter__(self):
+        assert not self.closed and self.itersize > 0
+        for offset in range(0, len(self.rows), self.itersize):
+            batch = self.rows[offset:offset + self.itersize]
+            self.batches.append(len(batch))
+            yield from batch
+
+
 class ArchiveConnection:
     """A small read-only database double with independently computed SQL totals."""
     def __init__(self, snapshots):
         self.info = SimpleNamespace(transaction_status=SimpleNamespace(name="IDLE"))
         self.isolation = "repeatable read"
         self.commands, self.transactions = [], []
+        self.cursors = []
         self.snapshots = snapshots
         self.heads, self.games, self.player_games, self.team_games, self.player_seasons = [], [], [], [], []
         self.player_ids = {(p["player_id"],) for s in snapshots for p in s.players}
@@ -104,6 +132,11 @@ class ArchiveConnection:
     def transaction(self, **options):
         self.transactions.append(options)
         yield
+
+    def cursor(self, *, name):
+        cursor = ArchiveCursor(self, name)
+        self.cursors.append(cursor)
+        return cursor
 
     def execute(self, query, params=()):
         query = " ".join(query.split())
@@ -177,7 +210,59 @@ def test_offline_complete_parity_covers_every_season_week_and_identity(snapshots
     assert report["metadata_limitations"] == []
     assert conn.transactions == [{"force_rollback": True}]
     assert conn.commands[0][0] == "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY"
+    assert ("SET LOCAL statement_timeout = '60s'", ()) in conn.commands
+    assert len(conn.cursors) == 5
+    assert len({cursor.name for cursor in conn.cursors}) == 5
+    assert all(cursor.name.startswith("ob_stats_verify_") and cursor.itersize == 1000
+               and cursor.closed for cursor in conn.cursors)
+    assert [cursor.params for cursor in conn.cursors] == [(5,), (4,), (10,), (7,), (5,)]
+    assert all("LIMIT %s" in cursor.query for cursor in conn.cursors)
     json.dumps(report)  # CLI output must not contain datetime/Decimal objects.
+
+
+@pytest.mark.parametrize("fault", [None, "last_fact", "extra_row"])
+def test_offline_bulk_reads_preserve_parity_across_batches(snapshots, monkeypatch, fault):
+    monkeypatch.setattr(stats_verification, "BULK_BATCH_SIZE", 2)
+    conn = ArchiveConnection(snapshots)
+    if fault == "last_fact":
+        conn.player_games[-1][8]["receiving_yards"] = 999
+    elif fault == "extra_row":
+        conn.player_games.append(deepcopy(conn.player_games[0]))
+    if fault:
+        message = "fact mismatch" if fault == "last_fact" else "duplicate current row"
+        with pytest.raises(ValueError, match=message):
+            verify_database(conn, snapshots)
+    else:
+        assert verify_database(conn, snapshots)["verified"] is True
+        assert [cursor.batches for cursor in conn.cursors] == [
+            [2, 2], [2, 1], [2, 2, 2, 2, 1], [2, 2, 2], [2, 2],
+        ]
+    assert all(cursor.closed and max(cursor.batches) <= 2 for cursor in conn.cursors)
+
+
+@pytest.mark.parametrize("phase", ["execute", "fetch"])
+def test_offline_bulk_cursor_closes_and_propagates_failure(snapshots, monkeypatch, phase):
+    monkeypatch.setattr(stats_verification, "BULK_BATCH_SIZE", 2)
+    original_iter = ArchiveCursor.__iter__
+
+    def fail_execute(self, query, params):
+        raise RuntimeError("synthetic cursor execution failure")
+
+    def fail_fetch(self):
+        for index, row in enumerate(original_iter(self)):
+            if index == 2:
+                raise RuntimeError("synthetic cursor fetch failure")
+            yield row
+
+    monkeypatch.setattr(ArchiveCursor, "execute" if phase == "execute" else "__iter__",
+                        fail_execute if phase == "execute" else fail_fetch)
+    conn = ArchiveConnection(snapshots)
+    with pytest.raises(RuntimeError, match="synthetic cursor"):
+        verify_database(conn, snapshots)
+    assert len(conn.cursors) == 1 and conn.cursors[0].closed
+    assert conn.transactions == [{"force_rollback": True}]
+    if phase == "fetch":
+        assert conn.cursors[0].batches == [2, 2]
 
 
 @pytest.mark.parametrize("mutation, message", [
@@ -294,6 +379,7 @@ def test_postgres_entire_saved_archive_parity_and_readonly_settings_restore(post
     assert report["player_game_rows"] == sum(len(s.player_games) for s in saved)
     assert report["player_season_rows"] == sum(len(s.player_seasons) for s in saved)
     assert postgres.execute("SHOW transaction_read_only").fetchone() == ("off",)
+    assert postgres.execute("SELECT count(*) FROM pg_cursors WHERE name LIKE 'ob_stats_verify_%'").fetchone() == (0,)
     assert import_snapshots(postgres, saved)["inserted"] == 0
 
 
