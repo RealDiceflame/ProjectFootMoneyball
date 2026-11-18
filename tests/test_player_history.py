@@ -1,11 +1,13 @@
 from datetime import datetime, timezone
 import json
+from pathlib import Path
 
 import pandas as pd
 import pytest
 
 from app.player_history import (HISTORY_COLUMNS, OPTIONAL_STAT_COLUMNS, STAT_COLUMNS,
                                 _download_season, build_player_history, history_key, refresh_player_history)
+from data_fetcher.player_identity import PlayerRegistry
 
 
 def _rankings(path):
@@ -235,3 +237,149 @@ def test_failed_middle_season_download_preserves_last_good_history(tmp_path, mon
     with pytest.raises(OSError, match="Season unavailable"):
         refresh_player_history(tmp_path / "rankings.json", destination, start_season=2016, end_season=2025)
     assert json.loads(destination.read_text()) == {"previous": True}
+
+
+def test_two_way_history_keeps_real_source_position_and_offensive_production(tmp_path):
+    rankings, destination = tmp_path / "rankings.json", tmp_path / "history.json"
+    rankings.write_text(json.dumps({
+        "columns": ["overall_rank", "player", "player_id", "team", "pos"],
+        "boards": {"12team_2qb_te_premium_half_ppr": [
+            [1, "Travis Hunter", "00-0040718", "JAX", "WR"],
+        ]},
+    }))
+    source = pd.read_csv(Path(__file__).resolve().parents[1] / "data/stats/nflverse_player_stats_2025.csv")
+    source = source[source.player_id.eq("00-0040718")].copy()
+    before = source.copy(deep=True)
+    assert source.iloc[0]["position"] == "CB"
+    births = pd.DataFrame([{"gsis_id": "00-0040718", "birth_date": "2003-05-18"}])
+
+    build_player_history(rankings, destination, season_frames=[source], player_frame=births)
+
+    pd.testing.assert_frame_equal(source, before)
+    payload = json.loads(destination.read_text())
+    assert payload["ranked_player_count"] == 1
+    assert payload["historical_player_count"] == 0
+    record = payload["players"]["id:00-0040718"]
+    assert record["pos"] == "WR"
+    assert record["birth_date"] == "2003-05-18"
+    assert len(record["seasons"]) == 1
+    row = dict(zip(payload["columns"], record["seasons"][0]))
+    assert row["pos"] == "CB"
+    for column in (*STAT_COLUMNS, *OPTIONAL_STAT_COLUMNS):
+        assert row[column] == source.iloc[0][column]
+    assert (row["games"], row["receptions"], row["receiving_yards"], row["receiving_tds"]) == (7, 28, 298, 1)
+
+
+@pytest.mark.parametrize("identity", ["", None, "unreviewed-id", "other-defender"])
+def test_same_name_defender_without_reviewed_id_cannot_borrow_ranked_eligibility(tmp_path, identity):
+    rankings, destination = tmp_path / "rankings.json", tmp_path / "history.json"
+    rankings.write_text(json.dumps({
+        "columns": ["overall_rank", "player", "player_id", "team", "pos"],
+        "boards": {"12team_2qb_te_premium_half_ppr": [
+            [1, "Travis Hunter", "00-0040718", "JAX", "WR"],
+        ]},
+    }))
+    frame = _stats(2025).iloc[[0]].copy()
+    frame.loc[:, "player_id"] = identity
+    frame.loc[:, "player_display_name"] = "Travis Hunter"
+    frame.loc[:, "position"] = "CB"
+
+    build_player_history(rankings, destination, season_frames=[frame])
+
+    assert json.loads(destination.read_text())["players"] == {}
+
+
+def test_ambiguous_offensive_eligibility_does_not_select_a_history_position(tmp_path, monkeypatch):
+    rankings, destination = tmp_path / "rankings.json", tmp_path / "history.json"
+    _rankings(rankings)
+    registry = PlayerRegistry([{
+        "gsis_id": "00-0036912", "name": "DeVonta Smith", "position": "CB", "position_aliases": "WR;TE",
+    }])
+    monkeypatch.setattr("app.player_history.default_registry", lambda: registry)
+    frame = _stats(2025).iloc[[0]].copy()
+    frame.loc[:, "position"] = "CB"
+
+    build_player_history(rankings, destination, season_frames=[frame])
+
+    assert json.loads(destination.read_text())["players"] == {}
+
+
+def test_reviewed_two_way_history_survives_leaving_rankings_without_rewriting_positions(tmp_path):
+    rankings, destination = tmp_path / "rankings.json", tmp_path / "history.json"
+    _rankings(rankings)
+    past_runner = _stats(2024).iloc[[0]].copy()
+    past_runner.loc[:, "position"] = "RB"
+    hunter = _stats(2025).iloc[[0]].copy()
+    hunter.loc[:, "player_id"] = "00-0040718"
+    hunter.loc[:, "player_display_name"] = "Travis Hunter"
+    hunter.loc[:, "position"] = "CB"
+    unrelated = hunter.copy()
+    unrelated.loc[:, "player_id"] = "unrelated-defender"
+
+    build_player_history(rankings, destination, season_frames=[_stats(2025), past_runner, hunter, unrelated])
+
+    payload = json.loads(destination.read_text())
+    archived = payload["players"]["id:00-0040718"]
+    assert archived["is_ranked"] is False
+    assert archived["pos"] == "WR"
+    position_index = payload["columns"].index("pos")
+    assert archived["seasons"][0][position_index] == "CB"
+    assert "id:unrelated-defender" not in payload["players"]
+    changed_positions = payload["players"]["id:00-0036912"]["seasons"]
+    assert [row[position_index] for row in changed_positions] == ["WR", "RB"]
+
+
+@pytest.mark.parametrize("activity", ["none", "defense_and_returns", "target", "negative_yard_carry"])
+def test_defensive_source_season_needs_actual_offensive_opportunity(tmp_path, monkeypatch, activity):
+    rankings, destination = tmp_path / "rankings.json", tmp_path / "history.json"
+    _rankings(rankings)
+    monkeypatch.setattr("app.player_history.default_registry", lambda: PlayerRegistry([{
+        "gsis_id": "00-0036912", "name": "DeVonta Smith", "position": "CB", "position_aliases": "WR",
+    }]))
+    frame = _stats(2025).iloc[[0]].copy()
+    frame.loc[:, "position"] = "CB"
+    for column in STAT_COLUMNS:
+        if column != "games":
+            frame.loc[:, column] = 0
+    if activity == "defense_and_returns":
+        frame["def_tackles_solo"] = 10
+        frame["def_interceptions"] = 2
+        frame["punt_returns"] = 4
+        frame["kickoff_return_yards"] = 100
+        frame["special_teams_tds"] = 1
+    elif activity == "target":
+        frame.loc[:, "targets"] = 1
+    elif activity == "negative_yard_carry":
+        frame.loc[:, "carries"] = 1
+        frame.loc[:, "rushing_yards"] = -3
+
+    build_player_history(rankings, destination, season_frames=[frame])
+
+    payload = json.loads(destination.read_text())
+    if activity in {"target", "negative_yard_carry"}:
+        record = payload["players"]["id:00-0036912"]
+        row = dict(zip(payload["columns"], record["seasons"][0]))
+        assert (record["pos"], row["pos"], row["receptions"]) == ("WR", "CB", 0)
+        if activity == "target":
+            assert row["targets"] == 1
+        else:
+            assert (row["carries"], row["rushing_yards"]) == (1, -3)
+    else:
+        assert payload["players"] == {}
+
+
+def test_ordinary_offensive_zero_production_seasons_remain_in_history(tmp_path):
+    rankings, destination = tmp_path / "rankings.json", tmp_path / "history.json"
+    _rankings(rankings)
+    frame = _stats(2025).iloc[[0]].copy()
+    for column in STAT_COLUMNS:
+        if column != "games":
+            frame.loc[:, column] = 0
+
+    build_player_history(rankings, destination, season_frames=[frame])
+
+    payload = json.loads(destination.read_text())
+    record = payload["players"]["id:00-0036912"]
+    row = dict(zip(payload["columns"], record["seasons"][0]))
+    assert row["pos"] == "WR" and row["games"] == 17
+    assert all(row[column] == 0 for column in STAT_COLUMNS if column != "games")

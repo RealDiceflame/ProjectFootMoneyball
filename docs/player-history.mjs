@@ -20,11 +20,22 @@ export function historyKey(player) {
 }
 
 export function historyRows(bundle, player) {
-  const record = bundle?.players?.[player?.history_key || historyKey(player)];
+  const key = player?.history_key || historyKey(player);
+  const record = bundle?.players?.[key];
   if (!record?.seasons?.length || !bundle?.columns?.length) return [];
-  return record.seasons.map(values => Object.fromEntries(
-    bundle.columns.map((column, index) => [column, values[index]]),
-  ));
+  const offensive = new Set(["QB", "RB", "WR", "TE"]);
+  const verifiedPosition = String(record.pos || "").toUpperCase();
+  const sameIdentity = key.startsWith("id:") && historyKey(player) === key && historyKey(record) === key;
+  return record.seasons.map(values => {
+    const row = Object.fromEntries(bundle.columns.map((column, index) => [column, values[index]]));
+    // Keep the recorded NFL position intact. A two-way player's reviewed
+    // offensive role belongs to the same canonical identity, never a name match.
+    const sourcePosition = String(row.pos || "").toUpperCase();
+    if (sourcePosition && !offensive.has(sourcePosition) && sameIdentity && offensive.has(verifiedPosition)) {
+      row.fantasy_pos = verifiedPosition;
+    }
+    return row;
+  });
 }
 
 export function historicalPlayers(bundle, rankedPlayers = []) {
@@ -61,7 +72,8 @@ export function historyWindow(bundle) {
 }
 
 export function fantasyPoints(stats, settings) {
-  return scoreFantasyStats(stats, settings, {allowLegacy: true, allowSparseCore: true}).points;
+  if (!stats || typeof stats !== "object") return null;
+  return scoreFantasyStats({ ...stats, pos: stats.fantasy_pos || stats.pos }, settings, {allowLegacy: true, allowSparseCore: true}).points;
 }
 
 export function sampleStandardDeviation(values) {
@@ -83,7 +95,7 @@ export function volatilityLabel(score) {
 
 export function historyAnalytics(rows, player, settings) {
   const seasons = (rows || []).map(row => {
-    const scored = scoreFantasyStats({ ...row, pos: row.pos || player?.pos }, settings, {allowLegacy: true, allowSparseCore: true});
+    const scored = scoreFantasyStats({ ...row, pos: row.fantasy_pos || row.pos || player?.pos }, settings, {allowLegacy: true, allowSparseCore: true});
     const fantasyPointsTotal = scored.points;
     const games = numberOrNull(row.games);
     const fantasyPointsPerGame = Number.isInteger(games) && games > 0 && fantasyPointsTotal !== null ? fantasyPointsTotal / games : null;

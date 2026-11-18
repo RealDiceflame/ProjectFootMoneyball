@@ -8,6 +8,7 @@ import {
   buildPositionSamples,
   positionAgeCurve,
   projectPlayer,
+  projectionSummary,
   roundPositionExpectations,
 } from "../docs/projection-model.mjs";
 
@@ -131,4 +132,55 @@ test("archive identities supply birth dates and season positions without double 
   const samples = buildPositionSamples([], changedPosition, {}, { ppr: "Half PPR", tePremium: "+0.5" });
   assert.deepEqual(samples.map(row => row.pos), ["TE", "QB"]);
   assert.deepEqual(samples.map(row => row.fantasy_points), [100, 75]);
+});
+
+test("verified two-way receiving history enters WR age samples without inventing one-season variation", () => {
+  const hunter = {player: "Travis Hunter", player_id: "00-0040718", pos: "WR", projected_points: 120.9, adp: 160.1};
+  const bundle = {columns: ["season", "pos", "games", "receptions", "receiving_yards", "receiving_tds"],
+    players: {"id:00-0040718": {...hunter, birth_date: "2003-05-18", is_ranked: true,
+      seasons: [[2025, "CB", 7, 28, 298, 1]]}}};
+  const original = structuredClone(bundle);
+  const model = applyProjectionModel([hunter], bundle, {}, {...settings, ppr: "Half PPR"}, 2026);
+  assert.equal(model.samples.length, 1);
+  assert.deepEqual([model.samples[0].pos, model.samples[0].age, model.samples[0].fantasy_points], ["WR", 22, 49.8]);
+  const row = model.rows[0];
+  assert.equal(row.age, 23);
+  assert.equal(row.projection_source, "age_curve");
+  assert.equal(row.projection_history_seasons, 1);
+  assert.equal(row.age_change_sample, 0);
+  assert.equal(row.projection_stddev, null);
+  assert.equal(row.projection_low, null);
+  assert.equal(row.projection_high, null);
+  assert.ok(row.projected_points < row.projected_17_game_pace);
+  assert.deepEqual(bundle, original);
+
+  const nameOnly = {columns: bundle.columns, players: {"name:travishunter|WR": {
+    player: hunter.player, pos: "WR", birth_date: "2003-05-18", seasons: [[2025, "CB", 7, 28, 298, 1]],
+  }}};
+  assert.deepEqual(buildPositionSamples([], nameOnly, {}, settings, 2026), []);
+  const inconsistent = structuredClone(bundle);
+  inconsistent.players["id:00-0040718"].player_id = "different-person";
+  assert.deepEqual(buildPositionSamples([hunter], inconsistent, {}, settings, 2026), []);
+});
+
+test("known-age missing history retains and explains the existing baseline", () => {
+  const player = {...players[0], projected_points: 170};
+  const row = applyProjectionModel([player], {players: {}}, news, settings, 2026).rows[0];
+  assert.equal(row.age, 25);
+  assert.equal(row.projected_points, 170);
+  assert.equal(row.projected_ppg, 10);
+  assert.equal(row.projection_history_seasons, 0);
+  assert.equal(row.projection_source, "existing_baseline");
+  assert.equal(row.projection_stddev, null);
+  const summary = projectionSummary(row);
+  assert.equal(summary.label, "Saved baseline");
+  assert.match(summary.explanation, /No usable NFL season history/);
+  assert.doesNotMatch(summary.explanation, /Age data is unavailable/);
+  assert.equal(summary.ageDetail, "No age adjustment applied");
+
+  const rookie = applyProjectionModel([{...player, is_rookie: true}], {players: {}}, news, settings, 2026).rows[0];
+  assert.equal(projectionSummary(rookie).label, "Rookie market");
+  const noAge = applyProjectionModel([player], history, {}, settings, 2026).rows[0];
+  assert.equal(noAge.projection_source, "recent_form");
+  assert.match(projectionSummary(noAge).explanation, /Age data is unavailable/);
 });

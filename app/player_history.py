@@ -15,6 +15,7 @@ import requests
 
 from app.player_intel import DEFAULT_BOARD, load_ranked_players
 from app.player_news import normalize_name
+from data_fetcher.player_identity import default_registry
 
 
 STATS_URL = (
@@ -25,6 +26,7 @@ DEFAULT_HISTORY_SEASONS = 10
 DEFAULT_HISTORICAL_LOOKBACK = 5
 PLAYERS_URL = "https://github.com/nflverse/nflverse-data/releases/download/players/players.csv"
 FANTASY_POSITIONS = {"QB", "RB", "WR", "TE"}
+OFFENSIVE_OPPORTUNITIES = ("attempts", "carries", "targets", "receptions")
 STAT_COLUMNS = (
     "games",
     "completions",
@@ -190,8 +192,23 @@ def build_player_history(
     combined["season"] = pd.to_numeric(combined["season"], errors="coerce")
     combined = combined.dropna(subset=["season"])
     combined["position"] = combined["position"].map(_position)
-    combined = combined[combined["position"].isin(FANTASY_POSITIONS)].copy()
     combined["player_id"] = combined["player_id"].map(_text)
+    # Some two-way players have offensive production under a defensive NFL
+    # position. Require both reviewed ID-linked eligibility and offensive
+    # opportunities in that season, so an alias cannot create zero-scoring
+    # offensive seasons out of defensive-only appearances. Keep the source
+    # position in each season row instead of rewriting its history.
+    registry = default_registry()
+    combined["fantasy_position"] = [
+        registry.offensive_position(identity, position)
+        for identity, position in zip(combined["player_id"], combined["position"])
+    ]
+    opportunities = combined[list(OFFENSIVE_OPPORTUNITIES)].apply(pd.to_numeric, errors="coerce")
+    has_offensive_opportunity = (opportunities.gt(0) & opportunities.lt(float("inf"))).any(axis=1)
+    combined = combined[
+        combined["position"].isin(FANTASY_POSITIONS)
+        | (combined["fantasy_position"].isin(FANTASY_POSITIONS) & has_offensive_opportunity)
+    ].copy()
     ranked_players = load_ranked_players(rankings_path, DEFAULT_BOARD)
     players = {}
     seasons = sorted(int(season) for season in combined["season"].unique())
@@ -215,7 +232,7 @@ def build_player_history(
         if key in represented or matched["season"].max() < historical_since:
             continue
         latest = matched.sort_values("season", ascending=False).iloc[0]
-        player = {"player": _text(latest["player_display_name"]), "player_id": latest["player_id"], "pos": latest["position"]}
+        player = {"player": _text(latest["player_display_name"]), "player_id": latest["player_id"], "pos": latest["fantasy_position"]}
         if not player["player"]:
             continue
         players[key] = _history_record(player, matched, births, ranked=False)

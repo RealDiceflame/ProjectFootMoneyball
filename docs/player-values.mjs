@@ -1,4 +1,5 @@
-import {ageOnSeptemberFirst, ageChangeFactor} from './projection-model.mjs?v=20261030-scoring1';
+import {ageOnSeptemberFirst, ageChangeFactor} from './projection-model.mjs?v=20261118-history1';
+import {historyRows} from './player-history.mjs?v=20261118-history1';
 import {classifyInjury} from './injury-status.mjs';
 import {scoreFantasyStats} from './fantasy-scoring.mjs?v=20261030-scoring1';
 
@@ -44,14 +45,15 @@ function historicalContext(history, reports, season, settings) {
     if (!id || key !== `id:${id}` || !POSITIONS.includes(record.pos)) continue;
     const report = reports.get(`${id}|${record.pos}`);
     const birth = record.birth_date || report?.birth_date;
-    const rows = unpack(history.columns, record.seasons).filter(row => Number.isInteger(Number(row.season))
+    const rows = historyRows(history, {...record, history_key: key}).filter(row => Number.isInteger(Number(row.season))
       && Number(row.season) < season && Number(row.games) > 0);
     byId.set(id, {record, rows, birth});
     for (const row of rows) {
-      const scored = scoreValueStats({...row, pos: row.pos || record.pos}, settings, {allowLegacy: true});
+      const position = row.fantasy_pos || row.pos || record.pos;
+      const scored = scoreValueStats({...row, pos: position}, settings, {allowLegacy: true});
       const age = ageOnSeptemberFirst(birth, Number(row.season));
       if (scored.points !== null && row.games >= 4 && finite(age) && age >= 20 && age <= 45)
-        samples.push({identity: id, pos: row.pos || record.pos, season: Number(row.season), age,
+        samples.push({identity: id, pos: position, season: Number(row.season), age,
           games: Number(row.games), fantasy_points_per_game: scored.points / Number(row.games)});
     }
   }
@@ -72,7 +74,7 @@ function priorForPlayer(player, context, season, settings, birth) {
   for (const row of source.rows) {
     const gap = season - Number(row.season);
     if (gap < 1 || gap > 3) continue; // Calendar years, not the last three nonempty rows.
-    const scored = scoreValueStats({...row, pos: row.pos || player.pos}, settings, {allowLegacy: true});
+    const scored = scoreValueStats({...row, pos: row.fantasy_pos || row.pos || player.pos}, settings, {allowLegacy: true});
     if (scored.points === null) continue;
     let rate = scored.points / Number(row.games);
     if (birth) for (let year = Number(row.season) + 1; year <= season; year++) {

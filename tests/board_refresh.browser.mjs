@@ -96,6 +96,48 @@ function changeRankedValue(data, player, column, value) {
 const selectedRow = page => page.locator("#table-body tr").first();
 const sourceRecovered = page => page.waitForFunction(() => !document.querySelector("#source-status").textContent.includes("unavailable"));
 
+test("two-way player profiles show receiving history and distinguish missing history from missing age", async () => {
+  const hunter = {player: "Travis Hunter", player_id: "00-0040718", pos: "WR", team: "JAX",
+    overall_rank: 1, position_rank: "WR1", projected_points: 120.9, adp: 160.1,
+    source_count: 2, adp_stddev: 47.8, is_rookie: false, scoring_coverage: "full"};
+  const missing = {...hunter, player: "History Missing", player_id: "fixture-missing", overall_rank: 2};
+  const board = await open("rankings.html", values => {
+    values.rankings.projection_season = 2026;
+    for (const key of Object.keys(values.rankings.boards)) {
+      values.rankings.boards[key] = [hunter, missing].map(player =>
+        values.rankings.columns.map(column => player[column] ?? null));
+    }
+    const columns = values.player_history.columns;
+    const season = Object.fromEntries(columns.map(column => [column, 0]));
+    Object.assign(season, {season: 2025, team: "JAX", games: 7, pos: "CB", targets: 45,
+      receptions: 28, receiving_yards: 298, receiving_tds: 1});
+    values.player_history = {columns, seasons: [2025], player_count: 1, players: {
+      "id:00-0040718": {...hunter, birth_date: "2003-05-18", is_ranked: true,
+        seasons: [columns.map(column => season[column])]},
+    }};
+    values.player_news.reports = {missing: {...missing, birth_date: "2000-01-01"}};
+    values.player_intel.reports = {};
+  });
+  try {
+    await board.page.getByRole("button", {name: "Open player profile for Travis Hunter", exact: true}).click();
+    const dialog = board.page.getByRole("dialog", {name: "Travis Hunter", exact: true});
+    await dialog.waitFor();
+    assert.deepEqual(await dialog.locator(".history-table-shell tbody td").allTextContents(),
+      ["2025", "JAX", "7", "0", "0", "0", "45", "28", "298", "1", "49.8", "7.1"]);
+    assert.match(await dialog.locator(".projection-summary-panel").innerText(), /Age Curve v1/);
+    assert.doesNotMatch(await dialog.innerText(), /Age data is unavailable|No matching regular-season history/);
+    assert.match(await dialog.innerText(), /Needs at least two NFL seasons/,
+      "A recovered season must not invent player-specific year-to-year variation");
+    await dialog.getByRole("button", {name: "Close player report"}).click();
+    await board.page.getByRole("button", {name: "Open player profile for History Missing", exact: true}).click();
+    const unavailable = board.page.getByRole("dialog", {name: "History Missing", exact: true});
+    await unavailable.waitFor();
+    assert.match(await unavailable.innerText(), /No matching regular-season history/);
+    assert.doesNotMatch(await unavailable.locator(".projection-summary-panel").innerText(), /Age data is unavailable/);
+    assert.deepEqual(board.errors, []);
+  } finally { await board.context.close(); }
+});
+
 test("rankings labels partial scoring estimates across formats and clears the note for legacy snapshots", async () => {
   const board = await open("rankings.html", values => {
     let coverage = values.rankings.columns.indexOf("scoring_coverage");
