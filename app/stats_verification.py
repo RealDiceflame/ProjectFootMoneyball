@@ -6,6 +6,7 @@ It does not export, publish, or change the website's data source.
 from contextlib import contextmanager
 from decimal import Decimal
 import math
+from uuid import uuid4
 
 from app.league_leaders import MAXIMUM_STATS, STAT_GROUPS
 from app.stats_database import game_stat_totals
@@ -14,6 +15,7 @@ from app.stats_import import import_plan, prepare_snapshot
 
 GAME_METRICS = tuple(sorted({key for group in STAT_GROUPS.values() for key in group}))
 HISTORY_METRICS = frozenset(GAME_METRICS) | {"games", "passing_interceptions", "fumbles_total"}
+BULK_BATCH_SIZE = 1000
 
 
 @contextmanager
@@ -37,6 +39,18 @@ allows isolated integration tests to verify their own uncommitted fixture data.
         conn.execute("SET LOCAL statement_timeout = '60s'")
         conn.execute("SET LOCAL lock_timeout = '10s'")
         yield
+
+
+def _bulk_rows(conn, query, params):
+    """Transfer bounded batches within the caller's read-only snapshot.
+
+    Each server-cursor FETCH retains the existing statement timeout. The SQL
+    LIMIT still bounds the complete result, which parity checks need in memory.
+    """
+    with conn.cursor(name=f"ob_stats_verify_{uuid4().hex}") as cursor:
+        cursor.itersize = BULK_BATCH_SIZE
+        cursor.execute(query, params)
+        return list(cursor)
 
 
 def _same(left, right):
@@ -110,13 +124,13 @@ def _check_totals(label, actual, expected, *, floating=False):
 def _verify(conn, snapshots):
     expected_heads = {(s.dataset, s.object_key): s for s in snapshots}
     plan = import_plan(snapshots)
-    heads = conn.execute("""SELECT h.dataset, h.object_key, h.snapshot_id, h.latest_source_at,
+    heads = _bulk_rows(conn, """SELECT h.dataset, h.object_key, h.snapshot_id, h.latest_source_at,
             s.content_sha256, s.source_updated_at, s.payload,
             EXISTS (SELECT 1 FROM ob_stats.snapshot_observations o
                     WHERE o.snapshot_id = h.snapshot_id AND o.source_updated_at = h.latest_source_at)
         FROM ob_stats.snapshot_heads h
         JOIN ob_stats.source_snapshots s USING (snapshot_id)
-        ORDER BY h.dataset, h.object_key LIMIT %s""", (len(snapshots) + 1,)).fetchall()
+        ORDER BY h.dataset, h.object_key LIMIT %s""", (len(snapshots) + 1,))
     if {(row[0], row[1]) for row in heads} != expected_heads.keys() or len(heads) != len(snapshots):
         raise ValueError("Current snapshot heads do not match the complete saved archive")
 
@@ -174,7 +188,7 @@ def _verify(conn, snapshots):
         ("Player seasons", """SELECT snapshot_id, player_id, season, season_type, recent_team, position, stats
             FROM ob_stats.current_player_season_stats LIMIT %s""", player_seasons, 4),
     ):
-        _check_rows(label, conn.execute(query, (len(expected) + 1,)).fetchall(), expected, key_columns)
+        _check_rows(label, _bulk_rows(conn, query, (len(expected) + 1,)), expected, key_columns)
 
     player_ids = {p["player_id"] for snapshot in snapshots for p in snapshot.players}
     existing_ids = {row[0] for row in conn.execute(
