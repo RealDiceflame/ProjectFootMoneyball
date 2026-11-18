@@ -56,6 +56,15 @@ def test_failure_and_post_sync_failure_are_distinguished_and_recover():
     assert assess([run(),run(2,2,"failure")],[report()]) == {}
 
 
+def test_successful_retry_uses_attempt_start_not_original_creation_time():
+    retry=run(1,0.5)
+    retry.update(created_at=(NOW-timedelta(hours=5)).isoformat(),
+                 run_started_at=(NOW-timedelta(hours=0.75)).isoformat(),run_attempt=2)
+    healthy=report(1,0.5)
+    healthy["run_attempt"]=2
+    assert assess([run(2,2,"failure"),retry],[healthy]) == {}
+
+
 def test_skipped_and_fork_runs_cannot_be_healthy_heartbeats():
     old = run(2,11)
     assert assess([run(conclusion="skipped"),old])["sync"]["code"] == "sync_overdue"
@@ -68,6 +77,13 @@ def test_queued_sync_does_not_hide_stalled_work():
     queued = run(2,4)
     queued.update(status="queued",conclusion=None)
     assert assess([queued,run()])["sync"]["code"] == "sync_stalled"
+
+
+def test_new_attempt_of_old_run_is_not_immediately_stalled():
+    active=run(2,5)
+    active.update(status="in_progress",conclusion=None,run_attempt=2,
+                  run_started_at=(NOW-timedelta(minutes=10)).isoformat())
+    assert assess([active,run()]) == {}
 
 
 def test_collector_failures_and_overdue_schedules_are_visible():
@@ -160,6 +176,25 @@ def test_legacy_success_bootstrap_requires_absence_of_instrumented_step():
         client.health(run(),NOW)
     value = report(hours=-1)
     with pytest.raises(ValueError): assess(reports=[value])
+
+
+def test_legacy_queued_run_starting_after_activation_uses_original_workflow():
+    client=script.GitHub("synthetic-not-a-real-token")
+    client.request=lambda path: {"artifacts":[]} if path.endswith("artifacts?per_page=100") else {"jobs":[{"steps":[]}]}
+    legacy=run()
+    legacy["run_started_at"]=(NOW-timedelta(minutes=10)).isoformat()
+    assert client.health(legacy,NOW-timedelta(minutes=30)) is None
+    # Reruns still cannot hide missing instrumentation behind old creation time.
+    legacy["run_attempt"]=2
+    client.request=lambda path: {"artifacts":[]} if path.endswith("artifacts?per_page=100") else {"jobs":[{"steps":[{"name":"Save aggregate sync health"}]}]}
+    with pytest.raises(ValueError,match="instrumented"):
+        client.health(legacy,NOW-timedelta(minutes=30))
+
+
+def test_future_activation_cannot_disable_missing_evidence_alerts():
+    with pytest.raises(ValueError,match="future"):
+        monitor_config({"STATS_MONITOR_ACTIVE_SINCE":(NOW+timedelta(seconds=1)).isoformat()},now=NOW)
+    assert monitor_config({"STATS_MONITOR_ACTIVE_SINCE":NOW.isoformat()},now=NOW)["active_since"]==NOW
 
 
 @pytest.mark.parametrize("value",["0","-1","nan","inf","wrong"])

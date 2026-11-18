@@ -91,7 +91,7 @@ def write_health_report(conn, sync_result, destination):
     return report
 
 
-def monitor_config(environment):
+def monitor_config(environment, *, now=None):
     names = {"stale_hours": "STATS_MONITOR_STALE_HOURS", "warn_bytes": "STATS_MONITOR_WARN_BYTES",
              "growth_bytes": "STATS_MONITOR_GROWTH_BYTES", "growth_ratio": "STATS_MONITOR_GROWTH_RATIO"}
     result = dict(DEFAULTS)
@@ -104,6 +104,8 @@ def monitor_config(environment):
             result[key] = value
     active = environment.get("STATS_MONITOR_ACTIVE_SINCE", "").strip()
     result["active_since"] = timestamp(active) if active else None
+    if result["active_since"] is not None and result["active_since"] > (now or datetime.now(timezone.utc)):
+        raise ValueError("Monitor activation time cannot be in the future")
     return result
 
 
@@ -113,7 +115,9 @@ def evaluate_health(runs, reports, collectors, *, now, config=None):
     alerts = {}
     usable = [run for run in runs if run.get("head_branch") == "main"
               and run.get("event") in {"workflow_run", "workflow_dispatch"}]
-    usable.sort(key=lambda run: timestamp(run["created_at"]), reverse=True)
+    # A retry retains its original created_at. Use the latest attempt start so a
+    # successful retry can resolve a newer-created but older-executed failure.
+    usable.sort(key=lambda run: timestamp(run.get("run_started_at") or run["created_at"]), reverse=True)
     completed = [run for run in usable if run.get("status") == "completed" and run.get("conclusion") != "skipped"]
     valid_reports = []
     run_by_id = {run["id"]: run for run in usable}
@@ -150,7 +154,7 @@ def evaluate_health(runs, reports, collectors, *, now, config=None):
         alerts["sync"] = {"code": "sync_overdue", "last_success": last_success.isoformat() if last_success else None}
     # A workflow can queue indefinitely while no fresh success is recorded.
     active = [run for run in usable if run.get("status") != "completed"]
-    if active and now - min(timestamp(run["created_at"]) for run in active) > timedelta(hours=config["chain_grace_hours"]):
+    if active and now - min(timestamp(run.get("run_started_at") or run["created_at"]) for run in active) > timedelta(hours=config["chain_grace_hours"]):
         alerts["sync"] = {"code": "sync_stalled", "run_id": active[-1]["id"]}
     successful_collectors = []
     for name, source_runs in collectors.items():

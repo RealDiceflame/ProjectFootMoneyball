@@ -63,7 +63,9 @@ class GitHub:
         matches = [artifact for artifact in artifacts if artifact["name"] == HEALTH_ARTIFACT and not artifact["expired"]]
         if not matches:
             if run.get("conclusion") == "success":
-                if timestamp(run.get("run_started_at") or run["created_at"]) >= active_since:
+                # Creation selects the workflow version; a pre-deployment run
+                # may start later from the queue using the old definition.
+                if timestamp(run["created_at"]) >= active_since:
                     raise ValueError("A post-activation successful sync is missing its health artifact")
                 jobs = self.request(f"/actions/runs/{int(run['id'])}/jobs?per_page=100")["jobs"]
                 if any(step.get("name") == "Save aggregate sync health" for job in jobs for step in job.get("steps", [])):
@@ -199,7 +201,7 @@ def main():
         return 1
     changes = reconcile(client, alerts, dry_run=args.dry_run)
     print(json.dumps({"monitor":"checked","active_incidents":sorted(alerts),"changes":changes,
-                      "verified_health_reports":len(reports),"scheduled_chain_reports":sum(report["event"]=="workflow_run" for report in reports)}))
+                      "verified_health_reports":len(reports),"automatic_chain_reports":sum(report["event"]=="workflow_run" for report in reports)}))
     return 0
 
 

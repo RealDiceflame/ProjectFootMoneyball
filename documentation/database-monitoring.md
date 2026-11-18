@@ -20,11 +20,12 @@ password or database connection. Its permissions are `contents: read`,
 ## Activation and thresholds
 
 Set `STATS_MONITOR_ACTIVE_SINCE` to the UTC deployment timestamp, for example an
-ISO timestamp ending in `Z`. This is required: missing/invalid activation time
+ISO timestamp ending in `Z`. This is required: missing, invalid, or future activation time
 creates a monitoring incident rather than silently treating health as known.
-Legacy successful runs beginning before activation may supply a temporary
-freshness heartbeat. Every successful run starting after activation must have
-valid health evidence. Artifact identities, repository, workflow, run attempt,
+Legacy successful runs created before activation may supply a temporary
+freshness heartbeat, including old workflow definitions waiting in the queue.
+Every successful run created after activation must have valid health evidence;
+older runs with the health-upload step must also provide it. Artifact identities, repository, workflow, run attempt,
 and completion times are checked against the actual workflow run.
 
 The existing `STATS_DATABASE_SYNC_ENABLED=true` flag enables both sync and its
