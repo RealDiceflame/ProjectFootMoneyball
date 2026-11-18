@@ -1,10 +1,10 @@
 {
-  "captured_at": "2026-10-30T19:02:18.335506+00:00",
-  "row_count": 18784,
+  "captured_at": "2026-11-05T20:31:35.636289+00:00",
+  "row_count": 18788,
   "sources": {
     "nflverse": {
       "url": "https://github.com/nflverse/nflverse-data/releases/download/players/players.csv",
-      "sha256": "3cfdc38a447abfe1a8b62836b68adbd25ef192514efe2179c30cf0235873bcad"
+      "sha256": "814b25afe4ffa5ace64624ac6864ee63fa392c2c9ce82c04552b2a495867c30b"
     },
     "fantasy": {
       "url": "https://raw.githubusercontent.com/dynastyprocess/data/master/files/db_playerids.csv",
@@ -12,7 +12,7 @@
     },
     "sleeper": {
       "url": "https://api.sleeper.app/v1/players/nfl",
-      "sha256": "883721ae01153c9d1755a6af465aee42c683ed592394fab105b5843af0ce54a3"
+      "sha256": "f4a373ae25480e88a6418c04442217f8b6a856f96e84105b0424b2339bee0314"
     }
   },
   "excluded_links": [
@@ -3321,5 +3321,979 @@
       "nflverse_birth_date": "1994-11-15",
       "fantasy_birth_date": "1995-11-15"
     }
-  ]
+  ],
+  "supplemental_sleeper_links": [
+    {
+      "gsis_id": "00-0040415",
+      "reason": "corroborated_sleeper_biography",
+      "provider_id": "12776",
+      "evidence": [
+        "name",
+        "birth_date",
+        "position",
+        "college"
+      ]
+    },
+    {
+      "gsis_id": "00-0041414",
+      "reason": "corroborated_sleeper_biography",
+      "provider_id": "13597",
+      "evidence": [
+        "name",
+        "birth_date",
+        "position",
+        "college"
+      ]
+    },
+    {
+      "gsis_id": "00-0032370",
+      "reason": "corroborated_sleeper_biography",
+      "provider_id": "3655",
+      "evidence": [
+        "name",
+        "birth_date",
+        "position",
+        "college"
+      ]
+    },
+    {
+      "gsis_id": "00-0040609",
+      "reason": "corroborated_sleeper_biography",
+      "provider_id": "13003",
+      "evidence": [
+        "name",
+        "birth_date",
+        "position",
+        "college"
+      ]
+    },
+    {
+      "gsis_id": "00-0039659",
+      "reason": "corroborated_sleeper_biography",
+      "provider_id": "11867",
+      "evidence": [
+        "name",
+        "birth_date",
+        "position",
+        "college"
+      ]
+    },
+    {
+      "gsis_id": "00-0032073",
+      "reason": "corroborated_sleeper_biography",
+      "provider_id": "2620",
+      "evidence": [
+        "name",
+        "birth_date",
+        "position",
+        "college"
+      ]
+    },
+    {
+      "gsis_id": "00-0039525",
+      "reason": "corroborated_sleeper_biography",
+      "provider_id": "12086",
+      "evidence": [
+        "name",
+        "birth_date",
+        "position",
+        "college"
+      ]
+    },
+    {
+      "gsis_id": "00-0034196",
+      "reason": "corroborated_sleeper_biography",
+      "provider_id": "5249",
+      "evidence": [
+        "name",
+        "birth_date",
+        "position",
+        "college"
+      ]
+    },
+    {
+      "gsis_id": "00-0038763",
+      "reason": "corroborated_sleeper_biography",
+      "provider_id": "11226",
+      "evidence": [
+        "name",
+        "birth_date",
+        "position",
+        "college"
+      ]
+    },
+    {
+      "gsis_id": "00-0041294",
+      "reason": "corroborated_sleeper_biography",
+      "provider_id": "13743",
+      "evidence": [
+        "name",
+        "birth_date",
+        "position",
+        "college"
+      ]
+    },
+    {
+      "gsis_id": "00-0041172",
+      "reason": "corroborated_sleeper_biography",
+      "provider_id": "13310",
+      "evidence": [
+        "name",
+        "birth_date",
+        "position",
+        "college"
+      ]
+    },
+    {
+      "gsis_id": "00-0037724",
+      "reason": "corroborated_sleeper_biography",
+      "provider_id": "11540",
+      "evidence": [
+        "name",
+        "birth_date",
+        "position",
+        "college"
+      ]
+    },
+    {
+      "gsis_id": "00-0033332",
+      "reason": "corroborated_sleeper_biography",
+      "provider_id": "4409",
+      "evidence": [
+        "name",
+        "birth_date",
+        "position",
+        "college"
+      ]
+    },
+    {
+      "gsis_id": "00-0038472",
+      "reason": "corroborated_sleeper_biography",
+      "provider_id": "11204",
+      "evidence": [
+        "name",
+        "birth_date",
+        "position",
+        "college"
+      ]
+    },
+    {
+      "gsis_id": "00-0037028",
+      "reason": "corroborated_sleeper_biography",
+      "provider_id": "8103",
+      "evidence": [
+        "name",
+        "birth_date",
+        "position",
+        "college"
+      ]
+    }
+  ],
+  "position_aliases": [
+    {
+      "gsis_id": "00-0022397",
+      "sleeper_id": "63",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0022897",
+      "sleeper_id": "133",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0022999",
+      "sleeper_id": "53",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0024315",
+      "sleeper_id": "723",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0025524",
+      "sleeper_id": "121",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0025604",
+      "sleeper_id": "492",
+      "primary_position": "QB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0025631",
+      "sleeper_id": "215",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0026069",
+      "sleeper_id": "182",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0026072",
+      "sleeper_id": "1015",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0026286",
+      "sleeper_id": "25",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0026323",
+      "sleeper_id": "241",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0026344",
+      "sleeper_id": "340",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0026393",
+      "sleeper_id": "126",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0026577",
+      "sleeper_id": "1050",
+      "primary_position": "WR",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0026852",
+      "sleeper_id": "682",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0026957",
+      "sleeper_id": "362",
+      "primary_position": "TE",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0027109",
+      "sleeper_id": "372",
+      "primary_position": "TE",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0027452",
+      "sleeper_id": "6169",
+      "primary_position": "OT",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0027583",
+      "sleeper_id": "1014",
+      "primary_position": "TE",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0027651",
+      "sleeper_id": "564",
+      "primary_position": "WR",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0027739",
+      "sleeper_id": "520",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0027844",
+      "sleeper_id": "747",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0027876",
+      "sleeper_id": "559",
+      "primary_position": "QB",
+      "offensive_alternatives": [
+        "TE"
+      ]
+    },
+    {
+      "gsis_id": "00-0027905",
+      "sleeper_id": "782",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0027917",
+      "sleeper_id": "1001",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0027925",
+      "sleeper_id": "1303",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0028074",
+      "sleeper_id": "973",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0028149",
+      "sleeper_id": "982",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0028841",
+      "sleeper_id": "1250",
+      "primary_position": "RB",
+      "offensive_alternatives": [
+        "TE"
+      ]
+    },
+    {
+      "gsis_id": "00-0029068",
+      "sleeper_id": "1716",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0029315",
+      "sleeper_id": "1314",
+      "primary_position": "TE",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0029619",
+      "sleeper_id": "1235",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0029729",
+      "sleeper_id": "1551",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0029740",
+      "sleeper_id": "1332",
+      "primary_position": "TE",
+      "offensive_alternatives": [
+        "WR"
+      ]
+    },
+    {
+      "gsis_id": "00-0029863",
+      "sleeper_id": "1611",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0029892",
+      "sleeper_id": "1379",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0029931",
+      "sleeper_id": "1693",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0029981",
+      "sleeper_id": "1652",
+      "primary_position": "DB",
+      "offensive_alternatives": [
+        "WR"
+      ]
+    },
+    {
+      "gsis_id": "00-0030112",
+      "sleeper_id": "1369",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0030120",
+      "sleeper_id": "1584",
+      "primary_position": "WR",
+      "offensive_alternatives": [
+        "QB"
+      ]
+    },
+    {
+      "gsis_id": "00-0030221",
+      "sleeper_id": "1755",
+      "primary_position": "OT",
+      "offensive_alternatives": [
+        "TE"
+      ]
+    },
+    {
+      "gsis_id": "00-0030741",
+      "sleeper_id": "2174",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0030785",
+      "sleeper_id": "1897",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0030968",
+      "sleeper_id": "2073",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0031085",
+      "sleeper_id": "1956",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0031091",
+      "sleeper_id": "2280",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0031121",
+      "sleeper_id": "2191",
+      "primary_position": "TE",
+      "offensive_alternatives": [
+        "WR"
+      ]
+    },
+    {
+      "gsis_id": "00-0031271",
+      "sleeper_id": "2262",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0031359",
+      "sleeper_id": "2182",
+      "primary_position": "WR",
+      "offensive_alternatives": [
+        "TE"
+      ]
+    },
+    {
+      "gsis_id": "00-0031526",
+      "sleeper_id": "2566",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0031594",
+      "sleeper_id": "2459",
+      "primary_position": "DB",
+      "offensive_alternatives": [
+        "WR"
+      ]
+    },
+    {
+      "gsis_id": "00-0031595",
+      "sleeper_id": "2471",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0031612",
+      "sleeper_id": "2507",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0031706",
+      "sleeper_id": "2835",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0031723",
+      "sleeper_id": "2571",
+      "primary_position": "LB",
+      "offensive_alternatives": [
+        "TE"
+      ]
+    },
+    {
+      "gsis_id": "00-0031746",
+      "sleeper_id": "2890",
+      "primary_position": "RB",
+      "offensive_alternatives": [
+        "WR"
+      ]
+    },
+    {
+      "gsis_id": "00-0031755",
+      "sleeper_id": "2784",
+      "primary_position": "DB",
+      "offensive_alternatives": [
+        "QB"
+      ]
+    },
+    {
+      "gsis_id": "00-0031861",
+      "sleeper_id": "2865",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0031996",
+      "sleeper_id": "2604",
+      "primary_position": "TE",
+      "offensive_alternatives": [
+        "WR"
+      ]
+    },
+    {
+      "gsis_id": "00-0032055",
+      "sleeper_id": "2346",
+      "primary_position": "WR",
+      "offensive_alternatives": [
+        "TE"
+      ]
+    },
+    {
+      "gsis_id": "00-0032122",
+      "sleeper_id": "2530",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0032188",
+      "sleeper_id": "2428",
+      "primary_position": "TE",
+      "offensive_alternatives": [
+        "WR"
+      ]
+    },
+    {
+      "gsis_id": "00-0032200",
+      "sleeper_id": "2399",
+      "primary_position": "WR",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0032472",
+      "sleeper_id": "3564",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0032652",
+      "sleeper_id": "3729",
+      "primary_position": "CB",
+      "offensive_alternatives": [
+        "WR"
+      ]
+    },
+    {
+      "gsis_id": "00-0032716",
+      "sleeper_id": "3500",
+      "primary_position": "TE",
+      "offensive_alternatives": [
+        "WR"
+      ]
+    },
+    {
+      "gsis_id": "00-0032740",
+      "sleeper_id": "3644",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0032745",
+      "sleeper_id": "3595",
+      "primary_position": "TE",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0032769",
+      "sleeper_id": "1696",
+      "primary_position": "CB",
+      "offensive_alternatives": [
+        "TE"
+      ]
+    },
+    {
+      "gsis_id": "00-0032813",
+      "sleeper_id": "3803",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0032897",
+      "sleeper_id": "3354",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0032918",
+      "sleeper_id": "3832",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0032956",
+      "sleeper_id": "3332",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0033193",
+      "sleeper_id": "3957",
+      "primary_position": "RB",
+      "offensive_alternatives": [
+        "QB"
+      ]
+    },
+    {
+      "gsis_id": "00-0033261",
+      "sleeper_id": "4326",
+      "primary_position": "WR",
+      "offensive_alternatives": [
+        "TE"
+      ]
+    },
+    {
+      "gsis_id": "00-0034171",
+      "sleeper_id": "5565",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0034284",
+      "sleeper_id": "5322",
+      "primary_position": "DE",
+      "offensive_alternatives": [
+        "TE"
+      ]
+    },
+    {
+      "gsis_id": "00-0034409",
+      "sleeper_id": "5103",
+      "primary_position": "WR",
+      "offensive_alternatives": [
+        "TE"
+      ]
+    },
+    {
+      "gsis_id": "00-0034420",
+      "sleeper_id": "5117",
+      "primary_position": "LB",
+      "offensive_alternatives": [
+        "TE"
+      ]
+    },
+    {
+      "gsis_id": "00-0034531",
+      "sleeper_id": "5165",
+      "primary_position": "RB",
+      "offensive_alternatives": [
+        "QB"
+      ]
+    },
+    {
+      "gsis_id": "00-0034655",
+      "sleeper_id": "5670",
+      "primary_position": "LB",
+      "offensive_alternatives": [
+        "TE"
+      ]
+    },
+    {
+      "gsis_id": "00-0034959",
+      "sleeper_id": "6323",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0035099",
+      "sleeper_id": "6379",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0035125",
+      "sleeper_id": "6109",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0035161",
+      "sleeper_id": "6231",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0035246",
+      "sleeper_id": "5863",
+      "primary_position": "WR",
+      "offensive_alternatives": [
+        "TE"
+      ]
+    },
+    {
+      "gsis_id": "00-0035310",
+      "sleeper_id": "6298",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0035427",
+      "sleeper_id": "6246",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0035908",
+      "sleeper_id": "7318",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0036245",
+      "sleeper_id": "7109",
+      "primary_position": "RB",
+      "offensive_alternatives": [
+        "WR"
+      ]
+    },
+    {
+      "gsis_id": "00-0036340",
+      "sleeper_id": "6906",
+      "primary_position": "WR",
+      "offensive_alternatives": [
+        "TE"
+      ]
+    },
+    {
+      "gsis_id": "00-0036691",
+      "sleeper_id": "7852",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0036727",
+      "sleeper_id": "8025",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0036753",
+      "sleeper_id": "7576",
+      "primary_position": "WR",
+      "offensive_alternatives": [
+        "TE"
+      ]
+    },
+    {
+      "gsis_id": "00-0036774",
+      "sleeper_id": "7941",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0037304",
+      "sleeper_id": "8181",
+      "primary_position": "FB",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0037450",
+      "sleeper_id": "8749",
+      "primary_position": "WR",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0038468",
+      "sleeper_id": "11209",
+      "primary_position": "TE",
+      "offensive_alternatives": [
+        "RB"
+      ]
+    },
+    {
+      "gsis_id": "00-0038590",
+      "sleeper_id": "9489",
+      "primary_position": "TE",
+      "offensive_alternatives": [
+        "WR"
+      ]
+    },
+    {
+      "gsis_id": "00-0040718",
+      "sleeper_id": "12530",
+      "primary_position": "CB",
+      "offensive_alternatives": [
+        "WR"
+      ]
+    }
+  ],
+  "reviewed_adp": {
+    "file": "data/ADP/combined_adp_2026.csv",
+    "sha256": "bfe92010ae9c31aeb2685a3b2632d7bb0de9b7c7aa6522ea4c59495c95f89abb",
+    "sleeper_id_count": 418
+  }
 }

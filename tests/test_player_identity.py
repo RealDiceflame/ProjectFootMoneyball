@@ -120,3 +120,86 @@ def test_dated_team_evidence_can_disambiguate_historical_namesakes():
     assert r.resolve({**row,'Team':'BUF'})==('','ambiguous')
     assert r.resolve({**row,'Sleeper_ID':'unknown'})==('','unresolved_provider_id')
     assert r.resolve({**row,'player_id':'old'})==('old','source_id')
+
+
+def test_reviewed_position_alias_resolves_two_way_player_without_merging_namesakes():
+    r = PlayerRegistry([
+        dict(gsis_id='two-way', name='Example Player', position='CB', position_aliases='WR', sleeper_id='1'),
+        dict(gsis_id='namesake', name='Example Player', position='WR', sleeper_id='2')])
+    assert r.resolve(dict(Player='Example Player', Position='CB')) == ('two-way', 'unique_name_position')
+    assert r.resolve(dict(Player='Example Player', Position='WR')) == ('', 'ambiguous')
+    assert r.resolve(dict(Player='Example Player', Position='WR', Sleeper_ID='1')) == ('two-way', 'provider_id')
+    assert r.resolve(dict(Player='Example Player', Position='WR', Sleeper_ID='unknown')) == ('', 'unresolved_provider_id')
+    assert r.offensive_position('two-way', 'CB') == 'WR'
+    assert r.offensive_position('unknown', 'CB') == 'CB'
+
+
+def biography_sources():
+    n = [dict(gsis_id='00-example', display_name='Example Player', position='QB',
+              birth_date='2000-01-02', college_name='First College; Second College')]
+    s = {'001': dict(player_id='001', full_name='Example Player', position='QB',
+                    birth_date='2000-01-02', college='Second College', fantasy_positions=['QB'])}
+    return n, s
+
+
+def test_missing_crosswalk_link_requires_complete_unique_biography():
+    n, s = biography_sources()
+    assert build(n, [], s)[0][0]['sleeper_id'] == ''  # No unrequested global expansion.
+    rows, issues = build(n, [], s, supplemental_sleeper_ids={'001', '002'})
+    assert rows[0]['sleeper_id'] == '001'
+    assert issues == [dict(gsis_id='00-example', reason='corroborated_sleeper_biography',
+                           provider_id='001', evidence=['name', 'birth_date', 'position', 'college'])]
+
+
+@pytest.mark.parametrize('field,value', [('birth_date', ''), ('birth_date', '2000-01-03'),
+    ('full_name', 'Someone Else'), ('position', 'WR'), ('college', ''),
+    ('college', 'Other College'), ('gsis_id', '00-other'), ('player_id', '002')])
+def test_incomplete_or_conflicting_biography_cannot_supply_a_provider_id(field, value):
+    n, s = biography_sources()
+    s['001'][field] = value
+    assert build(n, [], s, supplemental_sleeper_ids={'001', '002'})[0][0]['sleeper_id'] == ''
+
+
+def test_duplicate_biographies_and_cross_player_claims_stay_unresolved():
+    n, s = biography_sources()
+    s['002'] = {**s['001'], 'player_id': '002'}
+    # A duplicate outside the reviewed ADP slice still makes the match ambiguous.
+    rows, issues = build(n, [], s, supplemental_sleeper_ids={'001'})
+    assert rows[0]['sleeper_id'] == ''
+    assert issues[0]['reason'] == 'ambiguous_sleeper_biography'
+    del s['002']
+    n.append({**n[0], 'gsis_id': '00-other'})
+    rows, issues = build(n, [], s, supplemental_sleeper_ids={'001', '002'})
+    assert all(not row['sleeper_id'] for row in rows)
+    assert sum(i['reason'] == 'provider_collision' for i in issues) == 2
+
+
+def test_rejected_explicit_crosswalk_is_not_rescued_by_another_biography():
+    n, s = biography_sources()
+    d = [dict(gsis_id='00-example', name='Example Player', birthdate='2000-01-02',
+              sleeper_id='unverified', mfl_id='', espn_id='', yahoo_id='', pfr_id='')]
+    rows, issues = build(n, d, s, supplemental_sleeper_ids={'001'})
+    assert rows[0]['sleeper_id'] == ''
+    assert issues[0]['reason'] == 'sleeper_not_corroborated'
+
+
+def test_position_alias_requires_a_corroborated_provider_link():
+    n, s = biography_sources()
+    s['001']['fantasy_positions'] = ['QB', 'WR', 'DB']
+    rows, _ = build(n, [], s, supplemental_sleeper_ids={'001', '002'})
+    assert rows[0]['position_aliases'] == 'WR'
+    s['001']['birth_date'] = '2000-01-03'
+    assert build(n, [], s, supplemental_sleeper_ids={'001', '002'})[0][0]['position_aliases'] == ''
+
+
+def test_saved_hunter_identity_supports_receiver_without_replacing_nfl_position():
+    r = default_registry()
+    assert r.ids['00-0040718'][0]['position'] == 'CB'
+    assert r.resolve(dict(Player='Travis Hunter', Position='WR')) == ('00-0040718', 'unique_name_position')
+    assert r.resolve(dict(Sleeper_ID='12530')) == ('00-0040718', 'provider_id')
+
+
+@pytest.mark.parametrize('provider_id', ['13293', '5094'])
+def test_saved_source_conflicts_remain_unresolved(provider_id):
+    # Lane's birth date and Izzo's explicit GSIS disagree between sources.
+    assert default_registry().resolve(dict(Sleeper_ID=provider_id)) == ('', 'unresolved_provider_id')

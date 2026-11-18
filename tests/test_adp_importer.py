@@ -103,6 +103,32 @@ def test_provider_parsers_keep_skill_players_and_real_adp():
     ]
 
 
+@pytest.mark.parametrize('primary,eligible,expected', [
+    ('DB', ['DB', 'WR'], 'WR'), ('WR', ['WR', 'TE'], 'WR'),
+    ('DB', ['DB'], None), ('DB', ['WR', 'TE'], None), ('DB', 'WR', None)])
+def test_sleeper_uses_one_unambiguous_offensive_eligibility(primary, eligible, expected):
+    result = parse_sleeper_adp([dict(player_id='example',
+        player=dict(first_name='Two', last_name='Way', position=primary, fantasy_positions=eligible),
+        stats=dict(adp_half_ppr=100))])
+    assert ([] if result.empty else result.Position.tolist()) == ([] if expected is None else [expected])
+
+
+def test_two_way_sleeper_and_yahoo_rows_merge_once_with_original_source_dates(tmp_path, monkeypatch):
+    monkeypatch.setattr(importer, 'MIN_PROVIDER_ROWS', 1)
+    monkeypatch.setattr(importer, 'fetch_sleeper_adp', lambda *a, **k: parse_sleeper_adp([
+        dict(player_id='12530', team='JAX', stats=dict(adp_half_ppr=193.9),
+             player=dict(first_name='Travis', last_name='Hunter', position='DB', fantasy_positions=['DB', 'WR']))]))
+    path = tmp_path / 'adp.csv'
+    pd.DataFrame([dict(Player='Travis Hunter', Position='WR', Team='JAX', Yahoo=126.3,
+                       Yahoo_Updated='2026-08-29')]).to_csv(path, index=False)
+    result = build_direct_adp(path, season=2026, update_date='2026-11-05')
+    assert len(result) == 1
+    row = result.iloc[0]
+    assert (row.player_id, row.Position, row.Source_Count) == ('00-0040718', 'WR', 2)
+    assert row.ADP == pytest.approx(160.1)
+    assert row.Yahoo_Updated == '2026-08-29' and row.Sleeper_Updated == '2026-11-05'
+
+
 def test_provider_parsers_support_kickers_and_team_defenses():
     sleeper = parse_sleeper_adp(
         [{

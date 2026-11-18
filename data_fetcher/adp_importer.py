@@ -11,7 +11,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 import requests
 
-from data_fetcher.player_identity import _player_key, attach_player_ids, clean_id
+from data_fetcher.player_identity import _player_key, attach_player_ids, clean_id, select_fantasy_position
 
 
 SKILL_POSITIONS = {"QB", "RB", "WR", "TE"}
@@ -277,6 +277,9 @@ def parse_sleeper_adp(payload, *, positions=SKILL_POSITIONS) -> pd.DataFrame:
         player = record.get("player") or {}
         stats = record.get("stats") or {}
         position = _canonical_position(player.get("position"))
+        eligible = player.get("fantasy_positions")
+        position = select_fantasy_position(position,
+            [_canonical_position(p) for p in eligible] if isinstance(eligible, list) else [], positions)
         adp = _numeric_adp(stats.get("adp_half_ppr"))
         if position not in positions or pd.isna(adp) or adp > 400:
             continue

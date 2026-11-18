@@ -10,7 +10,7 @@ import pandas as pd
 from functools import reduce
 import stat_utils.pandas_helpers as pdh
 from data_fetcher.adp_importer import _player_key, normalize_saved_adp
-from data_fetcher.player_identity import attach_player_ids
+from data_fetcher.player_identity import attach_player_ids, default_registry
 
 logger = logging.getLogger(__name__)
 
@@ -68,10 +68,16 @@ def load_nflverse_stat_tables(csv_path):
 
     player = source["player_display_name"]
     player_id = source["player_id"] if "player_id" in source.columns else pd.Series(pd.NA, index=source.index)
+    # A two-way player's NFL position may be defensive even though the same
+    # GSIS record contains offensive production. Only reviewed ID-linked
+    # fantasy eligibility can supply an offensive ranking position.
+    registry = default_registry()
+    position = [registry.offensive_position(identity, primary)
+                for identity, primary in zip(player_id, source["position"])]
     common = {
         "player": player,
         "player_id": player_id,
-        "pos": source["position"],
+        "pos": position,
         "team": source["recent_team"],
         "age": pd.NA,
         "g": source["games"],
