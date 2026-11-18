@@ -86,6 +86,47 @@ def test_new_attempt_of_old_run_is_not_immediately_stalled():
     assert assess([active,run()]) == {}
 
 
+def replacement(identity=2,hours=0.5):
+    value=run(identity,hours)
+    value.update(status="pending",conclusion=None)
+    return value
+
+
+def test_new_trusted_attempt_can_recover_pending_cancellation_quietly():
+    assert assess([replacement(),run(1,1,"cancelled"),run(3,2)]) == {}
+    alerts=assess([replacement(),run(1,1,"cancelled"),run(3,2,"failure")])
+    assert alerts["sync"]=={"code":"sync_failed","run_id":3}
+
+
+@pytest.mark.parametrize("conclusion", ["failure","timed_out"])
+def test_replacement_does_not_suppress_real_failure(conclusion):
+    alerts=assess([replacement(),run(1,1,conclusion),run(3,2)])
+    assert alerts["sync"]=={"code":"sync_failed","run_id":1}
+
+
+def test_replacement_does_not_suppress_post_sync_cancellation():
+    alerts=assess([replacement(),run(1,1,"cancelled"),run(3,2)],[report()])
+    assert alerts["shadow"]=={"code":"post_sync_check_failed","run_id":1}
+
+
+@pytest.mark.parametrize("change", [
+    {"head_branch":"feature"}, {"head_repository":{"full_name":"someone/else"}},
+    {"path":".github/workflows/unrelated.yml"},
+    {"run_started_at":(NOW-timedelta(hours=3)).isoformat()},
+    {"run_started_at":(NOW+timedelta(minutes=1)).isoformat()},
+])
+def test_cancellation_recovery_requires_newer_trusted_nonfuture_attempt(change):
+    active=replacement()
+    active.update(change)
+    alerts=assess([active,run(1,1,"cancelled"),run(3,2)])
+    assert alerts["sync"]["code"]=="sync_failed"
+
+
+def test_cancellation_recovery_keeps_stall_and_freshness_limits():
+    assert assess([replacement(2,4),run(1,5,"cancelled"),run(3,6)])["sync"]["code"]=="sync_stalled"
+    assert assess([replacement(),run(1,1,"cancelled"),run(3,11)])["sync"]["code"]=="sync_overdue"
+
+
 def test_collector_failures_and_overdue_schedules_are_visible():
     failed = collectors()
     failed["Update site data"][0]["conclusion"] = "failure"

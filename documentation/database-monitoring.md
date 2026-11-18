@@ -43,6 +43,9 @@ collector schedules are six hours apart. An automatic sync that starts after a
 collector finishes uses current main and can cover coalesced earlier collector
 events. An overlapping sync or a manual run does not prove that coverage.
 Post-activation chain checks begin even before the first health report arrives.
+A cancelled pending run can stay quiet while a newer trusted sync attempt is
+queued or running. This never hides an earlier failure, a cancellation after
+verified import, or the normal stall and freshness limits.
 
 Database byte size is **not** total allocated disk usage, WAL size, free disk
 space, or a billing forecast. The 1 GiB level is a review warning, not a charge

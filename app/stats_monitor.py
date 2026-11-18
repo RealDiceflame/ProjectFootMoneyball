@@ -140,7 +140,23 @@ def evaluate_health(runs, reports, collectors, *, now, config=None):
         valid_reports.append(report)
     valid_reports.sort(key=lambda report: timestamp(report["completed_at"]), reverse=True)
     report_ids = {report["run_id"] for report in valid_reports}
-    latest = completed[0] if completed else None
+    active = [run for run in usable if run.get("status") != "completed"]
+
+    def cancellation_recovery_started(run):
+        if run.get("conclusion") != "cancelled" or run["id"] in report_ids:
+            return False
+        cancelled_start = timestamp(run.get("run_started_at") or run["created_at"])
+        return any(replacement.get("path") == ".github/workflows/sync-stats-database.yml"
+                   and replacement.get("head_repository", {}).get("full_name") == "RealDiceflame/ProjectFootMoneyball"
+                   and replacement.get("status") in {"queued", "pending", "in_progress", "waiting", "requested"}
+                   and cancelled_start < timestamp(replacement.get("run_started_at") or replacement["created_at"]) <= now
+                   for replacement in active)
+
+    # GitHub may cancel a pending run when a newer run takes its concurrency
+    # slot. Recovery in progress suppresses that cancellation alone; earlier
+    # failures, verified post-sync cancellations, stalls and staleness remain.
+    outcomes = [run for run in completed if not cancellation_recovery_started(run)]
+    latest = outcomes[0] if outcomes else None
     if latest and latest["conclusion"] != "success":
         category = "shadow" if latest["id"] in report_ids else "sync"
         alerts[category] = {"code": "post_sync_check_failed" if category == "shadow" else "sync_failed",
@@ -154,7 +170,6 @@ def evaluate_health(runs, reports, collectors, *, now, config=None):
     if "sync" not in alerts and (last_success is None or now - last_success > timedelta(hours=config["stale_hours"])):
         alerts["sync"] = {"code": "sync_overdue", "last_success": last_success.isoformat() if last_success else None}
     # A workflow can queue indefinitely while no fresh success is recorded.
-    active = [run for run in usable if run.get("status") != "completed"]
     if active and now - min(timestamp(run.get("run_started_at") or run["created_at"]) for run in active) > timedelta(hours=config["chain_grace_hours"]):
         alerts["sync"] = {"code": "sync_stalled", "run_id": active[-1]["id"]}
     successful_collectors = []
