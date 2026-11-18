@@ -82,7 +82,7 @@ def test_bounded_permissions_checkout_runtime_and_dependencies():
     assert section("concurrency").strip().splitlines() == [
         "group: sync-private-stats-database", "  cancel-in-progress: false",
     ]
-    assert "timeout-minutes: 15" in TEXT
+    assert "timeout-minutes: 60" in TEXT
     assert re.search(r"uses: actions/checkout@v4\n\s+with:\n\s+ref: main\n\s+persist-credentials: false", TEXT)
     assert 'python-version: "3.12"' in TEXT
     assert re.findall(r"^\s+run: python -m pip (.+)$", TEXT, re.MULTILINE) == [
