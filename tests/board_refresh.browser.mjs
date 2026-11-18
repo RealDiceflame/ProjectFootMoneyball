@@ -124,7 +124,7 @@ test("two-way player profiles show receiving history and distinguish missing his
     await dialog.waitFor();
     assert.deepEqual(await dialog.locator(".history-table-shell tbody td").allTextContents(),
       ["2025", "JAX", "7", "0", "0", "0", "45", "28", "298", "1", "49.8", "7.1"]);
-    assert.match(await dialog.locator(".projection-summary-panel").innerText(), /Age Curve v1/);
+    assert.match(await dialog.locator(".projection-summary-panel").innerText(), /Age Curve v1/i);
     assert.doesNotMatch(await dialog.innerText(), /Age data is unavailable|No matching regular-season history/);
     assert.match(await dialog.innerText(), /Needs at least two NFL seasons/,
       "A recovered season must not invent player-specific year-to-year variation");
