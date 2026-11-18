@@ -3,7 +3,7 @@ import {
   historyKey,
   historyRows,
   sampleStandardDeviation,
-} from "./player-history.mjs?v=20261030-scoring1";
+} from "./player-history.mjs?v=20261118-history1";
 
 const POSITIONS = ["QB", "RB", "WR", "TE"];
 const RECENCY_WEIGHTS = [5, 3, 2];
@@ -96,7 +96,7 @@ export function buildPositionSamples(players, historyBundle, newsBundle, setting
       const season = numberOrNull(row.season);
       if (games === null || games < 4 || season === null) continue;
       if (Number.isInteger(projectionSeason) && season >= projectionSeason) continue;
-      const position = String(row.pos || player.pos).toUpperCase();
+      const position = String(row.fantasy_pos || row.pos || player.pos).toUpperCase();
       if (!POSITIONS.includes(position)) continue;
       const sampleKey = `${identity}|${season}`;
       if (seen.has(sampleKey)) continue;
@@ -284,6 +284,32 @@ export function projectPlayer(player, historyBundle, newsBundle, settings, proje
     age_change_sample: ageChange.count,
     history_seasons: seasons.length,
     source: age === null ? "recent_form" : "age_curve",
+  };
+}
+
+export function projectionSummary(player) {
+  const age = numberOrNull(player.age);
+  const adjustment = numberOrNull(player.age_adjustment_pct);
+  const ageDetail = age === null ? "Age unavailable"
+    : adjustment === null ? "No age adjustment applied"
+      : `${adjustment >= 0 ? "+" : ""}${adjustment.toFixed(1)}% position-age adjustment`;
+  if (player.projection_source === "age_curve") return {
+    label: "Age Curve v1", rateLabel: "Age-adjusted scoring rate", ageDetail,
+    explanation: "Recent seasons establish the player's scoring level. Same-position year-over-year results adjust it for age, then expected games convert the rate into a season total.",
+  };
+  if (player.projection_source === "rookie_market") return {
+    label: "Rookie market", rateLabel: "Rookie baseline divided by 17 games",
+    ageDetail: age === null ? "Age unavailable" : "No age adjustment applied",
+    explanation: "No usable NFL season history is available, so the current rookie market projection remains the baseline. No age adjustment is applied.",
+  };
+  if (player.projection_source === "existing_baseline") return {
+    label: "Saved baseline", rateLabel: "Existing baseline divided by 17 games",
+    ageDetail: age === null ? "Age unavailable" : "No age adjustment applied",
+    explanation: "No usable NFL season history is available, so the existing projection remains the baseline. No age adjustment is applied.",
+  };
+  return {
+    label: "Recent form", rateLabel: "Recent scoring rate", ageDetail,
+    explanation: "Age data is unavailable, so this estimate uses recent scoring form and expected games without an age adjustment.",
   };
 }
 

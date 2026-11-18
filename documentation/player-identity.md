@@ -36,6 +36,22 @@ the ranking pipeline uses an offensive alternative only when exactly one is
 supported by that player's canonical ID. Stats totals and source files retain
 their original meaning; this does not add defensive fantasy scoring.
 
+Season-history imports use that same reviewed, ID-linked offensive eligibility
+before filtering player records. A non-offensive source season must also contain
+recorded passing attempts, carries, targets or receptions; defensive appearances
+alone do not establish a fantasy scoring sample. The history record's `pos` identifies its
+fantasy position, while each season row's `pos` retains the recorded NFL position.
+This keeps a two-way player's offensive statistics available even when the source
+labels the season CB. Unknown or ambiguous eligibility does not admit a defensive
+player through a name-only match.
+
+Browser history consumers use the verified record position for a non-offensive
+season only when the record, selected player and history key agree on canonical
+identity. Existing offensive season positions retain precedence, including a WR
+season before a later move to TE. The source row is never rewritten. The recovered
+season can inform the position-age model, but one season cannot establish the
+player's own year-to-year scoring variation.
+
 At import time:
 
 1. Preserve any existing canonical ID and resolve supplied provider IDs.

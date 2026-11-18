@@ -58,6 +58,25 @@ test('current and future seasons never leak into the prior; distant rows are not
   assert.deepEqual(blended.prior_seasons, [2025]);
 });
 
+test('verified two-way history supplies a fantasy prior without changing recorded offensive positions', () => {
+  const hybrid = {...player, pos: 'TE'};
+  const make = position => {
+    const data = fixture({players: [hybrid], observed: [], historical: [
+      {...stats, season: 2025, pos: position, games: 10, receptions: 10, receiving_yards: 100},
+    ]});
+    data.history.players[`id:${hybrid.player_id}`].pos = 'TE';
+    return data;
+  };
+  const settings = {ppr: 'Full PPR', tePremium: '+0.5'};
+  const twoWay = make('CB');
+  const original = structuredClone(twoWay.history);
+  assert.equal(build(twoWay, settings).rows[0].prior_ppg, 2.5);
+  assert.equal(build(make('WR'), settings).rows[0].prior_ppg, 2);
+  assert.deepEqual(twoWay.history, original);
+  twoWay.history.players[`id:${hybrid.player_id}`].player_id = '00-0000002';
+  assert.equal(build(twoWay, settings).rows[0].prior_ppg, null);
+});
+
 test('only current Out excludes exactly its matching unstarted game', () => {
   const games = [past, future, game(5, '2026-10-11T17:00:00Z')];
   const out = build(fixture({games, news: report('Out')})).rows[0];

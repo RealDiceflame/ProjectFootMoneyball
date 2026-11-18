@@ -1,4 +1,4 @@
-import { historicalPlayers, historyAnalytics, historyKey, historyRows, historyWindow, sampleStandardDeviation } from "./player-history.mjs?v=20261030-scoring1";
+import { historicalPlayers, historyAnalytics, historyKey, historyRows, historyWindow, sampleStandardDeviation } from "./player-history.mjs?v=20261118-history1";
 import { draftTiming } from "./draft-timing.mjs?v=20260909-timing1";
 import {careerRelativeSamples, renderRoundChart} from "./lab-charts.mjs?v=20260909-labs2";
 import {startAutoRefresh, fetchSnapshot, snapshotSignature} from "./auto-refresh.mjs?v=20260927-refresh1";
@@ -9,7 +9,7 @@ import {
   positionAgeCurve,
   roundPositionExpectations,
   normalizeProjectionSettings,
-} from "./projection-model.mjs?v=20261030-scoring1";
+} from "./projection-model.mjs?v=20261118-history1";
 
 const DATA_URL = "./data/rankings.json";
 const HISTORY_URL = "./data/player_history.json";

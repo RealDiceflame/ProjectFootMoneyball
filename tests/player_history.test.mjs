@@ -25,6 +25,30 @@ test("maps compact season arrays into named history rows", () => {
   assert.deepEqual(historyRows(bundle, { player_id: "1" }), [{ season: 2025, team: "BUF", games: 17 }]);
 });
 
+test("two-way history keeps source position and requires consistent IDs for fantasy eligibility", () => {
+  const player = {player: "Two Way", player_id: "two-way", pos: "TE"};
+  const record = {...player, seasons: [[2025, "CB", 10, 100, 10], [2024, "WR", 10, 100, 10]]};
+  const bundle = {columns: ["season", "pos", "receptions", "receiving_yards", "games"],
+    players: {"id:two-way": record}};
+  const original = structuredClone(bundle);
+  const rows = historyRows(bundle, player);
+  assert.equal(rows[0].pos, "CB");
+  assert.equal(rows[0].fantasy_pos, "TE");
+  assert.equal(rows[1].pos, "WR");
+  assert.equal(rows[1].fantasy_pos, undefined);
+  assert.deepEqual(historyAnalytics(rows, player, {ppr: "Full PPR", tePremium: "+0.5"})
+    .seasons.map(row => row.fantasy_points), [25, 20]);
+  assert.deepEqual(bundle, original, "Eligibility must not overwrite source season positions");
+  for (const recordId of [undefined, "different"]) {
+    const inconsistent = {...bundle, players: {"id:two-way": {...record, player_id: recordId}}};
+    assert.equal(historyRows(inconsistent, player)[0].fantasy_pos, undefined);
+  }
+  assert.equal(historyRows(bundle, {...player, player_id: "different", history_key: "id:two-way"})[0].fantasy_pos, undefined);
+  const nameKey = "name:twoway|TE";
+  assert.equal(historyRows({...bundle, players: {[nameKey]: record}},
+    {...player, history_key: nameKey})[0].fantasy_pos, undefined);
+});
+
 test("describes the maintained history range from bundle metadata", () => {
   assert.deepEqual(historyWindow({
     seasons: [2016, 2017, 2025], start_season: 2016, end_season: 2025, season_count: 10,
@@ -47,6 +71,12 @@ test("recalculates historical points for PPR and TE premium settings", () => {
   };
   assert.equal(fantasyPoints(stats, { ppr: "Standard", tePremium: "Off" }), 95);
   assert.equal(fantasyPoints(stats, { ppr: "Half PPR", tePremium: "+0.5" }), 145);
+});
+
+test("absent or malformed historical statistics remain unavailable", () => {
+  for (const stats of [null, undefined, true, false, 5, "stats", {receptions: null}, {receiving_yards: "100"}]) {
+    assert.equal(fantasyPoints(stats, {ppr: "Half PPR"}), null);
+  }
 });
 
 test("measures season scoring variation and combines it with ADP disagreement", () => {

@@ -4,9 +4,9 @@ import {
   inspectAdpText,
   recalculateMarketMetrics,
 } from "./adp-import.mjs?v=20261105-no-mfl1";
-import { historyAnalytics, historyRows, historyWindow } from "./player-history.mjs?v=20261030-scoring1";
+import { historyAnalytics, historyRows, historyWindow } from "./player-history.mjs?v=20261118-history1";
 import { mergeSpecialTeams, specialTeamRows } from "./live-board.mjs";
-import { applyProjectionModel } from "./projection-model.mjs?v=20261030-scoring1";
+import { applyProjectionModel, projectionSummary } from "./projection-model.mjs?v=20261118-history1";
 import {startAutoRefresh, fetchSnapshot, snapshotSignature, preserveView} from "./auto-refresh.mjs?v=20260927-refresh1";
 import {validateRankings, validateReports, validateHistory, validateSpecialTeams} from "./snapshot-validation.mjs?v=20260927-refresh1";
 import {classifyInjury} from "./injury-status.mjs?v=20260927-refresh1";
@@ -733,30 +733,26 @@ function renderProjectionSummary(player) {
   const title = document.createElement("h4");
   title.textContent = "OutlierBaseline season projection";
   const badge = document.createElement("span");
-  badge.textContent = player.projection_source === "age_curve" ? "Age Curve v1" : player.is_rookie ? "Rookie market" : "Recent form";
+  const summary = projectionSummary(player);
+  badge.textContent = summary.label;
   heading.append(title, badge);
 
   const metrics = document.createElement("div");
   metrics.className = "projection-summary-metrics";
-  const ageAdjustment = numeric(player.age_adjustment_pct);
   const expectedGames = numeric(player.projection_expected_games);
   const projectionRange = numeric(player.projection_low) !== null && numeric(player.projection_high) !== null
     ? `${Number(player.projection_low).toFixed(0)}–${Number(player.projection_high).toFixed(0)}`
     : "—";
   metrics.append(
-    volatilityMetric("Projected PPG", projectedPpg.toFixed(1), "Age-adjusted scoring rate", "primary"),
+    volatilityMetric("Projected PPG", projectedPpg.toFixed(1), summary.rateLabel, "primary"),
     volatilityMetric("Season points", projectedPoints.toFixed(1), expectedGames === null ? "Full-season estimate" : `${expectedGames.toFixed(1)} expected games`),
     volatilityMetric("Projection range", projectionRange, "Model estimate ± one standard deviation"),
-    volatilityMetric("Age", numeric(player.age) === null ? "—" : String(Math.round(player.age)), ageAdjustment === null ? "Age unavailable" : `${ageAdjustment >= 0 ? "+" : ""}${ageAdjustment.toFixed(1)}% position-age adjustment`),
+    volatilityMetric("Age", numeric(player.age) === null ? "—" : String(Math.round(player.age)), summary.ageDetail),
   );
   const footer = document.createElement("div");
   footer.className = "projection-summary-footer";
   const explanation = document.createElement("p");
-  explanation.textContent = player.projection_source === "age_curve"
-    ? "Recent seasons establish the player's scoring level. Same-position year-over-year results adjust it for age, then expected games convert the rate into a season total."
-    : player.is_rookie
-      ? "No NFL season history is available, so the current rookie market projection remains the baseline."
-      : "Age data is unavailable, so this estimate uses recent scoring form and expected games without an age adjustment.";
+  explanation.textContent = summary.explanation;
   const link = document.createElement("a");
   const query = new URLSearchParams({
     player: player.player,
