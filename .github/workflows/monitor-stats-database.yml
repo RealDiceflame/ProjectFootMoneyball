@@ -1,0 +1,49 @@
+name: Monitor private database sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_run:
+    workflows: ["Sync private stats database"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: monitor-private-stats-database
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    if: >-
+      ${{ github.repository == 'RealDiceflame/ProjectFootMoneyball' &&
+          vars.STATS_DATABASE_SYNC_ENABLED == 'true' &&
+          ((github.event_name == 'workflow_run' &&
+            github.event.workflow_run.head_branch == 'main' &&
+            github.event.workflow_run.head_repository.full_name == github.repository) ||
+           (github.event_name != 'workflow_run' && github.ref == 'refs/heads/main')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check sync freshness and aggregate storage growth
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STATS_DATABASE_SYNC_ENABLED: ${{ vars.STATS_DATABASE_SYNC_ENABLED }}
+          STATS_MONITOR_ACTIVE_SINCE: ${{ vars.STATS_MONITOR_ACTIVE_SINCE }}
+          STATS_MONITOR_STALE_HOURS: ${{ vars.STATS_MONITOR_STALE_HOURS }}
+          STATS_MONITOR_WARN_BYTES: ${{ vars.STATS_MONITOR_WARN_BYTES }}
+          STATS_MONITOR_GROWTH_BYTES: ${{ vars.STATS_MONITOR_GROWTH_BYTES }}
+          STATS_MONITOR_GROWTH_RATIO: ${{ vars.STATS_MONITOR_GROWTH_RATIO }}
+        run: python scripts/monitor_stats_database.py
