@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 
 COUNT_KEYS = {"snapshots", "players", "games", "player_game_rows", "team_game_rows", "player_season_rows"}
+HEALTH_EVIDENCE_HOURS = 48
 DEFAULTS = {"stale_hours": 10.0, "chain_grace_hours": 3.0,
             "warn_bytes": 1024 ** 3, "growth_bytes": 250 * 1024 ** 2,
             "growth_ratio": 0.25, "growth_window_hours": 24.0}
@@ -166,17 +167,24 @@ def evaluate_health(runs, reports, collectors, *, now, config=None):
             alerts["collectors"] = {"code": "collector_failed", "collector": name, "run_id": scheduled[0]["id"]}
         successful_collectors.extend(run for run in scheduled if run.get("conclusion") == "success")
     # After deployment, exact parent IDs in health reports provide chain evidence.
-    # Until the first report, bootstrap does not invent a scheduled-chain success.
+    # Activation starts this check even before the first health report arrives.
     linked = {report["upstream_run_id"] for report in valid_reports if report["event"] == "workflow_run"}
-    if valid_reports:
-        first_report = min(timestamp(report["completed_at"]) for report in valid_reports)
-        missing = [run for run in successful_collectors if timestamp(run["updated_at"]) >= first_report
+    chain_since = config.get("active_since")
+    if chain_since is not None:
+        chain_since = max(chain_since, now - timedelta(hours=HEALTH_EVIDENCE_HOURS))
+    elif valid_reports:
+        chain_since = min(timestamp(report["completed_at"]) for report in valid_reports)
+    if chain_since is not None:
+        missing = [run for run in successful_collectors if timestamp(run["updated_at"]) >= chain_since
                    and now - timestamp(run["updated_at"]) > timedelta(hours=config["chain_grace_hours"])
                    and run["id"] not in linked]
         if missing:
-            # Coalescing is legitimate: a later triggered sync checks out current
-            # main and supersedes an earlier queued collector event.
-            latest_chain = max((timestamp(report["completed_at"]) for report in valid_reports if report["event"] == "workflow_run"), default=None)
+            # Coalescing is legitimate only when the automatic sync starts
+            # after the collector finishes. An overlapping sync may have checked
+            # out main before the collector committed its new data.
+            latest_chain = max((timestamp(run_by_id[report["run_id"]].get("run_started_at")
+                                          or run_by_id[report["run_id"]]["created_at"])
+                                for report in valid_reports if report["event"] == "workflow_run"), default=None)
             pending = [run for run in missing if latest_chain is None or timestamp(run["updated_at"]) > latest_chain]
             if pending:
                 alerts["sync"] = {"code": "collector_not_followed_by_sync", "run_id": max(pending, key=lambda run: run["updated_at"])["id"]}

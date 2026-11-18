@@ -39,9 +39,10 @@ monitor. Optional repository variables override these defaults:
 | `STATS_MONITOR_GROWTH_RATIO` | `0.25` | Growth must also be at least 25% within the same window. |
 
 Collector-to-sync delay and queued/running sync grace are three hours. Normal
-collector schedules are six hours apart. Later automatic syncs use current main
-and can cover coalesced earlier collector events; a manual run is not proof of
-the automatic chain.
+collector schedules are six hours apart. An automatic sync that starts after a
+collector finishes uses current main and can cover coalesced earlier collector
+events. An overlapping sync or a manual run does not prove that coverage.
+Post-activation chain checks begin even before the first health report arrives.
 
 Database byte size is **not** total allocated disk usage, WAL size, free disk
 space, or a billing forecast. The 1 GiB level is a review warning, not a charge
@@ -62,7 +63,12 @@ A disabled sync flag leaves existing issues unchanged, rather than claiming
 recovery. No test issue is needed for activation: offline tests exercise alert,
 deduplication, assignment, and recovery paths.
 
-Health artifacts are retained for 14 days. The monitor reads at most 32 recent
-completed syncs; this covers several days at the normal cadence. The monitor
-itself relies on GitHub Actions availability and scheduling, so its own failure
-notifications should remain enabled in GitHub.
+Health artifacts are retained for 14 days. The monitor inspects at most 32
+completed attempts updated within the last 48 hours, enough for the 24-hour
+growth comparison plus margin. This fixed evidence window also bounds chain
+checks, even when custom freshness limits are longer. A long pause does not
+make expired old artifacts block fresh recovery; missing recent required
+reports still make monitoring unknown. All available run timestamps remain
+eligible for freshness checks. The monitor itself relies on GitHub Actions
+availability and scheduling, so its own failure notifications should remain
+enabled in GitHub.

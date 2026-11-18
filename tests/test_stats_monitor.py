@@ -107,6 +107,40 @@ def test_chain_grace_period_avoids_false_alarm_during_normal_sync():
     assert assess([run(),run(2,8)],[report(),report(2,8)],collectors(2)) == {}
 
 
+@pytest.mark.parametrize("started_hours,missing", [(5.4,True),(4.9,False)])
+def test_coalescing_requires_sync_to_start_after_collector_finished(started_hours,missing):
+    automatic=run(1,4.5,event="workflow_run")
+    automatic["run_started_at"]=(NOW-timedelta(hours=started_hours)).isoformat()
+    # This automatic receipt came from another collector. Its completion time
+    # alone does not prove it checked out the target collector's new commit.
+    alerts=assess([automatic,run(2,8)],
+                  [report(1,4.5,event="workflow_run",upstream=999),report(2,8)],collectors(5))
+    assert (alerts.get("sync",{}).get("code")=="collector_not_followed_by_sync") is missing
+
+
+def test_first_receipt_cannot_skip_an_overlapping_post_activation_collector():
+    automatic=run(1,4.5,event="workflow_run")
+    automatic["run_started_at"]=(NOW-timedelta(hours=5.4)).isoformat()
+    alerts=evaluate_health([automatic],[report(1,4.5,event="workflow_run",upstream=999)],
+                           collectors(5),now=NOW,config={**DEFAULTS,"active_since":NOW-timedelta(hours=6)})
+    assert alerts["sync"]["code"]=="collector_not_followed_by_sync"
+
+
+def test_post_activation_collector_does_not_wait_for_first_receipt():
+    alerts=evaluate_health([run()],[],collectors(5),now=NOW,
+                           config={**DEFAULTS,"active_since":NOW-timedelta(hours=6)})
+    assert alerts["sync"]["code"]=="collector_not_followed_by_sync"
+    assert evaluate_health([run()],[],collectors(2),now=NOW,
+                           config={**DEFAULTS,"active_since":NOW-timedelta(hours=6)}) == {}
+
+
+def test_chain_check_ignores_collectors_older_than_evidence_window_after_recovery():
+    sources=collectors(2)
+    sources["Update game stats"].append(run(999,49,event="schedule"))
+    assert evaluate_health([run()],[report()],sources,now=NOW,
+                           config={**DEFAULTS,"active_since":NOW-timedelta(days=20)}) == {}
+
+
 def test_storage_requires_both_absolute_and_relative_growth():
     mib = 1024**2
     runs = [run(),run(2,8)]
@@ -195,6 +229,28 @@ def test_future_activation_cannot_disable_missing_evidence_alerts():
     with pytest.raises(ValueError,match="future"):
         monitor_config({"STATS_MONITOR_ACTIVE_SINCE":(NOW+timedelta(seconds=1)).isoformat()},now=NOW)
     assert monitor_config({"STATS_MONITOR_ACTIVE_SINCE":NOW.isoformat()},now=NOW)["active_since"]==NOW
+
+
+def test_fresh_recovery_ignores_expired_receipts_but_requires_new_receipt():
+    fresh=run()
+    old=run(2,15*24)
+    candidates=script.health_candidates([old,fresh],NOW)
+    assert candidates==[fresh]
+    client=script.GitHub("synthetic-not-a-real-token")
+    client.request=lambda path: {"artifacts":[]}
+    # Expired old artifacts are never requested; the fresh instrumented run
+    # still fails closed until its own current receipt is available.
+    with pytest.raises(ValueError,match="post-activation"):
+        client.health(candidates[0],NOW-timedelta(days=20))
+    assert assess([fresh,old],[report()]) == {}
+    assert assess([old])["sync"]["code"]=="sync_overdue"
+
+
+def test_recent_attempts_are_selected_even_when_created_before_evidence_window():
+    fresh=run()
+    fresh["created_at"]=(NOW-timedelta(days=15)).isoformat()
+    assert script.health_candidates([fresh],NOW)==[fresh]
+    assert script.health_candidates([run(2,49)],NOW)==[]
 
 
 @pytest.mark.parametrize("value",["0","-1","nan","inf","wrong"])

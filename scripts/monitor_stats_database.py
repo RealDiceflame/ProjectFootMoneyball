@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import io
 import json
 import os
@@ -15,7 +15,7 @@ from urllib.request import Request, build_opener, HTTPRedirectHandler
 import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from app.stats_monitor import evaluate_health, monitor_config, timestamp, validate_health
+from app.stats_monitor import HEALTH_EVIDENCE_HOURS, evaluate_health, monitor_config, timestamp, validate_health
 
 REPOSITORY = "RealDiceflame/ProjectFootMoneyball"
 HEALTH_ARTIFACT = "stats-sync-health"
@@ -114,6 +114,15 @@ def marker(category):
     return f"<!-- outlier-stats-monitor:{category}:v1 -->"
 
 
+def health_candidates(runs, now):
+    """Keep evidence recent enough to survive pauses beyond artifact retention."""
+    cutoff = now - timedelta(hours=HEALTH_EVIDENCE_HOURS)
+    completed = [run for run in runs if run["status"] == "completed" and run["conclusion"] != "skipped"
+                 and timestamp(run["updated_at"]) >= cutoff]
+    # Repeated attempts keep their original creation date but update this time.
+    return sorted(completed,key=lambda run: timestamp(run["updated_at"]),reverse=True)[:32]
+
+
 def incident_body(category, alert):
     explanations = {
         "sync_failed":"The private database sync or its health-report step failed. Review the linked run before trusting freshness.",
@@ -187,8 +196,9 @@ def main():
         collectors = {"Update site data":client.runs("update-player-news.yml"),
                       "Update game stats":client.runs("update-game-stats.yml")}
         reports = []
-        # At most 32 artifact lookups, enough for four days at the normal cadence.
-        candidates = [run for run in runs if run["status"] == "completed" and run["conclusion"] != "skipped"][:32]
+        # Keep 24-hour growth coverage with margin, without requiring expired
+        # artifacts after a long pause. All run metadata still informs freshness.
+        candidates = health_candidates(runs, datetime.now(timezone.utc))
         for run in candidates:
             report = client.health(run, config["active_since"])
             if report:
