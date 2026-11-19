@@ -6,13 +6,14 @@ from decimal import Decimal
 import json
 import os
 from pathlib import Path
+import re
 from types import SimpleNamespace
 from urllib.parse import urlsplit
 
 import pytest
 
 from app import stats_verification
-from app.stats_database import import_snapshots, migrate
+from app.stats_database import game_stat_totals, import_snapshots, migrate
 from app.stats_import import load_saved_stats, prepare_snapshot
 from app.stats_verification import GAME_METRICS, verify_database
 
@@ -149,7 +150,9 @@ class ArchiveConnection:
         if "FROM ob_stats.snapshot_heads h" in query:
             return Result(self.heads[:params[0]])
         if "GROUP BY player_id" in query:
-            metric, season, week, _ = params
+            metrics, (season, week, _, limit) = params[:-4], params[-4:]
+            reducers = re.findall(r"(SUM|MAX)\(\(stats->>%s\)::numeric\)", query)
+            assert len(reducers) == len(metrics)
             totals = {}
             for saved in self.snapshots:
                 if saved.dataset != "game" or saved.payload["season"] != season:
@@ -161,15 +164,21 @@ class ArchiveConnection:
                     player = row["player_id"]
                     if player is None:
                         continue
-                    totals.setdefault(player, [])
-                    if row.get(metric) is not None:
-                        totals[player].append(Decimal(str(row[metric])))
-            result = {player: (max(values) if "MAX(" in query else sum(values)) if values else None
-                      for player, values in totals.items()}
-            result.update(self.aggregate_overrides.get((season, week, metric), {}))
-            return Result(sorted(result.items()))
+                    totals.setdefault(player, []).append(row)
+            result = {player: [] for player in totals}
+            for metric, reducer in zip(metrics, reducers):
+                values = {player: [Decimal(str(row[metric])) for row in rows if row.get(metric) is not None]
+                          for player, rows in totals.items()}
+                column = {player: (max(items) if reducer == "MAX" else sum(items)) if items else None
+                          for player, items in values.items()}
+                column.update(self.aggregate_overrides.get((season, week, metric), {}))
+                for player, value in column.items():
+                    result.setdefault(player, []).append(value)
+            return Result([(player, *values) for player, values in sorted(result.items())][:limit])
         if "GROUP BY season" in query:
-            metric = params[0]
+            metrics, limit = params[:-1], params[-1]
+            reducers = re.findall(r"(SUM|MAX)\(\(stats->>%s\)::numeric\)", query)
+            assert len(reducers) == len(metrics)
             values = {}
             for saved in self.snapshots:
                 if saved.dataset != "player_history":
@@ -177,13 +186,17 @@ class ArchiveConnection:
                 for player in saved.payload["players"].values():
                     for cells in player["seasons"]:
                         row = dict(zip(saved.payload["columns"], cells))
-                        values.setdefault(row["season"], [])
-                        if row.get(metric) is not None:
-                            values[row["season"]].append(Decimal(str(row[metric])))
-            result = {season: (max(items) if "MAX(" in query else sum(items)) if items else None
-                      for season, items in values.items()}
-            result.update(self.aggregate_overrides.get(("history", metric), {}))
-            return Result(sorted(result.items()))
+                        values.setdefault(row["season"], []).append(row)
+            result = {season: [] for season in values}
+            for metric, reducer in zip(metrics, reducers):
+                numbers = {season: [Decimal(str(row[metric])) for row in rows if row.get(metric) is not None]
+                           for season, rows in values.items()}
+                column = {season: (max(items) if reducer == "MAX" else sum(items)) if items else None
+                          for season, items in numbers.items()}
+                column.update(self.aggregate_overrides.get(("history", metric), {}))
+                for season, value in column.items():
+                    result.setdefault(season, []).append(value)
+            return Result([(season, *items) for season, items in sorted(result.items())][:limit])
         for table, rows in (("current_games", self.games), ("current_player_game_stats", self.player_games),
                             ("current_team_game_stats", self.team_games),
                             ("current_player_season_stats", self.player_seasons)):
@@ -211,12 +224,16 @@ def test_offline_complete_parity_covers_every_season_week_and_identity(snapshots
     assert conn.transactions == [{"force_rollback": True}]
     assert conn.commands[0][0] == "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY"
     assert ("SET LOCAL statement_timeout = '60s'", ()) in conn.commands
-    assert len(conn.cursors) == 5
-    assert len({cursor.name for cursor in conn.cursors}) == 5
+    assert len(conn.cursors) == 11  # Five fact reads, five game periods, one history batch.
+    assert len({cursor.name for cursor in conn.cursors}) == 11
     assert all(cursor.name.startswith("ob_stats_verify_") and cursor.itersize == 1000
                and cursor.closed for cursor in conn.cursors)
-    assert [cursor.params for cursor in conn.cursors] == [(5,), (4,), (10,), (7,), (5,)]
+    assert [cursor.params for cursor in conn.cursors[:5]] == [(5,), (4,), (10,), (7,), (5,)]
     assert all("LIMIT %s" in cursor.query for cursor in conn.cursors)
+    aggregate_queries = [query for query, _ in conn.commands if "GROUP BY" in query]
+    assert len(aggregate_queries) == 6
+    assert len([query for query in aggregate_queries if "GROUP BY player_id" in query]) == 5
+    assert report["game_metric_checks"] + report["historical_metric_checks"] == 203
     json.dumps(report)  # CLI output must not contain datetime/Decimal objects.
 
 
@@ -234,9 +251,10 @@ def test_offline_bulk_reads_preserve_parity_across_batches(snapshots, monkeypatc
             verify_database(conn, snapshots)
     else:
         assert verify_database(conn, snapshots)["verified"] is True
-        assert [cursor.batches for cursor in conn.cursors] == [
+        assert [cursor.batches for cursor in conn.cursors[:5]] == [
             [2, 2], [2, 1], [2, 2, 2, 2, 1], [2, 2, 2], [2, 2],
         ]
+        assert [cursor.batches for cursor in conn.cursors[5:]] == [[2]] * 6
     assert all(cursor.closed and max(cursor.batches) <= 2 for cursor in conn.cursors)
 
 
@@ -303,6 +321,67 @@ def test_offline_sql_aggregates_are_independently_checked(snapshots, key, overri
     conn.aggregate_overrides[key] = override
     with pytest.raises(ValueError, match=message):
         verify_database(conn, snapshots)
+
+
+@pytest.mark.parametrize("group", ["player_id", "season"])
+@pytest.mark.parametrize("fault", [None, "missing", "extra", "duplicate", "last_value", "fetch_error"])
+def test_offline_aggregate_batches_preserve_identities_values_and_cleanup(snapshots, monkeypatch, group, fault):
+    monkeypatch.setattr(stats_verification, "BULK_BATCH_SIZE", 1)
+    original_execute, original_iter = ArchiveCursor.execute, ArchiveCursor.__iter__
+
+    def change_rows(cursor, query, params):
+        original_execute(cursor, query, params)
+        if f"GROUP BY {group}" not in query:
+            return
+        assert params[-1] == 3  # Two independently expected IDs/seasons plus one extra.
+        if fault == "missing":
+            cursor.rows.pop()
+        elif fault == "extra":
+            identity = "00-9999999" if group == "player_id" else 2099
+            cursor.rows.append((identity, *cursor.rows[-1][1:]))
+        elif fault == "duplicate":
+            cursor.rows.append(cursor.rows[-1])
+        elif fault == "last_value":
+            cursor.rows[-1] = (*cursor.rows[-1][:-1], Decimal("999"))
+
+    def fail_fetch(cursor):
+        for index, row in enumerate(original_iter(cursor)):
+            if fault == "fetch_error" and f"GROUP BY {group}" in cursor.query and index == 1:
+                raise RuntimeError("synthetic aggregate fetch failure")
+            yield row
+
+    monkeypatch.setattr(ArchiveCursor, "execute", change_rows)
+    monkeypatch.setattr(ArchiveCursor, "__iter__", fail_fetch)
+    conn = ArchiveConnection(snapshots)
+    if fault == "fetch_error":
+        with pytest.raises(RuntimeError, match="aggregate fetch failure"):
+            verify_database(conn, snapshots)
+    elif fault:
+        with pytest.raises(ValueError, match="aggregate (identities differ|mismatch)|duplicate aggregate"):
+            verify_database(conn, snapshots)
+    else:
+        assert verify_database(conn, snapshots)["verified"]
+        assert [cursor.batches for cursor in conn.cursors[5:]] == [[1, 1]] * 6
+    assert all(cursor.closed and max(cursor.batches) <= 1 for cursor in conn.cursors)
+    assert conn.transactions == [{"force_rollback": True}]
+
+
+def test_offline_aggregate_query_count_depends_on_periods_not_metric_count(snapshots, monkeypatch):
+    for metrics in (("passing_yards", "fg_long"), GAME_METRICS):
+        monkeypatch.setattr(stats_verification, "GAME_METRICS", metrics)
+        conn = ArchiveConnection(snapshots)
+        result = verify_database(conn, snapshots)
+        assert result["game_metric_checks"] == 5 * len(metrics)
+        assert len([query for query, _ in conn.commands if "GROUP BY" in query]) == 6
+        game_queries = [(query, params) for query, params in conn.commands if "GROUP BY player_id" in query]
+        assert all(all(metric not in query for metric in metrics) and params[:-4] == metrics
+                   for query, params in game_queries)
+
+
+@pytest.mark.parametrize("metrics", [(), ("passing_yards", "passing_yards"), ("not_an_allowed_metric",)])
+def test_offline_aggregate_projection_rejects_unsupported_metrics(metrics):
+    with pytest.raises(ValueError, match="Unsupported aggregate"):
+        stats_verification._aggregate_columns(metrics)
 
 
 @pytest.mark.parametrize("dataset", ["game", "player_history"])
@@ -381,6 +460,49 @@ def test_postgres_entire_saved_archive_parity_and_readonly_settings_restore(post
     assert postgres.execute("SHOW transaction_read_only").fetchone() == ("off",)
     assert postgres.execute("SELECT count(*) FROM pg_cursors WHERE name LIKE 'ob_stats_verify_%'").fetchone() == (0,)
     assert import_snapshots(postgres, saved)["inserted"] == 0
+
+
+def test_postgres_batched_aggregates_match_unchanged_single_metric_queries(postgres, snapshots):
+    prepared = []
+    for saved in snapshots:
+        payload = deepcopy(saved.payload)
+        if saved.dataset == "game":
+            payload["players"][0][payload["player_columns"].index("receiving_yards")] = -payload["game"]["week"]
+        else:
+            payload["columns"] += ["fg_long", "def_sacks"]
+            for index, player in enumerate(payload["players"].values()):
+                for cells in player["seasons"]:
+                    cells.extend([40 + index, 0.5 if index == 0 else None])
+        prepared.append(prepare_snapshot(payload, saved.source_path))
+    import_snapshots(postgres, prepared)
+    postgres.execute("SET LOCAL ROLE ob_stats_ingest")
+    with stats_verification._read_snapshot(postgres):
+        for season, week in ((2025, None), (2025, 1), (2025, 2), (2026, None), (2026, 1)):
+            batched = stats_verification._game_totals_batch(postgres, season, week, 2)
+            for metric in GAME_METRICS:
+                assert batched[metric] == game_stat_totals(postgres, season, metric, week)
+            assert set(batched["passing_yards"]) == {"00-0000001", "00-0000002"}
+            assert batched["passing_yards"]["00-0000002"] == 0
+            assert batched["def_sacks"]["00-0000002"] is None
+            assert batched["receiving_yards"]["00-0000001"] < 0
+        season = stats_verification._game_totals_batch(postgres, 2025, None, 2)
+        assert season["passing_yards"]["00-0000001"] == 30
+        assert season["fg_long"]["00-0000001"] == 49
+        assert season["def_sacks"]["00-0000001"] == 1
+        assert stats_verification._game_totals_batch(postgres, 2025, 1, 2)["def_sacks"]["00-0000001"] == 0.5
+        history_metrics = ("games", "passing_yards", "passing_interceptions", "fumbles_total", "fg_long", "def_sacks")
+        history = stats_verification._history_totals_batch(postgres, history_metrics, 2)
+        for metric in history_metrics:
+            reducer = "MAX" if metric == "fg_long" else "SUM"
+            query = "SELECT season, " + reducer + """((stats->>%s)::numeric)
+                FROM ob_stats.current_player_season_stats GROUP BY season ORDER BY season"""
+            assert history[metric] == dict(postgres.execute(query, (metric,)).fetchall())
+        assert history["fg_long"] == {2024: 41, 2025: 41}
+        assert history["def_sacks"] == {2024: Decimal("0.5"), 2025: Decimal("0.5")}
+        assert history["fumbles_total"] == {2024: None, 2025: 0}
+    assert verify_database(postgres, prepared)["verified"]
+    assert postgres.execute("SHOW transaction_read_only").fetchone() == ("off",)
+    assert postgres.execute("SELECT count(*) FROM pg_cursors WHERE name LIKE 'ob_stats_verify_%'").fetchone() == (0,)
 
 
 def test_postgres_current_head_and_later_observation_metadata(postgres, snapshots):

@@ -9,7 +9,6 @@ import math
 from uuid import uuid4
 
 from app.league_leaders import MAXIMUM_STATS, STAT_GROUPS
-from app.stats_database import game_stat_totals
 from app.stats_import import import_plan, prepare_snapshot
 
 
@@ -121,6 +120,46 @@ def _check_totals(label, actual, expected, *, floating=False):
             raise ValueError(f"{label}: aggregate mismatch at {key}")
 
 
+def _aggregate_columns(metrics):
+    if not metrics or len(set(metrics)) != len(metrics) or not set(metrics) <= HISTORY_METRICS:
+        raise ValueError("Unsupported aggregate statistics")
+    # Only fixed SUM/MAX keywords enter SQL; JSON field names remain parameters.
+    return ", ".join(("MAX" if metric in MAXIMUM_STATS else "SUM") + "((stats->>%s)::numeric)"
+                     for metric in metrics)
+
+
+def _index_totals(label, rows, metrics, *, floating=False):
+    totals = {metric: {} for metric in metrics}
+    identities = set()
+    for row in rows:
+        if len(row) != len(metrics) + 1:
+            raise ValueError(f"{label}: aggregate columns differ")
+        identity, *values = row
+        if identity in identities:
+            raise ValueError(f"{label}: duplicate aggregate identity")
+        identities.add(identity)
+        for metric, value in zip(metrics, values):
+            totals[metric][identity] = float(value) if floating and value is not None else value
+    return totals
+
+
+def _game_totals_batch(conn, season, week, expected_players):
+    """Read every metric for one period in one bounded SQL aggregate query."""
+    query = "SELECT player_id, " + _aggregate_columns(GAME_METRICS) + """
+        FROM ob_stats.current_player_game_stats
+        WHERE season = %s AND player_id IS NOT NULL AND (%s::integer IS NULL OR week = %s)
+        GROUP BY player_id ORDER BY player_id LIMIT %s"""
+    rows = _bulk_rows(conn, query, (*GAME_METRICS, season, week, week, expected_players + 1))
+    return _index_totals("Game totals", rows, GAME_METRICS, floating=True)
+
+
+def _history_totals_batch(conn, metrics, expected_seasons):
+    query = "SELECT season, " + _aggregate_columns(metrics) + """
+        FROM ob_stats.current_player_season_stats GROUP BY season ORDER BY season LIMIT %s"""
+    rows = _bulk_rows(conn, query, (*metrics, expected_seasons + 1))
+    return _index_totals("Historical totals", rows, metrics)
+
+
 def _verify(conn, snapshots):
     expected_heads = {(s.dataset, s.object_key): s for s in snapshots}
     plan = import_plan(snapshots)
@@ -203,27 +242,23 @@ def _verify(conn, snapshots):
         weeks = sorted({s.payload["game"]["week"] for s in game_snapshots if s.payload["season"] == season})
         periods[str(season)] = {"season_total": True, "weeks": weeks}
         for week in (None, *weeks):
+            expected = {metric: _expected_game_totals(game_snapshots, season, metric, week)
+                        for metric in GAME_METRICS}
+            actual = _game_totals_batch(conn, season, week, len(expected[GAME_METRICS[0]]))
             for metric in GAME_METRICS:
-                expected = _expected_game_totals(game_snapshots, season, metric, week)
-                actual = game_stat_totals(conn, season, metric, week)
-                _check_totals(f"Game totals {season}/{week}/{metric}", actual, expected, floating=True)
+                _check_totals(f"Game totals {season}/{week}/{metric}", actual[metric], expected[metric], floating=True)
                 game_checks += 1
 
     history_rows = [row for s in snapshots for row in s.player_seasons]
     history_seasons = sorted({row["season"] for row in history_rows})
     history_fields = {key for row in history_rows for key in row["stats"]}
     history_metrics = sorted(history_fields & HISTORY_METRICS)
+    history_totals = _history_totals_batch(conn, history_metrics, len(history_seasons)) if history_metrics else {}
     for metric in history_metrics:
         expected = {season: None for season in history_seasons}
         for row in history_rows:
             expected[row["season"]] = _accumulate(expected[row["season"]], row["stats"].get(metric), metric)
-        reducer = "MAX" if metric in MAXIMUM_STATS else "SUM"
-        # The SQL keyword comes from the same fixed allowlist as game totals;
-        # statistic names remain bound values, never SQL identifiers.
-        query = "SELECT season, " + reducer + """((stats->>%s)::numeric)
-            FROM ob_stats.current_player_season_stats GROUP BY season ORDER BY season"""
-        actual = dict(conn.execute(query, (metric,)).fetchall())
-        _check_totals(f"Historical totals {metric}", actual, expected)
+        _check_totals(f"Historical totals {metric}", history_totals[metric], expected)
 
     return {
         "verified": True, "scope": "complete saved archive versus current database heads",
