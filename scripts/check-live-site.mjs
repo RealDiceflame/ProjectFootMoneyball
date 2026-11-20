@@ -4,6 +4,7 @@ const pending = new Set([
   '/', '/stats.html', '/stats.html?view=leaders', '/game.html',
   '/rankings.html', '/special-teams.html', '/values.html', '/projection.html',
   '/survivor.html', '/league.html', '/odds.html', '/data/update_status.json',
+  '/data/ranking_inputs.json', '/data/ranking_forecasts.json', '/ranking-model.mjs',
 ]);
 const checked = new Set();
 const failures = [];
@@ -28,6 +29,12 @@ for (const path of pending) {
     if (url.pathname.endsWith('.json')) {
       const data = JSON.parse(body);
       if (!data || typeof data !== 'object') throw new Error('Expected JSON object or array');
+      if (url.pathname === '/data/ranking_forecasts.json') {
+        if (data.schema_version !== 1 || Object.keys(data.formats || {}).length !== 12 || data.coverage?.teams !== 32)
+          throw new Error('Incomplete published ranking forecasts');
+        const age = Date.now() - Date.parse(data.generated_at);
+        if (!Number.isFinite(age) || age > 36 * 3600000 || age < -300000) throw new Error('Ranking publication is stale or future-dated');
+      }
     }
     if (url.pathname === '/' || url.pathname.endsWith('.html')) {
       if (!/<html\b/i.test(body) || !/<main\b/i.test(body)) throw new Error('Expected website HTML with main content');

@@ -1,0 +1,42 @@
+{
+  "evaluated_at": "2026-11-20T13:53:23.180Z",
+  "season": 2025,
+  "settings": {
+    "ppr": "Half PPR",
+    "tePremium": "None"
+  },
+  "results": {
+    "QB": {
+      "observations": 544,
+      "baseline_mae": 6.490930611109612,
+      "model_mae": 6.447416162307718,
+      "improvement_pct": 0.6703884451856129
+    },
+    "RB": {
+      "observations": 544,
+      "baseline_mae": 7.661131736347943,
+      "model_mae": 7.623225047905578,
+      "improvement_pct": 0.4947922806563672
+    },
+    "WR": {
+      "observations": 544,
+      "baseline_mae": 9.566025119192647,
+      "model_mae": 9.522178807961287,
+      "improvement_pct": 0.4583545483629247
+    },
+    "TE": {
+      "observations": 542,
+      "baseline_mae": 5.699673878935421,
+      "model_mae": 5.674041326350097,
+      "improvement_pct": 0.44971963536468135
+    },
+    "DST": {
+      "observations": 544,
+      "baseline_mae": 4.295470100991942,
+      "model_mae": 4.216662452102228,
+      "improvement_pct": 1.8346687798272558
+    }
+  },
+  "scope": "Defensive component only: position-total points allowed vs league average; D/ST matchup vs team-only forecast. Not an evaluation of individual player rankings or draft accuracy.",
+  "limitations": "Current corrected archives, not original publication vintages. All target-week games excluded from evidence. Fixed parameters, no fitting on evaluation season. MAE is average absolute point error; lower is better."
+}
