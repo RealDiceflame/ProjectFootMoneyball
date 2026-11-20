@@ -1290,6 +1290,14 @@ function render() {
   ui.modelNote.textContent = state.inputs
     ? `${horizonLabel}: ${ui.horizon.value === 'draft' ? 'full-season outlook at today’s scoring rate and historical games estimate; not actual points already earned.' : 'unstarted regular-season games only; current Out excludes its matching game. IR and other future absences are not predicted.'} Evidence updated ${formatTimestamp(state.inputs.generated_at)} · ${state.inputs.defense.coverage.current_season_games} current-season games · ${Date.now() - Date.parse(state.inputs.generated_at) > 36 * 3600000 ? 'Evidence is older than 36 hours; showing the last saved forecast inputs. ' : ''}Experimental model; opponent adjustments capped at ±10%. ADP remains a separate draft-market reference.`
     : 'New forecast evidence is unavailable. Draft shows the saved age model; weekly and rest-of-season forecasts will retry automatically.';
+  if (state.inputs) {
+    const archiveTime = state.inputs.sources?.archive?.checked_at, scheduleTime = state.inputs.sources?.scores?.checked_at;
+    ui.modelNote.textContent += ` Stats checked ${formatTimestamp(archiveTime)}; schedule checked ${formatTimestamp(scheduleTime)}.`;
+    if ([archiveTime, scheduleTime].some(time => !Number.isFinite(Date.parse(time)) || Date.now() - Date.parse(time) > 36 * 3600000))
+      ui.modelNote.textContent += ' Source checks are overdue; a newly calculated forecast does not mean new game data arrived.';
+    if (state.inputs.coverage?.pending_stats_game_ids?.length)
+      ui.modelNote.textContent += ` ${state.inputs.coverage.pending_stats_game_ids.length} reported games are awaiting box scores.`;
+  }
   const partialCount = allRows.filter(row => row.scoring_coverage === "core_only").length;
   ui.scoringCoverageNote.hidden = partialCount === 0;
   ui.scoringCoverageNote.textContent = partialCount

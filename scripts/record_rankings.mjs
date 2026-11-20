@@ -14,7 +14,10 @@ export async function recordRankings(root, {now = Date.now()} = {}) {
     evidence[key] = {path: `data/${name}.json`, generated_at: data[key].generated_at, sha256: createHash('sha256').update(content).digest('hex')};
   }
   const payload = {schema_version: 1, model_version: RANKING_MODEL_VERSION, season: data.inputs.season,
-    generated_at: new Date(now).toISOString(), evidence, coverage: data.inputs.defense.coverage, formats: {}};
+    generated_at: new Date(now).toISOString(), evidence, coverage: data.inputs.defense.coverage,
+    source_health: {archive_checked_at: data.inputs.sources?.archive?.checked_at || null,
+      schedule_checked_at: data.inputs.sources?.scores?.checked_at || null,
+      pending_stats_game_ids: data.inputs.coverage?.pending_stats_game_ids || []}, formats: {}};
   for (const quarterbacks of ['1QB', '2QB']) for (const ppr of ['Standard', 'Half PPR', 'Full PPR']) for (const tePremium of ['None', '+0.5']) {
     const settings = {teams: 12, quarterbacks, ppr, tePremium, defenses: 'Include'};
     const ranked = Object.values(data.rankings.boards)[0].map(values => Object.fromEntries(data.rankings.columns.map((key, i) => [key, values[i]])));

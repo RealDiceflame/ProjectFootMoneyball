@@ -12,6 +12,8 @@ The **Update original rankings** workflow executes both steps after **Update sit
 
 The original production-value/dynasty lab and its recorded versioned history remain available as a separate model, with a link to the new ROS forecast.
 
+Calculation timestamps are separate from archive and schedule source-check timestamps. The page warns about overdue source checks and missing reported-game boxes; the live monitor also rejects archive/schedule checks older than 36 hours. Rebuilding saved evidence cannot hide a stalled collector.
+
 ## Model
 
 - Player rate reuses the production-value model: prior three calendar years, 5/3/2 weights with games reliability and observed historical age transitions. Current PPG receives `n/(n+8)` weight. No fabricated rookie prior; no ADP in the scoring forecast. Missing appearances are not inferred zero games.

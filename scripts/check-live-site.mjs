@@ -34,6 +34,11 @@ for (const path of pending) {
           throw new Error('Incomplete published ranking forecasts');
         const age = Date.now() - Date.parse(data.generated_at);
         if (!Number.isFinite(age) || age > 36 * 3600000 || age < -300000) throw new Error('Ranking publication is stale or future-dated');
+        for (const key of ['archive_checked_at', 'schedule_checked_at']) {
+          const sourceAge = Date.now() - Date.parse(data.source_health?.[key]);
+          if (!Number.isFinite(sourceAge) || sourceAge > 36 * 3600000 || sourceAge < -300000)
+            throw new Error(`Ranking source is stale or undated: ${key}`);
+        }
       }
     }
     if (url.pathname === '/' || url.pathname.endsWith('.html')) {

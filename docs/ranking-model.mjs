@@ -11,9 +11,11 @@ const unpack = (columns, rows) => rows.map(row => Object.fromEntries(columns.map
 
 export function validateRankingInputs(value) {
   return value?.schema_version === 1 && value.season_type === 'REG' && Number.isInteger(value.season)
-    && Number.isFinite(Date.parse(value.generated_at)) && Array.isArray(value.games) && value.games.length > 0
+    && Number.isFinite(Date.parse(value.generated_at)) && Date.parse(value.generated_at) <= Date.now() + 300000 && Array.isArray(value.games) && value.games.length > 0
     && Array.isArray(value.columns) && ['player_id', 'pos', 'game_id', 'analysis_ready', 'fumbles_lost_total'].every(key => value.columns.includes(key))
     && Array.isArray(value.rows) && value.rows.every(row => Array.isArray(row) && row.length === value.columns.length)
+    && Array.isArray(value.coverage?.pending_stats_game_ids) && Number.isInteger(value.defense?.coverage?.current_season_games)
+    && value.defense.coverage.current_season_games >= 0 && value.defense.coverage.teams === 32
     && value.defense?.schema_version === 1 && Array.isArray(value.defense.games) && value.defense.games.length > 0
     && value.defense.games.every(game => Number.isFinite(Date.parse(game.kickoff)) && Number.isInteger(game.season)
       && Array.isArray(game.teams) && game.teams.length === 2 && game.teams[0].team === game.teams[1].opponent
