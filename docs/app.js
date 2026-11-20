@@ -6,7 +6,7 @@ import {
 } from "./adp-import.mjs?v=20261105-no-mfl1";
 import { historyAnalytics, historyRows, historyWindow } from "./player-history.mjs?v=20261118-history1";
 import { mergeSpecialTeams, specialTeamRows } from "./live-board.mjs";
-import { applyProjectionModel, projectionSummary } from "./projection-model.mjs?v=20261118-history1";
+import { applyProjectionModel, projectionSummary } from "./projection-model.mjs?v=20261120-rankings1";
 import {startAutoRefresh, fetchSnapshot, snapshotSignature, preserveView} from "./auto-refresh.mjs?v=20260927-refresh1";
 import {validateRankings, validateReports, validateHistory, validateSpecialTeams} from "./snapshot-validation.mjs?v=20260927-refresh1";
 import {classifyInjury} from "./injury-status.mjs?v=20260927-refresh1";
