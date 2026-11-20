@@ -1,7 +1,8 @@
 import {buildValueBoard, scoreValueStats} from './player-values.mjs?v=20261118-history1';
 import {recalculateMarketMetrics} from './adp-import.mjs?v=20261105-no-mfl1';
+import {validatePersonnel, defenderContext, personnelDefenseProjection, combineDefenseForecasts} from './defender-model.mjs?v=20261120-defenders2';
 
-export const RANKING_MODEL_VERSION = 'schedule-defense-v1';
+export const RANKING_MODEL_VERSION = 'personnel-defense-v2';
 const positions = ['QB', 'RB', 'WR', 'TE', 'DST'];
 const finite = value => typeof value === 'number' && Number.isFinite(value);
 const round = value => finite(value) ? Math.round(value * 100) / 100 : null;
@@ -16,7 +17,8 @@ export function validateRankingInputs(value) {
     && Array.isArray(value.rows) && value.rows.every(row => Array.isArray(row) && row.length === value.columns.length)
     && Array.isArray(value.coverage?.pending_stats_game_ids) && Number.isInteger(value.defense?.coverage?.current_season_games)
     && value.defense.coverage.current_season_games >= 0 && value.defense.coverage.teams === 32
-    && value.defense?.schema_version === 1 && Array.isArray(value.defense.games) && value.defense.games.length > 0
+    && value.defense?.schema_version === 2 && validatePersonnel(value.defense.personnel)
+    && Array.isArray(value.defense.games) && value.defense.games.length > 0
     && value.defense.games.every(game => Number.isFinite(Date.parse(game.kickoff)) && Number.isInteger(game.season)
       && Array.isArray(game.teams) && game.teams.length === 2 && game.teams[0].team === game.teams[1].opponent
       && game.teams[1].team === game.teams[0].opponent && game.teams.every(row => row.stats && row.allowed));
@@ -133,23 +135,27 @@ export function buildRankingBoard({rankings, history, news, inputs}, settings = 
       injuryStatus: player.injury, injury: player.injury.currentInjury,
       scoring_coverage: player.notes.some(note => note.includes('partial scoring')) ? 'core_only' : 'complete'};
   });
+  const personnel = settings.defenses === 'Include' ? defenderContext(inputs, now) : null;
   if (settings.defenses === 'Include') for (const [team, profile] of Object.entries(context.teams)) {
     const games = future.filter(game => [game.home, game.away].includes(team));
     const forecasts = games.map(game => {
       const opponent = game.home === team ? game.away : game.home;
-      return {game_id: game.game_id, week: game.week, kickoff: game.kickoff, opponent, points: round(defenseProjection(context, team, opponent))};
+      const breakdown = personnelDefenseProjection(context, personnel, team, opponent, game, defenseProjection(context, team, opponent));
+      return {game_id: game.game_id, week: game.week, kickoff: game.kickoff, opponent, points: round(breakdown.points), breakdown};
     });
     const selected = horizon === 'weekly' ? forecasts.filter(game => game.week === selectedWeek) : forecasts;
-    const neutral = defenseProjection(context, team);
+    const neutralBreakdown = personnelDefenseProjection(context, personnel, team, null, null, defenseProjection(context, team));
+    const neutral = neutralBreakdown.points;
+    const breakdown = combineDefenseForecasts(horizon === 'draft' ? Array(17).fill(neutralBreakdown) : selected.map(game => game.breakdown));
     const points = neutral === null || selected.some(game => game.points === null) ? null
-      : horizon === 'draft' ? neutral * 17 : selected.reduce((sum, game) => sum + game.points, 0);
+      : horizon === 'draft' ? breakdown.points : selected.reduce((sum, game) => sum + game.points, 0);
     rows.push({player_id: `DST:${team}`, player: `${team} D/ST`, pos: 'DST', team, current_team: team, listed_team: team,
       projected_points: round(points), projected_ppg: round(neutral), appearances: profile.games,
       projection_expected_games: horizon === 'draft' ? 17 : selected.length,
       projection_source: 'schedule_defense', eligible: horizon !== 'weekly' || selected.length > 0,
-      forecast_games: forecasts, opponent: horizon === 'weekly' ? selected[0]?.opponent || '—' : 'Schedule',
+      forecast_games: forecasts, defense_breakdown: breakdown, opponent: horizon === 'weekly' ? selected[0]?.opponent || '—' : 'Schedule',
       matchup_pct: null, adp: null, is_defense_forecast: true, draft_tag: 'OB D/ST', scoring_coverage: 'complete',
-      notes: [inputs.defense.scoring, 'Team events are regressed toward the league; sacks and takeaways also use the opponent offense. No individual defender availability is modeled.']});
+      notes: [inputs.defense.scoring, ...breakdown.notes]});
   }
   // Unrated players retain their place in the searchable board, never a fake rank.
   const teams = Number(settings.teams) || 12, counts = {QB: teams * (settings.quarterbacks === '2QB' ? 2 : 1), RB: Math.round(teams * 2.5), WR: Math.round(teams * 3.5), TE: teams, DST: teams};

@@ -6,13 +6,13 @@ import {
 } from "./adp-import.mjs?v=20261105-no-mfl1";
 import { historyAnalytics, historyRows, historyWindow } from "./player-history.mjs?v=20261118-history1";
 import { mergeSpecialTeams, specialTeamRows } from "./live-board.mjs";
-import { applyProjectionModel, projectionSummary } from "./projection-model.mjs?v=20261120-rankings1";
+import { applyProjectionModel, projectionSummary } from "./projection-model.mjs?v=20261120-defenders2";
 import {startAutoRefresh, fetchSnapshot, snapshotSignature, preserveView} from "./auto-refresh.mjs?v=20260927-refresh1";
 import {validateRankings, validateReports, validateHistory, validateSpecialTeams} from "./snapshot-validation.mjs?v=20260927-refresh1";
 import {classifyInjury} from "./injury-status.mjs?v=20260927-refresh1";
 import {observeBoardColumns} from "./board-layout.mjs?v=20260928-layout1";
 import {DRAFT_ALIASES_KEY, columnarDraftRows, validDraftAliases, migrateDraftedKeys, toggleDraftedKey} from "./draft-identity.mjs?v=20260927-refresh1";
-import {buildRankingBoard, validateRankingInputs, upcomingGames} from "./ranking-model.mjs?v=20261120-rankings1";
+import {buildRankingBoard, validateRankingInputs, upcomingGames} from "./ranking-model.mjs?v=20261120-defenders2";
 
 const DATA_URL = "./data/rankings.json";
 const INTEL_URL = "./data/player_intel.json";
@@ -1029,6 +1029,46 @@ function appendPlayerHistory(container, player) {
   container.append(section);
 }
 
+function appendDefenderForecast(container, row) {
+  const breakdown = row.defense_breakdown;
+  if (!breakdown) return;
+  const section = document.createElement('section');
+  section.className = 'defender-forecast';
+  addIntelSection(section, 'Defenders behind this D/ST forecast', `${ui.horizon.selectedOptions[0].textContent} · ${breakdown.games} projected games · ${row.projected_points ?? 'Unrated'} total points. ${breakdown.mode === 'player_based' ? 'Individual production and expected playing time drive this forecast.' : breakdown.mode === 'no_games' ? 'No unstarted games in this view.' : 'Team fallback is in use.'}`);
+  if (breakdown.contributors.length) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'defender-table-scroll';
+    wrapper.tabIndex = 0;
+    wrapper.setAttribute('role', 'region');
+    wrapper.setAttribute('aria-label', 'Individual defender contributions; scroll for all columns');
+    const table = document.createElement('table'), head = document.createElement('thead'), body = document.createElement('tbody');
+    const caption = document.createElement('caption');
+    caption.textContent = 'Expected playing time and weighted contributions. Scroll sideways for all stats →';
+    table.append(caption);
+    const header = document.createElement('tr');
+    for (const label of ['Defender / availability', 'Snaps', 'Sacks', 'INT', 'Recoveries', 'TD', 'Points']) {
+      const cell = document.createElement('th'); cell.scope = 'col'; cell.textContent = label; header.append(cell);
+    }
+    head.append(header);
+    for (const person of breakdown.contributors) {
+      const tr = document.createElement('tr'), name = document.createElement('th');
+      name.scope = 'row'; name.textContent = `${person.player} · ${person.pos}`;
+      const status = document.createElement('small'); status.textContent = `${person.status}. ${person.role_basis}.`; name.append(status); tr.append(name);
+      for (const value of [person.snaps, person.events.def_sacks, person.events.def_interceptions, person.events.fumble_recovery_opp, person.events.def_tds, person.points]) {
+        const cell = document.createElement('td'); cell.textContent = value.toFixed(2); tr.append(cell);
+      }
+      body.append(tr);
+    }
+    table.append(head, body); wrapper.append(table); section.append(wrapper);
+  }
+  const labels = {named_defenders: 'Named defenders', replacement_defenders: 'Other replacement defenders', team_event_prior: 'Team event prior (20%)', shared_team_and_special_teams: 'Shared team and special teams', points_allowed: 'Points allowed', team_fallback: 'Team-event fallback'};
+  addIntelSection(section, 'How the total adds up', Object.entries(breakdown.components).map(([key, value]) => `${labels[key] || key}: ${value.toFixed(2)} points`).join(' · ') + '. Totals use unrounded estimates.');
+  if (breakdown.replacements.length) addIntelSection(section, 'Replacement playing time', breakdown.replacements.map(person => `${person.group}: ${person.snaps.toFixed(1)} snaps at the position-group average`).join(' · '));
+  const personnel = state.inputs?.defense.personnel;
+  addIntelSection(section, 'Playing-time and availability evidence', `Latest team participation: ${formatTimestamp(breakdown.latest_participation)}. Roster and injury feed checked: ${formatTimestamp(personnel?.status.generated_at)}. ${personnel?.coverage.missing_snap_game_ids.length || 0} archived games await snap counts. A missing injury report does not establish that someone is healthy. Later games assume availability; return dates are not predicted.`);
+  container.append(section);
+}
+
 function openIntel(key, row) {
   const report = state.intel.reports?.[key];
   const news = state.news.reports?.[key];
@@ -1040,6 +1080,16 @@ function openIntel(key, row) {
   const ageLabel = numeric(row.age) === null ? "" : ` · Age ${Math.round(row.age)}`;
   ui.intelMeta.textContent = `${teamLabel} · ${row.pos}${ageLabel} · Overall rank ${row.overall_rank}`;
   const fragment = document.createDocumentFragment();
+  if (row.is_defense_forecast) {
+    appendDefenderForecast(fragment, row);
+    addIntelSection(fragment, 'Upcoming games', row.forecast_games.map(game => `Week ${game.week} vs ${game.opponent}: ${game.points ?? 'unrated'} points`).join(' · ') || 'No unstarted regular-season games.');
+    const assumptions = document.createElement('details'), heading = document.createElement('summary');
+    heading.textContent = 'Scoring and model assumptions'; assumptions.append(heading);
+    addIntelSection(assumptions, 'OutlierBaseline forecast', row.notes.join(' ')); fragment.append(assumptions);
+    ui.intelBody.replaceChildren(fragment);
+    ui.intelDialog.showModal();
+    return;
+  }
   if (row.forecast_games) {
     const details = document.createElement('section');
     addIntelSection(details, 'OutlierBaseline forecast', `${row.projected_ppg ?? 'Unrated'} neutral points per game · ${row.appearances} recorded appearances. ${row.notes.join(' ')}`);
@@ -1284,7 +1334,7 @@ function render() {
   const draftedCount = allRows.filter(row => state.drafted.has(playerKey(row))).length;
   const importText = personalAdpIsActive() ? ` · ${state.personalAdpMatches} personal ADP matches` : "";
   const horizonLabel = {draft: 'Draft outlook', weekly: `Week ${state.forecast?.week ?? '—'}`, ros: 'Rest of season'}[ui.horizon.value];
-  ui.boardSummary.textContent = `${state.inputs ? 'OB Schedule & Defense v1' : 'Age Curve v1'} · ${horizonLabel} · showing ${state.visibleRows.length} of ${allRows.length} entries · ${draftedCount} drafted${importText} · click any heading to sort`;
+  ui.boardSummary.textContent = `${state.inputs ? 'OB Schedule & Defense v2' : 'Age Curve v1'} · ${horizonLabel} · showing ${state.visibleRows.length} of ${allRows.length} entries · ${draftedCount} drafted${importText} · click any heading to sort`;
   ui.week.disabled = ui.horizon.value !== 'weekly';
   ui.kickers.disabled = ui.horizon.value !== 'draft';
   ui.modelNote.textContent = state.inputs
@@ -1297,6 +1347,12 @@ function render() {
       ui.modelNote.textContent += ' Source checks are overdue; a newly calculated forecast does not mean new game data arrived.';
     if (state.inputs.coverage?.pending_stats_game_ids?.length)
       ui.modelNote.textContent += ` ${state.inputs.coverage.pending_stats_game_ids.length} reported games are awaiting box scores.`;
+    if (state.settings.defenses === 'Include') {
+      const personnel = state.inputs.defense.personnel;
+      ui.modelNote.textContent += ` Defender roster checked ${formatTimestamp(personnel.status.generated_at)}; ${personnel.coverage.missing_snap_game_ids.length} archived games await playing-time records. Open a D/ST to see its individual defenders.`;
+      if (allRows.some(row => row.is_defense_forecast && row.eligible && row.defense_breakdown.mode === 'team_fallback'))
+        ui.modelNote.textContent += ' Some teams use a labeled team fallback because current personnel evidence is unavailable.';
+    }
   }
   const partialCount = allRows.filter(row => row.scoring_coverage === "core_only").length;
   ui.scoringCoverageNote.hidden = partialCount === 0;
@@ -1431,6 +1487,9 @@ function forecastClockSignature(inputs) {
   if (!inputs) return '';
   const now = Date.now();
   return JSON.stringify([upcomingGames(inputs, now).map(game => game.game_id),
+    injuryClockSignature(inputs.defense.personnel.status),
+    now - Date.parse(inputs.defense.personnel.status.generated_at) > 48 * 3600000,
+    now - Date.parse(inputs.defense.personnel.status.sources?.roster?.http_last_modified) > 7 * 86400000,
     [inputs.generated_at, inputs.sources?.archive?.checked_at, inputs.sources?.scores?.checked_at]
       .map(time => !Number.isFinite(Date.parse(time)) || now - Date.parse(time) > 36 * 3600000)]);
 }
@@ -1488,7 +1547,7 @@ async function loadRankings(signal) {
     const historyStatus = state.history.player_count
       ? `${historyWindow(state.history).label} · ${state.history.player_count} player histories (${state.history.historical_player_count || 0} historical)`
       : "stat history awaiting update";
-    state.defaultSourceStatus = `${data.projection_season} ${inputs ? 'OB Schedule & Defense v1' : 'Age Curve v1'} · ${formatAdpStatus(data)} · ${newsStatus} · ${historyStatus} · ${intelStatus}${unavailable.length ? ` · Update unavailable: ${unavailable.join(", ")}; keeping last loaded data` : ""}`;
+    state.defaultSourceStatus = `${data.projection_season} ${inputs ? 'OB Schedule & Defense v2' : 'Age Curve v1'} · ${formatAdpStatus(data)} · ${newsStatus} · ${historyStatus} · ${intelStatus}${unavailable.length ? ` · Update unavailable: ${unavailable.join(", ")}; keeping last loaded data` : ""}`;
     updateAdpMode();
     ui.boardHeading.textContent = `${data.projection_season} player rankings`;
     ui.loadingState.classList.add("hidden");

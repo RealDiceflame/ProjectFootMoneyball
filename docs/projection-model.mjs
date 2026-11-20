@@ -288,8 +288,12 @@ export function projectPlayer(player, historyBundle, newsBundle, settings, proje
 }
 
 export function projectionSummary(player) {
+  if (player.is_defense_forecast) return {
+    label: 'OB Schedule & Defense v2', rateLabel: 'Neutral D/ST scoring rate', ageDetail: 'Individual defender production and expected playing time, plus shared team estimates',
+    explanation: 'Open this D/ST to inspect its defenders, replacement playing time, team event prior, special teams and points-allowed contributions. Future availability is conditional.',
+  };
   if (player.projection_source === 'schedule_defense') return {
-    label: 'OB Schedule & Defense v1', rateLabel: 'Neutral scoring rate', ageDetail: 'Historical age-adjusted prior blended with current-season appearances',
+    label: 'OB Schedule & Defense v2', rateLabel: 'Neutral scoring rate', ageDetail: 'Historical age-adjusted prior blended with current-season appearances',
     explanation: 'The draft outlook uses today’s scoring rate and a full-season games estimate. Weekly and rest-of-season estimates use upcoming fixtures and bounded opponent adjustments. These are experimental conditional playing forecasts, not guarantees.',
   };
   const age = numberOrNull(player.age);

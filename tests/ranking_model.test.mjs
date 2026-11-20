@@ -94,5 +94,10 @@ test('a failed complete-board publication preserves the last good forecasts', as
     await writeFile(destination, '{"last_good":true}');
     await assert.rejects(recordRankings(root, {now}), /Incomplete player or defense/);
     assert.equal(await readFile(destination, 'utf8'), '{"last_good":true}');
+    const stale = structuredClone(data.inputs);
+    stale.defense.personnel.status.generated_at = new Date(now - 3 * 86400000).toISOString();
+    await writeFile(join(root, 'docs/data/ranking_inputs.json'), JSON.stringify(stale));
+    await assert.rejects(recordRankings(root, {now}), /player-based defense evidence unavailable/);
+    assert.equal(await readFile(destination, 'utf8'), '{"last_good":true}');
   } finally {await rm(root, {recursive: true, force: true});}
 });
