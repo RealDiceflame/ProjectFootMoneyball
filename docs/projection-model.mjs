@@ -288,6 +288,10 @@ export function projectPlayer(player, historyBundle, newsBundle, settings, proje
 }
 
 export function projectionSummary(player) {
+  if (player.projection_source === 'schedule_defense') return {
+    label: 'OB Schedule & Defense v1', rateLabel: 'Neutral scoring rate', ageDetail: 'Historical age-adjusted prior blended with current-season appearances',
+    explanation: 'The draft outlook uses today’s scoring rate and a full-season games estimate. Weekly and rest-of-season estimates use upcoming fixtures and bounded opponent adjustments. These are experimental conditional playing forecasts, not guarantees.',
+  };
   const age = numberOrNull(player.age);
   const adjustment = numberOrNull(player.age_adjustment_pct);
   const ageDetail = age === null ? "Age unavailable"

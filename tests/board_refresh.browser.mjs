@@ -15,7 +15,7 @@ const originals = {}, draftedKey = "project-foot-moneyball:drafted:v1", personal
 let browser, server, base;
 
 before(async () => {
-  for (const key of ["rankings", "player_history", "player_news", "player_intel", "special_teams"]) {
+  for (const key of ["rankings", "player_history", "player_news", "player_intel", "special_teams", "ranking_inputs"]) {
     originals[key] = JSON.parse(await readFile(resolve(root, "data", `${key}.json`), "utf8"));
   }
   server = createServer(async (request, response) => {
@@ -39,6 +39,11 @@ async function open(path, prepare = () => {}) {
   // Injury tests supply their own small, explicit news fixture. Other tests do
   // not depend on the changing injury designations in checked-in snapshots.
   values.player_news = {season: 2026, generated_at: new Date(now).toISOString(), reports: {}};
+  // These are frozen UI fixtures, not reconstructed as-of historical forecasts.
+  // Keep all bundle clocks aligned with the test's September clock. The model
+  // itself filters games that had not started by that clock.
+  for (const key of ['rankings', 'player_history', 'ranking_inputs']) values[key].generated_at = new Date(now).toISOString();
+  for (const source of Object.values(values.ranking_inputs.sources)) source.checked_at = new Date(now).toISOString();
   prepare(values);
   let revision = 0, heldManifest = null;
   await context.route("**/*", async route => {
@@ -102,6 +107,7 @@ test("two-way player profiles show receiving history and distinguish missing his
     source_count: 2, adp_stddev: 47.8, is_rookie: false, scoring_coverage: "full"};
   const missing = {...hunter, player: "History Missing", player_id: "fixture-missing", overall_rank: 2};
   const board = await open("rankings.html", values => {
+    values.ranking_inputs = 'NETWORK_ERROR'; // Exercise the legacy age-model fallback.
     values.rankings.projection_season = 2026;
     for (const key of Object.keys(values.rankings.boards)) {
       values.rankings.boards[key] = [hunter, missing].map(player =>
@@ -140,6 +146,7 @@ test("two-way player profiles show receiving history and distinguish missing his
 
 test("rankings labels partial scoring estimates across formats and clears the note for legacy snapshots", async () => {
   const board = await open("rankings.html", values => {
+    values.ranking_inputs = 'NETWORK_ERROR'; // Legacy coverage metadata belongs to the fallback model.
     let coverage = values.rankings.columns.indexOf("scoring_coverage");
     if (coverage < 0) { coverage = values.rankings.columns.length; values.rankings.columns.push("scoring_coverage"); }
     for (const rows of Object.values(values.rankings.boards)) {
@@ -343,6 +350,11 @@ test("rankings keep a drafted player when refreshed roster teams change without 
     assert.equal(await selectedRow(page).locator(".draft-toggle").getAttribute("aria-pressed"), "true");
     const newTeam = player.team === "BUF" ? "KC" : "BUF";
     changeRankedValue(values.rankings, player.player, "team", newTeam);
+    // A current roster report outranks the last archived appearance. Draft
+    // team labels alone can still refer to the prior season's team.
+    values.player_news.reports[`${player.player.toLowerCase()}|${newTeam}`] = {...player, team: newTeam, current_team: newTeam};
+    values.player_news.player_count = 1;
+    values.player_news.generated_at = new Date(now + 1000).toISOString();
     await board.tick();
     await page.waitForFunction(team => document.querySelector("#table-body .team-cell")?.textContent === team, newTeam);
     assert.equal(await selectedRow(page).locator(".draft-toggle").getAttribute("aria-pressed"), "true");

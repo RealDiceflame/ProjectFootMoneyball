@@ -6,12 +6,13 @@ import {
 } from "./adp-import.mjs?v=20261105-no-mfl1";
 import { historyAnalytics, historyRows, historyWindow } from "./player-history.mjs?v=20261118-history1";
 import { mergeSpecialTeams, specialTeamRows } from "./live-board.mjs";
-import { applyProjectionModel, projectionSummary } from "./projection-model.mjs?v=20261118-history1";
+import { applyProjectionModel, projectionSummary } from "./projection-model.mjs?v=20261120-rankings1";
 import {startAutoRefresh, fetchSnapshot, snapshotSignature, preserveView} from "./auto-refresh.mjs?v=20260927-refresh1";
 import {validateRankings, validateReports, validateHistory, validateSpecialTeams} from "./snapshot-validation.mjs?v=20260927-refresh1";
 import {classifyInjury} from "./injury-status.mjs?v=20260927-refresh1";
 import {observeBoardColumns} from "./board-layout.mjs?v=20260928-layout1";
 import {DRAFT_ALIASES_KEY, columnarDraftRows, validDraftAliases, migrateDraftedKeys, toggleDraftedKey} from "./draft-identity.mjs?v=20260927-refresh1";
+import {buildRankingBoard, validateRankingInputs, upcomingGames} from "./ranking-model.mjs?v=20261120-rankings1";
 
 const DATA_URL = "./data/rankings.json";
 const INTEL_URL = "./data/player_intel.json";
@@ -31,7 +32,9 @@ const columns = [
   { key: "pos", label: "Pos", width: 58, kind: "category", description: "Filter by QB, RB, WR, TE, K, or DST; separate choices with commas" },
   { key: "age", label: "Age", width: 58, kind: "number", description: "Player age on September 1 of the projection season" },
   { key: "position_rank", label: "Pos Rank", width: 78, kind: "positionRank", description: "Position-specific rank, such as QB5 or WR12" },
-  { key: "projected_ppg", label: "Proj PPG", width: 82, kind: "number", description: "Age-adjusted fantasy points per game from the OutlierBaseline season model" },
+  { key: "projected_ppg", label: "Proj PPG", width: 82, kind: "number", description: "Neutral scoring rate from player history and current-season appearances" },
+  { key: "opponent", label: "Opponent", width: 85, kind: "text", description: "Scheduled opponent for the selected week" },
+  { key: "matchup_pct", label: "Matchup %", width: 85, kind: "number", description: "Opponent adjustment, capped at ±10%; ROS shows the average across upcoming games" },
   { key: "projected_points", label: "Season Proj.", width: 94, kind: "number", description: "Projected fantasy points using age-adjusted scoring and expected games played" },
   { key: "vorp", label: "VORP", width: 78, kind: "number", description: "Projected points above the position's replacement player" },
   {
@@ -52,6 +55,9 @@ const columns = [
 ];
 
 const ui = {
+  horizon: document.querySelector("#ranking-horizon"),
+  week: document.querySelector("#ranking-week"),
+  modelNote: document.querySelector("#ranking-model-note"),
   teams: document.querySelector("#teams"),
   quarterbacks: document.querySelector("#quarterbacks"),
   ppr: document.querySelector("#ppr"),
@@ -97,6 +103,8 @@ const ui = {
 const savedDrafted = loadJson(DRAFTED_KEY, []);
 const defaultSettings = { teams: "12", quarterbacks: "2QB", ppr: "Half PPR", tePremium: "+0.5", kickers: "Off", defenses: "Off" };
 const state = {
+  inputs: null,
+  forecast: null,
   data: null,
   intel: { generated_at: null, report_count: 0, reports: {} },
   news: { generated_at: null, player_count: 0, reports: {} },
@@ -197,14 +205,31 @@ function rowsForCurrentBoard() {
     state.settings,
     state.data.projection_season,
   ).rows;
-  const players = modeled.map(row => {
+  let forecastRows = modeled;
+  if (state.inputs) {
+    const cacheKey = JSON.stringify([state.settings, ui.horizon.value, ui.week.value, Math.floor(Date.now() / 60000), state.personalAdp]);
+    if (!state.forecastCache || state.forecastCache.key !== cacheKey || state.forecastCache.inputs !== state.inputs || state.forecastCache.data !== state.data || state.forecastCache.history !== state.history || state.forecastCache.news !== state.news) {
+      state.forecast = buildRankingBoard({rankings: state.data, history: state.history, news: state.news, inputs: state.inputs}, state.settings,
+        {horizon: ui.horizon.value, week: ui.week.value ? Number(ui.week.value) : null, draftRows: modeled});
+      state.forecastCache = {key: cacheKey, inputs: state.inputs, data: state.data, history: state.history, news: state.news};
+    }
+    forecastRows = state.forecast.rows.map(row => ({...row}));
+  } else if (ui.horizon.value !== 'draft') {
+    forecastRows = [];
+  }
+  const players = forecastRows.map(row => {
     const news = state.news.reports?.[playerKey(row)];
     row.market_draft_tag = row.market_draft_tag || row.draft_tag;
     row.draft_tag = effectiveDraftTag(row, news);
     row.volatility = historyAnalytics(historyRows(state.history, row), row, state.settings).volatility_score;
     return row;
   });
-  return mergeSpecialTeams(players, specialTeamRows(state.specialTeams, state.settings));
+  if (state.inputs) {
+    // Kicker estimates are not modeled: retain the clearly labeled market rows
+    // only on the draft board, without interleaving them into forecast ranks.
+    return ui.horizon.value === 'draft' ? [...players, ...specialTeamRows(state.specialTeams, {...state.settings, defenses: 'Off'}).map(row => ({...row, overall_rank: null}))] : players;
+  }
+  return ui.horizon.value === 'draft' ? mergeSpecialTeams(players, specialTeamRows(state.specialTeams, state.settings)) : players;
 }
 
 function teamDisplay(row) {
@@ -460,7 +485,7 @@ function renderBody(rows) {
         name.textContent = row.player;
         const hint = document.createElement("span");
         hint.className = reportAvailable || newsAvailable || historyAvailable ? "intel-hint available" : "intel-hint";
-        hint.textContent = reportAvailable ? "AI report ready" : newsAvailable ? "News ready" : historyAvailable ? "Stats ready" : "Player intel";
+        hint.textContent = row.is_defense_forecast ? 'D/ST model & schedule' : row.model_version ? row.confidence : reportAvailable ? "AI report ready" : newsAvailable ? "News ready" : historyAvailable ? "Stats ready" : "Player intel";
         const labels = document.createElement("span");
         labels.className = "player-labels";
         const nameLine = document.createElement("span");
@@ -1015,6 +1040,12 @@ function openIntel(key, row) {
   const ageLabel = numeric(row.age) === null ? "" : ` · Age ${Math.round(row.age)}`;
   ui.intelMeta.textContent = `${teamLabel} · ${row.pos}${ageLabel} · Overall rank ${row.overall_rank}`;
   const fragment = document.createDocumentFragment();
+  if (row.forecast_games) {
+    const details = document.createElement('section');
+    addIntelSection(details, 'OutlierBaseline forecast', `${row.projected_ppg ?? 'Unrated'} neutral points per game · ${row.appearances} recorded appearances. ${row.notes.join(' ')}`);
+    addIntelSection(details, 'Upcoming games', row.forecast_games.map(game => `Week ${game.week} vs ${game.opponent}: ${game.points ?? 'unrated'} points${game.out ? ' (Out)' : ''}${game.matchup_pct != null ? `; matchup ${game.matchup_pct >= 0 ? '+' : ''}${game.matchup_pct}%` : ''}`).join(' · ') || 'No unstarted regular-season games.');
+    fragment.append(details);
+  }
 
   if (!report && !news?.events?.length) {
     const notice = document.createElement("div");
@@ -1252,7 +1283,21 @@ function render() {
   renderBody(state.visibleRows);
   const draftedCount = allRows.filter(row => state.drafted.has(playerKey(row))).length;
   const importText = personalAdpIsActive() ? ` · ${state.personalAdpMatches} personal ADP matches` : "";
-  ui.boardSummary.textContent = `Age Curve v1 · showing ${state.visibleRows.length} of ${allRows.length} entries · ${draftedCount} drafted${importText} · click any heading to sort`;
+  const horizonLabel = {draft: 'Draft outlook', weekly: `Week ${state.forecast?.week ?? '—'}`, ros: 'Rest of season'}[ui.horizon.value];
+  ui.boardSummary.textContent = `${state.inputs ? 'OB Schedule & Defense v1' : 'Age Curve v1'} · ${horizonLabel} · showing ${state.visibleRows.length} of ${allRows.length} entries · ${draftedCount} drafted${importText} · click any heading to sort`;
+  ui.week.disabled = ui.horizon.value !== 'weekly';
+  ui.kickers.disabled = ui.horizon.value !== 'draft';
+  ui.modelNote.textContent = state.inputs
+    ? `${horizonLabel}: ${ui.horizon.value === 'draft' ? 'full-season outlook at today’s scoring rate and historical games estimate; not actual points already earned.' : 'unstarted regular-season games only; current Out excludes its matching game. IR and other future absences are not predicted.'} Evidence updated ${formatTimestamp(state.inputs.generated_at)} · ${state.inputs.defense.coverage.current_season_games} current-season games · ${Date.now() - Date.parse(state.inputs.generated_at) > 36 * 3600000 ? 'Evidence is older than 36 hours; showing the last saved forecast inputs. ' : ''}Experimental model; opponent adjustments capped at ±10%. ADP remains a separate draft-market reference.`
+    : 'New forecast evidence is unavailable. Draft shows the saved age model; weekly and rest-of-season forecasts will retry automatically.';
+  if (state.inputs) {
+    const archiveTime = state.inputs.sources?.archive?.checked_at, scheduleTime = state.inputs.sources?.scores?.checked_at;
+    ui.modelNote.textContent += ` Stats checked ${formatTimestamp(archiveTime)}; schedule checked ${formatTimestamp(scheduleTime)}.`;
+    if ([archiveTime, scheduleTime].some(time => !Number.isFinite(Date.parse(time)) || Date.now() - Date.parse(time) > 36 * 3600000))
+      ui.modelNote.textContent += ' Source checks are overdue; a newly calculated forecast does not mean new game data arrived.';
+    if (state.inputs.coverage?.pending_stats_game_ids?.length)
+      ui.modelNote.textContent += ` ${state.inputs.coverage.pending_stats_game_ids.length} reported games are awaiting box scores.`;
+  }
   const partialCount = allRows.filter(row => row.scoring_coverage === "core_only").length;
   ui.scoringCoverageNote.hidden = partialCount === 0;
   ui.scoringCoverageNote.textContent = partialCount
@@ -1320,6 +1365,13 @@ function exportVisibleBoard() {
 }
 
 function bindEvents() {
+  [ui.horizon, ui.week].forEach(control => control.addEventListener('change', () => {
+    state.sortColumn = 'overall_rank'; state.sortAscending = true;
+    const projectionColumn = columns.find(column => column.key === 'projected_points');
+    projectionColumn.label = {draft: 'Season Proj.', weekly: 'Week Proj.', ros: 'ROS Proj.'}[ui.horizon.value];
+    projectionColumn.description = 'OutlierBaseline points forecast for the selected time period';
+    renderHead(); restoreFilterInputs(); render();
+  }));
   [ui.teams, ui.quarterbacks, ui.ppr, ui.tePremium, ui.kickers, ui.defenses].forEach(control => control.addEventListener("change", updateSettings));
   ui.search.addEventListener("input", event => { state.search = event.target.value; render(); });
   ui.positionFilters.addEventListener("click", event => {
@@ -1374,7 +1426,14 @@ function bindEvents() {
   });
 }
 
-let rankingsSignature = null, injuryClock = null;
+let rankingsSignature = null, injuryClock = null, forecastClock = null;
+function forecastClockSignature(inputs) {
+  if (!inputs) return '';
+  const now = Date.now();
+  return JSON.stringify([upcomingGames(inputs, now).map(game => game.game_id),
+    [inputs.generated_at, inputs.sources?.archive?.checked_at, inputs.sources?.scores?.checked_at]
+      .map(time => !Number.isFinite(Date.parse(time)) || now - Date.parse(time) > 36 * 3600000)]);
+}
 function injuryClockSignature(news) {
   const now = Date.now();
   return JSON.stringify([now >= Date.parse(news.injury_context?.valid_from),
@@ -1386,16 +1445,18 @@ async function loadRankings(signal) {
       if (key !== "intel" || state.intel.report_count) unavailable.push(label);
       return state[key];
     });
-    const [data, intel, news, history, specialTeams] = await Promise.all([
+    const [data, intel, news, history, specialTeams, inputs] = await Promise.all([
       fetchSnapshot(DATA_URL, {signal, validate: validateRankings}),
       optional(INTEL_URL, validateReports, "intel", "AI reports"),
       optional(NEWS_URL, validateReports, "news", "injuries/news"),
       optional(HISTORY_URL, validateHistory, "history", "player history"),
       optional(SPECIAL_TEAMS_URL, validateSpecialTeams, "specialTeams", "K/DST market"),
+      optional('./data/ranking_inputs.json', validateRankingInputs, 'inputs', 'ranking evidence'),
     ]);
     signal.throwIfAborted();
     if (!data.boards[rankingSlug()] || (state.data && Object.keys(state.data.boards).some(key => !data.boards[key]))) throw new Error("League formats are missing from the updated rankings");
-    const next = {data, intel, news, history, specialTeams};
+    if (inputs && inputs.season !== data.projection_season) throw new Error('Ranking evidence and draft season do not match');
+    const next = {data, intel, news, history, specialTeams, inputs};
     const signature = snapshotSignature([next, injuryClockSignature(news)]);
     const changed = signature !== rankingsSignature;
     const first = !state.data;
@@ -1410,8 +1471,14 @@ async function loadRankings(signal) {
       if (snapshotSignature(state.draftAliases) !== previousAliases) saveJson(DRAFT_ALIASES_KEY, state.draftAliases);
     }
     Object.assign(state, next);
+    if (inputs) {
+      const selected = ui.week.value, weeks = [...new Set(upcomingGames(inputs, Date.now()).map(game => game.week))];
+      ui.week.replaceChildren(...weeks.map(week => new Option(`Week ${week}`, String(week))));
+      if (weeks.includes(Number(selected))) ui.week.value = selected;
+    }
     state.refreshFailed = false;
     injuryClock = injuryClockSignature(news);
+    forecastClock = forecastClockSignature(inputs);
     const intelStatus = state.intel.report_count
       ? `${state.intel.report_count} intel reports updated ${formatTimestamp(state.intel.generated_at)}`
       : "intel reports awaiting first update";
@@ -1421,7 +1488,7 @@ async function loadRankings(signal) {
     const historyStatus = state.history.player_count
       ? `${historyWindow(state.history).label} · ${state.history.player_count} player histories (${state.history.historical_player_count || 0} historical)`
       : "stat history awaiting update";
-    state.defaultSourceStatus = `${data.projection_season} Age Curve v1 · ${formatAdpStatus(data)} · ${newsStatus} · ${historyStatus} · ${intelStatus}${unavailable.length ? ` · Update unavailable: ${unavailable.join(", ")}; keeping last loaded data` : ""}`;
+    state.defaultSourceStatus = `${data.projection_season} ${inputs ? 'OB Schedule & Defense v1' : 'Age Curve v1'} · ${formatAdpStatus(data)} · ${newsStatus} · ${historyStatus} · ${intelStatus}${unavailable.length ? ` · Update unavailable: ${unavailable.join(", ")}; keeping last loaded data` : ""}`;
     updateAdpMode();
     ui.boardHeading.textContent = `${data.projection_season} player rankings`;
     ui.loadingState.classList.add("hidden");
@@ -1446,15 +1513,20 @@ async function loadRankings(signal) {
     if (unavailable.length) throw new Error(`Update unavailable: ${unavailable.join(", ")}`);
 }
 
+const requestedView = new URLSearchParams(location.search);
+if (requestedView.get('defenses') === 'Include') state.settings.defenses = 'Include';
+if (['draft', 'weekly', 'ros'].includes(requestedView.get('horizon'))) ui.horizon.value = requestedView.get('horizon');
+columns.find(column => column.key === 'projected_points').label = {draft: 'Season Proj.', weekly: 'Week Proj.', ros: 'ROS Proj.'}[ui.horizon.value];
 applySettingsToControls();
 bindEvents();
 observeBoardColumns(ui.tableShell);
 startAutoRefresh(loadRankings, {
   canRefresh: () => !document.querySelector("dialog[open]"),
   onCheck: () => {
-    if (!state.data || injuryClock === injuryClockSignature(state.news)) return;
+    if (!state.data || (injuryClock === injuryClockSignature(state.news) && forecastClock === forecastClockSignature(state.inputs))) return;
     preserveView(render, [ui.tableShell]);
     injuryClock = injuryClockSignature(state.news);
+    forecastClock = forecastClockSignature(state.inputs);
   },
   onError: () => {
     state.refreshFailed = true;

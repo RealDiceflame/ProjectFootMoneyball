@@ -41,7 +41,7 @@
   </header>
 
   <main id="main-content" tabindex="-1">
-    <header class="tool-masthead"><div><p class="tool-kicker">Fantasy / Draft research</p><h1>Player rankings</h1></div><p class="tool-description">Compare format-specific projections with saved draft-market data. Filter the board, inspect a player and track your draft on this device.</p></header>
+    <header class="tool-masthead"><div><p class="tool-kicker">Fantasy / Original forecasts</p><h1>Player rankings</h1></div><p class="tool-description">Explore draft, weekly and rest-of-season forecasts built from player history, current production and opponent defenses. Inspect upcoming games and keep track of your draft.</p></header>
     <nav class="tool-related-links" aria-label="Related fantasy research"><a href="values.html">Player Value Lab <span aria-hidden="true">↗</span></a><a href="projection.html">Projection Lab <span aria-hidden="true">↗</span></a><a href="special-teams.html">Kickers &amp; D/ST <span aria-hidden="true">↗</span></a></nav>
     <div class="source-status tool-source-band" id="source-status" role="status">Loading the latest board...</div>
     <section class="control-panel" aria-labelledby="league-heading">
@@ -53,6 +53,8 @@
       </div>
 
       <div class="league-controls">
+        <label><span>Ranking outlook</span><select id="ranking-horizon"><option value="draft">Draft / full season</option><option value="weekly">Weekly</option><option value="ros">Rest of season</option></select></label>
+        <label><span>NFL week</span><select id="ranking-week" disabled><option value="">Loading schedule</option></select></label>
         <label><span>Teams</span><select id="teams"><option value="8">8 teams</option><option value="10">10 teams</option><option value="12" selected>12 teams</option><option value="14">14 teams</option><option value="16">16 teams</option></select></label>
         <label><span>Quarterbacks</span><select id="quarterbacks"><option value="1QB">1QB</option><option value="2QB" selected>2QB</option></select></label>
         <label><span>Reception scoring</span><select id="ppr"><option value="Standard">Standard</option><option value="Half PPR" selected>Half PPR</option><option value="Full PPR">Full PPR</option></select></label>
@@ -62,6 +64,16 @@
       </div>
     </section>
 
+    <details class="control-panel">
+      <summary>How these rankings work</summary>
+      <p>Player history provides a starting scoring rate. The last three calendar seasons receive 5/3/2 weights, adjusted for games observed and historical age trends. Current-season points per appearance blend into that prior with eight prior-equivalent games. Players without either source remain unrated; missing appearances do not become zero-point games.</p>
+      <p>Draft is a full-season outlook at today’s scoring rate, using the historical games estimate where available. Weekly and rest-of-season use actual unstarted fixtures. Current Out reports remove only their matching game; injuries without a known absence window remain conditional playing scenarios. Rank uses points above a position’s replacement level, so league size and quarterback settings matter.</p>
+      <p>Opponent adjustments compare fantasy points allowed to each position with the league average. Last season receives 35% weight; twelve league-average games reduce the effect of small samples. Adjustments cannot exceed ±10%. This is a descriptive opponent profile, not an opponent-strength-adjusted efficiency rating or a model of individual defender injuries.</p>
+      <p>D/ST uses OB box-score scoring: 1 per sack; 2 per interception, opponent fumble recovery, safety, blocked kick or defensive conversion; 6 per defensive or special-teams touchdown. Points allowed use the opponent’s full scoreboard total: 0 = 10 points; 1–6 = 7; 7–13 = 4; 14–20 = 1; 21–27 = 0; 28–34 = −1; 35+ = −4. This differs from platforms that exclude defensive-return scores. Missing required fields produce an unrated estimate.</p>
+      <p>Defensive events blend with league averages. Sacks and turnovers also use the upcoming opponent’s offensive rates. Rare scores and blocks are reduced more strongly toward the league average. Kicker entries remain draft-market references only.</p>
+      <p>These are experimental forecasts. A retrospective 2025 component check reduced average position-total points-allowed error by about 0.45–0.67%, and D/ST matchup error by 1.83% versus team-only estimates. This does not establish individual-player ranking accuracy. Corrected present-day archives were evaluated in game order; original historical forecast vintages were not available.</p>
+      <p>Saved evidence refreshes after data collection, with a four-times-daily fallback. Open pages check for updates automatically. Source failure retains the last valid inputs and shows an update warning.</p>
+    </details>
     <section class="board-panel" aria-labelledby="board-heading">
       <div class="board-toolbar">
         <div>
@@ -69,6 +81,7 @@
           <h2 id="board-heading">2026 player rankings</h2>
           <p class="board-summary" id="board-summary">Preparing rankings...</p>
           <p class="board-summary" id="scoring-coverage-note" role="status" hidden></p>
+          <p class="board-summary" id="ranking-model-note" role="status"></p>
         </div>
         <div class="toolbar-actions">
           <button class="button secondary" id="clear-filters" type="button">Clear filters</button>
@@ -120,14 +133,14 @@
         <span><i class="value"></i> Value: Market +25 to +49.9 pts</span>
         <span><i class="fair"></i> Fair: Market -19.9 to +24.9 pts</span>
         <span><i class="reach"></i> Reach: Market -20 pts or worse</span>
-        <span><i class="market"></i> Market +/-: age-adjusted season points above or below the same-position expectation at that ADP</span>
-        <span><i class="market-only"></i> Market: Kicker or D/ST ranked by current ADP until projections are added</span>
+        <span><i class="market"></i> Market +/-: draft-outlook points above or below the same-position expectation at that ADP; unavailable for weekly and ROS views</span>
+        <span><i class="market-only"></i> Market: kickers have ADP only. Team D/ST uses OB box-score scoring; see the model details.</span>
         <span class="save-note">Draft selections save automatically on this device.</span>
       </div>
     </section>
   </main>
 
-  <footer><span>OutlierBaseline · 2025 stats for the 2026 season</span><a href="https://github.com/RealDiceflame/ProjectFootMoneyball/releases">Need the desktop app or spreadsheet?</a></footer>
+  <footer><span>OutlierBaseline · Original forecasts from saved NFL statistics</span><a href="https://github.com/RealDiceflame/ProjectFootMoneyball/releases">Need the desktop app or spreadsheet?</a></footer>
 
   <dialog id="adp-dialog" class="adp-dialog" aria-labelledby="adp-dialog-title">
     <form id="adp-form">
@@ -183,7 +196,7 @@
   </dialog>
 
   <noscript>This draft board needs JavaScript enabled in your browser.</noscript>
-  <script type="module" src="app.js?v=20261118-history1"></script>
+  <script type="module" src="app.js?v=20261120-rankings1"></script>
   <script type="module" src="site-nav.js?v=20260930-no-leagues1"></script>
 </body>
 </html>
