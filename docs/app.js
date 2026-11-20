@@ -1426,7 +1426,14 @@ function bindEvents() {
   });
 }
 
-let rankingsSignature = null, injuryClock = null;
+let rankingsSignature = null, injuryClock = null, forecastClock = null;
+function forecastClockSignature(inputs) {
+  if (!inputs) return '';
+  const now = Date.now();
+  return JSON.stringify([upcomingGames(inputs, now).map(game => game.game_id),
+    [inputs.generated_at, inputs.sources?.archive?.checked_at, inputs.sources?.scores?.checked_at]
+      .map(time => !Number.isFinite(Date.parse(time)) || now - Date.parse(time) > 36 * 3600000)]);
+}
 function injuryClockSignature(news) {
   const now = Date.now();
   return JSON.stringify([now >= Date.parse(news.injury_context?.valid_from),
@@ -1471,6 +1478,7 @@ async function loadRankings(signal) {
     }
     state.refreshFailed = false;
     injuryClock = injuryClockSignature(news);
+    forecastClock = forecastClockSignature(inputs);
     const intelStatus = state.intel.report_count
       ? `${state.intel.report_count} intel reports updated ${formatTimestamp(state.intel.generated_at)}`
       : "intel reports awaiting first update";
@@ -1515,9 +1523,10 @@ observeBoardColumns(ui.tableShell);
 startAutoRefresh(loadRankings, {
   canRefresh: () => !document.querySelector("dialog[open]"),
   onCheck: () => {
-    if (!state.data || (!state.inputs && injuryClock === injuryClockSignature(state.news))) return;
+    if (!state.data || (injuryClock === injuryClockSignature(state.news) && forecastClock === forecastClockSignature(state.inputs))) return;
     preserveView(render, [ui.tableShell]);
     injuryClock = injuryClockSignature(state.news);
+    forecastClock = forecastClockSignature(state.inputs);
   },
   onError: () => {
     state.refreshFailed = true;
