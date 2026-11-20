@@ -1,0 +1,8 @@
+.defender-forecast { min-width: 0; }
+.defender-table-scroll { max-width: 100%; overflow-x: auto; margin-block: 1rem; border: 1px solid var(--border, #d6d6d6); border-radius: .5rem; }
+.defender-table-scroll table { width: 100%; min-width: 660px; border-collapse: collapse; font-size: .82rem; }
+.defender-table-scroll caption { text-align: left; padding: .75rem; font-weight: 600; }
+.defender-table-scroll th, .defender-table-scroll td { padding: .65rem; border-bottom: 1px solid var(--border, #d6d6d6); text-align: right; font-variant-numeric: tabular-nums; }
+.defender-table-scroll th:first-child { text-align: left; min-width: 210px; max-width: 280px; white-space: normal; }
+.defender-table-scroll small { display: block; margin-top: .3rem; font-weight: 400; font-size: .72rem; line-height: 1.4; }
+.defender-table-scroll:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }

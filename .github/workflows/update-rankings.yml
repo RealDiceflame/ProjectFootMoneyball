@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['app/ranking_inputs.py', 'app/player_values.py', 'update_rankings.py', 'docs/ranking-model.mjs', 'docs/player-values.mjs', 'docs/projection-model.mjs', 'docs/player-history.mjs', 'docs/fantasy-scoring.mjs', 'docs/injury-status.mjs', 'scripts/record_rankings.mjs', '.github/workflows/update-rankings.yml']
+    paths: ['app/ranking_inputs.py', 'app/defender_inputs.py', 'app/player_values.py', 'update_rankings.py', 'update_defender_status.py', 'docs/ranking-model.mjs', 'docs/defender-model.mjs', 'docs/player-values.mjs', 'docs/projection-model.mjs', 'docs/player-history.mjs', 'docs/fantasy-scoring.mjs', 'docs/injury-status.mjs', 'scripts/record_rankings.mjs', '.github/workflows/update-rankings.yml']
   workflow_run:
-    workflows: ['Update site data', 'Update game stats']
+    workflows: ['Update site data', 'Update game stats', 'Update snap counts']
     types: [completed]
     branches: [main]
   schedule:
@@ -38,11 +38,12 @@ jobs:
           node-version: '22'
       - name: Validate archive and build all original ranking views
         run: |
+          python update_defender_status.py
           python update_rankings.py
           node scripts/record_rankings.mjs
       - name: Publish complete ranking snapshots
         run: |
-          git add docs/data/ranking_inputs.json docs/data/ranking_forecasts.json
+          git add data/defender_status docs/data/defender_status.json docs/data/ranking_inputs.json docs/data/ranking_forecasts.json
           if ! git diff --cached --quiet; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'

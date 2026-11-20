@@ -17,6 +17,9 @@ export async function recordRankings(root, {now = Date.now()} = {}) {
     generated_at: new Date(now).toISOString(), evidence, coverage: data.inputs.defense.coverage,
     source_health: {archive_checked_at: data.inputs.sources?.archive?.checked_at || null,
       schedule_checked_at: data.inputs.sources?.scores?.checked_at || null,
+      defender_roster_checked_at: data.inputs.defense.personnel.status.generated_at,
+      defender_injury_context: data.inputs.defense.personnel.status.injury_context,
+      missing_snap_game_ids: data.inputs.defense.personnel.coverage.missing_snap_game_ids,
       pending_stats_game_ids: data.inputs.coverage?.pending_stats_game_ids || []}, formats: {}};
   for (const quarterbacks of ['1QB', '2QB']) for (const ppr of ['Standard', 'Half PPR', 'Full PPR']) for (const tePremium of ['None', '+0.5']) {
     const settings = {teams: 12, quarterbacks, ppr, tePremium, defenses: 'Include'};
@@ -28,6 +31,8 @@ export async function recordRankings(root, {now = Date.now()} = {}) {
       if (!board.rows.some(row => Number.isFinite(row.projected_points)) || board.rows.filter(row => row.pos === 'DST' && Number.isFinite(row.projected_points)).length !== 32)
         throw new Error('Incomplete player or defense forecasts; retaining the previous publication.');
       const columns = ['player_id', 'player', 'pos', 'team', 'overall_rank', 'position_rank', 'projected_points', 'projected_ppg', 'vorp', 'opponent', 'matchup_pct', 'eligible'];
+      if (board.rows.some(row => row.pos === 'DST' && row.projection_expected_games > 0 && row.defense_breakdown.mode !== 'player_based'))
+        throw new Error('Current player-based defense evidence unavailable; retaining the previous publication.');
       horizons[horizon] = {week: horizon === 'weekly' ? board.week : null, columns, rows: board.rows.map(row => columns.map(key => row[key] ?? null))};
     }
     payload.formats[valueFormatKey(settings)] = {settings, horizons};

@@ -1,0 +1,2442 @@
+{
+  "description": "Untuned retrospective diagnostic. Each week freezes game evidence before its earliest kickoff. Rosters are inferred only from preceding observed participation; no actual as-of injury/roster feeds are available. Corrected archives are not original vintages. This is not a validation of availability accuracy or a basis for parameter selection.",
+  "all": {
+    "team_games": 302,
+    "previous_mae": 3.930390871404994,
+    "personnel_mae": 3.9682978705595207,
+    "previous_bias": 0.026764045371879742,
+    "personnel_bias": 0.015079271204729405
+  },
+  "first_five_weeks": {
+    "team_games": 158,
+    "previous_mae": 3.7937301844629463,
+    "personnel_mae": 3.825641651029868,
+    "previous_bias": 0.29431754279409644,
+    "personnel_bias": 0.2359639934104141
+  },
+  "later_weeks": {
+    "team_games": 144,
+    "previous_mae": 4.080338014021959,
+    "personnel_mae": 4.124823444765669,
+    "previous_bias": -0.2668015976330526,
+    "personnel_bias": -0.2272803545487298
+  },
+  "rows": [
+    {
+      "week": 1,
+      "game_id": "2026_01_ARI_LAC",
+      "team": "ARI",
+      "actual": 10,
+      "previous": 5.831085524149913,
+      "personnel": 6.388179255720851
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_ARI_LAC",
+      "team": "LAC",
+      "actual": 1,
+      "previous": 6.253465433207793,
+      "personnel": 6.078552108231728
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_ATL_PIT",
+      "team": "ATL",
+      "actual": 5,
+      "previous": 5.957826471225122,
+      "personnel": 5.890445148262319
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_ATL_PIT",
+      "team": "PIT",
+      "actual": 18,
+      "previous": 6.084567418300331,
+      "personnel": 5.740872260411354
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_BAL_IND",
+      "team": "BAL",
+      "actual": 6,
+      "previous": 5.576550345550305,
+      "personnel": 5.592888453627971
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_BAL_IND",
+      "team": "IND",
+      "actual": 0,
+      "previous": 5.898277365048911,
+      "personnel": 5.938751877873507
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_BUF_HOU",
+      "team": "BUF",
+      "actual": 6,
+      "previous": 5.662187509242451,
+      "personnel": 5.216913977897601
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_BUF_HOU",
+      "team": "HOU",
+      "actual": -2,
+      "previous": 6.1409566711289685,
+      "personnel": 5.969159368216905
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_CHI_CAR",
+      "team": "CAR",
+      "actual": 0,
+      "previous": 5.496449347682563,
+      "personnel": 5.574878796615104
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_CHI_CAR",
+      "team": "CHI",
+      "actual": 6,
+      "previous": 6.286142940997325,
+      "personnel": 7.124499375800886
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_CLE_JAX",
+      "team": "CLE",
+      "actual": 0,
+      "previous": 5.9991999981866355,
+      "personnel": 5.908449543280103
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_CLE_JAX",
+      "team": "JAX",
+      "actual": 13,
+      "previous": 6.816034933466526,
+      "personnel": 6.551426025232916
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_DAL_NYG",
+      "team": "DAL",
+      "actual": 3,
+      "previous": 5.6092278533398385,
+      "personnel": 5.274883590845901
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_DAL_NYG",
+      "team": "NYG",
+      "actual": 3,
+      "previous": 5.364172234782948,
+      "personnel": 4.941690197730607
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_DEN_KC",
+      "team": "DEN",
+      "actual": 3,
+      "previous": 6.392331996381005,
+      "personnel": 6.076594823295449
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_DEN_KC",
+      "team": "KC",
+      "actual": 11,
+      "previous": 5.580763483347068,
+      "personnel": 5.630277853107655
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_GB_MIN",
+      "team": "GB",
+      "actual": 1,
+      "previous": 6.322763843005173,
+      "personnel": 6.33277374514572
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_GB_MIN",
+      "team": "MIN",
+      "actual": 8,
+      "previous": 5.995770401260611,
+      "personnel": 5.682819692110609
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_MIA_LV",
+      "team": "LV",
+      "actual": 13,
+      "previous": 5.892741199224505,
+      "personnel": 5.642592371561689
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_MIA_LV",
+      "team": "MIA",
+      "actual": 4,
+      "previous": 6.579675334081615,
+      "personnel": 6.4127787741203806
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_NE_SEA",
+      "team": "NE",
+      "actual": 6,
+      "previous": 5.948346911182403,
+      "personnel": 5.535968385241276
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_NE_SEA",
+      "team": "SEA",
+      "actual": 13,
+      "previous": 6.352551241025585,
+      "personnel": 6.301116924456223
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_NO_DET",
+      "team": "DET",
+      "actual": 10,
+      "previous": 6.26980418710256,
+      "personnel": 5.996559477561531
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_NO_DET",
+      "team": "NO",
+      "actual": 2,
+      "previous": 5.722789899867852,
+      "personnel": 5.957428049188922
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_NYJ_TEN",
+      "team": "NYJ",
+      "actual": 9,
+      "previous": 5.869299197763853,
+      "personnel": 6.221584497446314
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_NYJ_TEN",
+      "team": "TEN",
+      "actual": 0,
+      "previous": 6.251628607887863,
+      "personnel": 5.470721922097293
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_SF_LA",
+      "team": "LA",
+      "actual": 2,
+      "previous": 6.080354280503566,
+      "personnel": 5.78662978426325
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_SF_LA",
+      "team": "SF",
+      "actual": 8,
+      "previous": 5.0901384489409995,
+      "personnel": 4.877540224899071
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_TB_CIN",
+      "team": "CIN",
+      "actual": 12,
+      "previous": 5.535446562167241,
+      "personnel": 5.013429181066867
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_TB_CIN",
+      "team": "TB",
+      "actual": 8,
+      "previous": 5.983914528741059,
+      "personnel": 5.3239631014144715
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_WAS_PHI",
+      "team": "PHI",
+      "actual": 3,
+      "previous": 6.396814877756221,
+      "personnel": 6.375367269858518
+    },
+    {
+      "week": 1,
+      "game_id": "2026_01_WAS_PHI",
+      "team": "WAS",
+      "actual": 3,
+      "previous": 5.552838600511201,
+      "personnel": 5.9411392747909
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_CAR_ATL",
+      "team": "ATL",
+      "actual": 1,
+      "previous": 6.221268880959833,
+      "personnel": 6.289583381701267
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_CAR_ATL",
+      "team": "CAR",
+      "actual": 25,
+      "previous": 5.94800737595206,
+      "personnel": 6.369997782667377
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_CIN_HOU",
+      "team": "CIN",
+      "actual": 11,
+      "previous": 5.515289697851797,
+      "personnel": 4.861509633091682
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_CIN_HOU",
+      "team": "HOU",
+      "actual": 6,
+      "previous": 6.112093664780508,
+      "personnel": 5.988663937451632
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_CLE_TB",
+      "team": "CLE",
+      "actual": 6,
+      "previous": 6.093773038580217,
+      "personnel": 5.724281462256668
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_CLE_TB",
+      "team": "TB",
+      "actual": 2,
+      "previous": 6.62447846228492,
+      "personnel": 6.064117832983893
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_DET_BUF",
+      "team": "BUF",
+      "actual": 3,
+      "previous": 5.630065423445465,
+      "personnel": 5.628823670623367
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_DET_BUF",
+      "team": "DET",
+      "actual": -2,
+      "previous": 5.557680490458515,
+      "personnel": 5.717399736170919
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_GB_NYJ",
+      "team": "GB",
+      "actual": 5,
+      "previous": 5.966004537592889,
+      "personnel": 6.101963745565567
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_GB_NYJ",
+      "team": "NYJ",
+      "actual": 6,
+      "previous": 5.374601243334978,
+      "personnel": 5.154665797874071
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_IND_KC",
+      "team": "IND",
+      "actual": 1,
+      "previous": 5.674596840152493,
+      "personnel": 5.8781290592162865
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_IND_KC",
+      "team": "KC",
+      "actual": 1,
+      "previous": 5.713527747445179,
+      "personnel": 5.3236541967812965
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_JAX_DEN",
+      "team": "DEN",
+      "actual": 8,
+      "previous": 5.913208686068203,
+      "personnel": 5.589818715253094
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_JAX_DEN",
+      "team": "JAX",
+      "actual": 3,
+      "previous": 6.435785157493242,
+      "personnel": 5.825443206827304
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_LV_LAC",
+      "team": "LAC",
+      "actual": 4,
+      "previous": 6.495849647181327,
+      "personnel": 6.617399239627969
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_LV_LAC",
+      "team": "LV",
+      "actual": 12,
+      "previous": 6.21616626987262,
+      "personnel": 5.9444488331753655
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_MIA_SF",
+      "team": "MIA",
+      "actual": -4,
+      "previous": 5.550088387735655,
+      "personnel": 5.554965759187777
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_MIA_SF",
+      "team": "SF",
+      "actual": 8,
+      "previous": 6.12232428993081,
+      "personnel": 6.058728548828323
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_MIN_CHI",
+      "team": "CHI",
+      "actual": 7,
+      "previous": 6.488801168142169,
+      "personnel": 7.035916437281818
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_MIN_CHI",
+      "team": "MIN",
+      "actual": 17,
+      "previous": 5.640296048595765,
+      "personnel": 5.578236146133877
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_NO_BAL",
+      "team": "BAL",
+      "actual": 3,
+      "previous": 6.294649610601042,
+      "personnel": 6.07962967629945
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_NO_BAL",
+      "team": "NO",
+      "actual": 8,
+      "previous": 5.740559900838509,
+      "personnel": 6.13376124158165
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_NYG_LA",
+      "team": "LA",
+      "actual": 11,
+      "previous": 6.141440876041818,
+      "personnel": 5.860079260078449
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_NYG_LA",
+      "team": "NYG",
+      "actual": 4,
+      "previous": 5.08324435184633,
+      "personnel": 4.624123913285461
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_PHI_TEN",
+      "team": "PHI",
+      "actual": 3,
+      "previous": 6.700853356015806,
+      "personnel": 6.906806009610462
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_PHI_TEN",
+      "team": "TEN",
+      "actual": 7,
+      "previous": 5.357127382997152,
+      "personnel": 5.0258063125287284
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_PIT_NE",
+      "team": "NE",
+      "actual": 15,
+      "previous": 5.955574075699047,
+      "personnel": 5.551134219953065
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_PIT_NE",
+      "team": "PIT",
+      "actual": 8,
+      "previous": 6.409613318216177,
+      "personnel": 5.833206942133993
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_SEA_ARI",
+      "team": "ARI",
+      "actual": 2,
+      "previous": 5.490294863123558,
+      "personnel": 5.743863241381088
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_SEA_ARI",
+      "team": "SEA",
+      "actual": 8,
+      "previous": 6.798731022058122,
+      "personnel": 6.274853988852718
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_WAS_DAL",
+      "team": "DAL",
+      "actual": 3,
+      "previous": 5.467123962063069,
+      "personnel": 5.2066347471694545
+    },
+    {
+      "week": 2,
+      "game_id": "2026_02_WAS_DAL",
+      "team": "WAS",
+      "actual": -2,
+      "previous": 5.299254323361128,
+      "personnel": 5.5401087801888345
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_ARI_SF",
+      "team": "ARI",
+      "actual": -2,
+      "previous": 5.066047427232239,
+      "personnel": 5.195532837897197
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_ARI_SF",
+      "team": "SF",
+      "actual": 1,
+      "previous": 5.942050011916729,
+      "personnel": 5.78096934392653
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_ATL_GB",
+      "team": "ATL",
+      "actual": 6,
+      "previous": 5.816736728708707,
+      "personnel": 5.901064050990055
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_ATL_GB",
+      "team": "GB",
+      "actual": -2,
+      "previous": 6.101285710675516,
+      "personnel": 6.178649346792731
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_BAL_DAL",
+      "team": "BAL",
+      "actual": 4,
+      "previous": 5.250298731337306,
+      "personnel": 5.4718405198064755
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_BAL_DAL",
+      "team": "DAL",
+      "actual": -1,
+      "previous": 5.317836160642736,
+      "personnel": 5.5328877393775855
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_CAR_CLE",
+      "team": "CAR",
+      "actual": 4,
+      "previous": 6.82650771437061,
+      "personnel": 7.424026691314022
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_CAR_CLE",
+      "team": "CLE",
+      "actual": 6,
+      "previous": 6.055931398737974,
+      "personnel": 5.714727386238701
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_CIN_PIT",
+      "team": "CIN",
+      "actual": 3,
+      "previous": 6.02469090702057,
+      "personnel": 5.750783411659425
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_CIN_PIT",
+      "team": "PIT",
+      "actual": 5,
+      "previous": 6.413039751597593,
+      "personnel": 5.9325008550669445
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_HOU_IND",
+      "team": "HOU",
+      "actual": 11,
+      "previous": 5.810427150006006,
+      "personnel": 5.535098616261349
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_HOU_IND",
+      "team": "IND",
+      "actual": 4,
+      "previous": 5.4595719142947,
+      "personnel": 5.79616688133917
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_KC_MIA",
+      "team": "KC",
+      "actual": 8,
+      "previous": 6.247880294757748,
+      "personnel": 5.778884333229289
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_KC_MIA",
+      "team": "MIA",
+      "actual": 2,
+      "previous": 5.433234167549866,
+      "personnel": 5.148986890166231
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_LAC_BUF",
+      "team": "BUF",
+      "actual": 5,
+      "previous": 6.33421471654438,
+      "personnel": 6.631038957673505
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_LAC_BUF",
+      "team": "LAC",
+      "actual": 14,
+      "previous": 5.226577036612385,
+      "personnel": 5.290362282247799
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_LA_DEN",
+      "team": "DEN",
+      "actual": 14,
+      "previous": 5.7865737116541816,
+      "personnel": 5.770336761696194
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_LA_DEN",
+      "team": "LA",
+      "actual": 2,
+      "previous": 6.148729100125359,
+      "personnel": 6.005747725467143
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_LV_NO",
+      "team": "LV",
+      "actual": 12,
+      "previous": 6.408218562203585,
+      "personnel": 6.2573117402619545
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_LV_NO",
+      "team": "NO",
+      "actual": 1,
+      "previous": 6.468281109058832,
+      "personnel": 6.617389248076892
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_MIN_TB",
+      "team": "MIN",
+      "actual": 17,
+      "previous": 6.57730366544981,
+      "personnel": 6.852771957535429
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_MIN_TB",
+      "team": "TB",
+      "actual": 5,
+      "previous": 6.310216987553567,
+      "personnel": 5.801441020692547
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_NE_JAX",
+      "team": "JAX",
+      "actual": 15,
+      "previous": 6.453130591965097,
+      "personnel": 5.886360075179747
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_NE_JAX",
+      "team": "NE",
+      "actual": -1,
+      "previous": 6.0771907423410365,
+      "personnel": 5.907959303430989
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_NYJ_DET",
+      "team": "DET",
+      "actual": 7,
+      "previous": 6.1149823427437955,
+      "personnel": 6.600176668475329
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_NYJ_DET",
+      "team": "NYJ",
+      "actual": 1,
+      "previous": 5.149850489330539,
+      "personnel": 4.81996369748116
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_PHI_CHI",
+      "team": "CHI",
+      "actual": 12,
+      "previous": 5.918111881233323,
+      "personnel": 5.99418764614612
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_PHI_CHI",
+      "team": "PHI",
+      "actual": 0,
+      "previous": 5.762591666428477,
+      "personnel": 5.578920000173863
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_SEA_WAS",
+      "team": "SEA",
+      "actual": 1,
+      "previous": 6.652268925910097,
+      "personnel": 6.20142954385209
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_SEA_WAS",
+      "team": "WAS",
+      "actual": 11,
+      "previous": 5.20760438596198,
+      "personnel": 4.802764383923546
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_TEN_NYG",
+      "team": "NYG",
+      "actual": 8,
+      "previous": 5.975906555654044,
+      "personnel": 5.605655976495639
+    },
+    {
+      "week": 3,
+      "game_id": "2026_03_TEN_NYG",
+      "team": "TEN",
+      "actual": 7,
+      "previous": 5.7539044289354955,
+      "personnel": 5.77582357920461
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_ARI_NYG",
+      "team": "ARI",
+      "actual": 6,
+      "previous": 5.548671337210845,
+      "personnel": 5.169870371734702
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_ARI_NYG",
+      "team": "NYG",
+      "actual": 14,
+      "previous": 5.629515314236206,
+      "personnel": 5.3013954111771975
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_ATL_NO",
+      "team": "ATL",
+      "actual": 4,
+      "previous": 6.395926707139245,
+      "personnel": 6.371903785445083
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_ATL_NO",
+      "team": "NO",
+      "actual": -3,
+      "previous": 6.088438385331116,
+      "personnel": 6.263924454663037
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_DAL_HOU",
+      "team": "DAL",
+      "actual": 1,
+      "previous": 5.105169598959702,
+      "personnel": 5.144551695855621
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_DAL_HOU",
+      "team": "HOU",
+      "actual": 4,
+      "previous": 5.672444143561216,
+      "personnel": 5.904747950631391
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_DEN_SF",
+      "team": "DEN",
+      "actual": 2,
+      "previous": 5.798259722837417,
+      "personnel": 6.0839379442940755
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_DEN_SF",
+      "team": "SF",
+      "actual": 3,
+      "previous": 5.477158257344543,
+      "personnel": 5.54315323514554
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_DET_CAR",
+      "team": "CAR",
+      "actual": 1,
+      "previous": 5.739399595958196,
+      "personnel": 6.322448271391416
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_DET_CAR",
+      "team": "DET",
+      "actual": 2,
+      "previous": 5.8542465628338025,
+      "personnel": 6.700451057514677
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_GB_TB",
+      "team": "GB",
+      "actual": 8,
+      "previous": 5.618806055316924,
+      "personnel": 5.683543073631218
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_GB_TB",
+      "team": "TB",
+      "actual": 5,
+      "previous": 5.691666899060822,
+      "personnel": 5.402969733964717
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_IND_WAS",
+      "team": "IND",
+      "actual": 8,
+      "previous": 5.380887119307295,
+      "personnel": 5.365257766705387
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_IND_WAS",
+      "team": "WAS",
+      "actual": 5,
+      "previous": 5.403659229191577,
+      "personnel": 5.0628872809775425
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_JAX_CIN",
+      "team": "CIN",
+      "actual": 4,
+      "previous": 5.454454628435663,
+      "personnel": 5.369641440475092
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_JAX_CIN",
+      "team": "JAX",
+      "actual": 7,
+      "previous": 6.537925652240817,
+      "personnel": 6.413212416995954
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_KC_LV",
+      "team": "KC",
+      "actual": 4,
+      "previous": 6.267164988878721,
+      "personnel": 6.094245044361799
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_KC_LV",
+      "team": "LV",
+      "actual": 1,
+      "previous": 5.926897592525406,
+      "personnel": 6.176684885237313
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_LAC_SEA",
+      "team": "LAC",
+      "actual": 4,
+      "previous": 5.770744941146025,
+      "personnel": 6.24675443102677
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_LAC_SEA",
+      "team": "SEA",
+      "actual": 12,
+      "previous": 6.96468452052713,
+      "personnel": 7.048668308030782
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_LA_PHI",
+      "team": "LA",
+      "actual": 5,
+      "previous": 6.135033132403188,
+      "personnel": 6.201251553474439
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_LA_PHI",
+      "team": "PHI",
+      "actual": 5,
+      "previous": 5.516359973157236,
+      "personnel": 5.171989538065621
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_MIA_MIN",
+      "team": "MIA",
+      "actual": 5,
+      "previous": 5.901561088668615,
+      "personnel": 5.377168529215583
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_MIA_MIN",
+      "team": "MIN",
+      "actual": 8,
+      "previous": 7.200352326600665,
+      "personnel": 8.02975953249361
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_NE_BUF",
+      "team": "BUF",
+      "actual": 4,
+      "previous": 6.176411669008456,
+      "personnel": 7.1880563452005966
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_NE_BUF",
+      "team": "NE",
+      "actual": 5,
+      "previous": 5.769429232193083,
+      "personnel": 5.684902866394419
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_NYJ_CHI",
+      "team": "CHI",
+      "actual": 7,
+      "previous": 6.553414009017956,
+      "personnel": 6.107437607618128
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_NYJ_CHI",
+      "team": "NYJ",
+      "actual": 5,
+      "previous": 4.9834206239887715,
+      "personnel": 4.4213232802409275
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_PIT_CLE",
+      "team": "CLE",
+      "actual": 9,
+      "previous": 6.02999060134634,
+      "personnel": 5.7241597594021165
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_PIT_CLE",
+      "team": "PIT",
+      "actual": 6,
+      "previous": 6.856375301239391,
+      "personnel": 6.4384326694821405
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_TEN_BAL",
+      "team": "BAL",
+      "actual": 6,
+      "previous": 6.1815171442809955,
+      "personnel": 6.305766070694455
+    },
+    {
+      "week": 4,
+      "game_id": "2026_04_TEN_BAL",
+      "team": "TEN",
+      "actual": 2,
+      "previous": 5.389566718679018,
+      "personnel": 5.387865532444539
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_BAL_ATL",
+      "team": "ATL",
+      "actual": 5,
+      "previous": 5.498483144598094,
+      "personnel": 5.660012106729442
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_BAL_ATL",
+      "team": "BAL",
+      "actual": 5,
+      "previous": 5.75207172629721,
+      "personnel": 6.0482382493766975
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_BUF_LA",
+      "team": "BUF",
+      "actual": 2,
+      "previous": 5.356220009995396,
+      "personnel": 6.0077341735043674
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_BUF_LA",
+      "team": "LA",
+      "actual": 1,
+      "previous": 5.684979434519113,
+      "personnel": 5.506665321021042
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_CHI_GB",
+      "team": "CHI",
+      "actual": 1,
+      "previous": 6.01437417443348,
+      "personnel": 4.8508637855834955
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_CHI_GB",
+      "team": "GB",
+      "actual": 18,
+      "previous": 4.988844812816849,
+      "personnel": 5.069999371250726
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_CIN_MIA",
+      "team": "CIN",
+      "actual": 9,
+      "previous": 6.2696596455307025,
+      "personnel": 6.279389074769317
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_CIN_MIA",
+      "team": "MIA",
+      "actual": 1,
+      "previous": 5.43748336451496,
+      "personnel": 5.051348797213453
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_CLE_NYJ",
+      "team": "CLE",
+      "actual": 9,
+      "previous": 6.383102810595959,
+      "personnel": 6.424806000965562
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_CLE_NYJ",
+      "team": "NYJ",
+      "actual": 16,
+      "previous": 5.84432413655891,
+      "personnel": 6.026966597072734
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_DEN_LAC",
+      "team": "DEN",
+      "actual": 12,
+      "previous": 6.826707709583529,
+      "personnel": 7.007869794553185
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_DEN_LAC",
+      "team": "LAC",
+      "actual": 3,
+      "previous": 5.67067940818339,
+      "personnel": 5.849159618855516
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_DET_ARI",
+      "team": "ARI",
+      "actual": -1,
+      "previous": 4.796888611568481,
+      "personnel": 4.7021590968971
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_DET_ARI",
+      "team": "DET",
+      "actual": 7,
+      "previous": 5.761741280843379,
+      "personnel": 6.244337443627045
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_HOU_TEN",
+      "team": "HOU",
+      "actual": 15,
+      "previous": 6.591081720297009,
+      "personnel": 7.165361124534708
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_HOU_TEN",
+      "team": "TEN",
+      "actual": 2,
+      "previous": 5.2540034651880125,
+      "personnel": 5.161368785775796
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_IND_PIT",
+      "team": "IND",
+      "actual": 0,
+      "previous": 5.663393643863678,
+      "personnel": 5.550583886640226
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_IND_PIT",
+      "team": "PIT",
+      "actual": 1,
+      "previous": 6.122308557756724,
+      "personnel": 5.812115655491271
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_LV_NE",
+      "team": "LV",
+      "actual": -1,
+      "previous": 6.2398351174695845,
+      "personnel": 6.666749677275048
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_LV_NE",
+      "team": "NE",
+      "actual": 6,
+      "previous": 6.418753778094418,
+      "personnel": 6.589913790177869
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_MIN_NO",
+      "team": "MIN",
+      "actual": 11,
+      "previous": 7.102388433734473,
+      "personnel": 7.339089850031893
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_MIN_NO",
+      "team": "NO",
+      "actual": 6,
+      "previous": 5.918358742242541,
+      "personnel": 5.618743857763763
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_NYG_WAS",
+      "team": "NYG",
+      "actual": 5,
+      "previous": 5.6318179259437136,
+      "personnel": 5.55575052762771
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_NYG_WAS",
+      "team": "WAS",
+      "actual": 6,
+      "previous": 5.697768550534762,
+      "personnel": 5.51122316523229
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_PHI_JAX",
+      "team": "JAX",
+      "actual": 2,
+      "previous": 6.499619381739065,
+      "personnel": 6.842828361434427
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_PHI_JAX",
+      "team": "PHI",
+      "actual": 5,
+      "previous": 5.442511587179429,
+      "personnel": 5.4543387945964215
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_SF_SEA",
+      "team": "SEA",
+      "actual": 8,
+      "previous": 5.865512176339428,
+      "personnel": 5.925670782680701
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_SF_SEA",
+      "team": "SF",
+      "actual": 12,
+      "previous": 5.2890761327795985,
+      "personnel": 5.2528683200141035
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_TB_DAL",
+      "team": "DAL",
+      "actual": 1,
+      "previous": 5.391075475744022,
+      "personnel": 5.113981136418699
+    },
+    {
+      "week": 5,
+      "game_id": "2026_05_TB_DAL",
+      "team": "TB",
+      "actual": 7,
+      "previous": 5.151867013560221,
+      "personnel": 4.883421708527887
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_ARI_LA",
+      "team": "ARI",
+      "actual": 5,
+      "previous": 4.707115321434515,
+      "personnel": 4.497244640739593
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_ARI_LA",
+      "team": "LA",
+      "actual": 3,
+      "previous": 6.051449692099094,
+      "personnel": 6.031508493028886
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_BAL_CLE",
+      "team": "BAL",
+      "actual": 9,
+      "previous": 6.320363233456654,
+      "personnel": 6.490065250584127
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_BAL_CLE",
+      "team": "CLE",
+      "actual": 9,
+      "previous": 5.753938526204719,
+      "personnel": 5.902433205657461
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_BUF_LV",
+      "team": "BUF",
+      "actual": 1,
+      "previous": 6.038144460551036,
+      "personnel": 6.876201834944683
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_BUF_LV",
+      "team": "LV",
+      "actual": 1,
+      "previous": 5.36382842706223,
+      "personnel": 5.698348999501871
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_CAR_PHI",
+      "team": "CAR",
+      "actual": 4,
+      "previous": 5.942431421741227,
+      "personnel": 6.318562050894208
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_CAR_PHI",
+      "team": "PHI",
+      "actual": 2,
+      "previous": 5.793872442833141,
+      "personnel": 6.072201693840654
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_CHI_ATL",
+      "team": "ATL",
+      "actual": 5,
+      "previous": 5.654827739735172,
+      "personnel": 5.995191679032568
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_CHI_ATL",
+      "team": "CHI",
+      "actual": 11,
+      "previous": 6.116575833100055,
+      "personnel": 5.068036966291789
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_DAL_GB",
+      "team": "DAL",
+      "actual": 5,
+      "previous": 4.812762055616483,
+      "personnel": 4.48215615871101
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_DAL_GB",
+      "team": "GB",
+      "actual": 9,
+      "previous": 5.14001977282832,
+      "personnel": 5.298252773040707
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_HOU_JAX",
+      "team": "HOU",
+      "actual": 1,
+      "previous": 5.895484783823015,
+      "personnel": 6.574907314961765
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_HOU_JAX",
+      "team": "JAX",
+      "actual": 1,
+      "previous": 6.067580319747903,
+      "personnel": 6.219376447783415
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_LAC_KC",
+      "team": "KC",
+      "actual": 15,
+      "previous": 6.402340882880194,
+      "personnel": 6.7063664879173155
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_LAC_KC",
+      "team": "LAC",
+      "actual": 4,
+      "previous": 5.510110276378993,
+      "personnel": 5.614651513493136
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_NO_NYG",
+      "team": "NO",
+      "actual": 13,
+      "previous": 5.722324017770379,
+      "personnel": 5.633581865012544
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_NO_NYG",
+      "team": "NYG",
+      "actual": 1,
+      "previous": 6.240375864042456,
+      "personnel": 6.080114571535324
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_NYJ_NE",
+      "team": "NE",
+      "actual": 6,
+      "previous": 6.469541104061628,
+      "personnel": 6.387852361281738
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_NYJ_NE",
+      "team": "NYJ",
+      "actual": 4,
+      "previous": 5.7265798657569675,
+      "personnel": 6.177126497710293
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_PIT_TB",
+      "team": "PIT",
+      "actual": 10,
+      "previous": 6.3209440375025,
+      "personnel": 6.331544492226755
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_PIT_TB",
+      "team": "TB",
+      "actual": 7,
+      "previous": 5.770709560061284,
+      "personnel": 5.462722455932084
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_SEA_DEN",
+      "team": "DEN",
+      "actual": 12,
+      "previous": 6.291089695041158,
+      "personnel": 6.658535342610731
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_SEA_DEN",
+      "team": "SEA",
+      "actual": 3,
+      "previous": 6.346238180512181,
+      "personnel": 6.566759966666872
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_TEN_IND",
+      "team": "IND",
+      "actual": 2,
+      "previous": 6.09296957259042,
+      "personnel": 5.557953956522788
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_TEN_IND",
+      "team": "TEN",
+      "actual": 21,
+      "previous": 5.167840032998097,
+      "personnel": 4.776416668331582
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_WAS_SF",
+      "team": "SF",
+      "actual": 5,
+      "previous": 5.577760876254557,
+      "personnel": 5.817671252114215
+    },
+    {
+      "week": 6,
+      "game_id": "2026_06_WAS_SF",
+      "team": "WAS",
+      "actual": 4,
+      "previous": 4.877379676044554,
+      "personnel": 5.210898087287739
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_CIN_BAL",
+      "team": "BAL",
+      "actual": -3,
+      "previous": 5.631104442823052,
+      "personnel": 5.571030742252055
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_CIN_BAL",
+      "team": "CIN",
+      "actual": 10,
+      "previous": 5.604147377913072,
+      "personnel": 5.3800434422921795
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_CLE_TEN",
+      "team": "CLE",
+      "actual": 5,
+      "previous": 6.698410224971958,
+      "personnel": 6.4653205800588776
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_CLE_TEN",
+      "team": "TEN",
+      "actual": 5,
+      "previous": 6.524754927744372,
+      "personnel": 6.610236043103589
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_DAL_PHI",
+      "team": "DAL",
+      "actual": 4,
+      "previous": 4.968765131026238,
+      "personnel": 4.761132163261267
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_DAL_PHI",
+      "team": "PHI",
+      "actual": -4,
+      "previous": 5.310217626151416,
+      "personnel": 5.661938003381306
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_DEN_ARI",
+      "team": "ARI",
+      "actual": 0,
+      "previous": 4.91843867825798,
+      "personnel": 4.772952118782732
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_DEN_ARI",
+      "team": "DEN",
+      "actual": 4,
+      "previous": 6.588394810796142,
+      "personnel": 7.013980517032694
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_GB_DET",
+      "team": "DET",
+      "actual": 6,
+      "previous": 5.4641139133363765,
+      "personnel": 5.9800625653029185
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_GB_DET",
+      "team": "GB",
+      "actual": 6,
+      "previous": 5.101852366352086,
+      "personnel": 5.345739127581469
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_IND_MIN",
+      "team": "IND",
+      "actual": 6,
+      "previous": 5.757602315594761,
+      "personnel": 5.036398197968077
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_IND_MIN",
+      "team": "MIN",
+      "actual": 10,
+      "previous": 6.665028536084131,
+      "personnel": 6.106817312649742
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_KC_SEA",
+      "team": "KC",
+      "actual": 3,
+      "previous": 5.991584007826544,
+      "personnel": 6.347162974956261
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_KC_SEA",
+      "team": "SEA",
+      "actual": 10,
+      "previous": 6.209530956577715,
+      "personnel": 6.215316408681585
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_LA_LV",
+      "team": "LA",
+      "actual": 2,
+      "previous": 6.127664145611516,
+      "personnel": 6.153787860523987
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_LA_LV",
+      "team": "LV",
+      "actual": 1,
+      "previous": 5.244973386279288,
+      "personnel": 5.346909713971276
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_MIA_NYJ",
+      "team": "MIA",
+      "actual": 4,
+      "previous": 5.769707440020044,
+      "personnel": 5.49994409809835
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_MIA_NYJ",
+      "team": "NYJ",
+      "actual": 1,
+      "previous": 6.1583391960000995,
+      "personnel": 6.622429480297067
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_NE_CHI",
+      "team": "CHI",
+      "actual": 4,
+      "previous": 6.230312106261429,
+      "personnel": 5.185982276950087
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_NE_CHI",
+      "team": "NE",
+      "actual": 2,
+      "previous": 5.906673790752963,
+      "personnel": 5.799564834860405
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_NYG_HOU",
+      "team": "HOU",
+      "actual": 3,
+      "previous": 6.521274269091178,
+      "personnel": 7.163174020625667
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_NYG_HOU",
+      "team": "NYG",
+      "actual": 1,
+      "previous": 5.231519827124718,
+      "personnel": 5.295267321317927
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_PIT_NO",
+      "team": "NO",
+      "actual": 4,
+      "previous": 5.731860649039924,
+      "personnel": 5.971521693993894
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_PIT_NO",
+      "team": "PIT",
+      "actual": 8,
+      "previous": 6.666027392896222,
+      "personnel": 7.0553002873945285
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_SF_ATL",
+      "team": "ATL",
+      "actual": 11,
+      "previous": 5.128250786817479,
+      "personnel": 5.561441431639823
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_SF_ATL",
+      "team": "SF",
+      "actual": -1,
+      "previous": 5.880239310500447,
+      "personnel": 5.728319091905902
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_TB_CAR",
+      "team": "CAR",
+      "actual": -4,
+      "previous": 6.232137303434804,
+      "personnel": 6.5865065633147895
+    },
+    {
+      "week": 7,
+      "game_id": "2026_07_TB_CAR",
+      "team": "TB",
+      "actual": 21,
+      "previous": 5.718842323689852,
+      "personnel": 5.755769568256812
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_ARI_DAL",
+      "team": "ARI",
+      "actual": 3,
+      "previous": 4.457601899313713,
+      "personnel": 4.186606500765946
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_ARI_DAL",
+      "team": "DAL",
+      "actual": 8,
+      "previous": 5.0561861646185156,
+      "personnel": 5.096380635493808
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_ATL_TB",
+      "team": "ATL",
+      "actual": 2,
+      "previous": 5.879445586688462,
+      "personnel": 6.282095130389422
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_ATL_TB",
+      "team": "TB",
+      "actual": 18,
+      "previous": 6.145221855577742,
+      "personnel": 6.218612720455231
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_BAL_BUF",
+      "team": "BAL",
+      "actual": 1,
+      "previous": 4.974837661483954,
+      "personnel": 4.7303898227019054
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_BAL_BUF",
+      "team": "BUF",
+      "actual": 14,
+      "previous": 5.409711348943322,
+      "personnel": 6.090740007019615
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_CAR_GB",
+      "team": "CAR",
+      "actual": 6,
+      "previous": 5.469544594396846,
+      "personnel": 5.512588355664865
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_CAR_GB",
+      "team": "GB",
+      "actual": 11,
+      "previous": 5.85675107693222,
+      "personnel": 6.231721932811153
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_CHI_SEA",
+      "team": "CHI",
+      "actual": 8,
+      "previous": 6.027366567693854,
+      "personnel": 5.5524970911725635
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_CHI_SEA",
+      "team": "SEA",
+      "actual": 2,
+      "previous": 6.340546877144792,
+      "personnel": 6.003077913803743
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_CLE_PIT",
+      "team": "CLE",
+      "actual": 3,
+      "previous": 6.041156104498276,
+      "personnel": 5.720200725846563
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_CLE_PIT",
+      "team": "PIT",
+      "actual": 19,
+      "previous": 6.91733114646207,
+      "personnel": 7.2187301281744185
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_IND_JAX",
+      "team": "IND",
+      "actual": 1,
+      "previous": 4.866081527085721,
+      "personnel": 4.1801111471599
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_IND_JAX",
+      "team": "JAX",
+      "actual": 20,
+      "previous": 6.21867226111778,
+      "personnel": 6.639415319369524
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_KC_DEN",
+      "team": "DEN",
+      "actual": 2,
+      "previous": 6.174893879870043,
+      "personnel": 6.877606475825445
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_KC_DEN",
+      "team": "KC",
+      "actual": 0,
+      "previous": 5.422402500137576,
+      "personnel": 5.683277561779528
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_LAC_LA",
+      "team": "LA",
+      "actual": 10,
+      "previous": 6.566186323775411,
+      "personnel": 6.613226987807005
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_LAC_LA",
+      "team": "LAC",
+      "actual": 3,
+      "previous": 5.200367616173405,
+      "personnel": 5.128278991296553
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_LV_NYJ",
+      "team": "LV",
+      "actual": 9,
+      "previous": 5.946359169137009,
+      "personnel": 6.309469216259283
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_LV_NYJ",
+      "team": "NYJ",
+      "actual": -3,
+      "previous": 5.626952837006674,
+      "personnel": 5.503609274542237
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_MIN_DET",
+      "team": "DET",
+      "actual": 6,
+      "previous": 5.985504564635321,
+      "personnel": 6.5417237987025985
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_MIN_DET",
+      "team": "MIN",
+      "actual": 7,
+      "previous": 6.125424429921602,
+      "personnel": 5.447998356518678
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_NE_MIA",
+      "team": "MIA",
+      "actual": 5,
+      "previous": 5.3230437174003,
+      "personnel": 5.2201841673749
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_NE_MIA",
+      "team": "NE",
+      "actual": 8,
+      "previous": 6.357320581162068,
+      "personnel": 6.545273785459797
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_PHI_WAS",
+      "team": "PHI",
+      "actual": 4,
+      "previous": 5.399136874254826,
+      "personnel": 5.422836284990718
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_PHI_WAS",
+      "team": "WAS",
+      "actual": 13,
+      "previous": 5.3344994132476655,
+      "personnel": 5.619227647997603
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_TEN_CIN",
+      "team": "CIN",
+      "actual": 4,
+      "previous": 6.391081391404973,
+      "personnel": 6.274421855723632
+    },
+    {
+      "week": 8,
+      "game_id": "2026_08_TEN_CIN",
+      "team": "TEN",
+      "actual": 7,
+      "previous": 5.46401057282946,
+      "personnel": 5.619155251904504
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_ARI_SEA",
+      "team": "ARI",
+      "actual": 1,
+      "previous": 5.089213656426026,
+      "personnel": 4.9125358070671545
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_ARI_SEA",
+      "team": "SEA",
+      "actual": 10,
+      "previous": 6.569175330441302,
+      "personnel": 6.371145266065206
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_BUF_MIN",
+      "team": "BUF",
+      "actual": 15,
+      "previous": 6.078242682486052,
+      "personnel": 6.392682204477526
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_BUF_MIN",
+      "team": "MIN",
+      "actual": 6,
+      "previous": 6.194606667408065,
+      "personnel": 6.231215703412026
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_CIN_ATL",
+      "team": "ATL",
+      "actual": 1,
+      "previous": 5.575172485868228,
+      "personnel": 5.6343825881261065
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_CIN_ATL",
+      "team": "CIN",
+      "actual": 3,
+      "previous": 6.162153843506471,
+      "personnel": 6.354811808902829
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_CLE_NO",
+      "team": "CLE",
+      "actual": 9,
+      "previous": 6.469318501066766,
+      "personnel": 5.8529169937615855
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_CLE_NO",
+      "team": "NO",
+      "actual": 5,
+      "previous": 6.59084108676175,
+      "personnel": 7.107549311542379
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_DAL_IND",
+      "team": "DAL",
+      "actual": 6,
+      "previous": 5.287200493924271,
+      "personnel": 5.520681690991229
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_DAL_IND",
+      "team": "IND",
+      "actual": 7,
+      "previous": 4.6622510745797126,
+      "personnel": 3.933454272183272
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_DEN_CAR",
+      "team": "CAR",
+      "actual": 3,
+      "previous": 5.272052408095106,
+      "personnel": 5.297662624950183
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_DEN_CAR",
+      "team": "DEN",
+      "actual": 7,
+      "previous": 6.585218019266788,
+      "personnel": 7.081701621629946
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_DET_MIA",
+      "team": "DET",
+      "actual": 9,
+      "previous": 6.184830719516731,
+      "personnel": 6.245721091889848
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_DET_MIA",
+      "team": "MIA",
+      "actual": 6,
+      "previous": 4.737614819418427,
+      "personnel": 4.402124677997541
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_GB_NE",
+      "team": "GB",
+      "actual": 12,
+      "previous": 5.899010474195196,
+      "personnel": 6.50194721485626
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_GB_NE",
+      "team": "NE",
+      "actual": -1,
+      "previous": 5.7483042319657445,
+      "personnel": 5.923774458359638
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_HOU_LAC",
+      "team": "HOU",
+      "actual": 12,
+      "previous": 6.989523531168958,
+      "personnel": 7.350743304714734
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_HOU_LAC",
+      "team": "LAC",
+      "actual": -1,
+      "previous": 5.246924874456201,
+      "personnel": 5.008503809584798
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_JAX_BAL",
+      "team": "BAL",
+      "actual": 1,
+      "previous": 4.897548658602364,
+      "personnel": 4.974710292124072
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_JAX_BAL",
+      "team": "JAX",
+      "actual": 11,
+      "previous": 6.583268084779938,
+      "personnel": 6.459587901248777
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_LA_WAS",
+      "team": "LA",
+      "actual": 12,
+      "previous": 5.716172861917257,
+      "personnel": 5.714577161748956
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_LA_WAS",
+      "team": "WAS",
+      "actual": 6,
+      "previous": 5.096559414611046,
+      "personnel": 5.390689367842365
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_LV_SF",
+      "team": "LV",
+      "actual": -1,
+      "previous": 5.163973491049918,
+      "personnel": 5.272237369468744
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_LV_SF",
+      "team": "SF",
+      "actual": 17,
+      "previous": 5.542522312005622,
+      "personnel": 5.412211045286308
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_NYG_PHI",
+      "team": "NYG",
+      "actual": 13,
+      "previous": 5.543773893034117,
+      "personnel": 5.403725302807008
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_NYG_PHI",
+      "team": "PHI",
+      "actual": 9,
+      "previous": 5.795629709825725,
+      "personnel": 5.6218775035134545
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_NYJ_KC",
+      "team": "KC",
+      "actual": 11,
+      "previous": 6.065573332807312,
+      "personnel": 5.875885892675585
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_NYJ_KC",
+      "team": "NYJ",
+      "actual": 2,
+      "previous": 5.047719660891536,
+      "personnel": 4.8614841458201745
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_TB_CHI",
+      "team": "CHI",
+      "actual": 14,
+      "previous": 6.128344738422248,
+      "personnel": 5.736112347631941
+    },
+    {
+      "week": 9,
+      "game_id": "2026_09_TB_CHI",
+      "team": "TB",
+      "actual": 11,
+      "previous": 6.087437829890943,
+      "personnel": 6.04452020617533
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_BUF_NYJ",
+      "team": "BUF",
+      "actual": 12,
+      "previous": 6.376597284536382,
+      "personnel": 5.97959102359604
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_BUF_NYJ",
+      "team": "NYJ",
+      "actual": 4,
+      "previous": 4.7660603829318084,
+      "personnel": 4.541851165721135
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_CAR_NO",
+      "team": "CAR",
+      "actual": 8,
+      "previous": 6.255249658468817,
+      "personnel": 6.451521900586356
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_CAR_NO",
+      "team": "NO",
+      "actual": 4,
+      "previous": 5.960466646859904,
+      "personnel": 6.546542852558724
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_HOU_CLE",
+      "team": "CLE",
+      "actual": 3,
+      "previous": 5.536621805830827,
+      "personnel": 5.340249613315588
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_HOU_CLE",
+      "team": "HOU",
+      "actual": 6,
+      "previous": 7.133041422536427,
+      "personnel": 7.706574432682935
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_JAX_TEN",
+      "team": "JAX",
+      "actual": 3,
+      "previous": 7.096171662573976,
+      "personnel": 6.703722626044569
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_JAX_TEN",
+      "team": "TEN",
+      "actual": -1,
+      "previous": 5.22080239758166,
+      "personnel": 5.490580481445373
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_KC_ATL",
+      "team": "ATL",
+      "actual": -3,
+      "previous": 5.409650797629985,
+      "personnel": 5.145425018158443
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_KC_ATL",
+      "team": "KC",
+      "actual": 11,
+      "previous": 6.131496462047382,
+      "personnel": 5.909364543889244
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_LAC_BAL",
+      "team": "BAL",
+      "actual": 2,
+      "previous": 6.393721035214996,
+      "personnel": 6.153385653418172
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_LAC_BAL",
+      "team": "LAC",
+      "actual": 7,
+      "previous": 5.777831822255574,
+      "personnel": 5.632388083538483
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_LA_ARI",
+      "team": "ARI",
+      "actual": 3,
+      "previous": 4.531317553417646,
+      "personnel": 4.499109242265607
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_LA_ARI",
+      "team": "LA",
+      "actual": 16,
+      "previous": 6.178227086908648,
+      "personnel": 6.204252462174363
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_MIA_IND",
+      "team": "IND",
+      "actual": 5,
+      "previous": 5.924479844256217,
+      "personnel": 5.640381208254594
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_MIA_IND",
+      "team": "MIA",
+      "actual": 11,
+      "previous": 5.541004907211484,
+      "personnel": 5.081297203977765
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_MIN_GB",
+      "team": "GB",
+      "actual": 4,
+      "previous": 6.509272523262481,
+      "personnel": 7.185421685061856
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_MIN_GB",
+      "team": "MIN",
+      "actual": 20,
+      "previous": 6.445039306682168,
+      "personnel": 7.196545201089008
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_NE_DET",
+      "team": "DET",
+      "actual": 11,
+      "previous": 5.9684995041781574,
+      "personnel": 5.6575311001549
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_NE_DET",
+      "team": "NE",
+      "actual": 2,
+      "previous": 5.349945861527122,
+      "personnel": 5.571282252449344
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_PIT_CIN",
+      "team": "CIN",
+      "actual": 4,
+      "previous": 5.786695625749163,
+      "personnel": 5.837095231024191
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_PIT_CIN",
+      "team": "PIT",
+      "actual": -3,
+      "previous": 6.244229889556894,
+      "personnel": 6.441154517885824
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_SEA_LV",
+      "team": "LV",
+      "actual": 6,
+      "previous": 5.523402450112311,
+      "personnel": 5.7065622587165095
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_SEA_LV",
+      "team": "SEA",
+      "actual": 10,
+      "previous": 6.685392369518935,
+      "personnel": 6.308674852856545
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_SF_DAL",
+      "team": "DAL",
+      "actual": 1,
+      "previous": 4.565482430480057,
+      "personnel": 4.809537519677188
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_SF_DAL",
+      "team": "SF",
+      "actual": 1,
+      "previous": 5.220558636257579,
+      "personnel": 5.057680659403953
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_WAS_NYG",
+      "team": "NYG",
+      "actual": 5,
+      "previous": 5.708764725738471,
+      "personnel": 5.865497596919483
+    },
+    {
+      "week": 10,
+      "game_id": "2026_10_WAS_NYG",
+      "team": "WAS",
+      "actual": 5,
+      "previous": 6.041016209612414,
+      "personnel": 6.16955083387602
+    },
+    {
+      "week": 11,
+      "game_id": "2026_11_IND_HOU",
+      "team": "HOU",
+      "actual": 15,
+      "previous": 6.380030276954007,
+      "personnel": 6.830912287986133
+    },
+    {
+      "week": 11,
+      "game_id": "2026_11_IND_HOU",
+      "team": "IND",
+      "actual": 3,
+      "previous": 4.775317014540768,
+      "personnel": 4.746583894277305
+    }
+  ]
+}

@@ -11,6 +11,7 @@ from app.game_stats import encoded, read_json, write_atomic
 from app.player_values import (STAT_COLUMNS, POSITIONS, _number, _schedule_game,
                                _unpack, build_player_value_inputs)
 from app.scoreboard import parse_time
+from app.defender_inputs import build_defender_inputs
 
 DEFENSE_STATS = (
     "def_sacks", "def_interceptions", "fumble_recovery_opp", "def_safeties",
@@ -88,7 +89,8 @@ def build_ranking_inputs(root, season, *, now=None):
             item = defense_game(bundle, now=now)
             item["provisional"] = year == season  # Reported boxes are not certified finals.
             games.append(item)
-    inputs["defense"] = {"schema_version": 1, "games": games, "sources": evidence,
+    inputs["defense"] = {"schema_version": 2, "games": games, "sources": evidence,
+        "personnel": build_defender_inputs(root, season, games, now=now),
         "scoring": "OB box-score D/ST: 1/sack, 2/interception, 2/opponent fumble recovery, 2/safety, 2/blocked kick, 6/defensive or special-teams TD, 2/defensive conversion. Points-allowed tiers use the full opponent scoreboard total (0:10, 1–6:7, 7–13:4, 14–20:1, 21–27:0, 28–34:-1, 35+:-4). This differs from platforms that exclude defensive-return points.",
         "coverage": {"games": len(games), "current_season_games": len(ready), "teams": len({row["team"] for game in games for row in game["teams"]})}}
     return inputs

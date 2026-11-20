@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="styles.css?v=20260928-layout2">
   <link rel="stylesheet" href="site-nav.css?v=20260928-layout1">
   <link rel="stylesheet" href="tools.css?v=20261027-tools-editorial1">
+  <link rel="stylesheet" href="defender-forecast.css?v=20261120-defenders2">
 </head>
 <body class="tool-page rankings-page">
   <header class="topbar">
@@ -70,6 +71,8 @@
       <p>Draft is a full-season outlook at today’s scoring rate, using the historical games estimate where available. Weekly and rest-of-season use actual unstarted fixtures. Current Out reports remove only their matching game; injuries without a known absence window remain conditional playing scenarios. Rank uses points above a position’s replacement level, so league size and quarterback settings matter.</p>
       <p>Opponent adjustments compare fantasy points allowed to each position with the league average. Last season receives 35% weight; twelve league-average games reduce the effect of small samples. Adjustments cannot exceed ±10%. This is a descriptive opponent profile, not an opponent-strength-adjusted efficiency rating or a model of individual defender injuries.</p>
       <p>D/ST uses OB box-score scoring: 1 per sack; 2 per interception, opponent fumble recovery, safety, blocked kick or defensive conversion; 6 per defensive or special-teams touchdown. Points allowed use the opponent’s full scoreboard total: 0 = 10 points; 1–6 = 7; 7–13 = 4; 14–20 = 1; 21–27 = 0; 28–34 = −1; 35+ = −4. This differs from platforms that exclude defensive-return scores. Missing required fields produce an unrated estimate.</p>
+      <p>D/ST player model: individual sacks, interceptions, opponent fumble recoveries and defensive touchdowns per snap combine with expected playing time from recent rotations. These supply 80% of those events; a 20% team prior steadies the estimate. Current Out reports remove only the matching week and replacement defenders receive the available snaps. Points allowed and special teams remain shared team estimates. Open a defense to inspect every contribution. These choices are experimental and have not yet demonstrated improved forecast accuracy.</p>
+      <p>The first 2026 retrospective check covered 302 team-games: average D/ST error was 3.97 points, versus 3.93 for the previous team model (0.96% worse). It inferred lineups from earlier games and lacked historical injury reports, so availability accuracy is untested. Future results will determine whether the extra player detail improves predictions.</p>
       <p>Defensive events blend with league averages. Sacks and turnovers also use the upcoming opponent’s offensive rates. Rare scores and blocks are reduced more strongly toward the league average. Kicker entries remain draft-market references only.</p>
       <p>These are experimental forecasts. A retrospective 2025 component check reduced average position-total points-allowed error by about 0.45–0.67%, and D/ST matchup error by 1.83% versus team-only estimates. This does not establish individual-player ranking accuracy. Corrected present-day archives were evaluated in game order; original historical forecast vintages were not available.</p>
       <p>Saved evidence refreshes after data collection, with a four-times-daily fallback. Open pages check for updates automatically. Source failure retains the last valid inputs and shows an update warning.</p>
@@ -196,7 +199,7 @@
   </dialog>
 
   <noscript>This draft board needs JavaScript enabled in your browser.</noscript>
-  <script type="module" src="app.js?v=20261120-rankings1"></script>
+  <script type="module" src="app.js?v=20261120-defenders2"></script>
   <script type="module" src="site-nav.js?v=20260930-no-leagues1"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@ const pending = new Set([
   '/', '/stats.html', '/stats.html?view=leaders', '/game.html',
   '/rankings.html', '/special-teams.html', '/values.html', '/projection.html',
   '/survivor.html', '/league.html', '/odds.html', '/data/update_status.json',
-  '/data/ranking_inputs.json', '/data/ranking_forecasts.json', '/ranking-model.mjs',
+  '/data/ranking_inputs.json', '/data/ranking_forecasts.json', '/ranking-model.mjs', '/defender-model.mjs',
 ]);
 const checked = new Set();
 const failures = [];
@@ -34,7 +34,7 @@ for (const path of pending) {
           throw new Error('Incomplete published ranking forecasts');
         const age = Date.now() - Date.parse(data.generated_at);
         if (!Number.isFinite(age) || age > 36 * 3600000 || age < -300000) throw new Error('Ranking publication is stale or future-dated');
-        for (const key of ['archive_checked_at', 'schedule_checked_at']) {
+        for (const key of ['archive_checked_at', 'schedule_checked_at', 'defender_roster_checked_at']) {
           const sourceAge = Date.now() - Date.parse(data.source_health?.[key]);
           if (!Number.isFinite(sourceAge) || sourceAge > 36 * 3600000 || sourceAge < -300000)
             throw new Error(`Ranking source is stale or undated: ${key}`);

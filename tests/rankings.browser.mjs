@@ -39,6 +39,12 @@ test('rankings switch horizons, show defensive explanations and preserve draft s
   await page.getByRole('button', {name: 'Mark drafted: MIN D/ST', exact: true}).click();
   await page.getByRole('button', {name: 'Open player profile for MIN D/ST', exact: true}).click();
   assert.match(await page.locator('#intel-body').textContent(), /OB box-score D\/ST/);
+  assert.match(await page.locator('#intel-body').textContent(), /Defenders behind this D\/ST forecast/);
+  assert.ok(await page.locator('.defender-table-scroll tbody tr').count() > 10);
+  assert.match(await page.locator('#intel-body').textContent(), /Team event prior \(20%\)/);
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false);
+  await mkdir('artifacts/layout/rankings', {recursive: true});
+  await page.screenshot({path: 'artifacts/layout/rankings/defenders-mobile.png', fullPage: true});
   await page.keyboard.press('Escape');
   await page.locator('#ranking-horizon').selectOption('ros');
   assert.match(await page.locator('#board-summary').textContent(), /Rest of season/);
@@ -72,5 +78,26 @@ test('unavailable forecast input is clearly labeled and never relabeled as weekl
   assert.ok(await page.locator('#table-body tr').count() > 200);
   assert.match(await page.locator('#board-summary').textContent(), /Age Curve v1/);
   assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('stale personnel uses a clearly labeled team fallback without fabricated player contributions', async () => {
+  const context = await browser.newContext(), page = await context.newPage();
+  await context.route('**/*', async route => {
+    const url = new URL(route.request().url());
+    if (url.origin !== base) return route.abort();
+    if (url.pathname === '/data/ranking_inputs.json') {
+      const inputs = JSON.parse(await readFile(resolve(root, 'data/ranking_inputs.json'), 'utf8'));
+      inputs.defense.personnel.status.generated_at = new Date(Date.now() - 3 * 86400000).toISOString();
+      return route.fulfill({json: inputs});
+    }
+    return route.continue();
+  });
+  await page.goto(`${base}/rankings.html?defenses=Include&horizon=ros`);
+  await page.waitForFunction(() => document.querySelector('#ranking-model-note').textContent.includes('team fallback'));
+  await page.locator('#search').fill('MIN D/ST');
+  await page.getByRole('button', {name: 'Open player profile for MIN D/ST', exact: true}).click();
+  assert.match(await page.locator('#intel-body').textContent(), /Team fallback is in use/);
+  assert.equal(await page.locator('.defender-table-scroll tbody tr').count(), 0);
   await context.close();
 });
