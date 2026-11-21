@@ -93,7 +93,7 @@ function availability(person, context, game) {
   return {out: false, label: game.week !== currentWeek ? 'Conditional future availability' : 'No current game status · health unknown'};
 }
 
-export function projectDefenders(context, team, game = null) {
+export function projectDefenders(context, team, game = null, {excluded = []} = {}) {
   if (!context || !context.rosterFresh) return {available: false, reason: 'Current defender roster is missing, stale or future-dated; team-event fallback.'};
   const recent = (context.teams.get(team) || []).slice(0, 3);
   if (!recent.length) return {available: false, reason: 'Defensive playing-time history unavailable; team-event fallback.'};
@@ -115,7 +115,8 @@ export function projectDefenders(context, team, game = null) {
     if (Object.values(rate).some(value => value === null)) return {available: false, reason: 'Individual event evidence is incomplete; team-event fallback.'};
     const participation = history.filter(row => recent.some(game => game.game_id === row.game_id));
     const role = Math.min(plays, mean((participation.length ? participation : history.slice(0, 3)).map(row => row.defense_snaps)));
-    candidates.push({player_id: id, player: person.player, pos: person.pos, group, role, rate, ...availability(person, context, game),
+    candidates.push({player_id: id, player: person.player, pos: person.pos, group, role, rate,
+      ...(excluded.includes(id) ? {out: true, label: 'Excluded in this scenario'} : availability(person, context, game)),
       role_basis: moved ? 'Transferred player; role inferred from previous team' : 'Recent observed rotation'});
   }
   const contributors = [], replacements = [];

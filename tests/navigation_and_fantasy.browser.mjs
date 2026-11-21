@@ -139,7 +139,7 @@ test("desktop hover menus group all labs, stay open over links, switch and dismi
     assert.equal(await isOpen(labs), false);
     await labs.locator("summary").hover(); await waitForOpen(page, "Labs", true);
     assert.deepEqual(await labs.locator("h2").allTextContents(), ["Projection Lab", "Simulation Lab"]);
-    assert.equal(await labs.locator("a").count(), 6);
+    assert.equal(await labs.locator("a").count(), 7);
     await labs.getByRole("link", {name: "Head-to-head matchup"}).hover();
     assert.equal(await isOpen(labs), true);
     await page.locator("h1").hover({position: {x: 10, y: 10}});
@@ -279,7 +279,7 @@ test("mobile navigation preserves the link through pointerdown and null-relatedT
   } finally { await context.close(); }
 });
 
-test("mobile navigation follows all 13 native destinations with actual taps", async () => {
+test("mobile navigation follows all 14 native destinations with actual taps", async () => {
   const destinations = [
     ["Stats", "Game results", "stats.html"],
     ["Stats", "League leaders", "stats.html?view=leaders", "/stats.html"],
@@ -288,6 +288,7 @@ test("mobile navigation follows all 13 native destinations with actual taps", as
     ["Fantasy", "Player values", "values.html"],
     ["Labs", "Player age & scoring", "projection.html"],
     ["Labs", "Draft capital map", "projection.html#round-map-heading", "/projection.html"],
+    ["Labs", "Player & defense simulator", "matchup.html"],
     ["Labs", "Head-to-head matchup", "survivor.html#matchup-heading", "/survivor.html"],
     ["Labs", "Team game forecasts", "league.html#team-games-heading", "/league.html"],
     ["Labs", "League, playoffs & Super Bowl", "league.html"],
