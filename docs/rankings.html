@@ -54,6 +54,7 @@
       </div>
 
       <div class="league-controls">
+        <label><span>Projection model</span><select id="ranking-engine"><option value="original">Original model</option><option value="simulation">Play simulation · experimental</option></select></label>
         <label><span>Ranking outlook</span><select id="ranking-horizon"><option value="draft">Draft / full season</option><option value="weekly">Weekly</option><option value="ros">Rest of season</option></select></label>
         <label><span>NFL week</span><select id="ranking-week" disabled><option value="">Loading schedule</option></select></label>
         <label><span>Teams</span><select id="teams"><option value="8">8 teams</option><option value="10">10 teams</option><option value="12" selected>12 teams</option><option value="14">14 teams</option><option value="16">16 teams</option></select></label>
@@ -67,6 +68,7 @@
 
     <details class="control-panel">
       <summary>How these rankings work</summary>
+      <p>The optional play simulation uses one game engine for offensive players, kickers and D/ST. Historical play types, opponent tendencies, current personnel, coaching observations and available kickoff weather drive the simulated games. Draft uses current roles across the full schedule; weekly and ROS use only unstarted games. These are experimental means, not proven accuracy improvements. <a href="matchup.html">Open the Matchup Lab</a> to inspect individual defenders, coaches, conditions and outcome ranges. Derived charting: <a href="https://nflreadr.nflverse.com/reference/load_ftn_charting.html">FTN Data via nflverse</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p>
       <p>Player history provides a starting scoring rate. The last three calendar seasons receive 5/3/2 weights, adjusted for games observed and historical age trends. Current-season points per appearance blend into that prior with eight prior-equivalent games. Players without either source remain unrated; missing appearances do not become zero-point games.</p>
       <p>Draft is a full-season outlook at today’s scoring rate, using the historical games estimate where available. Weekly and rest-of-season use actual unstarted fixtures. Current Out reports remove only their matching game; injuries without a known absence window remain conditional playing scenarios. Rank uses points above a position’s replacement level, so league size and quarterback settings matter.</p>
       <p>Opponent adjustments compare fantasy points allowed to each position with the league average. Last season receives 35% weight; twelve league-average games reduce the effect of small samples. Adjustments cannot exceed ±10%. This is a descriptive opponent profile, not an opponent-strength-adjusted efficiency rating or a model of individual defender injuries.</p>
@@ -199,7 +201,7 @@
   </dialog>
 
   <noscript>This draft board needs JavaScript enabled in your browser.</noscript>
-  <script type="module" src="app.js?v=20261120-defenders2"></script>
-  <script type="module" src="site-nav.js?v=20260930-no-leagues1"></script>
+  <script type="module" src="app.js?v=20261121-sim1"></script>
+  <script type="module" src="site-nav.js?v=20261121-sim1"></script>
 </body>
 </html>

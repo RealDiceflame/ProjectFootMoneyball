@@ -13,6 +13,7 @@ import {classifyInjury} from "./injury-status.mjs?v=20260927-refresh1";
 import {observeBoardColumns} from "./board-layout.mjs?v=20260928-layout1";
 import {DRAFT_ALIASES_KEY, columnarDraftRows, validDraftAliases, migrateDraftedKeys, toggleDraftedKey} from "./draft-identity.mjs?v=20260927-refresh1";
 import {buildRankingBoard, validateRankingInputs, upcomingGames} from "./ranking-model.mjs?v=20261120-defenders2";
+import {buildSimulationBoard, validateSimulationForecasts} from './simulation-rankings.mjs?v=20261121-sim1';
 
 const DATA_URL = "./data/rankings.json";
 const INTEL_URL = "./data/player_intel.json";
@@ -55,6 +56,7 @@ const columns = [
 ];
 
 const ui = {
+  model: document.querySelector('#ranking-engine'),
   horizon: document.querySelector("#ranking-horizon"),
   week: document.querySelector("#ranking-week"),
   modelNote: document.querySelector("#ranking-model-note"),
@@ -103,6 +105,7 @@ const ui = {
 const savedDrafted = loadJson(DRAFTED_KEY, []);
 const defaultSettings = { teams: "12", quarterbacks: "2QB", ppr: "Half PPR", tePremium: "+0.5", kickers: "Off", defenses: "Off" };
 const state = {
+  simulation: null,
   inputs: null,
   forecast: null,
   data: null,
@@ -206,7 +209,11 @@ function rowsForCurrentBoard() {
     state.data.projection_season,
   ).rows;
   let forecastRows = modeled;
-  if (state.inputs) {
+  if (ui.model.value === 'simulation') {
+    state.forecastCache = null;
+    state.forecast = buildSimulationBoard(state.simulation, modeled, state.settings, {horizon: ui.horizon.value, week: Number(ui.week.value) || null});
+    forecastRows = state.forecast.rows;
+  } else if (state.inputs) {
     const cacheKey = JSON.stringify([state.settings, ui.horizon.value, ui.week.value, Math.floor(Date.now() / 60000), state.personalAdp]);
     if (!state.forecastCache || state.forecastCache.key !== cacheKey || state.forecastCache.inputs !== state.inputs || state.forecastCache.data !== state.data || state.forecastCache.history !== state.history || state.forecastCache.news !== state.news) {
       state.forecast = buildRankingBoard({rankings: state.data, history: state.history, news: state.news, inputs: state.inputs}, state.settings,
@@ -224,6 +231,7 @@ function rowsForCurrentBoard() {
     row.volatility = historyAnalytics(historyRows(state.history, row), row, state.settings).volatility_score;
     return row;
   });
+  if (ui.model.value === 'simulation') return players;
   if (state.inputs) {
     // Kicker estimates are not modeled: retain the clearly labeled market rows
     // only on the draft board, without interleaving them into forecast ranks.
@@ -1336,7 +1344,7 @@ function render() {
   const horizonLabel = {draft: 'Draft outlook', weekly: `Week ${state.forecast?.week ?? '—'}`, ros: 'Rest of season'}[ui.horizon.value];
   ui.boardSummary.textContent = `${state.inputs ? 'OB Schedule & Defense v2' : 'Age Curve v1'} · ${horizonLabel} · showing ${state.visibleRows.length} of ${allRows.length} entries · ${draftedCount} drafted${importText} · click any heading to sort`;
   ui.week.disabled = ui.horizon.value !== 'weekly';
-  ui.kickers.disabled = ui.horizon.value !== 'draft';
+  ui.kickers.disabled = ui.horizon.value !== 'draft' && ui.model.value !== 'simulation';
   ui.modelNote.textContent = state.inputs
     ? `${horizonLabel}: ${ui.horizon.value === 'draft' ? 'full-season outlook at today’s scoring rate and historical games estimate; not actual points already earned.' : 'unstarted regular-season games only; current Out excludes its matching game. IR and other future absences are not predicted.'} Evidence updated ${formatTimestamp(state.inputs.generated_at)} · ${state.inputs.defense.coverage.current_season_games} current-season games · ${Date.now() - Date.parse(state.inputs.generated_at) > 36 * 3600000 ? 'Evidence is older than 36 hours; showing the last saved forecast inputs. ' : ''}Experimental model; opponent adjustments capped at ±10%. ADP remains a separate draft-market reference.`
     : 'New forecast evidence is unavailable. Draft shows the saved age model; weekly and rest-of-season forecasts will retry automatically.';
@@ -1353,6 +1361,11 @@ function render() {
       if (allRows.some(row => row.is_defense_forecast && row.eligible && row.defense_breakdown.mode === 'team_fallback'))
         ui.modelNote.textContent += ' Some teams use a labeled team fallback because current personnel evidence is unavailable.';
     }
+  }
+  if (ui.model.value === 'simulation') {
+    ui.boardSummary.textContent = `OB Play Simulation · ${horizonLabel} · showing ${state.visibleRows.length} of ${allRows.length} entries · ${draftedCount} drafted${importText}`;
+    ui.modelNote.textContent = state.forecast.unavailable ? 'Simulation forecasts are unavailable; retrying automatically. Select the original model to view its rankings.'
+      : `Experimental shared game simulation · ${state.simulation.iterations} runs per fixture · updated ${formatTimestamp(state.simulation.generated_at)}. ${ui.horizon.value === 'draft' ? 'Current roles across 17 schedule games; neutral weather and conditional availability, not past actual points.' : 'Unstarted games only; current Out applies to its matching week. Future availability is conditional.'} ${state.forecast.stale ? 'Evidence is older than 48 hours; showing the last saved projections. ' : ''}Unknown roles stay unrated. Kicker scoring: 3 per FG, 1 per XP. Accuracy improvement has not been established. Explore coaches, weather and individual defenders in the Matchup Lab.`;
   }
   const partialCount = allRows.filter(row => row.scoring_coverage === "core_only").length;
   ui.scoringCoverageNote.hidden = partialCount === 0;
@@ -1421,7 +1434,7 @@ function exportVisibleBoard() {
 }
 
 function bindEvents() {
-  [ui.horizon, ui.week].forEach(control => control.addEventListener('change', () => {
+  [ui.horizon, ui.week, ui.model].forEach(control => control.addEventListener('change', () => {
     state.sortColumn = 'overall_rank'; state.sortAscending = true;
     const projectionColumn = columns.find(column => column.key === 'projected_points');
     projectionColumn.label = {draft: 'Season Proj.', weekly: 'Week Proj.', ros: 'ROS Proj.'}[ui.horizon.value];
@@ -1504,18 +1517,19 @@ async function loadRankings(signal) {
       if (key !== "intel" || state.intel.report_count) unavailable.push(label);
       return state[key];
     });
-    const [data, intel, news, history, specialTeams, inputs] = await Promise.all([
+    const [data, intel, news, history, specialTeams, inputs, simulation] = await Promise.all([
       fetchSnapshot(DATA_URL, {signal, validate: validateRankings}),
       optional(INTEL_URL, validateReports, "intel", "AI reports"),
       optional(NEWS_URL, validateReports, "news", "injuries/news"),
       optional(HISTORY_URL, validateHistory, "history", "player history"),
       optional(SPECIAL_TEAMS_URL, validateSpecialTeams, "specialTeams", "K/DST market"),
       optional('./data/ranking_inputs.json', validateRankingInputs, 'inputs', 'ranking evidence'),
+      optional('./data/simulation_forecasts.json', validateSimulationForecasts, 'simulation', 'simulation forecasts'),
     ]);
     signal.throwIfAborted();
     if (!data.boards[rankingSlug()] || (state.data && Object.keys(state.data.boards).some(key => !data.boards[key]))) throw new Error("League formats are missing from the updated rankings");
     if (inputs && inputs.season !== data.projection_season) throw new Error('Ranking evidence and draft season do not match');
-    const next = {data, intel, news, history, specialTeams, inputs};
+    const next = {data, intel, news, history, specialTeams, inputs, simulation};
     const signature = snapshotSignature([next, injuryClockSignature(news)]);
     const changed = signature !== rankingsSignature;
     const first = !state.data;
@@ -1573,6 +1587,7 @@ async function loadRankings(signal) {
 }
 
 const requestedView = new URLSearchParams(location.search);
+if (requestedView.get('model') === 'simulation') ui.model.value = 'simulation';
 if (requestedView.get('defenses') === 'Include') state.settings.defenses = 'Include';
 if (['draft', 'weekly', 'ros'].includes(requestedView.get('horizon'))) ui.horizon.value = requestedView.get('horizon');
 columns.find(column => column.key === 'projected_points').label = {draft: 'Season Proj.', weekly: 'Week Proj.', ros: 'ROS Proj.'}[ui.horizon.value];
