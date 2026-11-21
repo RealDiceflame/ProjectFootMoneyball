@@ -1,0 +1,58 @@
+name: Test account security
+on:
+  pull_request:
+    paths: ["account-site/**", ".github/workflows/test-accounts.yml"]
+  push:
+    branches: [main]
+    paths: ["account-site/**", ".github/workflows/test-accounts.yml"]
+  schedule:
+    - cron: "21 9 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: accounts-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  accounts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: account-site
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: account-site/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm audit --audit-level=high
+      - run: npm run build
+      - run: npm test
+      - run: npx --no-install playwright install --with-deps chromium webkit
+      - run: npm run test:browser
+        env:
+          BROWSER_CHANNEL: chromium
+          ACCOUNT_SCREENSHOTS: artifacts/chromium
+      - run: npm run test:browser
+        env:
+          BROWSER_ENGINE: webkit
+          ACCOUNT_SCREENSHOTS: artifacts/webkit
+      - name: Save account preview build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: account-site
+          path: account-site/dist/
+          retention-days: 14
+      - name: Save layout checks
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: account-layouts
+          path: account-site/artifacts/
+          retention-days: 14
+          if-no-files-found: ignore

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Your account | OutlierBaseline</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+<header><a class="brand" href="https://outlierbaseline.com/" aria-label="OutlierBaseline home"><span class="mark" aria-hidden="true">OB</span><span>OutlierBaseline<small>Football intelligence lab</small></span></a><a href="https://outlierbaseline.com/">Back to the lab <span aria-hidden="true">↗</span></a></header>
+<main>
+  <div class="intro"><p class="eyebrow">Your OutlierBaseline account</p><h1>A place to start.</h1><p>Create your account with a code sent to your email. There’s no password to remember. For now, accounts provide sign-in only. Rankings and tools remain open to everyone.</p></div>
+  <section class="card" aria-label="Account access">
+    <div id="unavailable"><p class="eyebrow">Coming soon</p><h2 id="panel-title">Accounts are getting ready.</h2><p>We’re finishing setup before opening registration. You can keep using all of the football tools in the meantime.</p><a class="button" href="https://outlierbaseline.com/rankings.html">Explore the rankings</a></div>
+    <div id="auth-panel" hidden>
+      <nav class="modes" aria-label="Account options"><button id="mode-signup" type="button" aria-pressed="true">Create account</button><button id="mode-login" type="button" aria-pressed="false">Sign in</button></nav>
+      <h2 id="form-title">Create your account</h2>
+      <form id="account-form">
+        <label id="email-label" for="email">Email address</label><input id="email" type="email" autocomplete="email" maxlength="254" required>
+        <label id="code-label" for="code" hidden>Email code</label><input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" minlength="6" maxlength="10" aria-describedby="code-help" hidden disabled>
+        <p id="code-help" class="hint" hidden>Enter the code from your latest email. Do not share it with anyone.</p>
+        <div id="security-check" aria-label="Security check"></div>
+        <button id="submit" class="button" type="submit" disabled>Send account code</button>
+      </form>
+      <div class="code-actions"><button id="resend" class="text-button" type="button" hidden disabled>Send another code</button><button id="change-email" class="text-button" type="button" hidden>Change email</button></div>
+    </div>
+    <div id="signed-in" hidden><p class="eyebrow">You’re signed in</p><h2>Your account is ready.</h2><p id="user-email"></p><p>Accounts currently provide sign-in only. Your league settings and trade comparisons still stay in the browser where you created them.</p><button id="sign-out" class="button" type="button">Sign out</button></div>
+    <p id="status" role="status" aria-live="polite" tabindex="-1"></p>
+    <noscript><p>Account access needs JavaScript. The football tools are available from the link above.</p></noscript>
+  </section>
+  <aside id="privacy" hidden><h2>About your account</h2><p>Supabase handles your email address and account records. Resend delivers your sign-in codes. Cloudflare provides this page and the security check. Your browser keeps a sign-in token so you can return without signing in again; sign out on shared computers.</p><p>We do not ask for your name, league credentials or payment details. Creating an account does not upload your saved league settings or trade comparisons. Keep access to your email inbox: it is how you sign in.</p><p>For account help or to request deletion, contact <a id="support"></a>.</p></aside>
+</main><footer>OutlierBaseline · Research, not certainty.</footer>
+</body></html>
