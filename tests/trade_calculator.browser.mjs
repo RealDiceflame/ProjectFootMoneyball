@@ -64,4 +64,3 @@ test('failed refresh retains the selected trade and a later success clears its w
   bad=false;await tick();assert.equal(await page.locator('#trade-error').isVisible(),false);assert.equal(await page.locator('#trade-give-list li').count(),1);assert.equal(await page.locator('#trade-receive-list li').count(),1);
  }finally{await context.close();}
 });
-
