@@ -1587,6 +1587,12 @@ async function loadRankings(signal) {
 }
 
 const requestedView = new URLSearchParams(location.search);
+window.addEventListener('storage',event=>{
+  if(event.key!==DRAFTED_KEY&&event.key!==DRAFT_ALIASES_KEY)return;
+  const values=loadJson(DRAFTED_KEY,[]);if(!Array.isArray(values))return;
+  state.drafted=new Set(values.filter(value=>typeof value==='string'));state.draftAliases=validDraftAliases(loadJson(DRAFT_ALIASES_KEY,[]));
+  if(state.data)preserveView(render,[ui.tableShell]);
+});
 if (requestedView.get('model') === 'simulation') ui.model.value = 'simulation';
 if (requestedView.get('defenses') === 'Include') state.settings.defenses = 'Include';
 if (['draft', 'weekly', 'ros'].includes(requestedView.get('horizon'))) ui.horizon.value = requestedView.get('horizon');

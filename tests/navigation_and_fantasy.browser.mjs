@@ -121,7 +121,7 @@ test("public pages omit My leagues while retaining Fantasy tools and existing sa
         .map(element => element.getAttribute("href") || element.getAttribute("src"))
         .filter(value => /(?:fantasy\.(?:html|js|css)|fantasy-leagues\.mjs)(?:[?#]|$)/i.test(value)));
       assert.deepEqual(prototypeLinks, [], `${name} has no prototype links or assets`);
-      assert.deepEqual(await navGroup(page, "Fantasy").locator("a").allTextContents(), ["Player rankings", "Kickers & D/ST", "Player values"]);
+      assert.deepEqual(await navGroup(page, "Fantasy").locator("a").allTextContents(), ["Player rankings", "Kickers & D/ST", "Player values", "Draft calculator"]);
       assert.equal(await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY), saved, `${name} preserves the saved league verbatim`);
     }
     assert.equal((await page.goto(base + "/fantasy.html")).status(), 404);
@@ -279,13 +279,14 @@ test("mobile navigation preserves the link through pointerdown and null-relatedT
   } finally { await context.close(); }
 });
 
-test("mobile navigation follows all 14 native destinations with actual taps", async () => {
+test("mobile navigation follows all 15 native destinations with actual taps", async () => {
   const destinations = [
     ["Stats", "Game results", "stats.html"],
     ["Stats", "League leaders", "stats.html?view=leaders", "/stats.html"],
     ["Fantasy", "Player rankings", "rankings.html"],
     ["Fantasy", "Kickers & D/ST", "special-teams.html"],
     ["Fantasy", "Player values", "values.html"],
+    ["Fantasy", "Draft calculator", "draft.html"],
     ["Labs", "Player age & scoring", "projection.html"],
     ["Labs", "Draft capital map", "projection.html#round-map-heading", "/projection.html"],
     ["Labs", "Player & defense simulator", "matchup.html"],

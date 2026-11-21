@@ -177,6 +177,7 @@ export function buildValueBoard({rankings = {}, history = {}, news = {}, inputs}
       injury, excluded_game_ids: excluded, ros_points: round(ros),
       dynasty_points: ros === null ? null : round(ros + .85 * year1 + .85 ** 2 * year2),
       future_year_points: [round(year1), round(year2)], age_samples: futureFactors.map(item => item.count),
+      future_age_factors: futureFactors.map(item => item.factor),
       confidence: n >= 8 && prior.ppg !== null ? 'More observed games' : n ? 'Early sample' : 'Prior only', notes});
   }
   const depths = {QB: s.quarterbacks === '2QB' ? 25 : 13, RB: 25, WR: 37, TE: 13};
