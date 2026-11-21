@@ -19,7 +19,7 @@
 
   </header>
   <main id="main-content" tabindex="-1">
-    <p class="board-summary"><a href="rankings.html?model=simulation&amp;horizon=ros">Simulation rankings</a> · <a href="draft.html">Draft calculator</a>. Compare the original value model with the shared matchup simulation.</p>
+    <p class="board-summary"><a href="rankings.html?model=simulation&amp;horizon=ros">Simulation rankings</a> · <a href="trade.html">Trade calculator</a> · <a href="draft.html">Draft calculator</a>. Compare the original value model with the shared matchup simulation.</p>
     <section class="values-hero tool-masthead" aria-labelledby="values-heading">
       <div><p class="tool-kicker">Fantasy / Player valuation</p><h1 id="values-heading">Player Value Lab</h1><p class="tool-description">Compare remaining production and a three-year outlook. Current-season scoring, prior seasons, and verified availability inform an explainable player-value index.</p></div>
       <aside class="values-scale" aria-label="How to read the value index"><span>RELATIVE VALUE · 0–10,000</span><strong>Production, in perspective.</strong><p>The highest modeled surplus sets the scale. Zero means no projected edge over replacement—not a worthless player.</p><small>Original analysis. Not KTC consensus, a trade price, or an additive trade calculator.</small></aside>
@@ -54,7 +54,7 @@
       <div class="values-section-heading"><div><p class="eyebrow">Player notebook</p><h2 id="values-player-heading">Choose a player</h2><p id="values-player-meta"></p></div><label class="values-player-picker">Player<select id="values-player" disabled><option>Loading players…</option></select></label></div>
       <div id="values-player-content" hidden>
         <div id="values-player-metrics" class="values-metrics"></div>
-        <p id="values-player-note" class="values-footnote"></p><p><a id="values-draft-link" href="draft.html">Compare this player in the draft calculator ↗</a></p>
+        <p id="values-player-note" class="values-footnote"></p><p><a id="values-trade-link" href="trade.html">Compare this player in a trade ↗</a> · <a id="values-draft-link" href="draft.html">Compare this player in the draft calculator ↗</a></p>
         <div class="values-chart-grid">
           <figure><figcaption><h3>Current-season production</h3><p>Observed game points in the selected scoring format. Missing games are not filled with zeros.</p></figcaption><div class="values-chart-scroll" tabindex="0" role="region" aria-label="Weekly fantasy points chart — scroll horizontally"><div id="values-weekly-chart"></div></div><p id="values-weekly-note" class="values-footnote"></p></figure>
           <figure id="values-forecast-panel" hidden><figcaption><h3>Upcoming game projections</h3><p>Simulated means for unstarted games, separate from observed results. Availability is conditional.</p></figcaption><div class="values-chart-scroll" tabindex="0" role="region" aria-label="Simulated upcoming fantasy points"><div id="values-forecast-chart"></div></div></figure><figure><figcaption><h3>Saved value history</h3><p id="values-history-context">Genuine dated captures, using the same season, model, and league format.</p></figcaption><div class="values-chart-scroll" tabindex="0" role="region" aria-label="Saved player value history chart — scroll horizontally"><div id="values-history-chart"></div></div><p id="values-history-note" class="values-footnote">Checking saved daily captures…</p></figure>
@@ -77,7 +77,7 @@
     <noscript>This board needs JavaScript to calculate player values from saved data.</noscript>
   </main>
   <footer><p>OutlierBaseline · Research, not certainty.</p></footer>
-  <script type="module" src="values.js?v=20261121-values2"></script>
-  <script type="module" src="site-nav.js?v=20261121-draft1"></script>
+  <script type="module" src="values.js?v=20261121-trade1"></script>
+  <script type="module" src="site-nav.js?v=20261121-trade1"></script>
 </body>
 </html>

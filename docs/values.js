@@ -1,3 +1,4 @@
+import {validateValueInputs as validateInputs} from './value-input-validation.mjs?v=20261121-trade1';
 import {MODEL_VERSION, valueFormatKey, buildValueBoard} from "./player-values.mjs?v=20261121-values2";
 import {SIMULATION_VALUE_VERSION, buildSimulationValues} from './simulation-values.mjs?v=20261121-values2';
 import {validateSimulationForecasts} from './simulation-rankings.mjs?v=20261121-sim1';
@@ -12,6 +13,8 @@ const ui = Object.fromEntries(["status", "error", "quarterbacks", "ppr", "te-pre
 const state = {settings: {quarterbacks: "1QB", ppr: "Half PPR", tePremium: "None"}, horizon: "ros", player: null,
   sources: null, board: null, signature: null, unavailable: [], archive: [], archiveNote: "Checking saved daily captures…", archiveCache: new Map()};
 state.player=requested.get('player');
+if(simulationMode()&&['draft','ros','dynasty'].includes(requested.get('horizon')))state.horizon=requested.get('horizon');
+document.querySelectorAll('[data-horizon]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.horizon===state.horizon)));
 for(const [key,control,allowed] of [['quarterbacks',ui.quarterbacks,['1QB','2QB']],['ppr',ui.ppr,['Standard','Half PPR','Full PPR']],['tePremium',ui['te-premium'],['None','+0.5']]]){
   if(allowed.includes(requested.get(key))){state.settings[key]=requested.get(key);control.value=state.settings[key];}
 }
@@ -26,26 +29,6 @@ const formatDate = value => dateValid(value) ? new Date(value).toLocaleString(un
 const textNode = (tag, text, className) => {const node = document.createElement(tag); node.textContent = text; if (className) node.className = className; return node;};
 const horizonName = () => ({ros:'Rest of season',dynasty:'Dynasty · 3 years',draft:'Draft / full season'}[state.horizon]);
 
-function validateInputs(value) {
-  const required = ["player_id", "player", "pos", "team", "week", "game_id", "kickoff", "analysis_ready", "passing_yards", "passing_tds", "passing_interceptions", "rushing_yards", "rushing_tds", "receptions", "receiving_yards", "receiving_tds", "fumbles_lost_total", "passing_2pt_conversions", "rushing_2pt_conversions", "receiving_2pt_conversions", "special_teams_tds"];
-  if (!record(value) || value.schema_version !== 1 || value.season_type !== "REG" || !Number.isInteger(value.season)
-    || !dateValid(value.generated_at) || !Array.isArray(value.columns) || new Set(value.columns).size !== value.columns.length
-    || !required.every(key => value.columns.includes(key)) || !Array.isArray(value.rows) || !Array.isArray(value.games) || !value.games.length) return false;
-  const ids = new Set();
-  for (const game of value.games) {
-    if (!record(game) || typeof game.game_id !== "string" || ids.has(game.game_id) || !Number.isInteger(game.week)
-      || !dateValid(game.kickoff) || typeof game.home !== "string" || typeof game.away !== "string" || game.home === game.away
-      || typeof game.analysis_ready !== "boolean") return false;
-    ids.add(game.game_id);
-  }
-  return value.rows.every(values => {
-    if (!Array.isArray(values) || values.length !== value.columns.length) return false;
-    const row = Object.fromEntries(value.columns.map((key, index) => [key, values[index]]));
-    return ["player_id", "player", "pos", "team", "game_id"].every(key => typeof row[key] === "string" && row[key].length > 0)
-      && ids.has(row.game_id) && Number.isInteger(row.week) && dateValid(row.kickoff) && typeof row.analysis_ready === "boolean"
-      && required.slice(8).every(key => numericOrNull(row[key]));
-  });
-}
 
 function validateBoard(board) {
   return record(board) && board.model_version === (simulationMode()?SIMULATION_VALUE_VERSION:MODEL_VERSION) && Number.isInteger(board.season) && Array.isArray(board.rows)
@@ -186,7 +169,7 @@ function renderPlayer() {
     chart($('values-forecast-chart'),games.map(g=>({x:g.week,label:`W${g.week}`,value:g.points})),{label:`${row.player}, simulated upcoming game points`,kind:'bars',empty:'No rated unstarted games.'});
     dataRows($('values-forecast-data'),games,[g=>`Week ${g.week}`,g=>g.opponent,g=>formatNumber(g.points),g=>g.out?'Out / unavailable':'Conditional availability'],'No rated unstarted games.');
   }
-  const draftLink=$('values-draft-link'), params=new URLSearchParams({player:row.player_id,ppr:state.settings.ppr,quarterbacks:state.settings.quarterbacks,tePremium:state.settings.tePremium});draftLink.href=`draft.html?${params}`;
+  const draftLink=$('values-draft-link'), params=new URLSearchParams({player:row.player_id,ppr:state.settings.ppr,quarterbacks:state.settings.quarterbacks,tePremium:state.settings.tePremium});draftLink.href=`draft.html?${params}`;params.set('horizon',state.horizon);$('values-trade-link').href=`trade.html?${params}`;
   renderHistory();
 }
 
