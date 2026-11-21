@@ -18,7 +18,7 @@
 .values-horizons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
 .values-horizons button { min-height: 46px; padding: 10px 20px; color: var(--muted); border: 1px solid var(--line-strong); border-radius: 9px; background: #102e25; font-weight: 700; }
 .values-horizons button[aria-pressed=true] { color: var(--lime-ink); background: var(--lime); border-color: var(--lime); }
-.values-format-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.values-format-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .values-status { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 18px 0 0; overflow-wrap: anywhere; }
 .values-warning { padding: 12px 14px; border-left: 3px solid #efc86a; background: #efc86a0b; color: #ebd5a6; font-size: 14px; }
 .values-filters { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); max-width: 720px; gap: 16px; }

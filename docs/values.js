@@ -1,11 +1,20 @@
-import {MODEL_VERSION, valueFormatKey, buildValueBoard} from "./player-values.mjs?v=20261118-history1";
+import {MODEL_VERSION, valueFormatKey, buildValueBoard} from "./player-values.mjs?v=20261121-values2";
+import {SIMULATION_VALUE_VERSION, buildSimulationValues} from './simulation-values.mjs?v=20261121-values2';
+import {validateSimulationForecasts} from './simulation-rankings.mjs?v=20261121-sim1';
 import {fetchSnapshot, startAutoRefresh, preserveView, snapshotSignature} from "./auto-refresh.mjs?v=20260927-refresh1";
 import {validateRankings, validateHistory, validateReports} from "./snapshot-validation.mjs?v=20260927-refresh1";
 
 const $ = id => document.getElementById(id);
+const modelControl=$('values-model'), simulationMode=()=>modelControl.value==='simulation';
+const requested=new URLSearchParams(location.search);
+if(requested.get('model')==='simulation')modelControl.value='simulation';
 const ui = Object.fromEntries(["status", "error", "quarterbacks", "ppr", "te-premium", "search", "position", "rows", "count", "empty", "table-region", "board-heading", "points-heading", "player", "player-heading", "player-meta", "player-content", "player-metrics", "player-note", "weekly-chart", "weekly-note", "weekly-data", "history-chart", "history-note", "history-context", "history-data", "model-version", "assumptions", "coverage"].map(key => [key, $(`values-${key}`)]));
 const state = {settings: {quarterbacks: "1QB", ppr: "Half PPR", tePremium: "None"}, horizon: "ros", player: null,
   sources: null, board: null, signature: null, unavailable: [], archive: [], archiveNote: "Checking saved daily captures…", archiveCache: new Map()};
+state.player=requested.get('player');
+for(const [key,control,allowed] of [['quarterbacks',ui.quarterbacks,['1QB','2QB']],['ppr',ui.ppr,['Standard','Half PPR','Full PPR']],['tePremium',ui['te-premium'],['None','+0.5']]]){
+  if(allowed.includes(requested.get(key))){state.settings[key]=requested.get(key);control.value=state.settings[key];}
+}
 const record = value => Boolean(value && typeof value === "object" && !Array.isArray(value));
 const finite = Number.isFinite;
 const numericOrNull = value => value === null || finite(value);
@@ -15,7 +24,7 @@ const formatNumber = (value, digits = 1) => finite(value) ? value.toLocaleString
 const formatIndex = value => finite(value) ? value.toLocaleString(undefined, {maximumFractionDigits: 0}) : "—";
 const formatDate = value => dateValid(value) ? new Date(value).toLocaleString(undefined, {month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit"}) : "time unavailable";
 const textNode = (tag, text, className) => {const node = document.createElement(tag); node.textContent = text; if (className) node.className = className; return node;};
-const horizonName = () => state.horizon === "ros" ? "Rest of season" : "Dynasty · 3 years";
+const horizonName = () => ({ros:'Rest of season',dynasty:'Dynasty · 3 years',draft:'Draft / full season'}[state.horizon]);
 
 function validateInputs(value) {
   const required = ["player_id", "player", "pos", "team", "week", "game_id", "kickoff", "analysis_ready", "passing_yards", "passing_tds", "passing_interceptions", "rushing_yards", "rushing_tds", "receptions", "receiving_yards", "receiving_tds", "fumbles_lost_total", "passing_2pt_conversions", "rushing_2pt_conversions", "receiving_2pt_conversions", "special_teams_tds"];
@@ -39,7 +48,7 @@ function validateInputs(value) {
 }
 
 function validateBoard(board) {
-  return record(board) && board.model_version === MODEL_VERSION && Number.isInteger(board.season) && Array.isArray(board.rows)
+  return record(board) && board.model_version === (simulationMode()?SIMULATION_VALUE_VERSION:MODEL_VERSION) && Number.isInteger(board.season) && Array.isArray(board.rows)
     && board.rows.every(row => typeof row.player_id === "string" && typeof row.player === "string" && ["QB", "RB", "WR", "TE"].includes(row.pos)
       && ["ros_index", "dynasty_index", "ros_points", "dynasty_points", "projected_ppg"].every(key => numericOrNull(row[key])));
 }
@@ -56,6 +65,7 @@ function availability(row) {
 function updateStatus() {
   if (!state.board) return;
   ui.status.textContent = `${state.board.season} · ${state.board.rows.length} players · Box scores checked ${formatDate(state.sources.inputs.sources?.archive?.checked_at)}${state.unavailable.length ? ` · ${state.unavailable.join(" · ")}` : ""}`;
+  if(simulationMode())ui.status.textContent+=` · Simulation projections ${formatDate(state.board.simulation_generated_at)}${state.board.simulation_stale?' · Simulation evidence is older than 48 hours; showing the last saved projections.':''}`;
 }
 
 function renderTable() {
@@ -78,15 +88,16 @@ function renderTable() {
     button.append(initials, labels); name.append(button); tr.append(name, textNode("td", row.pos));
     const index = textNode("td", formatIndex(row[`${state.horizon}_index`]), "values-index");
     if (row[`${state.horizon}_index`] === null) index.setAttribute("aria-label", "Value unavailable");
-    tr.append(index, textNode("td", formatNumber(row.projected_ppg)), textNode("td", formatNumber(row[`${state.horizon}_points`])), textNode("td", formatIndex(row.remaining_games)));
+    tr.append(index, textNode("td", formatNumber(row.projected_ppg)), textNode("td", formatNumber(row[`${state.horizon}_points`])), textNode("td", formatIndex(state.horizon==='draft'?row.draft_games:row.remaining_games)));
     const status = document.createElement("td"); status.append(textNode("span", availability(row), `values-availability${row.injury?.risk ? " risk" : ""}`)); tr.append(status);
     fragment.append(tr);
   }
   ui.rows.replaceChildren(fragment);
   ui.empty.hidden = rows.length !== 0;
   ui.count.textContent = `${rows.length} of ${state.board.rows.length} players · sorted by modeled surplus`;
-  ui["board-heading"].textContent = state.horizon === "ros" ? "Rest-of-season values" : "Three-year dynasty values";
-  ui["points-heading"].textContent = state.horizon === "ros" ? "ROS points" : "3-year points*";
+  ui["board-heading"].textContent = `${simulationMode()?'Simulation · ':''}${{ros:'Rest-of-season values',dynasty:'Three-year dynasty values',draft:'Draft values'}[state.horizon]}`;
+  ui["points-heading"].textContent = {ros:'ROS points',dynasty:'3-year points*',draft:'Full-season points'}[state.horizon];
+  $('values-games-heading').textContent=state.horizon==='draft'?'Scenario games':'Games left';
   ui["table-region"].setAttribute("aria-busy", "false");
 }
 
@@ -96,8 +107,8 @@ const svgNode = (tag, attributes = {}, text) => {
   if (text !== undefined) node.textContent = text;
   return node;
 };
-function chart(container, entries, {label, kind = "line", maximum = null} = {}) {
-  if (!entries.length) {container.replaceChildren(textNode("p", kind === "bars" ? "No complete current-season scoring observations yet." : "No matching daily value captures yet.", "values-chart-empty")); return;}
+function chart(container, entries, {label, kind = "line", maximum = null, empty = null} = {}) {
+  if (!entries.length) {container.replaceChildren(textNode("p", empty || (kind === "bars" ? "No complete current-season scoring observations yet." : "No matching daily value captures yet."), "values-chart-empty")); return;}
   const w = entries.length > 8 ? 640 : Math.max(250, Math.min(640, container.parentElement.clientWidth)), h = 260, left = 54, right = 24, top = 28, bottom = 45;
   const min = Math.min(0, ...entries.map(entry => entry.value)), max = maximum ?? Math.max(1, ...entries.map(entry => entry.value)) * 1.15;
   const xLow = Math.min(...entries.map(entry => entry.x)), xHigh = Math.max(...entries.map(entry => entry.x));
@@ -135,7 +146,7 @@ function renderHistory() {
   const format = valueFormatKey(state.settings), column = `${state.horizon}_index`;
   const points = [];
   for (const {entry, snapshot} of state.archive) {
-    if (snapshot.model_version !== MODEL_VERSION || snapshot.season !== state.board.season) continue;
+    if (snapshot.model_version !== state.board.model_version || snapshot.season !== state.board.season) continue;
     const saved = snapshot.formats?.[format]; if (!saved || !saved.columns.includes(column)) continue;
     const id = saved.columns.indexOf("player_id"), value = saved.columns.indexOf(column);
     const row = saved.rows.find(values => values[id] === player.player_id);
@@ -169,6 +180,13 @@ function renderPlayer() {
   chart(ui["weekly-chart"], weekly.map(game => ({x: game.week, label: `W${game.week}`, value: game.points})), {label: `${row.player}, observed ${state.board.season} fantasy points by week in ${state.settings.ppr}`, kind: "bars"});
   ui["weekly-note"].textContent = `${weekly.length} observed game${weekly.length === 1 ? "" : "s"}. ${weekly.some(game => game.provisional) ? "Some source results are provisional and may be corrected. " : ""}Byes and missing appearances are not zero-point observations.`;
   dataRows(ui["weekly-data"], weekly, [game => `Week ${game.week}`, game => game.game_id, game => formatNumber(game.points)], "No complete scoring observation available.");
+  $('values-forecast-panel').hidden=!simulationMode(); $('values-forecast-data-panel').hidden=!simulationMode();
+  if(simulationMode()){
+    const games=(row.forecast_games||[]).filter(game=>finite(game.points));
+    chart($('values-forecast-chart'),games.map(g=>({x:g.week,label:`W${g.week}`,value:g.points})),{label:`${row.player}, simulated upcoming game points`,kind:'bars',empty:'No rated unstarted games.'});
+    dataRows($('values-forecast-data'),games,[g=>`Week ${g.week}`,g=>g.opponent,g=>formatNumber(g.points),g=>g.out?'Out / unavailable':'Conditional availability'],'No rated unstarted games.');
+  }
+  const draftLink=$('values-draft-link'), params=new URLSearchParams({player:row.player_id,ppr:state.settings.ppr,quarterbacks:state.settings.quarterbacks,tePremium:state.settings.tePremium});draftLink.href=`draft.html?${params}`;
   renderHistory();
 }
 
@@ -183,7 +201,8 @@ function renderBoard() {
   }
   ui.player.disabled = !rows.length;
   renderTable(); renderPlayer(); updateStatus();
-  ui["model-version"].textContent = `${MODEL_VERSION} · Fixed 12-team reference · Current calculation ${formatDate(state.board.as_of)}`;
+  ui["model-version"].textContent = `${state.board.model_version} · Fixed 12-team reference · Current calculation ${formatDate(state.board.as_of)}`;
+  document.querySelector('[data-horizon="draft"]').disabled=!simulationMode();
   ui.assumptions.replaceChildren(...(state.board.assumptions || []).filter(item => typeof item === "string").map(item => textNode("li", item)));
   const coverage = state.board.coverage;
   const {inputs, history, news} = state.sources;
@@ -191,7 +210,7 @@ function renderBoard() {
 }
 function rebuild(force = false) {
   if (!state.sources) return;
-  const board = buildValueBoard(state.sources, state.settings, {now: Date.now()});
+  const board = (simulationMode()?buildSimulationValues:buildValueBoard)(state.sources, state.settings, {now: Date.now()});
   if (!validateBoard(board)) throw new Error("Calculated value board is incomplete.");
   const signature = snapshotSignature({...board, as_of: null});
   state.board = board;
@@ -221,26 +240,29 @@ function validCapture(value) {
         && required.slice(1).every(key => numericOrNull(row[format.columns.indexOf(key)]))));
 }
 async function refreshArchive(signal) {
+  const version=state.board.model_version, folder=version===SIMULATION_VALUE_VERSION?'simulation_values':'player_values';
   try {
-    const manifest = await fetchSnapshot("./data/player_values/index.json", {signal, validate: validManifest});
-    const entries = manifest.snapshots.filter(entry => entry.model_version === MODEL_VERSION && entry.season === state.board.season && Date.parse(entry.as_of) <= Date.now() + 300000).sort((a, b) => a.date.localeCompare(b.date)).slice(-30);
+    const manifest = await fetchSnapshot(`./data/${folder}/index.json`, {signal, validate: validManifest});
+    const entries = manifest.snapshots.filter(entry => entry.model_version === version && entry.season === state.board.season && Date.parse(entry.as_of) <= Date.now() + 300000).sort((a, b) => a.date.localeCompare(b.date)).slice(-30);
     const next = [], unavailable = [];
     // Bound concurrency; changing the selected player never downloads these again.
     for (let offset = 0; offset < entries.length; offset += 4) await Promise.all(entries.slice(offset, offset + 4).map(async entry => {
       const key = `${entry.path}|${entry.as_of}|${entry.model_version}`;
       try {
-        const snapshot = state.archiveCache.get(key) || await fetchSnapshot(`./data/player_values/${entry.path}`, {signal, validate: validCapture});
+        const snapshot = state.archiveCache.get(key) || await fetchSnapshot(`./data/${folder}/${entry.path}`, {signal, validate: validCapture});
         if (snapshot.model_version !== entry.model_version || snapshot.as_of !== entry.as_of) return;
         next.push({entry, snapshot}); state.archiveCache.set(key, snapshot);
       } catch (error) {signal.throwIfAborted(); unavailable.push(entry.date);}
     }));
     signal.throwIfAborted();
+    if(state.board.model_version!==version)return;
     state.archive = next;
     state.archiveNote = unavailable.length ? `${unavailable.length} capture(s) unavailable; those dates are omitted.` : "";
     const keep = new Set(entries.map(entry => `${entry.path}|${entry.as_of}|${entry.model_version}`));
     for (const key of state.archiveCache.keys()) if (!keep.has(key)) state.archiveCache.delete(key);
   } catch (error) {
     signal.throwIfAborted();
+    if(state.board.model_version!==version)return;
     state.archiveNote = state.archive.length ? "Daily history refresh unavailable; showing previously loaded captures." : "Daily archive unavailable or not published yet.";
   }
   preserveView(renderHistory, [...document.querySelectorAll(".values-chart-scroll")]);
@@ -251,17 +273,16 @@ async function refresh(signal) {
     try {return await fetchSnapshot(url, {signal, validate});}
     catch (error) {signal.throwIfAborted(); unavailable.push(label); return fallback;}
   };
-  const [rankings, inputs, history, news] = await Promise.all([
+  const [rankings, inputs, history, news, simulation] = await Promise.all([
     fetchSnapshot("./data/rankings.json", {signal, validate: validateRankings}),
     fetchSnapshot("./data/player_value_inputs.json", {signal, validate: validateInputs}),
     optional("./data/player_history.json", value => validateHistory(value) && usableSourceTime(value), state.sources?.history || {}, "History unavailable; limited prior evidence"),
     optional("./data/player_news.json", value => validateReports(value) && usableSourceTime(value), {}, "News unavailable; injury status unknown"),
+    fetchSnapshot('./data/simulation_forecasts.json',{signal,validate:validateSimulationForecasts}).catch(error=>{signal.throwIfAborted();if(simulationMode())unavailable.push('Simulation refresh unavailable; showing the last saved projections');return state.sources?.simulation||null;}),
   ]);
   signal.throwIfAborted();
   if (rankings.projection_season !== inputs.season) throw new Error("Player rankings and game inputs belong to different seasons.");
-  const sources = {rankings, inputs, history, news};
-  const board = buildValueBoard(sources, state.settings, {now: Date.now()});
-  if (!validateBoard(board)) throw new Error("Calculated value board is incomplete.");
+  const sources = {rankings, inputs, history, news, simulation};
   state.sources = sources; state.unavailable = unavailable;
   ui.error.hidden = true; rebuild();
   await refreshArchive(signal);
@@ -271,6 +292,13 @@ async function refresh(signal) {
 for (const key of ["quarterbacks", "ppr", "te-premium"]) ui[key].addEventListener("change", () => {
   state.settings = {quarterbacks: ui.quarterbacks.value, ppr: ui.ppr.value, tePremium: ui["te-premium"].value};
   try {rebuild(true);} catch (error) {ui.error.textContent = error.message; ui.error.hidden = false;}
+});
+modelControl.addEventListener('change',async()=>{
+  if(!simulationMode()&&state.horizon==='draft')state.horizon='ros';
+  document.querySelectorAll('[data-horizon]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.horizon===state.horizon)));
+  state.archive=[];state.archiveNote='Loading this model’s recorded history…';
+  try{rebuild(true);ui.error.hidden=true;await refreshArchive(new AbortController().signal);}
+  catch(error){modelControl.value=state.board?.model_version===SIMULATION_VALUE_VERSION?'simulation':'original';ui.error.textContent=error.message;ui.error.hidden=false;}
 });
 document.querySelectorAll("[data-horizon]").forEach(button => button.addEventListener("click", () => {
   state.horizon = button.dataset.horizon;
