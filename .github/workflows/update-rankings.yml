@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 40
     steps:
       # Execute default-branch source only, never upstream artifacts or PR code.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: main
       - uses: actions/setup-python@v5

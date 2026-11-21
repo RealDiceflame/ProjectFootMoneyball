@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 15
     steps:
       # Only the default-branch source is executed, never an upstream run's artifact.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: main
       - uses: actions/setup-python@v5
