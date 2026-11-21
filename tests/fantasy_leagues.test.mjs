@@ -77,10 +77,10 @@ test("roster totals exclude bench and IR from starters; unknown properties are n
 test("all public site pages use the same cache-busted navigation without prototype links", () => {
   const root = new URL("../docs/", import.meta.url);
   const pages = readdirSync(root).filter(name => name.endsWith(".html"));
-  assert.equal(pages.length, 12);
+  assert.equal(pages.length, 13);
   for (const page of pages) {
     const html = readFileSync(new URL(page, root), "utf8");
-    assert.match(html, /site-nav.js\?v=20261121-draft1/); assert.match(html, /site-nav.css\?v=20260928-layout1/);
+    assert.match(html, /site-nav.js\?v=20261121-trade1/); assert.match(html, /site-nav.css\?v=20260928-layout1/);
     assert.doesNotMatch(html, /(?:href|src)\s*=\s*["'][^"']*(?:fantasy\.(?:html|js|css)|fantasy-leagues\.mjs)/i, page);
     assert.doesNotMatch(html, /My leagues|Your league starts here|Try a local league setup/i, page);
   }
