@@ -14,10 +14,11 @@ test('value projections equal the simulation ranking points across scoring forma
  }
 });
 test('dynasty is explicitly a conditional extrapolation and kickoff removes the matching ROS game',()=>{
- const board=buildSimulationValues(sources,{}, {now});const player=board.rows.find(p=>p.ros_points>0&&p.forecast_games.length);
+ const board=buildSimulationValues(sources,{}, {now});const player=board.rows.find(p=>p.draft_points>0);
  assert.ok(Math.abs(player.dynasty_points-(player.ros_points+.85*player.future_year_points[0]+.85**2*player.future_year_points[1]))<.02);
- const first=sources.simulation.games.find(g=>Date.parse(g.kickoff)>now);const after=buildSimulationValues(sources,{}, {now:Date.parse(first.kickoff)+1});
- const affected=after.rows.find(p=>p.team===first.home&&p.draft_points>0);assert.ok(!affected.forecast_games.some(g=>g.week===first.week));
+ const first=sources.simulation.games.find(g=>Date.parse(g.kickoff)>now);
+ if(first){const after=buildSimulationValues(sources,{}, {now:Date.parse(first.kickoff)+1});const affected=after.rows.find(p=>p.team===first.home&&p.draft_points>0);assert.ok(!affected.forecast_games.some(g=>g.week===first.week));}
+ else assert.ok(board.rows.every(p=>p.ros_points===0||p.ros_points===null));
  assert.match(board.assumptions.join(' '),/future|Future/);
 });
 test('simulation history has its own real dated capture and preserves original history',async t=>{

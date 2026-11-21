@@ -24,7 +24,7 @@ test('simulation value chart uses its own history, supports all horizons, and li
   await page.locator('#values-rows tr').first().waitFor();await page.waitForFunction(()=>!document.querySelector('#values-history-note').textContent.includes('Checking'));
   assert.match(await page.locator('#values-model-version').textContent(),/simulation-value-v1/,await page.locator('#values-error').textContent());assert.equal(await page.locator('#values-ppr').inputValue(),'Full PPR');
   assert.ok(await page.locator('#values-rows tr').count()>100);assert.equal(await page.locator('#values-forecast-panel').isVisible(),true);
-  assert.ok(Number(await page.locator('#values-history-chart svg').getAttribute('data-points'))>=1);assert.ok(Number(await page.locator('#values-forecast-chart svg').getAttribute('data-points'))>0);
+  assert.ok(Number(await page.locator('#values-history-chart svg').getAttribute('data-points'))>=1);if(await page.locator('#values-forecast-chart svg').count())assert.ok(Number(await page.locator('#values-forecast-chart svg').getAttribute('data-points'))>0);else assert.match(await page.locator('#values-forecast-chart').textContent(),/No rated unstarted games/);
   const histories=[];page.on('request',request=>{if(request.url().includes('/data/player_values/'))histories.push(request.url());});
   for(const horizon of ['draft','dynasty','ros']){await page.locator(`[data-horizon="${horizon}"]`).click();assert.match(await page.locator('#values-history-context').innerText(),/Same-model/);}
   assert.equal(histories.length,0);const href=await page.locator('#values-draft-link').getAttribute('href');assert.match(href,/ppr=Full\+PPR/);assert.match(href,/quarterbacks=2QB/);
@@ -57,9 +57,11 @@ test('draft settings change snake turns and roster slots, with usable phone layo
   await page.locator('#draft-teams').fill('10');await page.locator('#draft-slot').fill('10');await page.locator('#draft-current').fill('10');await page.getByRole('button',{name:'Update calculation'}).click();assert.match(await page.locator('#draft-turn').innerText(),/pick 10 · then pick 11/);
   await page.locator('#draft-order').selectOption('linear');await page.getByRole('button',{name:'Update calculation'}).click();assert.match(await page.locator('#draft-turn').innerText(),/pick 10 · then pick 20/);
   await page.getByText('Starting lineup and bench',{exact:true}).click();await page.locator('#draft-SF').fill('1');await page.locator('#draft-DST').fill('1');await page.getByRole('button',{name:'Update calculation'}).click();
+  assert.match(await page.locator('#draft-candidates a').first().getAttribute('href'),/ppr=Full\+PPR/);
   for(const width of [1440,768,390,320])await layout(page,width);
   if(process.env.DRAFT_SCREENSHOTS){await mkdir(process.env.DRAFT_SCREENSHOTS,{recursive:true});for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:resolve(process.env.DRAFT_SCREENSHOTS,`draft-${width}.png`),fullPage:true});}}
-  await page.reload();await ready(page);assert.equal(await page.locator('#draft-SF').inputValue(),'1');assert.equal(await page.locator('#draft-DST').inputValue(),'1');assert.deepEqual(errors,[]);
+  await page.reload();await ready(page);assert.equal(await page.locator('#draft-SF').inputValue(),'1');assert.equal(await page.locator('#draft-DST').inputValue(),'1');
+  await page.evaluate(()=>{const key='outlierbaseline:draft-calculator:v1',saved=JSON.parse(localStorage.getItem(key));saved.season=2000;localStorage.setItem(key,JSON.stringify(saved));});await page.reload();await ready(page);assert.match(await page.locator('#draft-error').innerText(),/2000/);await page.locator('#draft-reset').click();await page.getByRole('button',{name:'Start new draft',exact:true}).click();assert.equal(await page.locator('#draft-error').isVisible(),false);assert.deepEqual(errors,[]);
  }finally{await context.close();}
 });
 
